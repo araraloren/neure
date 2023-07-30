@@ -1,2 +1,3 @@
 # neure
-A little parse library.
+
+A little combinational parsing library
