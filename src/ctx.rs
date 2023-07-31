@@ -2,12 +2,8 @@ use std::str::CharIndices;
 
 use crate::{err::Error, Parser};
 
-#[derive(Debug, Clone, Copy)]
-pub struct Span {
-    pub beg: usize,
-
-    pub len: usize,
-}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Span(usize, usize);
 
 pub trait Context {
     type Error: Into<Error>;
@@ -22,7 +18,9 @@ pub trait Context {
 
     fn add_span(&mut self, id: usize, span: Span) -> &mut Self;
 
-    fn get_span(&self, id: usize) -> Option<&Vec<Span>>;
+    // fn spans(&self, id: usize) -> Option<&Vec<Span>>;
+
+    // fn contain(&self, id: usize) -> bool;
 
     fn peek_chars(&self) -> Result<CharIndices<'_>, Error> {
         Ok(self.peek().map_err(Into::into)?.char_indices())
@@ -49,12 +47,12 @@ pub trait Context {
     }
 
     fn peek(&self) -> Result<&str, Self::Error> {
-        self.peek_at(0)
+        self.peek_at(self.offset())
     }
 
     fn peek_at(&self, offset: usize) -> Result<&str, Self::Error>;
 
-    fn try_match_policy(
+    fn try_mat_policy(
         &mut self,
         parser: impl Parser<Self>,
         mut policy: impl FnMut(&mut Self, &Result<usize, Error>),
@@ -68,47 +66,57 @@ pub trait Context {
         ret
     }
 
-    fn try_match(&mut self, parser: impl Parser<Self>) -> Result<usize, Error>
+    fn try_mat(&mut self, parser: impl Parser<Self>) -> Result<usize, Error>
     where
         Self: Sized,
     {
-        self.try_match_policy(parser, |ctx, ret| {
-            if let Ok(len) = ret {
-                ctx.inc(*len);
-            }
-        })
+        // self.try_mat_policy(parser, |ctx, ret| {
+        //     if let Ok(len) = ret {
+        //         ctx.inc(*len);
+        //     }
+        // })
+        let ret = parser.parse(self);
+        if let Ok(len) = &ret {
+            self.inc(*len);
+        }
+        ret.map_err(Into::into)
     }
 
-    fn try_capture(&mut self, id: usize, parser: impl Parser<Self>) -> Result<usize, Error>
+    fn try_cap(&mut self, id: usize, parser: impl Parser<Self>) -> Result<usize, Error>
     where
         Self: Sized,
     {
-        self.try_match_policy(parser, |ctx, ret| {
-            if let Ok(len) = ret {
-                ctx.add_span(
-                    id,
-                    Span {
-                        beg: ctx.offset(),
-                        len: *len,
-                    },
-                )
-                .inc(*len);
-            }
-        })
+        // self.try_mat_policy(parser, |ctx, ret| {
+        //     if let Ok(len) = ret {
+        //         ctx.add_span(
+        //             id,
+        //             Span {
+        //                 beg: ctx.offset(),
+        //                 len: *len,
+        //             },
+        //         )
+        //         .inc(*len);
+        //     }
+        // })
+        let ret = parser.parse(self);
+        if let Ok(len) = &ret {
+            self.add_span(id, Span (self.offset(), *len )).inc(*len);
+        }
+        ret.map_err(Into::into)
     }
 
-    fn r#match(&mut self, parser: impl Parser<Self>) -> bool
+    fn mat(&mut self, parser: impl Parser<Self>) -> bool
     where
         Self: Sized,
     {
-        self.try_match(parser).is_ok()
+        self.try_mat(parser).is_ok()
     }
 
-    fn capture(&mut self, key: usize, parser: impl Parser<Self>) -> bool
+    fn cap(&mut self, key: usize, parser: impl Parser<Self>) -> bool
     where
         Self: Sized,
     {
-        self.try_capture(key, parser).is_ok()
+        self.try_cap(key, parser).is_ok()
     }
 }
 
@@ -128,6 +136,16 @@ impl CharsCtx {
         }
     }
 
+    pub fn with_offset(mut self, offset: usize) -> Self {
+        self.offset = offset;
+        self
+    }
+
+    pub fn with_str(mut self, string: impl Into<String>) -> Self {
+        self.str = string.into();
+        self
+    }
+
     pub fn with_capacity(mut self, capacity: usize) -> Self {
         self.spans = vec![vec![]; capacity];
         self
@@ -135,15 +153,8 @@ impl CharsCtx {
 
     pub fn substr(&self, span: &Span) -> Result<&str, Error> {
         self.str
-            .get(span.beg..(span.beg + span.len))
+            .get(span.0..(span.0 + span.1))
             .ok_or_else(|| Error::SubStr)
-    }
-
-    pub fn has_span(&self, index: usize) -> bool {
-        self.spans
-            .get(index)
-            .map(|v| !v.is_empty())
-            .unwrap_or(false)
     }
 
     pub fn reset_with(&mut self, string: impl Into<String>) -> &mut Self {
@@ -151,6 +162,25 @@ impl CharsCtx {
         self.offset = 0;
         self.spans.iter_mut().for_each(|v| v.clear());
         self
+    }
+
+    pub fn reset(&mut self) -> &mut Self {
+        self.offset = 0;
+        self.spans.iter_mut().for_each(|v| v.clear());
+        self
+    }
+
+    pub fn spans(&self, id: usize) -> Option<&Vec<Span>> {
+        if let Some(span) = self.spans.get(id) {
+            if !span.is_empty() {
+                return Some(span);
+            }
+        }
+        None
+    }
+
+    pub fn contain(&self, id: usize) -> bool {
+        self.spans.get(id).map(|v| !v.is_empty()).unwrap_or(false)
     }
 }
 
@@ -180,11 +210,39 @@ impl Context for CharsCtx {
         self
     }
 
-    fn get_span(&self, id: usize) -> Option<&Vec<Span>> {
-        self.spans.get(id)
-    }
+    // fn spans(&self, id: usize) -> Option<&Vec<Span>> {
+    //     if let Some(span) = self.spans.get(id) {
+    //         if !span.is_empty() {
+    //             return Some(span);
+    //         }
+    //     }
+    //     None
+    // }
+
+    // fn contain(&self, id: usize) -> bool {
+    //     self.spans
+    //         .get(id)
+    //         .map(|v| !v.is_empty())
+    //         .unwrap_or(false)
+    // }
 
     fn peek_at(&self, offset: usize) -> Result<&str, Self::Error> {
         self.str.get(offset..).ok_or_else(|| Error::ReachEnd)
+    }
+
+    fn try_mat(&mut self, parser: impl Parser<Self>) -> Result<usize, Error>
+    where
+        Self: Sized,
+    {
+        // self.try_mat_policy(parser, |ctx, ret| {
+        //     if let Ok(len) = ret {
+        //         ctx.inc(*len);
+        //     }
+        // })
+        let ret = parser.parse(self);
+        if let Ok(len) = &ret {
+            self.inc(*len);
+        }
+        ret.map_err(Into::into)
     }
 }

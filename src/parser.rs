@@ -39,7 +39,19 @@ impl<const M: usize, const N: usize, R> Count<M, N, R> {
 
 impl<const M: usize, const N: usize, R, C> Parser<C> for Count<M, N, R>
 where
-    R: Regex + Debug,
+    R: Regex,
+    C: Context,
+{
+    type Error = Error;
+
+    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
+        Parser::parse(&self, ctx)
+    }
+}
+
+impl<'a, const M: usize, const N: usize, R, C> Parser<C> for &'a Count<M, N, R>
+where
+    R: Regex,
     C: Context,
 {
     type Error = Error;
@@ -47,6 +59,7 @@ where
     fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
         let mut len = 0;
         let mut start = None;
+        let mut next = None;
         let mut chars = ctx.peek_chars()?;
 
         loop {
@@ -60,16 +73,21 @@ where
                     }
                     len += 1;
                     continue;
+                } else {
+                    next = Some(idx);
                 }
             }
             if len < M {
-                return Err(Error::Match(format!("Can not match enough `{:?}`", self.0)));
+                return Err(Error::Match(format!(
+                    "Can not match enough letter for regex"
+                )));
             } else {
                 break;
             }
         }
         if let Some(start) = start {
-            let next_offset = chars.next().map(|v| v.0).unwrap_or(ctx.len());
+            let total_len = ctx.len() - ctx.offset();
+            let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
 
             Ok(next_offset - start)
         } else {
@@ -78,7 +96,48 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+pub fn count<const M: usize, const N: usize, T: Context>(
+    func: impl Fn(&char) -> bool,
+) -> impl Fn(&mut T) -> Result<usize, Error> {
+    move |dat: &mut T| {
+        let mut len = 0;
+        let mut start = None;
+        let mut next = None;
+        let mut chars = dat.peek_chars()?;
+
+        loop {
+            if len == N - 1 {
+                break;
+            }
+            if let Some((idx, ch)) = chars.next() {
+                if func(&ch) {
+                    if start.is_none() {
+                        start = Some(idx);
+                    }
+                    len += 1;
+                    continue;
+                } else {
+                    next = Some(idx);
+                }
+            }
+            if len < M {
+                return Err(Error::Match("".to_owned()));
+            } else {
+                break;
+            }
+        }
+        if let Some(start) = start {
+            let total_len = dat.len() - dat.offset();
+            let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
+
+            Ok(next_offset - start)
+        } else {
+            Ok(0)
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Start;
 
 impl<C: Context> Parser<C> for Start {
@@ -89,10 +148,26 @@ impl<C: Context> Parser<C> for Start {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+impl<'a, C: Context> Parser<C> for &'a Start {
+    type Error = Error;
+
+    fn parse(&self, _: &mut C) -> Result<usize, Self::Error> {
+        Ok(0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct End;
 
 impl<C: Context> Parser<C> for End {
+    type Error = Error;
+
+    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
+        Parser::parse(&self, ctx)
+    }
+}
+
+impl<'a, C: Context> Parser<C> for &'a End {
     type Error = Error;
 
     fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {

@@ -103,3 +103,55 @@ impl Regex for Digit {
         dat.is_ascii_digit()
     }
 }
+
+pub mod utils {
+    use std::ops::RangeBounds;
+
+    use crate::{err::Error, Context};
+
+    pub fn char(ch: char) -> impl Fn(&char) -> bool {
+        move |dat: &char| dat == &ch
+    }
+
+    pub fn array<const N: usize>(chars: [char; N]) -> impl Fn(&char) -> bool {
+        move |dat: &char| chars.contains(dat)
+    }
+
+    pub fn vector(chars: Vec<char>) -> impl Fn(&char) -> bool {
+        move |dat: &char| chars.contains(dat)
+    }
+
+    pub fn not(func: impl Fn(&char) -> bool) -> impl Fn(&char) -> bool {
+        move |dat: &char| !func(dat)
+    }
+
+    pub fn range(bound: impl RangeBounds<char>) -> impl Fn(&char) -> bool {
+        move |dat: &char| bound.contains(dat)
+    }
+
+    pub fn any() -> impl Fn(&char) -> bool {
+        |_: &char| true
+    }
+
+    pub fn space() -> impl Fn(&char) -> bool {
+        |dat: &char| dat.is_whitespace()
+    }
+
+    pub fn digit() -> impl Fn(&char) -> bool {
+        |dat: &char| dat.is_ascii_digit()
+    }
+
+    pub fn start<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
+        |_: &mut T| Ok(0)
+    }
+
+    pub fn end<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
+        |dat: &mut T| {
+            if dat.peek().map_err(Into::into)?.len() > 0 {
+                Err(Error::Match("123".to_owned()))
+            } else {
+                Ok(0)
+            }
+        }
+    }
+}
