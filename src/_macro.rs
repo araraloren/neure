@@ -1,103 +1,93 @@
 #[macro_export]
 macro_rules! neure {
     () => {
-        //$crate::Count::<1, 2, $crate::Space>::default()
+        $crate::one($crate::space())
     };
     (+) => {
-        //$crate::Count::<1, { usize::MAX }, $crate::Space>::default()
+        $crate::one_more($crate::space())
     };
     (?) => {
-        //$crate::Count::<0, 2, $crate::Space>::default()
+        $crate::zero_one($crate::space())
     };
     (*) => {
-        //$crate::Count::<0, { usize::MAX }, $crate::Space>::default()
-        $crate::count::<0, { usize::MAX }, _>($crate::utils::space())
+        $crate::zero_more($crate::space())
     };
     ({$start:literal}) => {
-        //$crate::Count::<$start, { $start + 1 }, $crate::Space>::default()
+        $crate::count::<$start, { $start + 1 }, _>($crate::space())
     };
     ({$start:literal,}) => {
-        //$crate::Count::<$start, { usize::MAX }, $crate::Space>::default()
+        $crate::count::<$start, { usize::MAX }, _>($crate::space())
     };
     ({$start:literal, $end:literal}) => {
-        //$crate::Count::<$start, $end, $crate::Space>::default()
+        $crate::count::<$start, $end, _>($crate::space())
     };
     ('^') => {
-        //$crate::Start::default()
-        $crate::utils::start()
+        $crate::start()
     };
     ('$') => {
-        //$crate::End::default()
-        $crate::utils::end()
+        $crate::end()
     };
     ($ch:literal) => {
-        // bad performance
-        // $crate::Count::<1, 2, _>::new($ch)
-        $crate::count::<1, 2, _>($crate::utils::char($ch))
+        $crate::count::<1, 2, _>($crate::char($ch))
     };
     ($ch:literal+) => {
-        //$crate::Count::<1, { usize::MAX }, _>::new($ch)
+        $crate::count::<1, { usize::MAX }, _>($crate::char($ch))
     };
     ($ch:literal?) => {
-        //$crate::Count::<0, 2, _>::new($ch)
+        $crate::count::<0, 2, _>($crate::char($ch))
     };
     ($ch:literal*) => {
-        //$crate::Count::<0, { usize::MAX }, _>::new($ch)
+        $crate::count::<0, { usize::MAX }, _>($crate::char($ch))
     };
     ($ch:literal{$start:literal}) => {
-        //$crate::Count::<$start, { $start + 1 }, _>::new($ch)
-        $crate::count::<$start, { $start + 1 }, _>($crate::utils::char($ch))
+        $crate::count::<$start, { $start + 1 }, _>($crate::char($ch))
     };
     ($ch:literal{$start:literal,}) => {
-        //$crate::Count::<$start, { usize::MAX }, _>::new($ch)
+        $crate::count::<$start, { usize::MAX }, _>($crate::char($ch))
     };
     ($ch:literal{$start:literal, $end:literal}) => {
-        //$crate::Count::<$start, $end, _>::new($ch)
+        $crate::count::<$start, $end, _>($crate::char($ch))
     };
     ([$l:literal - $r:literal]) => {
-        //$crate::Count::<1, 2, _>::new($l..=$r)
+        $crate::count::<1, 2, _>($crate::range($l..=$r))
     };
     ([$l:literal - $r:literal]+) => {
-        // bad performance ?
-        // $crate::Count::<1, { usize::MAX }, _>::new($l..=$r)
-        // $crate::Count::<1, { usize::MAX }, _>::new($crate::utils::range($l..=$r))
-        $crate::count::<1, { usize::MAX }, _>($crate::utils::vector(($l..=$r).collect()))
+        $crate::count::<1, { usize::MAX }, _>($crate::range($l..=$r))
     };
     ([$l:literal - $r:literal]?) => {
-        //$crate::Count::<0, 2, _>::new($l..=$r)
+        $crate::count::<0, 2, _>($crate::range($l..=$r))
     };
     ([$l:literal - $r:literal]*) => {
-        //$crate::Count::<0, { usize::MAX }, _>::new($l..=$r)
+        $crate::count::<0, { usize::MAX }, _>($crate::range($l..=$r))
     };
     ([$l:literal - $r:literal]{$start:literal}) => {
-        //$crate::Count::<$start, { $start + 1 }, _>::new($l..=$r)
-        //$crate::count::<1, { $start + 1 }, _>($crate::utils::vector(($l..=$r).collect()))
+        $crate::count::<1, { $start + 1 }, _>($crate::range($l..=$r))
     };
     ([$l:literal - $r:literal]{$start:literal,}) => {
-        //$crate::Count::<$start, { usize::MAX }, _>::new($l..=$r)
+        $crate::count::<$start, { usize::MAX }, _>($crate::range($l..=$r))
     };
     ([$l:literal - $r:literal]{$start:literal, $end:literal}) => {
-        //$crate::Count::<$start, $end, _>::new($l..=$r)
+        $crate::count::<$start, $end, _>($crate::range($l..=$r))
     };
-    // ([^$l:literal - $r:literal]) => {
-    //     $crate::Count::<1, 2, _>::new($crate::Not::new($l..=$r))
-    // };
-    // ([^$l:literal - $r:literal]+) => {
-    //     $crate::Count::<1, { usize::MAX }, _>::new($crate::Not::new($l..=$r))
-    // };
-    // ([^$l:literal - $r:literal]?) => {
-    //     $crate::Count::<0, 2, _>::new($crate::Not::new($l..=$r))
-    // };
-    // ([^$l:literal - $r:literal]*) => {
-    //     $crate::Count::<0, { usize::MAX }, _>::new($crate::Not::new($l..=$r))
-    // };
-    // ([^$l:literal - $r:literal]{$start:literal}) => {
-    //     $crate::Count::<$start, { $start + 1 }, _>::new($crate::Not::new($l..=$r))
-    // };
-    // ([^$l:literal - $r:literal]{$start:literal,}) => {
-    //     $crate::Count::<$start, { usize::MAX }, _>::new($crate::Not::new($l..=$r))
-    // };
-    // ([^$l:literal - $r:literal]{$start:literal, $end:literal}) => {
-    //     $crate::Count::<$start, $end, _>::new($crate::Not::new($l..=$r))
-    // };
+    ([^$l:literal - $r:literal]) => {
+        $crate::count::<1, 2, _>($crate::not($crate::range($l..=$r)))
+    };
+    ([^$l:literal - $r:literal]+) => {
+        $crate::count::<1, { usize::MAX }, _>($crate::not($crate::range($l..=$r)))
+    };
+    ([^$l:literal - $r:literal]?) => {
+        $crate::count::<0, 2, _>($crate::not($crate::range($l..=$r)))
+    };
+    ([^$l:literal - $r:literal]*) => {
+        $crate::count::<0, { usize::MAX }, _>($crate::not($crate::range($l..=$r)))
+    };
+    ([^$l:literal - $r:literal]{$start:literal}) => {
+        $crate::count::<$start, { $start + 1 }, _>($crate::not($crate::range($l..=$r)))
+    };
+    ([^$l:literal - $r:literal]{$start:literal,}) => {
+        $crate::count::<$start, { usize::MAX }, _>($crate::not($crate::range($l..=$r)))
+    };
+    ([^$l:literal - $r:literal]{$start:literal, $end:literal}) => {
+        $crate::count::<$start, $end, _>($crate::not($crate::range($l..=$r)))
+    };
 }

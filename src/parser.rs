@@ -1,128 +1,100 @@
-use std::fmt::Debug;
+use crate::{ctx::Context, err::Error};
 
-use crate::{ctx::Context, err::Error, regex::Regex};
+pub trait Parser<T: Context> {
+    fn try_parse(&mut self, ctx: &mut T) -> Result<usize, Error>;
 
-pub trait Parser<C> {
-    type Error: Into<Error>;
-
-    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error>;
+    fn parse(&mut self, ctx: &mut T) -> bool {
+        self.try_parse(ctx).is_ok()
+    }
 }
 
-impl<H, E, C> Parser<C> for H
+impl<T, H> Parser<T> for H
 where
-    H: Fn(&mut C) -> Result<usize, E>,
-    E: Into<Error>,
+    T: Context,
+    H: Fn(&mut T) -> Result<usize, Error>,
 {
-    type Error = E;
-
-    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
-        self(ctx)
+    fn try_parse(&mut self, ctx: &mut T) -> Result<usize, Error> {
+        (self)(ctx)
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
-pub struct Count<const M: usize, const N: usize, R>(R);
+pub fn one<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<usize, Error> {
+    move |dat: &mut T| {
+        let mut chars = dat.peek_chars()?;
 
-impl<const M: usize, const N: usize, R> Count<M, N, R> {
-    pub fn new(r: R) -> Self {
-        Self(r)
-    }
+        if let Some((idx, ch)) = chars.next() {
+            if re(&ch) {
+                let total_len = dat.len() - dat.offset();
+                let next_offset = chars.next().map(|v| v.0).unwrap_or(total_len);
 
-    pub fn min(&self) -> usize {
-        M
-    }
-
-    pub fn max(&self) -> usize {
-        N
-    }
-}
-
-impl<const M: usize, const N: usize, R, C> Parser<C> for Count<M, N, R>
-where
-    R: Regex,
-    C: Context,
-{
-    type Error = Error;
-
-    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
-        Parser::parse(&self, ctx)
+                Ok(next_offset - idx)
+            } else {
+                Err(Error::Match)
+            }
+        } else {
+            Err(Error::NeedMore)
+        }
     }
 }
 
-impl<'a, const M: usize, const N: usize, R, C> Parser<C> for &'a Count<M, N, R>
-where
-    R: Regex,
-    C: Context,
-{
-    type Error = Error;
+pub fn zero_one<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<usize, Error> {
+    move |dat: &mut T| {
+        if let Ok(mut chars) = dat.peek_chars() {
+            if let Some((idx, ch)) = chars.next() {
+                if re(&ch) {
+                    let total_len = dat.len() - dat.offset();
+                    let next_offset = chars.next().map(|v| v.0).unwrap_or(total_len);
 
-    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
-        let mut len = 0;
+                    return Ok(next_offset - idx);
+                }
+            }
+        }
+        Ok(0)
+    }
+}
+
+pub fn zero_more<T: Context>(
+    re: impl Fn(&char) -> bool,
+) -> impl Fn(&mut T) -> Result<usize, Error> {
+    move |dat: &mut T| {
         let mut start = None;
         let mut next = None;
-        let mut chars = ctx.peek_chars()?;
 
-        loop {
-            if len == N - 1 {
-                break;
-            }
-            if let Some((idx, ch)) = chars.next() {
-                if self.0.mat(&ch) {
+        if let Ok(mut chars) = dat.peek_chars() {
+            for (idx, ch) in chars.by_ref() {
+                if re(&ch) {
                     if start.is_none() {
                         start = Some(idx);
                     }
-                    len += 1;
-                    continue;
                 } else {
                     next = Some(idx);
+                    break;
                 }
             }
-            if len < M {
-                return Err(Error::Match(format!(
-                    "Can not match enough letter for regex"
-                )));
-            } else {
-                break;
+            if let Some(start) = start {
+                let total_len = dat.len() - dat.offset();
+                let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
+
+                return Ok(next_offset - start);
             }
         }
-        if let Some(start) = start {
-            let total_len = ctx.len() - ctx.offset();
-            let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
-
-            Ok(next_offset - start)
-        } else {
-            Ok(0)
-        }
+        Ok(0)
     }
 }
 
-pub fn count<const M: usize, const N: usize, T: Context>(
-    func: impl Fn(&char) -> bool,
-) -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn one_more<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<usize, Error> {
     move |dat: &mut T| {
-        let mut len = 0;
         let mut start = None;
         let mut next = None;
         let mut chars = dat.peek_chars()?;
 
-        loop {
-            if len == N - 1 {
-                break;
-            }
-            if let Some((idx, ch)) = chars.next() {
-                if func(&ch) {
-                    if start.is_none() {
-                        start = Some(idx);
-                    }
-                    len += 1;
-                    continue;
-                } else {
-                    next = Some(idx);
+        for (idx, ch) in chars.by_ref() {
+            if re(&ch) {
+                if start.is_none() {
+                    start = Some(idx);
                 }
-            }
-            if len < M {
-                return Err(Error::Match("".to_owned()));
             } else {
+                next = Some(idx);
                 break;
             }
         }
@@ -132,47 +104,59 @@ pub fn count<const M: usize, const N: usize, T: Context>(
 
             Ok(next_offset - start)
         } else {
-            Ok(0)
+            Err(Error::Match)
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Start;
+pub fn count<const M: usize, const N: usize, T: Context>(
+    re: impl Fn(&char) -> bool,
+) -> impl Fn(&mut T) -> Result<usize, Error> {
+    debug_assert!(M < N, "M must little than N");
+    move |dat: &mut T| {
+        let mut count = 0;
+        let mut start = 0;
+        let mut next = None;
 
-impl<C: Context> Parser<C> for Start {
-    type Error = Error;
+        if let Ok(mut chars) = dat.peek_chars() {
+            loop {
+                if count == N - 1 {
+                    break;
+                }
+                if let Some((offset, ch)) = chars.next() {
+                    if re(&ch) {
+                        if count == 0 {
+                            start = offset;
+                        }
+                        count += 1;
+                        continue;
+                    } else {
+                        next = Some(offset);
+                    }
+                }
+                break;
+            }
+            if count < M {
+                return Err(Error::Match);
+            } else if count > 0 {
+                let total_len = dat.len() - dat.offset();
+                let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
 
-    fn parse(&self, _: &mut C) -> Result<usize, Self::Error> {
+                return Ok(next_offset - start);
+            }
+        }
         Ok(0)
     }
 }
 
-impl<'a, C: Context> Parser<C> for &'a Start {
-    type Error = Error;
-
-    fn parse(&self, _: &mut C) -> Result<usize, Self::Error> {
-        Ok(0)
-    }
+pub fn start<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
+    |_: &mut T| Ok(0)
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct End;
-
-impl<C: Context> Parser<C> for End {
-    type Error = Error;
-
-    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
-        Parser::parse(&self, ctx)
-    }
-}
-
-impl<'a, C: Context> Parser<C> for &'a End {
-    type Error = Error;
-
-    fn parse(&self, ctx: &mut C) -> Result<usize, Self::Error> {
-        if ctx.peek().map_err(Into::into)?.len() > 0 {
-            Err(Error::Match(format!("Here is not end of the context")))
+pub fn end<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
+    |dat: &mut T| {
+        if !dat.peek()?.is_empty() {
+            Err(Error::NotReachEnd)
         } else {
             Ok(0)
         }
