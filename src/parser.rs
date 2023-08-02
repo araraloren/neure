@@ -112,7 +112,7 @@ pub fn one_more<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Re
 pub fn count<const M: usize, const N: usize, T: Context>(
     re: impl Fn(&char) -> bool,
 ) -> impl Fn(&mut T) -> Result<usize, Error> {
-    debug_assert!(M < N, "M must little than N");
+    debug_assert!(M <= N, "M must little than N");
     move |dat: &mut T| {
         let mut count = 0;
         let mut start = 0;
@@ -120,7 +120,7 @@ pub fn count<const M: usize, const N: usize, T: Context>(
 
         if let Ok(mut chars) = dat.peek_chars() {
             loop {
-                if count == N - 1 {
+                if count == N {
                     break;
                 }
                 if let Some((offset, ch)) = chars.next() {

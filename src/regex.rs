@@ -35,3 +35,11 @@ pub fn except_newline() -> impl Fn(&char) -> bool {
 pub fn not(func: impl Fn(&char) -> bool) -> impl Fn(&char) -> bool {
     move |dat: &char| !func(dat)
 }
+
+pub fn and(func1: impl Fn(&char) -> bool, func2: impl Fn(&char) -> bool) -> impl Fn(&char) -> bool {
+    move |dat: &char| func1(dat) && func2(dat)
+}
+
+pub fn or(func1: impl Fn(&char) -> bool, func2: impl Fn(&char) -> bool) -> impl Fn(&char) -> bool {
+    move |dat: &char| func1(dat) || func2(dat)
+}
