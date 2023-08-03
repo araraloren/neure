@@ -131,3 +131,33 @@ macro_rules! neure {
         $crate::count::<$start, $end, _>($crate::not($crate::range($l..=$r)))
     };
 }
+
+macro_rules! next {
+    (@q * $($res:tt)*) => {
+        neure::zero_more($($res)*)
+    };
+    (@q ? $($res:tt)*) => {
+        neure::zero_one($($res)*)
+    };
+    (@q + $($res:tt)*) => {
+        neure::one_more($($res)*)
+    };
+    (@q {$st:literal} $($res:tt)*) => {
+        neure::count::<$st, $st, _>($($res)*)
+    };
+    (@q {$st:literal,} $($res:tt)*) => {
+        neure::count::<$st, {usize::MAX}, _>($($res)*)
+    };
+    (@q {$st:literal, $ed:literal} $($res:tt)*) => {
+        neure::count::<$st, $ed, _>($($res)*)
+    };
+    (@q $($res:tt)*) => {
+        neure::one($($res)*)
+    };
+    (@r $($res:tt)*) => {
+        next!(@q $($res)* neure::space())
+    };
+    ($($res:tt)*) => {
+        next!(@r $($res)*)
+    };
+}
