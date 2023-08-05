@@ -22,6 +22,21 @@ pub trait Context {
 
     fn spans(&self, id: usize) -> Option<&Vec<Span>>;
 
+    fn substrs(&self, id: usize) -> Option<Vec<Result<&str, Error>>> {
+        self.spans(id).map(|spans| {
+            spans
+                .iter()
+                .map(|span| self.substr(span))
+                .collect::<Vec<Result<&str, Error>>>()
+        })
+    }
+
+    fn substr(&self, span: &Span) -> Result<&str, Error> {
+        self.peek_at(0)?
+            .get(span.beg..(span.beg + span.len))
+            .ok_or(Error::SubStr)
+    }
+
     fn contain(&self, id: usize) -> bool;
 
     fn peek_chars(&self) -> Result<CharIndices<'_>, Error> {
@@ -136,12 +151,6 @@ impl CharsCtx {
     pub fn with_capacity(mut self, capacity: usize) -> Self {
         self.spans = vec![vec![]; capacity];
         self
-    }
-
-    pub fn substr(&self, span: &Span) -> Result<&str, Error> {
-        self.str
-            .get(span.beg..(span.beg + span.len))
-            .ok_or(Error::SubStr)
     }
 
     pub fn reset_with(&mut self, string: impl Into<String>) -> &mut Self {

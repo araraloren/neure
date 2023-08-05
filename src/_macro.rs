@@ -23,106 +23,147 @@ macro_rules! neure {
     };
 
     (@r ^ $($res:tt)*) => { // \S
-        neure!(@q $($res)* $crate::not($crate::space()))
+        neure!(@q $($res)* regex!(^))
     };
     (@r . $($res:tt)*) => { // .
-        neure!(@q $($res)* $crate::wild())
+        neure!(@q $($res)* regex!(.))
     };
-    (@r [^$l:literal - $r:literal] $($res:tt)*) => {
-        neure!(@q $($res)* $crate::not($crate::range($l..=$r)))
+    (@r [ $($range:tt)+ ] $($res:tt)*) => {
+        neure!(@q $($res)* regex!([$($range)+]))
     };
-    (@r [^$l:ident - $r:ident] $($res:tt)*) => {
-        neure!(@q $($res)* $crate::not($crate::range(charize::charize!($l)..=charize::charize!($r))))
-    };
-    (@r [$l:literal - $r:literal] $($res:tt)*) => {
-        neure!(@q $($res)* $crate::range($l..=$r))
-    };
-
-    (@r [^$($l:literal - $r:literal)+] $($res:tt)*) => {// [ ^ 'a'-'z' 'A'-'Z' ]
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::range($l..=$r), re);
-            )+
-            $crate::not(re)
-        })
-    };
-    (@r [^$($l:ident - $r:ident)+] $($res:tt)*) => { // [ ^ a-z A-Z ]
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
-            )+
-            $crate::not(re)
-        })
-    };
-    (@r [$($l:literal - $r:literal)+] $($res:tt)*) => { // [ 'a'-'Z' 'A'-'Z' ]
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::range($l..=$r), re);
-            )+
-            re
-        })
-    };
-    (@r [$($l:ident - $r:ident)+] $($res:tt)*) => { // [ a-Z A-Z ]
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
-            )+
-            re
-        })
-    };
-
-
-    (@r [ ^ $($ch:literal)+ ] $($res:tt)*) => { // [ ^ 'a' 'b' 'c']
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::char($ch), re);
-            )+
-            $crate::not(re)
-        })
-    };
-    (@r [ ^ $($ch:ident)+ ] $($res:tt)*) => { // [^ a b c]
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::char(charize::charize!($ch)), re);
-            )+
-            $crate::not(re)
-        })
-    };
-    (@r [ $($ch:literal)+ ] $($res:tt)*) => { // ['a' 'b' 'c']
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::char($ch), re);
-            )+
-            re
-        })
-    };
-    (@r [ $($ch:ident)+ ] $($res:tt)*) => { // [a b c]
-        neure!(@q $($res)* {
-            let re = $crate::always_f();
-            $(
-                let re = $crate::or($crate::char(charize::charize!($ch)), re);
-            )+
-            re
-        })
-    };
-
     (@r $ch:ident $($res:tt)*) => {
         neure!(@q $($res)* $crate::char(charize::charize!($ch)))
     };
     (@r $ch:literal $($res:tt)*) => {
         neure!(@q $($res)* $crate::char($ch))
     };
+    (@r ($regex:expr) $($res:tt)*) => {
+        neure!(@q $($res)* $regex)
+    };
     (@r $($res:tt)*) => {
         neure!(@q $($res)* $crate::space())
     };
     ($($res:tt)*) => {
         neure!(@r $($res)*)
+    };
+}
+
+#[macro_export]
+macro_rules! regex {
+    (^) => { // \S
+        $crate::not($crate::space())
+    };
+    (.) => { // .
+        $crate::wild()
+    };
+    ([^$l:literal - $r:literal] ) => {
+        $crate::not($crate::range($l..=$r))
+    };
+    ([^$l:ident - $r:ident] ) => {
+        $crate::not($crate::range(charize::charize!($l)..=charize::charize!($r)))
+    };
+    ([$l:literal - $r:literal] ) => {
+        $crate::range($l..=$r)
+    };
+
+    ([^$($l:literal - $r:literal)+] ) => {// [ ^ 'a'-'z' 'A'-'Z' ]
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range($l..=$r), re);
+            )+
+            $crate::not(re)
+        }
+    };
+    ([^$($l:ident - $r:ident)+] ) => { // [ ^ a-z A-Z ]
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
+            )+
+            $crate::not(re)
+        }
+    };
+    ([$($l:literal - $r:literal)+] ) => { // [ 'a'-'Z' 'A'-'Z' ]
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range($l..=$r), re);
+            )+
+            re
+        }
+    };
+    ([$($l:ident - $r:ident)+] ) => { // [ a-Z A-Z ]
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
+            )+
+            re
+        }
+    };
+
+
+    ([ ^ $($ch:literal)+ ] ) => { // [ ^ 'a' 'b' 'c']
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char($ch), re);
+            )+
+            $crate::not(re)
+        }
+    };
+    ([ ^ $($ch:ident)+ ] ) => { // [^ a b c]
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char(charize::charize!($ch)), re);
+            )+
+            $crate::not(re)
+        }
+    };
+    ([ $($ch:literal)+ ] ) => { // ['a' 'b' 'c']
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char($ch), re);
+            )+
+            re
+        }
+    };
+    ([ $($ch:ident)+ ] ) => { // [a b c]
+        {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char(charize::charize!($ch)), re);
+            )+
+            re
+        }
+    };
+
+    ($ch:ident ) => {
+        $crate::char(charize::charize!($ch))
+    };
+    ($ch:literal ) => {
+        $crate::char($ch)
+    };
+    () => {
+        $crate::space()
+    };
+}
+
+#[macro_export]
+macro_rules! group {
+    ($regex:ident) => {
+        $regex
+    };
+    ($regex:expr) => {
+        $regex
+    };
+    ($regex:ident, $($res:tt)+) => {
+        $crate::or($regex, group!($($res)+))
+    };
+    ($regex:expr, $($res:tt)+) => {
+        $crate::or($regex, group!($($res)+))
     };
 }

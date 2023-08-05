@@ -32,7 +32,7 @@ pub fn one<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<
                 Err(Error::Match)
             }
         } else {
-            Err(Error::NeedMore)
+            Err(Error::NeedOne)
         }
     }
 }
@@ -104,7 +104,7 @@ pub fn one_more<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Re
 
             Ok(next_offset - start)
         } else {
-            Err(Error::Match)
+            Err(Error::NeedOneMore)
         }
     }
 }
@@ -137,7 +137,50 @@ pub fn count<const M: usize, const N: usize, T: Context>(
                 break;
             }
             if count < M {
-                return Err(Error::Match);
+                return Err(Error::NeedMore);
+            } else if count > 0 {
+                let total_len = dat.len() - dat.offset();
+                let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
+
+                return Ok(next_offset - start);
+            }
+        }
+        Ok(0)
+    }
+}
+
+pub fn count_if<const M: usize, const N: usize, T: Context>(
+    re: impl Fn(&char) -> bool,
+    validator: impl Fn(&T, usize, char) -> bool,
+) -> impl Fn(&mut T) -> Result<usize, Error> {
+    debug_assert!(M <= N, "M must little than N");
+    move |dat: &mut T| {
+        let mut count = 0;
+        let mut start = 0;
+        let mut next = None;
+
+        if let Ok(chars) = dat.peek_chars() {
+            let mut chars = chars.peekable();
+
+            loop {
+                if count == N {
+                    break;
+                }
+                if let Some((offset, ch)) = chars.next() {
+                    if re(&ch) && validator(dat, dat.offset() + offset, ch) {
+                        if count == 0 {
+                            start = offset;
+                        }
+                        count += 1;
+                        continue;
+                    } else {
+                        next = Some(offset);
+                    }
+                }
+                break;
+            }
+            if count < M {
+                return Err(Error::NeedMore);
             } else if count > 0 {
                 let total_len = dat.len() - dat.offset();
                 let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
@@ -150,13 +193,19 @@ pub fn count<const M: usize, const N: usize, T: Context>(
 }
 
 pub fn start<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
-    |_: &mut T| Ok(0)
+    |dat: &mut T| {
+        if dat.offset() == 0 {
+            Ok(0)
+        } else {
+            Err(Error::NotStart)
+        }
+    }
 }
 
 pub fn end<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
     |dat: &mut T| {
         if !dat.peek()?.is_empty() {
-            Err(Error::NotReachEnd)
+            Err(Error::NotEnd)
         } else {
             Ok(0)
         }
@@ -166,7 +215,7 @@ pub fn end<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
 pub fn string<T: Context>(lit: &'static str) -> impl Fn(&mut T) -> Result<usize, Error> {
     move |dat: &mut T| {
         if !dat.peek()?.starts_with(lit) {
-            Err(Error::NotReachEnd)
+            Err(Error::NotEnd)
         } else {
             Ok(lit.len())
         }
