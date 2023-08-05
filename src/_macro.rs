@@ -1,163 +1,128 @@
 #[macro_export]
 macro_rules! neure {
-    () => {
-        $crate::one($crate::space())
-    };
-    (+) => {
-        $crate::one_more($crate::space())
-    };
-    (?) => {
-        $crate::zero_one($crate::space())
-    };
-    (*) => {
-        $crate::zero_more($crate::space())
-    };
-    ({$start:literal}) => {
-        $crate::count::<$start, $start, _>($crate::space())
-    };
-    ({$start:literal,}) => {
-        $crate::count::<$start, { usize::MAX }, _>($crate::space())
-    };
-    ({$start:literal, $end:literal}) => {
-        $crate::count::<$start, $end, _>($crate::space())
-    };
-    (.) => {
-        $crate::one($crate::not($crate::space()))
-    };
-    ($ch:literal) => {
-        $crate::count::<1, 1, _>($crate::char($ch))
-    };
-    ($ch:literal+) => {
-        $crate::count::<1, { usize::MAX }, _>($crate::char($ch))
-    };
-    ($ch:literal?) => {
-        $crate::count::<0, 1, _>($crate::char($ch))
-    };
-    ($ch:literal*) => {
-        $crate::count::<0, { usize::MAX }, _>($crate::char($ch))
-    };
-    ($ch:literal{$start:literal}) => {
-        $crate::count::<$start, $start, _>($crate::char($ch))
-    };
-    ($ch:literal{$start:literal,}) => {
-        $crate::count::<$start, { usize::MAX }, _>($crate::char($ch))
-    };
-    ($ch:literal{$start:literal, $end:literal}) => {
-        $crate::count::<$start, $end, _>($crate::char($ch))
-    };
-    ([$l:literal - $r:literal]) => {
-        $crate::count::<1, 1, _>($crate::range($l..=$r))
-    };
-    ([$l:literal - $r:literal]+) => {
-        $crate::count::<1, { usize::MAX }, _>($crate::range($l..=$r))
-    };
-    ([$l:literal - $r:literal]?) => {
-        $crate::count::<0, 1, _>($crate::range($l..=$r))
-    };
-    ([$l:literal - $r:literal]*) => {
-        $crate::count::<0, { usize::MAX }, _>($crate::range($l..=$r))
-    };
-    ([$l:literal - $r:literal]{$start:literal}) => {
-        $crate::count::<$start, $start, _>($crate::range($l..=$r))
-    };
-    ([$l:literal - $r:literal]{$start:literal,}) => {
-        $crate::count::<$start, { usize::MAX }, _>($crate::range($l..=$r))
-    };
-    ([$l:literal - $r:literal]{$start:literal, $end:literal}) => {
-        $crate::count::<$start, $end, _>($crate::range($l..=$r))
-    };
-
-    (^) => {
-        $crate::one($crate::not($crate::space()))
-    };
-    (^+) => {
-        $crate::one_more($crate::not($crate::space()))
-    };
-    (^?) => {
-        $crate::zero_one($crate::not($crate::space()))
-    };
-    (^*) => {
-        $crate::zero_more($crate::not($crate::space()))
-    };
-    (^{$start:literal}) => {
-        $crate::count::<$start, $start, _>($crate::not($crate::space()))
-    };
-    (^{$start:literal,}) => {
-        $crate::count::<$start, { usize::MAX }, _>($crate::not($crate::space()))
-    };
-    (^{$start:literal, $end:literal}) => {
-        $crate::count::<$start, $end, _>($crate::not($crate::space()))
-    };
-    (^$ch:literal) => {
-        $crate::count::<1, 1, _>($crate::not($crate::char($ch)))
-    };
-    (^$ch:literal+) => {
-        $crate::count::<1, { usize::MAX }, _>($crate::not($crate::char($ch)))
-    };
-    (^$ch:literal?) => {
-        $crate::count::<0, 1, _>($crate::not($crate::char($ch)))
-    };
-    (^$ch:literal*) => {
-        $crate::count::<0, { usize::MAX }, _>($crate::not($crate::char($ch)))
-    };
-    (^$ch:literal{$start:literal}) => {
-        $crate::count::<$start, $start, _>($crate::not($crate::char($ch)))
-    };
-    (^$ch:literal{$start:literal,}) => {
-        $crate::count::<$start, { usize::MAX }, _>($crate::not($crate::char($ch)))
-    };
-    (^$ch:literal{$start:literal, $end:literal}) => {
-        $crate::count::<$start, $end, _>($crate::not($crate::char($ch)))
-    };
-    ([^$l:literal - $r:literal]) => {
-        $crate::count::<1, 1, _>($crate::not($crate::range($l..=$r)))
-    };
-    ([^$l:literal - $r:literal]+) => {
-        $crate::count::<1, { usize::MAX }, _>($crate::not($crate::range($l..=$r)))
-    };
-    ([^$l:literal - $r:literal]?) => {
-        $crate::count::<0, 1, _>($crate::not($crate::range($l..=$r)))
-    };
-    ([^$l:literal - $r:literal]*) => {
-        $crate::count::<0, { usize::MAX }, _>($crate::not($crate::range($l..=$r)))
-    };
-    ([^$l:literal - $r:literal]{$start:literal}) => {
-        $crate::count::<$start, $start, _>($crate::not($crate::range($l..=$r)))
-    };
-    ([^$l:literal - $r:literal]{$start:literal,}) => {
-        $crate::count::<$start, { usize::MAX }, _>($crate::not($crate::range($l..=$r)))
-    };
-    ([^$l:literal - $r:literal]{$start:literal, $end:literal}) => {
-        $crate::count::<$start, $end, _>($crate::not($crate::range($l..=$r)))
-    };
-}
-
-macro_rules! next {
     (@q * $($res:tt)*) => {
-        neure::zero_more($($res)*)
+        $crate::zero_more($($res)*)
     };
     (@q ? $($res:tt)*) => {
-        neure::zero_one($($res)*)
+        $crate::zero_one($($res)*)
     };
     (@q + $($res:tt)*) => {
-        neure::one_more($($res)*)
+        $crate::one_more($($res)*)
     };
     (@q {$st:literal} $($res:tt)*) => {
-        neure::count::<$st, $st, _>($($res)*)
+        $crate::count::<$st, $st, _>($($res)*)
     };
     (@q {$st:literal,} $($res:tt)*) => {
-        neure::count::<$st, {usize::MAX}, _>($($res)*)
+        $crate::count::<$st, {usize::MAX}, _>($($res)*)
     };
     (@q {$st:literal, $ed:literal} $($res:tt)*) => {
-        neure::count::<$st, $ed, _>($($res)*)
+        $crate::count::<$st, $ed, _>($($res)*)
     };
     (@q $($res:tt)*) => {
-        neure::one($($res)*)
+        $crate::one($($res)*)
+    };
+
+    (@r ^ $($res:tt)*) => { // \S
+        neure!(@q $($res)* $crate::not($crate::space()))
+    };
+    (@r . $($res:tt)*) => { // .
+        neure!(@q $($res)* $crate::wild())
+    };
+    (@r [^$l:literal - $r:literal] $($res:tt)*) => {
+        neure!(@q $($res)* $crate::not($crate::range($l..=$r)))
+    };
+    (@r [^$l:ident - $r:ident] $($res:tt)*) => {
+        neure!(@q $($res)* $crate::not($crate::range(charize::charize!($l)..=charize::charize!($r))))
+    };
+    (@r [$l:literal - $r:literal] $($res:tt)*) => {
+        neure!(@q $($res)* $crate::range($l..=$r))
+    };
+
+    (@r [^$($l:literal - $r:literal)+] $($res:tt)*) => {// [ ^ 'a'-'z' 'A'-'Z' ]
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range($l..=$r), re);
+            )+
+            $crate::not(re)
+        })
+    };
+    (@r [^$($l:ident - $r:ident)+] $($res:tt)*) => { // [ ^ a-z A-Z ]
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
+            )+
+            $crate::not(re)
+        })
+    };
+    (@r [$($l:literal - $r:literal)+] $($res:tt)*) => { // [ 'a'-'Z' 'A'-'Z' ]
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range($l..=$r), re);
+            )+
+            re
+        })
+    };
+    (@r [$($l:ident - $r:ident)+] $($res:tt)*) => { // [ a-Z A-Z ]
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
+            )+
+            re
+        })
+    };
+
+
+    (@r [ ^ $($ch:literal)+ ] $($res:tt)*) => { // [ ^ 'a' 'b' 'c']
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char($ch), re);
+            )+
+            $crate::not(re)
+        })
+    };
+    (@r [ ^ $($ch:ident)+ ] $($res:tt)*) => { // [^ a b c]
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char(charize::charize!($ch)), re);
+            )+
+            $crate::not(re)
+        })
+    };
+    (@r [ $($ch:literal)+ ] $($res:tt)*) => { // ['a' 'b' 'c']
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char($ch), re);
+            )+
+            re
+        })
+    };
+    (@r [ $($ch:ident)+ ] $($res:tt)*) => { // [a b c]
+        neure!(@q $($res)* {
+            let re = $crate::always_f();
+            $(
+                let re = $crate::or($crate::char(charize::charize!($ch)), re);
+            )+
+            re
+        })
+    };
+
+    (@r $ch:ident $($res:tt)*) => {
+        neure!(@q $($res)* $crate::char(charize::charize!($ch)))
+    };
+    (@r $ch:literal $($res:tt)*) => {
+        neure!(@q $($res)* $crate::char($ch))
     };
     (@r $($res:tt)*) => {
-        next!(@q $($res)* neure::space())
+        neure!(@q $($res)* $crate::space())
     };
     ($($res:tt)*) => {
-        next!(@r $($res)*)
+        neure!(@r $($res)*)
     };
 }

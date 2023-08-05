@@ -162,3 +162,13 @@ pub fn end<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
         }
     }
 }
+
+pub fn string<T: Context>(lit: &'static str) -> impl Fn(&mut T) -> Result<usize, Error> {
+    move |dat: &mut T| {
+        if !dat.peek()?.starts_with(lit) {
+            Err(Error::NotReachEnd)
+        } else {
+            Ok(lit.len())
+        }
+    }
+}

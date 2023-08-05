@@ -16,8 +16,12 @@ pub fn range(bound: impl RangeBounds<char>) -> impl Fn(&char) -> bool {
     move |dat: &char| bound.contains(dat)
 }
 
-pub fn any() -> impl Fn(&char) -> bool {
+pub fn always_t() -> impl Fn(&char) -> bool {
     |_: &char| true
+}
+
+pub fn always_f() -> impl Fn(&char) -> bool {
+    |_: &char| false
 }
 
 pub fn space() -> impl Fn(&char) -> bool {
@@ -28,7 +32,7 @@ pub fn digit() -> impl Fn(&char) -> bool {
     |dat: &char| dat.is_ascii_digit()
 }
 
-pub fn except_newline() -> impl Fn(&char) -> bool {
+pub fn wild() -> impl Fn(&char) -> bool {
     |dat: &char| dat != &'\n'
 }
 
