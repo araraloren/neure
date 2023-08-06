@@ -1,3 +1,4 @@
+
 #[macro_export]
 macro_rules! neure {
     (@q * $($res:tt)*) => {
@@ -32,7 +33,7 @@ macro_rules! neure {
         neure!(@q $($res)* regex!([$($range)+]))
     };
     (@r $ch:ident $($res:tt)*) => {
-        neure!(@q $($res)* $crate::char(charize::charize!($ch)))
+        neure!(@q $($res)* $crate::char($crate::charize!($ch)))
     };
     (@r $ch:literal $($res:tt)*) => {
         neure!(@q $($res)* $crate::char($ch))
@@ -60,7 +61,7 @@ macro_rules! regex {
         $crate::not($crate::range($l..=$r))
     };
     ([^$l:ident - $r:ident] ) => {
-        $crate::not($crate::range(charize::charize!($l)..=charize::charize!($r)))
+        $crate::not($crate::range($crate::charize!($l)..=$crate::charize!($r)))
     };
     ([$l:literal - $r:literal] ) => {
         $crate::range($l..=$r)
@@ -79,7 +80,7 @@ macro_rules! regex {
         {
             let re = $crate::always_f();
             $(
-                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
+                let re = $crate::or($crate::range($crate::charize!($l)..=$crate::charize!($r)), re);
             )+
             $crate::not(re)
         }
@@ -97,7 +98,7 @@ macro_rules! regex {
         {
             let re = $crate::always_f();
             $(
-                let re = $crate::or($crate::range(charize::charize!($l)..=charize::charize!($r)), re);
+                let re = $crate::or($crate::range($crate::charize!($l)..=$crate::charize!($r)), re);
             )+
             re
         }
@@ -117,7 +118,7 @@ macro_rules! regex {
         {
             let re = $crate::always_f();
             $(
-                let re = $crate::or($crate::char(charize::charize!($ch)), re);
+                let re = $crate::or($crate::char($crate::charize!($ch)), re);
             )+
             $crate::not(re)
         }
@@ -135,14 +136,14 @@ macro_rules! regex {
         {
             let re = $crate::always_f();
             $(
-                let re = $crate::or($crate::char(charize::charize!($ch)), re);
+                let re = $crate::or($crate::char($crate::charize!($ch)), re);
             )+
             re
         }
     };
 
     ($ch:ident ) => {
-        $crate::char(charize::charize!($ch))
+        $crate::char($crate::charize!($ch))
     };
     ($ch:literal ) => {
         $crate::char($ch)

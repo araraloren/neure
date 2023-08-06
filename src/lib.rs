@@ -9,6 +9,7 @@ pub use self::ctx::Context;
 pub use self::ctx::Span;
 pub use self::parser::*;
 pub use self::regex::*;
+pub use charize::charize;
 
 #[cfg(test)]
 mod test {
