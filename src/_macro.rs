@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! neure {
     (@q * $($res:tt)*) => {
