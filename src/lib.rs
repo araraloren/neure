@@ -1,13 +1,19 @@
 pub mod _macro;
 pub mod ctx;
 pub mod err;
+pub mod iter;
 pub mod parser;
+pub mod peek;
+pub mod policy;
 pub mod regex;
 
 pub use self::ctx::CharsCtx;
-pub use self::ctx::Context;
-pub use self::ctx::Span;
 pub use self::parser::*;
+pub use self::peek::CharPeek;
+pub use self::peek::Span;
+pub use self::peek::StrPeek;
+pub use self::policy::MatchPolicy;
+pub use self::policy::Ret;
 pub use self::regex::*;
 pub use charize::charize;
 
@@ -39,7 +45,7 @@ mod test {
 
             $ctx.reset_with($str);
             $ctx.try_cap($id, space_parser)?;
-            assert_eq!($ctx.spans($id), Some(&vec![$($span)*]))
+            assert_eq!($ctx.spans($id)?, &vec![$($span)*])
         };
     }
 

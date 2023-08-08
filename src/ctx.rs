@@ -1,150 +1,54 @@
-use std::str::CharIndices;
-
-use crate::{err::Error, Parser};
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Span {
-    pub beg: usize,
-
-    pub len: usize,
-}
-
-pub trait Context {
-    fn len(&self) -> usize;
-
-    fn offset(&self) -> usize;
-
-    fn inc(&mut self, offset: usize) -> &mut Self;
-
-    fn dec(&mut self, offset: usize) -> &mut Self;
-
-    fn add_span(&mut self, id: usize, span: Span) -> &mut Self;
-
-    fn spans(&self, id: usize) -> Option<&Vec<Span>>;
-
-    fn substrs(&self, id: usize) -> Option<Vec<Result<&str, Error>>> {
-        self.spans(id).map(|spans| {
-            spans
-                .iter()
-                .map(|span| self.substr(span))
-                .collect::<Vec<Result<&str, Error>>>()
-        })
-    }
-
-    fn substr(&self, span: &Span) -> Result<&str, Error> {
-        self.peek_at(0)?
-            .get(span.beg..(span.beg + span.len))
-            .ok_or(Error::SubStr)
-    }
-
-    fn contain(&self, id: usize) -> bool;
-
-    fn peek_chars(&self) -> Result<CharIndices<'_>, Error> {
-        Ok(self.peek()?.char_indices())
-    }
-
-    fn peek_chars_at(&self, offset: usize) -> Result<CharIndices<'_>, Error> {
-        Ok(self.peek_at(offset)?.char_indices())
-    }
-
-    fn peek_char(&self) -> Result<(usize, char), Error> {
-        self.peek()?.char_indices().next().ok_or(Error::Chars)
-    }
-
-    fn peek_char_at(&self, offset: usize) -> Result<(usize, char), Error> {
-        self.peek_at(offset)?
-            .char_indices()
-            .next()
-            .ok_or(Error::Chars)
-    }
-
-    fn peek(&self) -> Result<&str, Error> {
-        self.peek_at(self.offset())
-    }
-
-    fn peek_at(&self, offset: usize) -> Result<&str, Error>;
-
-    fn try_mat_policy(
-        &mut self,
-        mut parser: impl Parser<Self>,
-        mut policy: impl FnMut(&mut Self, &Result<usize, Error>),
-    ) -> Result<usize, Error>
-    where
-        Self: Sized,
-    {
-        let ret = parser.try_parse(self);
-
-        policy(self, &ret);
-        ret
-    }
-
-    fn try_mat(&mut self, parser: impl Parser<Self>) -> Result<usize, Error>
-    where
-        Self: Sized,
-    {
-        self.try_mat_policy(parser, |ctx, ret| {
-            if let Ok(len) = ret {
-                ctx.inc(*len);
-            }
-        })
-    }
-
-    fn try_cap(&mut self, id: usize, parser: impl Parser<Self>) -> Result<usize, Error>
-    where
-        Self: Sized,
-    {
-        self.try_mat_policy(parser, |ctx, ret| {
-            if let Ok(len) = ret {
-                ctx.add_span(
-                    id,
-                    Span {
-                        beg: ctx.offset(),
-                        len: *len,
-                    },
-                )
-                .inc(*len);
-            }
-        })
-    }
-
-    fn mat(&mut self, parser: impl Parser<Self>) -> bool
-    where
-        Self: Sized,
-    {
-        self.try_mat(parser).is_ok()
-    }
-
-    fn cap(&mut self, key: usize, parser: impl Parser<Self>) -> bool
-    where
-        Self: Sized,
-    {
-        self.try_cap(key, parser).is_ok()
-    }
-}
+use crate::{
+    err::Error,
+    iter::{Char, CharIter},
+    peek::{CharPeek, Span, StrPeek},
+};
 
 #[derive(Debug, Default)]
-pub struct CharsCtx {
-    str: String,
-    offset: usize,
+pub struct CharsCtx<'a> {
+    str: &'a str,
+    byte: usize,
+    char: usize,
+    chars: Vec<Char>,
     spans: Vec<Vec<Span>>,
 }
 
-impl CharsCtx {
-    pub fn new(str: impl Into<String>, capacity: usize) -> Self {
+impl<'a> CharsCtx<'a> {
+    pub fn new(str: &'a str, capacity: usize) -> Self {
+        let mut chars = Vec::with_capacity(str.len());
+
+        Self::chars_from_str(&str, &mut chars);
         Self {
-            str: str.into(),
-            offset: 0,
+            str,
+            byte: 0,
+            char: 0,
+            chars,
             spans: vec![vec![]; capacity],
         }
     }
 
+    fn chars_from_str(str: &str, chars: &mut Vec<Char>) {
+        chars.clear();
+        for (offset, char) in str.char_indices() {
+            chars.push(Char {
+                offset,
+                len: 0,
+                char,
+            });
+        }
+        for idx in 0..chars.len() {
+            let next_offset = chars.get(idx + 1).map(|v| v.offset).unwrap_or(str.len());
+            chars[idx].len = next_offset - chars[idx].offset;
+        }
+    }
+
     pub fn with_offset(mut self, offset: usize) -> Self {
-        self.offset = offset;
+        self.byte = offset;
         self
     }
 
-    pub fn with_str(mut self, string: impl Into<String>) -> Self {
-        self.str = string.into();
+    pub fn with_str(mut self, str: &'a str) -> Self {
+        self.str = str;
         self
     }
 
@@ -153,36 +57,39 @@ impl CharsCtx {
         self
     }
 
-    pub fn reset_with(&mut self, string: impl Into<String>) -> &mut Self {
-        self.str = string.into();
-        self.offset = 0;
+    pub fn reset_with(&mut self, str: &'a str) -> &mut Self {
+        self.str = str;
+        Self::chars_from_str(&self.str, &mut self.chars);
+        self.byte = 0;
+        self.char = 0;
         self.spans.iter_mut().for_each(|v| v.clear());
         self
     }
 
     pub fn reset(&mut self) -> &mut Self {
-        self.offset = 0;
+        self.byte = 0;
+        self.char = 0;
         self.spans.iter_mut().for_each(|v| v.clear());
         self
     }
 }
 
-impl Context for CharsCtx {
+impl<'a> StrPeek for CharsCtx<'a> {
     fn len(&self) -> usize {
         self.str.len()
     }
 
     fn offset(&self) -> usize {
-        self.offset
+        self.byte
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
-        self.offset += offset;
+        self.byte += offset;
         self
     }
 
     fn dec(&mut self, offset: usize) -> &mut Self {
-        self.offset -= offset;
+        self.byte -= offset;
         self
     }
 
@@ -191,20 +98,55 @@ impl Context for CharsCtx {
         self
     }
 
-    fn spans(&self, id: usize) -> Option<&Vec<Span>> {
-        if let Some(span) = self.spans.get(id) {
-            if !span.is_empty() {
-                return Some(span);
-            }
-        }
-        None
-    }
-
     fn contain(&self, id: usize) -> bool {
         self.spans.get(id).map(|v| !v.is_empty()).unwrap_or(false)
     }
 
+    fn spans(&self, id: usize) -> Result<&Vec<Span>, Error> {
+        if let Some(span) = self.spans.get(id) {
+            if !span.is_empty() {
+                return Ok(span);
+            }
+        }
+        Err(Error::Null)
+    }
+
+    fn spans_mut(&mut self, id: usize) -> Result<&mut Vec<Span>, crate::err::Error> {
+        if let Some(span) = self.spans.get_mut(id) {
+            if !span.is_empty() {
+                return Ok(span);
+            }
+        }
+        Err(Error::Null)
+    }
+
     fn peek_at(&self, offset: usize) -> Result<&str, Error> {
         self.str.get(offset..).ok_or(Error::ReachEnd)
+    }
+}
+
+impl<'a> CharPeek for CharsCtx<'a> {
+    fn len(&self) -> usize {
+        self.chars.len()
+    }
+
+    fn offset(&self) -> usize {
+        self.char
+    }
+
+    fn inc(&mut self, offset: usize) -> &mut Self {
+        self.char += offset;
+        self
+    }
+
+    fn dec(&mut self, offset: usize) -> &mut Self {
+        self.char -= offset;
+        self
+    }
+
+    fn peek_at(&self, offset: usize) -> Result<CharIter<'_>, Error> {
+        Ok(CharIter::new(
+            self.chars.get(offset..).ok_or_else(|| Error::Null)?,
+        ))
     }
 }

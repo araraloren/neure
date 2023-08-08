@@ -1,7 +1,10 @@
-use crate::{ctx::Context, err::Error};
+use crate::err::Error;
+use crate::iter::Char;
+use crate::peek::{CharPeek, StrPeek};
+use crate::policy::Ret;
 
-pub trait Parser<T: Context> {
-    fn try_parse(&mut self, ctx: &mut T) -> Result<usize, Error>;
+pub trait Parser<T> {
+    fn try_parse(&mut self, ctx: &mut T) -> Result<Ret, Error>;
 
     fn parse(&mut self, ctx: &mut T) -> bool {
         self.try_parse(ctx).is_ok()
@@ -10,24 +13,25 @@ pub trait Parser<T: Context> {
 
 impl<T, H> Parser<T> for H
 where
-    T: Context,
-    H: Fn(&mut T) -> Result<usize, Error>,
+    H: Fn(&mut T) -> Result<Ret, Error>,
 {
-    fn try_parse(&mut self, ctx: &mut T) -> Result<usize, Error> {
+    fn try_parse(&mut self, ctx: &mut T) -> Result<Ret, Error> {
         (self)(ctx)
     }
 }
 
-pub fn one<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn one<T: CharPeek>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
     move |dat: &mut T| {
-        let mut chars = dat.peek_chars()?;
+        let mut chars = dat.peek()?;
 
-        if let Some((idx, ch)) = chars.next() {
-            if re(&ch) {
-                let total_len = dat.len() - dat.offset();
-                let next_offset = chars.next().map(|v| v.0).unwrap_or(total_len);
-
-                Ok(next_offset - idx)
+        if let Some(&Char {
+            offset: _,
+            len,
+            char,
+        }) = chars.next()
+        {
+            if re(&char) {
+                Ok(Ret::from((1, len)))
             } else {
                 Err(Error::Match)
             }
@@ -37,187 +41,146 @@ pub fn one<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<
     }
 }
 
-pub fn zero_one<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn zero_one<T: CharPeek>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
     move |dat: &mut T| {
-        if let Ok(mut chars) = dat.peek_chars() {
-            if let Some((idx, ch)) = chars.next() {
-                if re(&ch) {
-                    let total_len = dat.len() - dat.offset();
-                    let next_offset = chars.next().map(|v| v.0).unwrap_or(total_len);
-
-                    return Ok(next_offset - idx);
+        if let Ok(mut chars) = dat.peek() {
+            if let Some(&Char {
+                offset: _,
+                len,
+                char,
+            }) = chars.next()
+            {
+                if re(&char) {
+                    return Ok(Ret::from((1, len)));
                 }
             }
         }
-        Ok(0)
+        Ok(Ret::from((0, 0)))
     }
 }
 
-pub fn zero_more<T: Context>(
-    re: impl Fn(&char) -> bool,
-) -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn zero_more<T: CharPeek>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
     move |dat: &mut T| {
-        let mut start = None;
-        let mut next = None;
+        let mut count = 0;
+        let mut length = 0;
 
-        if let Ok(mut chars) = dat.peek_chars() {
-            for (idx, ch) in chars.by_ref() {
-                if re(&ch) {
-                    if start.is_none() {
-                        start = Some(idx);
-                    }
+        if let Ok(mut chars) = dat.peek() {
+            for char in chars.by_ref() {
+                if re(&char.char) {
+                    count += 1;
+                    length += char.len;
                 } else {
-                    next = Some(idx);
                     break;
                 }
             }
-            if let Some(start) = start {
-                let total_len = dat.len() - dat.offset();
-                let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
-
-                return Ok(next_offset - start);
-            }
         }
-        Ok(0)
+        Ok(Ret::from((count, length)))
     }
 }
 
-pub fn one_more<T: Context>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn one_more<T: CharPeek>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
     move |dat: &mut T| {
-        let mut start = None;
-        let mut next = None;
-        let mut chars = dat.peek_chars()?;
+        let mut count = 0;
+        let mut length = 0;
+        let mut chars = dat.peek()?;
 
-        for (idx, ch) in chars.by_ref() {
-            if re(&ch) {
-                if start.is_none() {
-                    start = Some(idx);
-                }
+        for char in chars.by_ref() {
+            if re(&char.char) {
+                count += 1;
+                length += char.len;
             } else {
-                next = Some(idx);
                 break;
             }
         }
-        if let Some(start) = start {
-            let total_len = dat.len() - dat.offset();
-            let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
-
-            Ok(next_offset - start)
+        if count > 0 {
+            Ok(Ret::from((count, length)))
         } else {
             Err(Error::NeedOneMore)
         }
     }
 }
 
-pub fn count<const M: usize, const N: usize, T: Context>(
+pub fn count<const M: usize, const N: usize, T: CharPeek>(
     re: impl Fn(&char) -> bool,
-) -> impl Fn(&mut T) -> Result<usize, Error> {
+) -> impl Fn(&mut T) -> Result<Ret, Error> {
     debug_assert!(M <= N, "M must little than N");
     move |dat: &mut T| {
         let mut count = 0;
-        let mut start = 0;
-        let mut next = None;
+        let mut length = 0;
 
-        if let Ok(mut chars) = dat.peek_chars() {
-            loop {
-                if count == N {
-                    break;
-                }
-                if let Some((offset, ch)) = chars.next() {
-                    if re(&ch) {
-                        if count == 0 {
-                            start = offset;
-                        }
+        if let Ok(mut chars) = dat.peek() {
+            while count < N {
+                if let Some(char) = chars.next() {
+                    if re(&char.char) {
                         count += 1;
+                        length += char.len;
                         continue;
-                    } else {
-                        next = Some(offset);
                     }
                 }
                 break;
             }
             if count < M {
                 return Err(Error::NeedMore);
-            } else if count > 0 {
-                let total_len = dat.len() - dat.offset();
-                let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
-
-                return Ok(next_offset - start);
             }
         }
-        Ok(0)
+        Ok(Ret::from((count, length)))
     }
 }
 
-pub fn count_if<const M: usize, const N: usize, T: Context>(
+pub fn count_if<const M: usize, const N: usize, T: CharPeek + StrPeek>(
     re: impl Fn(&char) -> bool,
-    validator: impl Fn(&T, usize, char) -> bool,
-) -> impl Fn(&mut T) -> Result<usize, Error> {
+    validator: impl Fn(&T, &Char) -> bool,
+) -> impl Fn(&mut T) -> Result<Ret, Error> {
     debug_assert!(M <= N, "M must little than N");
     move |dat: &mut T| {
         let mut count = 0;
-        let mut start = 0;
-        let mut next = None;
+        let mut length = 0;
 
-        if let Ok(chars) = dat.peek_chars() {
-            let mut chars = chars.peekable();
-
-            loop {
-                if count == N {
-                    break;
-                }
-                if let Some((offset, ch)) = chars.next() {
-                    if re(&ch) && validator(dat, dat.offset() + offset, ch) {
-                        if count == 0 {
-                            start = offset;
-                        }
+        if let Ok(mut chars) = CharPeek::peek(dat) {
+            while count < N {
+                if let Some(char) = chars.next() {
+                    if re(&char.char) && validator(dat, char) {
                         count += 1;
+                        length += char.len;
                         continue;
-                    } else {
-                        next = Some(offset);
                     }
                 }
                 break;
             }
             if count < M {
                 return Err(Error::NeedMore);
-            } else if count > 0 {
-                let total_len = dat.len() - dat.offset();
-                let next_offset = next.unwrap_or(chars.next().map(|v| v.0).unwrap_or(total_len));
-
-                return Ok(next_offset - start);
             }
         }
-        Ok(0)
+        Ok(Ret::from((count, length)))
     }
 }
 
-pub fn start<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn start<T: CharPeek>() -> impl Fn(&mut T) -> Result<Ret, Error> {
     |dat: &mut T| {
         if dat.offset() == 0 {
-            Ok(0)
+            Ok(Ret::from((0, 0)))
         } else {
             Err(Error::NotStart)
         }
     }
 }
 
-pub fn end<T: Context>() -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn end<T: CharPeek>() -> impl Fn(&mut T) -> Result<Ret, Error> {
     |dat: &mut T| {
-        if !dat.peek()?.is_empty() {
+        if dat.len() != dat.offset() {
             Err(Error::NotEnd)
         } else {
-            Ok(0)
+            Ok(Ret::from((0, 0)))
         }
     }
 }
 
-pub fn string<T: Context>(lit: &'static str) -> impl Fn(&mut T) -> Result<usize, Error> {
+pub fn string<T: StrPeek>(lit: &'static str) -> impl Fn(&mut T) -> Result<Ret, Error> {
     move |dat: &mut T| {
         if !dat.peek()?.starts_with(lit) {
             Err(Error::NotEnd)
         } else {
-            Ok(lit.len())
+            Ok(Ret::from((lit.chars().count(), lit.len())))
         }
     }
 }
