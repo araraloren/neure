@@ -4,6 +4,10 @@ use std::fmt::Display;
 pub enum Error {
     Null,
 
+    SpanID,
+
+    SpanIndex,
+
     NeedOne,
 
     NeedOneMore,
@@ -38,6 +42,8 @@ impl Display for Error {
             Error::NotStart => write!(f, "Error::NotStart"),
             Error::NotEnd => write!(f, "Error::NotEnd"),
             Error::Match => write!(f, "Error::Match"),
+            Error::SpanID => write!(f, "Error::SpanID"),
+            Error::SpanIndex => write!(f, "Error::SpanIndex"),
         }
     }
 }

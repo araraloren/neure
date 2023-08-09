@@ -1,6 +1,7 @@
+use crate::ctx::{CharCtx, StrCtx};
 use crate::err::Error;
 use crate::parser::Parser;
-use crate::peek::{CharPeek, Span, StrPeek};
+use crate::span::{Span, SpanStore};
 
 /// first is count of char, second is count of byte
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -44,7 +45,12 @@ pub trait MatchPolicy {
     where
         Self: Sized;
 
-    fn try_cap(&mut self, id: usize, parser: impl Parser<Self>) -> Result<Ret, Error>
+    fn try_cap(
+        &mut self,
+        id: usize,
+        storer: &mut impl SpanStore,
+        parser: impl Parser<Self>,
+    ) -> Result<Ret, Error>
     where
         Self: Sized;
 
@@ -55,17 +61,17 @@ pub trait MatchPolicy {
         self.try_mat(parser).is_ok()
     }
 
-    fn cap(&mut self, key: usize, parser: impl Parser<Self>) -> bool
+    fn cap(&mut self, id: usize, storer: &mut impl SpanStore, parser: impl Parser<Self>) -> bool
     where
         Self: Sized,
     {
-        self.try_cap(key, parser).is_ok()
+        self.try_cap(id, storer, parser).is_ok()
     }
 }
 
 impl<T> MatchPolicy for T
 where
-    T: CharPeek + StrPeek,
+    T: CharCtx + StrCtx,
 {
     fn try_mat(&mut self, parser: impl Parser<Self>) -> Result<Ret, Error>
     where
@@ -73,27 +79,32 @@ where
     {
         self.try_mat_policy(parser, |ctx, ret| {
             if let Ok(ret) = ret {
-                CharPeek::inc(ctx, ret.char);
-                StrPeek::inc(ctx, ret.byte);
+                CharCtx::inc(ctx, ret.char);
+                StrCtx::inc(ctx, ret.byte);
             }
         })
     }
 
-    fn try_cap(&mut self, id: usize, parser: impl Parser<Self>) -> Result<Ret, Error>
+    fn try_cap(
+        &mut self,
+        id: usize,
+        storer: &mut impl SpanStore,
+        parser: impl Parser<Self>,
+    ) -> Result<Ret, Error>
     where
         Self: Sized,
     {
         self.try_mat_policy(parser, |ctx, ret| {
             if let Ok(ret) = ret {
-                ctx.add_span(
+                storer.add_span(
                     id,
                     Span {
-                        beg: StrPeek::offset(ctx),
+                        beg: StrCtx::offset(ctx),
                         len: ret.byte,
                     },
                 );
-                CharPeek::inc(ctx, ret.char);
-                StrPeek::inc(ctx, ret.byte);
+                CharCtx::inc(ctx, ret.char);
+                StrCtx::inc(ctx, ret.byte);
             }
         })
     }

@@ -1,4 +1,5 @@
-use crate::{err::Error, peek::StrPeek, Span};
+use crate::span::Span;
+use std::str::CharIndices;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Char {
@@ -9,61 +10,72 @@ pub struct Char {
     pub char: char,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct CharIter<'a> {
-    cur: usize,
-    chars: &'a [Char],
+    len: usize,
+
+    cache: Option<(usize, char)>,
+
+    chars: CharIndices<'a>,
 }
 
 impl<'a> CharIter<'a> {
-    pub fn new(chars: &'a [Char]) -> Self {
-        Self { chars, cur: 0 }
+    pub fn new(str: &'a str) -> Self {
+        let len = str.len();
+        let mut chars = str.char_indices();
+        let cache = chars.next();
+
+        Self { len, chars, cache }
     }
 }
 
 impl<'a> Iterator for CharIter<'a> {
-    type Item = &'a Char;
+    type Item = Char;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let cur = self.cur;
+        if let Some((offset, char)) = self.cache.take() {
+            let next = self.chars.next();
+            let next_offset = next.map(|v| v.0).unwrap_or(self.len);
 
-        self.cur += 1;
-        self.chars.get(cur)
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.chars.len(), Some(self.chars.len()))
+            self.cache = next;
+            Some(Char {
+                char,
+                offset,
+                len: next_offset - offset,
+            })
+        } else {
+            None
+        }
     }
 }
 
 impl<'a> ExactSizeIterator for CharIter<'a> {}
 
 #[derive(Debug, Clone, Copy)]
-pub struct SubStrIter<'a, T> {
+pub struct SubStrIter<'a, 'b> {
     cur: usize,
 
-    ctx: &'a T,
+    str: &'a str,
 
-    spans: &'a Vec<Span>,
+    spans: &'b Vec<Span>,
 }
 
-impl<'a, T> SubStrIter<'a, T> {
-    pub fn new(ctx: &'a T, spans: &'a Vec<Span>) -> Self {
-        Self { ctx, spans, cur: 0 }
+impl<'a, 'b> SubStrIter<'a, 'b> {
+    pub fn new(str: &'a str, spans: &'b Vec<Span>) -> Self {
+        Self { str, spans, cur: 0 }
     }
 }
 
-impl<'a, T> Iterator for SubStrIter<'a, T>
-where
-    T: StrPeek,
-{
-    type Item = Result<&'a str, Error>;
+impl<'a, 'b> Iterator for SubStrIter<'a, 'b> {
+    type Item = &'a str;
 
     fn next(&mut self) -> Option<Self::Item> {
         let cur = self.cur;
 
         self.cur += 1;
-        self.spans.get(cur).map(|v| self.ctx.substr(v))
+        self.spans
+            .get(cur)
+            .and_then(|v| self.str.get(v.beg..(v.beg + v.len)))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -71,4 +83,4 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for SubStrIter<'a, T> where T: StrPeek {}
+impl<'a, 'b> ExactSizeIterator for SubStrIter<'a, 'b> {}
