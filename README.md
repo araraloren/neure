@@ -9,10 +9,11 @@ use neure::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let digit = neure!(['0' - '9']+); // match digit from 0 to 9 more than once
-    let mut ctx = CharsCtx::default().with_capacity(1).with_str("2023rust");
+    let mut storer = SpanStorer::new(1);
+    let mut ctx = CharsCtx::default().with_str("2023rust");
 
-    ctx.try_cap(0, digit)?;
-    assert_eq!(ctx.spans(0), Some(&vec![Span { beg: 0, len: 4 }]));
+    ctx.try_cap(0, &mut storer, digit)?;
+    assert_eq!(storer.spans(0)?, &vec![Span { beg: 0, len: 4 }]);
 
     Ok(())
 }
@@ -22,7 +23,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use ::regex::Regex;
-use neure::*;
+use neure::{span::SpanStorer, *};
 
 thread_local! {
     static REGEX: Regex = Regex::new(r"^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$").unwrap();
@@ -40,10 +41,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let start = neure::start();
     let domain = neure::count_if::<0, { usize::MAX }, _>(
         group!(&letter, &number, &dot, &minus),
-        |ctx: &CharsCtx, offset, ch| {
-            if ch == '.' {
+        |ctx: &CharsCtx, char| {
+            if char.char == '.' {
                 // don't match dot if we don't have more dot
-                if let Ok(str) = ctx.peek_at(offset + 1) {
+                if let Ok(str) = StrCtx::peek_at(ctx, ctx.offset() + char.offset + 1) {
                     return str.find('.').is_some();
                 }
             }
@@ -53,14 +54,16 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let postfix = neure!((group!(&letter, &dot)){2,6});
     let dot = neure!('.');
     let end = neure::end();
-    let mut ctx = CharsCtx::default().with_capacity(3);
-    let parser = |ctx: &mut CharsCtx| -> Result<(), neure::err::Error> {
+    let mut storer = SpanStorer::new(3);
+    let parser = |storer: &mut SpanStorer, str| -> Result<(), neure::err::Error> {
+        let mut ctx = CharsCtx::new(str);
+
         ctx.try_mat(&start)?;
-        ctx.try_cap(0, &prefix)?;
+        ctx.try_cap(0, storer, &prefix)?;
         ctx.try_mat(&at)?;
-        ctx.try_cap(1, &domain)?;
+        ctx.try_cap(1, storer, &domain)?;
         ctx.try_mat(&dot)?;
-        ctx.try_cap(2, &postfix)?;
+        ctx.try_cap(2, storer, &postfix)?;
         ctx.try_mat(&end)?;
         Ok(())
     };
@@ -78,22 +81,26 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "email@subdomain.example.com",
     ];
 
-    // Size = 100000, Cost time 0.068436 with test 100000 times: 0.0000006843599999999999 --> 300000
+    // Size = 100000, Cost time 0.0551271 with test 100000 times: 0.000000551271 --> 300000
     measure(100000, 100000, || {
         let mut count = 0;
         test_cases.iter().for_each(|test| {
-            ctx.reset_with(*test);
-            parser(&mut ctx).is_ok().then(|| count += 1);
+            parser(&mut storer, test).is_ok().then(|| count += 1);
         });
         count
     });
-    // Size = 100000, Cost time 0.1784131 with test 100000 times: 0.000001784131 --> 300000
+    let mut locs = REGEX.try_with(|re| re.capture_locations()).unwrap();
+
+    // Size = 100000, Cost time 0.110109 with test 100000 times: 0.00000110109 --> 300000
     measure(100000, 100000, || {
         let mut count = 0;
         test_cases.iter().for_each(|test| {
             REGEX
                 .try_with(|regex| {
-                    regex.captures(test).is_some().then(|| count += 1);
+                    regex
+                        .captures_read(&mut locs, test)
+                        .is_some()
+                        .then(|| count += 1);
                 })
                 .unwrap();
         });
