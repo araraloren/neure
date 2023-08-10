@@ -21,7 +21,7 @@ A fast little combinational parsing library
 | neure_cap/fat | 10000000 | `269ms` | `0.0270mu` |
 | nom_cap/fat | 10000000 | 255ms | 0.0256mu |
 
-See [`examples`](https://github.com/araraloren/neure/examples)
+See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
 
 ## Example
 
