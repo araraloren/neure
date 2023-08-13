@@ -88,7 +88,7 @@ pub fn measure(n: usize, size: usize, mut f: impl FnMut() -> i32) {
         "Size = {size}, Cost = {}, Test = {}, Avg = {}, Count = {}",
         time.as_millis(),
         n,
-        time.as_micros() as f64 / n as f64,
+        time.as_nanos() as f64 / n as f64,
         sum,
     );
 }

@@ -150,9 +150,6 @@ macro_rules! regex {
     ($ch:ident ) => {
         $crate::char($crate::charize!($ch))
     };
-    (b $ch:literal ) => {
-        $crate::byte($ch)
-    };
     ($ch:literal ) => {
         $crate::char($ch)
     };
