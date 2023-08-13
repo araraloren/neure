@@ -66,7 +66,7 @@ impl SpanStorer {
         Ok(SpanIterator::new(str, self.spans(id)?))
     }
 
-    pub fn slice<'a, T: IndexBySpan>(
+    pub fn slice<'a, T: IndexBySpan + ?Sized>(
         &self,
         value: &'a T,
         id: usize,
@@ -77,7 +77,7 @@ impl SpanStorer {
         value.get_by_span(span).ok_or(Error::IndexBySpan)
     }
 
-    pub fn slice_iter<'a, T: IndexBySpan>(
+    pub fn slice_iter<'a, T: IndexBySpan + ?Sized>(
         &self,
         str: &'a T,
         span_id: usize,

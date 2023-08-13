@@ -25,6 +25,8 @@ pub enum Error {
     ReachEnd,
 
     NotEnd,
+
+    Consume,
 }
 
 impl std::error::Error for Error {}
@@ -44,6 +46,7 @@ impl Display for Error {
             Error::Match => write!(f, "Error::Match"),
             Error::SpanID => write!(f, "Error::SpanID"),
             Error::SpanIndex => write!(f, "Error::SpanIndex"),
+            Error::Consume => write!(f, "Error::Consume"),
         }
     }
 }

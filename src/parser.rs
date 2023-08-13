@@ -205,7 +205,7 @@ where
         if !dat.orig()?.starts_with(lit) {
             Err(Error::NotEnd)
         } else {
-            Ok(<C::Ret>::from((lit.chars().count(), lit.len())))
+            Ok(<C::Ret>::from((1, lit.len())))
         }
     }
 }
@@ -218,7 +218,20 @@ where
         if !dat.orig()?.starts_with(lit) {
             Err(Error::NotEnd)
         } else {
-            Ok(<C::Ret>::from((lit.len(), lit.len())))
+            Ok(<C::Ret>::from((1, lit.len())))
+        }
+    }
+}
+
+pub fn consume<C>(length: usize) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    move |ctx: &mut C| {
+        if ctx.len() - ctx.offset() >= length {
+            Ok(<C::Ret>::from((1, length)))
+        } else {
+            Err(Error::Consume)
         }
     }
 }
