@@ -4,6 +4,10 @@ pub fn char(ch: char) -> impl Fn(&char) -> bool {
     move |dat: &char| dat == &ch
 }
 
+pub fn equal<T: PartialEq>(val: T) -> impl Fn(&T) -> bool {
+    move |dat: &T| dat == &val
+}
+
 pub fn array<const N: usize, T: PartialEq>(chars: [T; N]) -> impl Fn(&T) -> bool {
     move |dat: &T| chars.contains(dat)
 }
