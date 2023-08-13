@@ -1,4 +1,4 @@
-use crate::{err::Error, iter::SubStrIter};
+use crate::{err::Error, index::IndexBySpan, iter::SpanIterator};
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Span {
@@ -52,18 +52,37 @@ impl SpanStorer {
         self
     }
 
-    pub fn substr<'a>(&self, str: &'a str, span_id: usize, index: usize) -> Result<&'a str, Error> {
-        let span = self.span(span_id, index)?;
+    pub fn substr<'a>(&self, str: &'a str, id: usize, index: usize) -> Result<&'a str, Error> {
+        let span = self.span(id, index)?;
 
         str.get(span.beg..(span.beg + span.len))
-            .ok_or(Error::SubStr)
+            .ok_or(Error::IndexBySpan)
     }
 
-    pub fn substrs<'a>(&self, str: &'a str, span_id: usize) -> Result<SubStrIter<'a, '_>, Error>
+    pub fn substrs<'a>(&self, str: &'a str, id: usize) -> Result<SpanIterator<'a, '_, str>, Error>
     where
         Self: Sized,
     {
-        Ok(SubStrIter::new(str, self.spans(span_id)?))
+        Ok(SpanIterator::new(str, self.spans(id)?))
+    }
+
+    pub fn slice<'a, T: IndexBySpan>(
+        &self,
+        value: &'a T,
+        id: usize,
+        index: usize,
+    ) -> Result<&'a <T as IndexBySpan>::Output, Error> {
+        let span = self.span(id, index)?;
+
+        value.get_by_span(span).ok_or(Error::IndexBySpan)
+    }
+
+    pub fn slice_iter<'a, T: IndexBySpan>(
+        &self,
+        str: &'a T,
+        span_id: usize,
+    ) -> Result<SpanIterator<'a, '_, T>, Error> {
+        Ok(SpanIterator::new(str, self.spans(span_id)?))
     }
 }
 

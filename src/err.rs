@@ -16,7 +16,7 @@ pub enum Error {
 
     Chars,
 
-    SubStr,
+    IndexBySpan,
 
     Match,
 
@@ -37,7 +37,7 @@ impl Display for Error {
             Error::NeedOne => write!(f, "Error::NeedOne"),
             Error::NeedOneMore => write!(f, "Error::NeedOneMore"),
             Error::NeedMore => write!(f, "Error::NeedMore"),
-            Error::SubStr => write!(f, "Error::SubStr"),
+            Error::IndexBySpan => write!(f, "Error::SubStr"),
             Error::ReachEnd => write!(f, "Error::ReachEnd"),
             Error::NotStart => write!(f, "Error::NotStart"),
             Error::NotEnd => write!(f, "Error::NotEnd"),

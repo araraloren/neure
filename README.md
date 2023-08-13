@@ -51,6 +51,19 @@ thread_local! {
 }
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let test_cases = [
+        "plainaddress",
+        "#@%^%#$@#$@#.com",
+        "@example.com",
+        "joe smith <email@example.com>",
+        "”(),:;<>[ ]@example.com",
+        "much.”more unusual”@example.com",
+        "very.unusual.”@”.unusual.com@example.com",
+        "email@example.com",
+        "firstname.lastname@example.com",
+        "email@subdomain.example.com",
+    ];
+
     let letter = regex!(['a' - 'z']);
     let number = regex!(['0' - '9']);
     let under_score = regex!('_');
@@ -63,9 +76,9 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let domain = neure::count_if::<0, { usize::MAX }, _>(
         group!(&letter, &number, &dot, &minus),
         |ctx: &CharsCtx, char| {
-            if char.char == '.' {
+            if char.1 == '.' {
                 // don't match dot if we don't have more dot
-                if let Ok(str) = StrCtx::peek_at(ctx, ctx.offset() + char.offset + 1) {
+                if let Ok(str) = ctx.orig_at(ctx.offset() + char.0 + 1) {
                     return str.find('.').is_some();
                 }
             }
@@ -89,21 +102,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     };
 
-    let test_cases = [
-        "plainaddress",
-        "#@%^%#$@#$@#.com",
-        "@example.com",
-        "joe smith <email@example.com>",
-        "”(),:;<>[ ]@example.com",
-        "much.”more unusual”@example.com",
-        "very.unusual.”@”.unusual.com@example.com",
-        "email@example.com",
-        "firstname.lastname@example.com",
-        "email@subdomain.example.com",
-    ];
-
-    // Size = 100000, Cost time 0.0551271 with test 100000 times: 0.000000551271 --> 300000
-    measure(100000, 100000, || {
+    measure(1000, 1000, || {
         let mut count = 0;
         test_cases.iter().for_each(|test| {
             parser(&mut storer, test).is_ok().then(|| count += 1);
@@ -112,8 +111,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     let mut locs = REGEX.try_with(|re| re.capture_locations()).unwrap();
 
-    // Size = 100000, Cost time 0.110109 with test 100000 times: 0.00000110109 --> 300000
-    measure(100000, 100000, || {
+    measure(1000, 1000, || {
         let mut count = 0;
         test_cases.iter().for_each(|test| {
             REGEX
@@ -127,7 +125,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
         count
     });
-
     Ok(())
 }
 

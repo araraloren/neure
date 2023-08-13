@@ -27,9 +27,9 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         let domain = neure::count_if::<0, { usize::MAX }, _>(
             group!(&letter, &number, &dot, &minus),
             |ctx: &CharsCtx, char| {
-                if char.char == '.' {
+                if char.1 == '.' {
                     // don't match dot if we don't have more dot
-                    if let Ok(str) = StrCtx::peek_at(ctx, ctx.offset() + char.offset + 1) {
+                    if let Ok(str) = Context::orig_at(ctx, ctx.offset() + char.0 + 1) {
                         return str.find('.').is_some();
                     }
                 }

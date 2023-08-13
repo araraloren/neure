@@ -28,11 +28,17 @@ macro_rules! neure {
     (@r . $($res:tt)*) => { // .
         neure!(@q $($res)* regex!(.))
     };
+    (@r # [ $($range:tt)+ ] $($res:tt)*) => {
+        neure!(@q $($res)* regex!([$($range)+]))
+    };
     (@r [ $($range:tt)+ ] $($res:tt)*) => {
         neure!(@q $($res)* regex!([$($range)+]))
     };
     (@r $ch:ident $($res:tt)*) => {
         neure!(@q $($res)* $crate::char($crate::charize!($ch)))
+    };
+    (@r # $ch:literal $($res:tt)*) => {
+        neure!(@q $($res)* $crate::byte($ch))
     };
     (@r $ch:literal $($res:tt)*) => {
         neure!(@q $($res)* $crate::char($ch))
@@ -143,6 +149,9 @@ macro_rules! regex {
 
     ($ch:ident ) => {
         $crate::char($crate::charize!($ch))
+    };
+    (b $ch:literal ) => {
+        $crate::byte($ch)
     };
     ($ch:literal ) => {
         $crate::char($ch)
