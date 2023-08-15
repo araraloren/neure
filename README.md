@@ -6,20 +6,7 @@ A fast little combinational parsing library
 
 `rel` is mean release, `fat` is mean release with lto=fat
 
-| test |  count  | cost time (million seconds) | average time (nano seconds) |
-|-----------------|---------|------|----------    |
-| `neure_nocap/rel` | `1000000` | `541ms` | `541.8355ns` |
-| regex_nocap/rel | 1000000 | 288ms | 289.2713ns |
-| `neure_nocap/fat` | `1000000` | `163ms` | `163.8022ns` |
-| regex_nocap/fat | 1000000 | 264ms | 264.6929ns |
-| `neure_cap/rel` | `1000000` | `659ms` | `659.6246ns` |
-| regex_cap/rel | 1000000 | 1222ms | 1223.2544ns |
-| `neure_cap/fat` | `1000000` | `154ms` | `155.1215ns` |
-| regex_cap/fat | 1000000 | 1113ms | 1114.3904ns |
-| `neure_cap/rel` | `10000000` | `831ms` | `83.2198ns` |
-| nom_cap/rel | 10000000 | 327ms | 32.8194ns |
-| `neure_cap/fat` | `10000000` | `253ms` | `25.3318ns` |
-| nom_cap/fat | 10000000 | 291ms | 29.2043ns |
+![img](https://raw.githubusercontent.com/araraloren/neure/main/performance.png)
 
 See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
 
