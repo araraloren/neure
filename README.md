@@ -6,7 +6,7 @@ A fast little combinational parsing library
 
 `rel` is mean release, `fat` is mean release with lto=fat
 
-![img](https://raw.githubusercontent.com/araraloren/neure/main/performance.png)
+![img](https://github.com/araraloren/neure/blob/e1965e572d7d88406d962a33569c1cfd175296bf/performance.png)
 
 See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
 
