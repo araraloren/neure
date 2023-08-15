@@ -1,8 +1,8 @@
 use std::process::Command;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // run_example("neure_nocap", "regex_nocap", 300_0000)?;
-    // run_example("neure_cap", "regex_cap", 300_0000)?;
+    run_example("neure_nocap", "regex_nocap", 300_0000)?;
+    run_example("neure_cap", "regex_cap", 300_0000)?;
     run_example("neure_cap", "nom_cap", 1000_0000)?;
     Ok(())
 }
@@ -16,19 +16,19 @@ fn run_example(name: &str, example: &str, check: usize) -> Result<(), Box<dyn st
     assert_eq!(fat_out.0.count, check);
     assert_eq!(fat_out.1.count, check);
     println!(
-        "| {}/{} | {} | {}ms | {:.4}mu |",
+        "| `{}/{}` | `{}` | `{}ms` | `{:.4}ns` |",
         name, "rel", rel_out.0.size, rel_out.0.cost, rel_out.0.avg
     );
     println!(
-        "| {}/{} | {} | {}ms | {:.4}mu |",
+        "| {}/{} | {} | {}ms | {:.4}ns |",
         example, "rel", rel_out.1.size, rel_out.1.cost, rel_out.1.avg
     );
     println!(
-        "| {}/{} | {} | {}ms | {:.4}mu |",
+        "| `{}/{}` | `{}` | `{}ms` | `{:.4}ns` |",
         name, "fat", fat_out.0.size, fat_out.0.cost, fat_out.0.avg
     );
     println!(
-        "| {}/{} | {} | {}ms | {:.4}mu |",
+        "| {}/{} | {} | {}ms | {:.4}ns |",
         example, "fat", fat_out.1.size, fat_out.1.cost, fat_out.1.avg
     );
 

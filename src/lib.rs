@@ -1,16 +1,21 @@
 #![doc = include_str!("../README.md")]
 pub mod _macro;
+pub mod bytes;
+pub mod chars;
 pub mod ctx;
 pub mod err;
+pub mod index;
 pub mod iter;
 pub mod parser;
 pub mod policy;
 pub mod regex;
 pub mod span;
 
-pub use self::ctx::CharCtx;
-pub use self::ctx::CharsCtx;
-pub use self::ctx::StrCtx;
+pub use self::bytes::BytesCtx;
+pub use self::chars::CharsCtx;
+pub use self::ctx::Context;
+pub use self::index::IndexBySpan;
+pub use self::iter::SpanIterator;
 pub use self::parser::*;
 pub use self::policy::MatchPolicy;
 pub use self::policy::Ret;

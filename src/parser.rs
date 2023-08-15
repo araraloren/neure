@@ -1,38 +1,43 @@
-use crate::ctx::CharCtx;
-use crate::ctx::StrCtx;
+use crate::ctx::Context;
 use crate::err::Error;
-use crate::iter::Char;
-use crate::policy::Ret;
+use crate::MatchPolicy;
 
 pub trait Parser<T> {
-    fn try_parse(&mut self, ctx: &mut T) -> Result<Ret, Error>;
+    type Ret;
+
+    fn try_parse(&mut self, ctx: &mut T) -> Result<Self::Ret, Error>;
 
     fn parse(&mut self, ctx: &mut T) -> bool {
         self.try_parse(ctx).is_ok()
     }
 }
 
-impl<T, H> Parser<T> for H
+impl<T, H, R> Parser<T> for H
 where
-    H: Fn(&mut T) -> Result<Ret, Error>,
+    H: Fn(&mut T) -> Result<R, Error>,
 {
-    fn try_parse(&mut self, ctx: &mut T) -> Result<Ret, Error> {
+    type Ret = R;
+
+    fn try_parse(&mut self, ctx: &mut T) -> Result<Self::Ret, Error> {
         (self)(ctx)
     }
 }
 
-pub fn one<T: CharCtx>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    move |dat: &mut T| {
-        let mut chars = dat.peek()?;
+fn calc_len<T, C: Context>(offset: usize, ctx: &C, next: Option<(usize, T)>) -> usize {
+    let next_offset = next.map(|v| v.0).unwrap_or(ctx.len() - ctx.offset());
+    next_offset - offset
+}
 
-        if let Some(Char {
-            offset: _,
-            len,
-            char,
-        }) = chars.next()
-        {
-            if re(&char) {
-                Ok(Ret::from((1, len)))
+pub fn one<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    move |ctx: &mut C| {
+        let mut iter: C::Iter<'_> = ctx.peek()?;
+
+        if let Some((offset, item)) = iter.next() {
+            if re(&item) {
+                Ok(<C::Ret>::from((1, calc_len(offset, ctx, iter.next()))))
             } else {
                 Err(Error::Match)
             }
@@ -42,146 +47,191 @@ pub fn one<T: CharCtx>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<
     }
 }
 
-pub fn zero_one<T: CharCtx>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    move |dat: &mut T| {
-        if let Ok(mut chars) = dat.peek() {
-            if let Some(Char {
-                offset: _,
-                len,
-                char,
-            }) = chars.next()
-            {
-                if re(&char) {
-                    return Ok(Ret::from((1, len)));
+pub fn zero_one<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    move |ctx: &mut C| {
+        if let Ok(mut iter) = ctx.peek() {
+            if let Some((offset, item)) = iter.next() {
+                if re(&item) {
+                    return Ok(<C::Ret>::from((1, calc_len(offset, ctx, iter.next()))));
                 }
             }
         }
-        Ok(Ret::from((0, 0)))
+        Ok(<C::Ret>::from((0, 0)))
     }
 }
 
-pub fn zero_more<T: CharCtx>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    move |dat: &mut T| {
-        let mut count = 0;
-        let mut length = 0;
+pub fn zero_more<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    move |ctx: &mut C| {
+        let mut cnt = 0;
+        let mut beg = None;
+        let mut end = None;
 
-        if let Ok(mut chars) = dat.peek() {
-            for char in chars.by_ref() {
-                if re(&char.char) {
-                    count += 1;
-                    length += char.len;
-                } else {
+        if let Ok(mut iter) = ctx.peek() {
+            for (offset, item) in iter.by_ref() {
+                if !re(&item) {
+                    end = Some((offset, item));
                     break;
                 }
+                cnt += 1;
+                if beg.is_none() {
+                    beg = Some(offset);
+                }
             }
         }
-        Ok(Ret::from((count, length)))
+        if let Some(start) = beg {
+            Ok(<C::Ret>::from((cnt, calc_len(start, ctx, end))))
+        } else {
+            Ok(<C::Ret>::from((0, 0)))
+        }
     }
 }
 
-pub fn one_more<T: CharCtx>(re: impl Fn(&char) -> bool) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    move |dat: &mut T| {
-        let mut count = 0;
-        let mut length = 0;
-        let mut chars = dat.peek()?;
+pub fn one_more<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    move |ctx: &mut C| {
+        let mut cnt = 0;
+        let mut beg = None;
+        let mut end = None;
+        let mut iter = ctx.peek()?;
 
-        for char in chars.by_ref() {
-            if re(&char.char) {
-                count += 1;
-                length += char.len;
-            } else {
+        for (offset, item) in iter.by_ref() {
+            if !re(&item) {
+                end = Some((offset, item));
                 break;
             }
+            cnt += 1;
+            if beg.is_none() {
+                beg = Some(offset);
+            }
         }
-        if count > 0 {
-            Ok(Ret::from((count, length)))
+        if let Some(start) = beg {
+            Ok(<C::Ret>::from((cnt, calc_len(start, ctx, end))))
         } else {
             Err(Error::NeedOneMore)
         }
     }
 }
 
-pub fn count<const M: usize, const N: usize, T: CharCtx>(
-    re: impl Fn(&char) -> bool,
-) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    debug_assert!(M <= N, "M must little than N");
-    move |dat: &mut T| {
-        let mut count = 0;
-        let mut length = 0;
+pub fn count<const M: usize, const N: usize, C>(
+    re: impl Fn(&C::Item) -> bool,
+) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    count_if::<M, N, C>(re, |_, _| true)
+}
 
-        if let Ok(mut chars) = dat.peek() {
-            while count < N {
-                if let Some(char) = chars.next() {
-                    if re(&char.char) {
-                        count += 1;
-                        length += char.len;
+pub fn count_if<const M: usize, const N: usize, C>(
+    re: impl Fn(&C::Item) -> bool,
+    r#if: impl Fn(&C, &(usize, C::Item)) -> bool,
+) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    debug_assert!(M <= N, "M must little than N");
+    move |ctx: &mut C| {
+        let mut cnt = 0;
+        let mut beg = None;
+        let mut end = None;
+        let iter = ctx.peek();
+
+        if let Ok(mut iter) = iter {
+            while cnt < N {
+                if let Some(pair) = iter.next() {
+                    if re(&pair.1) && r#if(ctx, &pair) {
+                        cnt += 1;
+                        if beg.is_none() {
+                            beg = Some(pair.0);
+                        }
                         continue;
+                    } else {
+                        end = Some(pair);
                     }
                 }
                 break;
             }
-            if count < M {
-                return Err(Error::NeedMore);
+            if cnt >= M {
+                let end = end.or(iter.next());
+
+                return Ok(<C::Ret>::from((
+                    cnt,
+                    beg.map(|v| calc_len(v, ctx, end)).unwrap_or(0),
+                )));
             }
         }
-        Ok(Ret::from((count, length)))
+        Err(Error::NeedMore)
     }
 }
 
-pub fn count_if<const M: usize, const N: usize, T: CharCtx + StrCtx>(
-    re: impl Fn(&char) -> bool,
-    validator: impl Fn(&T, &Char) -> bool,
-) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    debug_assert!(M <= N, "M must little than N");
-    move |dat: &mut T| {
-        let mut count = 0;
-        let mut length = 0;
-
-        if let Ok(mut chars) = CharCtx::peek(dat) {
-            while count < N {
-                if let Some(char) = chars.next() {
-                    if re(&char.char) && validator(dat, &char) {
-                        count += 1;
-                        length += char.len;
-                        continue;
-                    }
-                }
-                break;
-            }
-            if count < M {
-                return Err(Error::NeedMore);
-            }
-        }
-        Ok(Ret::from((count, length)))
-    }
-}
-
-pub fn start<T: StrCtx>() -> impl Fn(&mut T) -> Result<Ret, Error> {
-    |dat: &mut T| {
+pub fn start<C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    |dat: &mut C| {
         if dat.offset() == 0 {
-            Ok(Ret::from((0, 0)))
+            Ok(<C::Ret>::from((0, 0)))
         } else {
             Err(Error::NotStart)
         }
     }
 }
 
-pub fn end<T: StrCtx>() -> impl Fn(&mut T) -> Result<Ret, Error> {
-    |dat: &mut T| {
+pub fn end<C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    |dat: &mut C| {
         if dat.len() != dat.offset() {
             Err(Error::NotEnd)
         } else {
-            Ok(Ret::from((0, 0)))
+            Ok(<C::Ret>::from((0, 0)))
         }
     }
 }
 
-pub fn string<T: StrCtx>(lit: &'static str) -> impl Fn(&mut T) -> Result<Ret, Error> {
-    move |dat: &mut T| {
-        if !dat.peek()?.starts_with(lit) {
+pub fn string<C>(lit: &'static str) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context<Orig = str> + MatchPolicy,
+{
+    move |dat: &mut C| {
+        if !dat.orig()?.starts_with(lit) {
             Err(Error::NotEnd)
         } else {
-            Ok(Ret::from((lit.chars().count(), lit.len())))
+            Ok(<C::Ret>::from((1, lit.len())))
+        }
+    }
+}
+
+pub fn bytes<C>(lit: &'static [u8]) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context<Orig = [u8]> + MatchPolicy,
+{
+    move |dat: &mut C| {
+        if !dat.orig()?.starts_with(lit) {
+            Err(Error::NotEnd)
+        } else {
+            Ok(<C::Ret>::from((1, lit.len())))
+        }
+    }
+}
+
+pub fn consume<C>(length: usize) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+where
+    C: Context + MatchPolicy,
+{
+    move |ctx: &mut C| {
+        if ctx.len() - ctx.offset() >= length {
+            Ok(<C::Ret>::from((1, length)))
+        } else {
+            Err(Error::Consume)
         }
     }
 }
