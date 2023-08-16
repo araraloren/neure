@@ -25,6 +25,12 @@ impl From<(usize, usize)> for Ret {
     }
 }
 
+impl From<Ret> for (usize, usize) {
+    fn from(value: Ret) -> Self {
+        (0, value.0)
+    }
+}
+
 pub trait MatchPolicy {
     type Ret: From<(usize, usize)>;
 
@@ -225,3 +231,100 @@ impl MatchPolicy for BytesCtx<'_> {
         )
     }
 }
+
+pub trait PolicyExtension: MatchPolicy + Context
+where
+    Self: Sized,
+{
+    fn map<R>(
+        &mut self,
+        parser: impl Parser<Self, Ret = Self::Ret>,
+        mut map: impl FnMut(&Self, usize, Self::Ret) -> Result<R, Error>,
+    ) -> Result<R, Error> {
+        let start = self.offset();
+        let ret = self.try_mat(parser);
+
+        if ret.is_ok() {
+            map(self, start, ret?)
+        } else {
+            Err(ret.err().unwrap())
+        }
+    }
+
+    fn map_orig<R>(
+        &mut self,
+        parser: impl Parser<Self, Ret = Self::Ret>,
+        mut map: impl FnMut(&<Self as Context>::Orig) -> Result<R, Error>,
+    ) -> Result<R, Error>
+    where
+        Self::Ret: Into<(usize, usize)>,
+    {
+        let start = self.offset();
+        let ret = self.try_mat(parser);
+
+        if ret.is_ok() {
+            let (_, len) = ret?.into();
+
+            map(self.orig_sub(start, len)?)
+        } else {
+            Err(ret.err().unwrap())
+        }
+    }
+
+    fn quote_cont<R>(
+        &mut self,
+        left: impl Parser<Self, Ret = Self::Ret>,
+        right: impl Parser<Self, Ret = Self::Ret>,
+        mut cont: impl FnMut(&mut Self) -> Result<R, Error>,
+    ) -> Result<R, Error> {
+        if self.mat(left) {
+            let ret = cont(self);
+
+            self.try_mat(right)?;
+            ret
+        } else {
+            Err(Error::Quote)
+        }
+    }
+
+    fn quote<R>(
+        &mut self,
+        left: impl Parser<Self, Ret = Self::Ret>,
+        right: impl Parser<Self, Ret = Self::Ret>,
+        cont: impl Parser<Self, Ret = Self::Ret>,
+        mut map: impl FnMut(&Self, usize, Self::Ret) -> Result<R, Error>,
+    ) -> Result<R, Error> {
+        if self.mat(left) {
+            let start = self.offset();
+            let ret = self.try_mat(cont)?;
+            let ret = map(self, start, ret)?;
+
+            self.try_mat(right)?;
+            Ok(ret)
+        } else {
+            Err(Error::Quote)
+        }
+    }
+}
+
+impl<T: MatchPolicy + Context> PolicyExtension for T {}
+
+// pub fn terminated<C>(
+//     cont: impl Fn(&mut C) -> Result<C::Ret, Error>,
+//     sep: impl Fn(&mut C) -> Result<C::Ret, Error>,
+//     min: usize,
+//     sep_need: bool,
+// ) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+// where
+//     C: Context + MatchPolicy,
+// {
+//     move |ctx: &mut C| {
+//         let ret = cont(ctx);
+
+//         if min == 0 && ret.is_err() {
+//             return Ok()
+//         }
+
+//         Ok(ret)
+//     }
+// }

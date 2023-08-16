@@ -73,4 +73,8 @@ impl<'a> Context for CharsCtx<'a> {
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'_>, Error> {
         Ok(self.orig_at(offset)?.char_indices())
     }
+
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<&Self::Orig, Error> {
+        self.str.get(offset..(offset + len)).ok_or(Error::ReachEnd)
+    }
 }

@@ -72,4 +72,10 @@ impl<'a> Context for BytesCtx<'a> {
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'_>, Error> {
         Ok(BytesIndices::new(self.orig_at(offset)?))
     }
+
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<&Self::Orig, Error> {
+        self.bytes
+            .get(offset..(offset + len))
+            .ok_or(Error::ReachEnd)
+    }
 }

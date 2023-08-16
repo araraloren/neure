@@ -18,6 +18,7 @@ pub use self::index::IndexBySpan;
 pub use self::iter::SpanIterator;
 pub use self::parser::*;
 pub use self::policy::MatchPolicy;
+pub use self::policy::PolicyExtension;
 pub use self::policy::Ret;
 pub use self::regex::*;
 pub use self::span::Span;

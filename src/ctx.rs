@@ -32,4 +32,6 @@ pub trait Context {
     }
 
     fn orig_at(&self, offset: usize) -> Result<&Self::Orig, Error>;
+
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<&Self::Orig, Error>;
 }

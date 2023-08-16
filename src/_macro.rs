@@ -170,3 +170,51 @@ macro_rules! group {
         $crate::or($regex, group!($($res)+))
     };
 }
+
+#[macro_export]
+macro_rules! seq {
+    ($parser:ident) => {
+        $parser
+    };
+    ($parser:expr) => {
+        $parser
+    };
+    ($parser:ident, $($res:tt)+) => {
+        $crate::seq($parser, seq!($($res)+))
+    };
+    ($parser:expr, $($res:tt)+) => {
+        $crate::seq($parser, seq!($($res)+))
+    };
+}
+
+#[macro_export]
+macro_rules! map {
+    ($ctx:ident { &$parser:expr => |$inner_ctx:ident, $offset:ident, $ret:ident| $code:block $(,  $($res:tt)*)? }) => {
+        if let Ok(map_ret) = $ctx.map(&$parser, |$inner_ctx, $offset, $ret| $code) {
+            Ok(map_ret)
+        }
+        else {
+            map!($ctx { $($($res)*)? })
+        }
+    };
+    ($ctx:ident { &$parser:expr => |$orig:ident| $code:block $(,  $($res:tt)*)? }) => {
+        if let Ok(map_ret) = $ctx.map_orig(&$parser, |$orig| $code) {
+            Ok(map_ret)
+        }
+        else {
+            map!($ctx { $($($res)*)? })
+        }
+    };
+    ($ctx:ident { &$parser:expr => $code:block $(,  $($res:tt)*)? }) => {
+        if let Ok(map_ret) = $ctx.map_orig(&$parser, |_| $code) {
+            Ok(map_ret)
+        }
+        else {
+            map!($ctx { $($($res)*)? })
+        }
+    };
+
+    ($ctx:ident { $code:block }) => {
+        $code
+    };
+}

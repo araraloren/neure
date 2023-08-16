@@ -26,7 +26,13 @@ pub enum Error {
 
     NotEnd,
 
+    String,
+
+    Bytes,
+
     Consume,
+
+    Quote,
 }
 
 impl std::error::Error for Error {}
@@ -47,6 +53,9 @@ impl Display for Error {
             Error::SpanID => write!(f, "Error::SpanID"),
             Error::SpanIndex => write!(f, "Error::SpanIndex"),
             Error::Consume => write!(f, "Error::Consume"),
+            Error::Quote => write!(f, "Error::Quote"),
+            Error::String => write!(f, "Error::String"),
+            Error::Bytes => write!(f, "Error::Bytes"),
         }
     }
 }
