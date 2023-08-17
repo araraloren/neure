@@ -1,9 +1,10 @@
 use crate::ctx::Context;
 use crate::err::Error;
+use crate::policy::Ret;
 use crate::MatchPolicy;
 
 pub trait Parser<T> {
-    type Ret;
+    type Ret: Ret;
 
     fn try_parse(&mut self, ctx: &mut T) -> Result<Self::Ret, Error>;
 
@@ -14,7 +15,8 @@ pub trait Parser<T> {
 
 impl<T, H, R> Parser<T> for H
 where
-    H: Fn(&mut T) -> Result<R, Error>,
+    R: Ret,
+    H: FnMut(&mut T) -> Result<R, Error>,
 {
     type Ret = R;
 
@@ -37,7 +39,7 @@ where
 
         if let Some((offset, item)) = iter.next() {
             if re(&item) {
-                Ok(<C::Ret>::from((1, calc_len(offset, ctx, iter.next()))))
+                Ok(<C::Ret>::new_from((1, calc_len(offset, ctx, iter.next()))))
             } else {
                 Err(Error::Match)
             }
@@ -55,11 +57,11 @@ where
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if re(&item) {
-                    return Ok(<C::Ret>::from((1, calc_len(offset, ctx, iter.next()))));
+                    return Ok(<C::Ret>::new_from((1, calc_len(offset, ctx, iter.next()))));
                 }
             }
         }
-        Ok(<C::Ret>::from((0, 0)))
+        Ok(<C::Ret>::new_from((0, 0)))
     }
 }
 
@@ -85,9 +87,9 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(<C::Ret>::from((cnt, calc_len(start, ctx, end))))
+            Ok(<C::Ret>::new_from((cnt, calc_len(start, ctx, end))))
         } else {
-            Ok(<C::Ret>::from((0, 0)))
+            Ok(<C::Ret>::new_from((0, 0)))
         }
     }
 }
@@ -113,7 +115,7 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(<C::Ret>::from((cnt, calc_len(start, ctx, end))))
+            Ok(<C::Ret>::new_from((cnt, calc_len(start, ctx, end))))
         } else {
             Err(Error::NeedOneMore)
         }
@@ -161,7 +163,7 @@ where
             if cnt >= M {
                 let end = end.or(iter.next());
 
-                return Ok(<C::Ret>::from((
+                return Ok(<C::Ret>::new_from((
                     cnt,
                     beg.map(|v| calc_len(v, ctx, end)).unwrap_or(0),
                 )));
@@ -177,7 +179,7 @@ where
 {
     |dat: &mut C| {
         if dat.offset() == 0 {
-            Ok(<C::Ret>::from((0, 0)))
+            Ok(<C::Ret>::new_from((0, 0)))
         } else {
             Err(Error::NotStart)
         }
@@ -192,7 +194,7 @@ where
         if dat.len() != dat.offset() {
             Err(Error::NotEnd)
         } else {
-            Ok(<C::Ret>::from((0, 0)))
+            Ok(<C::Ret>::new_from((0, 0)))
         }
     }
 }
@@ -205,7 +207,7 @@ where
         if !dat.orig()?.starts_with(lit) {
             Err(Error::String)
         } else {
-            Ok(<C::Ret>::from((1, lit.len())))
+            Ok(<C::Ret>::new_from((1, lit.len())))
         }
     }
 }
@@ -216,11 +218,14 @@ where
 {
     move |dat: &mut C| {
         println!("matcing. ..`{}`", std::str::from_utf8(lit).unwrap());
-        println!("...`{}`", std::str::from_utf8(dat.orig_sub(dat.offset(), 200)?).unwrap());
+        println!(
+            "...`{}`",
+            std::str::from_utf8(dat.orig_sub(dat.offset(), 200)?).unwrap()
+        );
         if !dat.orig()?.starts_with(lit) {
             Err(Error::Bytes)
         } else {
-            Ok(<C::Ret>::from((1, lit.len())))
+            Ok(<C::Ret>::new_from((1, lit.len())))
         }
     }
 }
@@ -231,34 +236,34 @@ where
 {
     move |ctx: &mut C| {
         if ctx.len() - ctx.offset() >= length {
-            Ok(<C::Ret>::from((1, length)))
+            Ok(<C::Ret>::new_from((1, length)))
         } else {
             Err(Error::Consume)
         }
     }
 }
 
-pub fn seq<C>(
-    parser1: impl Fn(&mut C) -> Result<C::Ret, Error>,
-    parser2: impl Fn(&mut C) -> Result<C::Ret, Error>,
-) -> impl Fn(&mut C) -> Result<C::Ret, Error>
-where
-    C: Context + MatchPolicy,
-{
-    move |ctx: &mut C| {
-        let start = ctx.offset();
-        let ret1 = parser1(ctx);
+// pub fn seq<C>(
+//     parser1: impl Fn(&mut C) -> Result<C::Ret, Error>,
+//     parser2: impl Fn(&mut C) -> Result<C::Ret, Error>,
+// ) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+// where
+//     C: Context + MatchPolicy,
+// {
+//     move |ctx: &mut C| {
+//         let start = ctx.offset();
+//         let ret1 = parser1(ctx);
 
-        if ret1.is_ok() {
-            let ret2 = parser2(ctx);
+//         if ret1.is_ok() {
+//             let ret2 = parser2(ctx);
 
-            if ret2.is_ok() {
-                Ok(<C::Ret>::from((1, ctx.offset() - start)))
-            } else {
-                ret2
-            }
-        } else {
-            ret1
-        }
-    }
-}
+//             if ret2.is_ok() {
+//                 Ok(<C::Ret>::new_from((1, ctx.offset() - start)))
+//             } else {
+//                 ret2
+//             }
+//         } else {
+//             ret1
+//         }
+//     }
+// }

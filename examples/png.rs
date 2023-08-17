@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Matching the head, the file seems like a png file");
         }
         for idx in 0.. {
-            if ctx.cap(1, &mut storer, &int32) {
+            if ctx.try_cap(1, &mut storer, &int32) {
                 let length = storer.slice(&bytes, 1, idx)?;
                 let length = i32::from_be_bytes([length[0], length[1], length[2], length[3]]);
                 let data = neure::consume(length as usize);

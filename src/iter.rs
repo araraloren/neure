@@ -1,7 +1,7 @@
 use crate::{index::IndexBySpan, span::Span};
 
 #[derive(Debug, Clone, Copy)]
-pub struct SpanIterator<'a, 'b, T: ?Sized> {
+pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
     cur: usize,
 
     value: &'a T,
@@ -9,7 +9,7 @@ pub struct SpanIterator<'a, 'b, T: ?Sized> {
     spans: &'b Vec<Span>,
 }
 
-impl<'a, 'b, T: ?Sized> SpanIterator<'a, 'b, T> {
+impl<'a, 'b, T: ?Sized> IteratorBySpan<'a, 'b, T> {
     pub fn new(str: &'a T, spans: &'b Vec<Span>) -> Self {
         Self {
             value: str,
@@ -19,7 +19,7 @@ impl<'a, 'b, T: ?Sized> SpanIterator<'a, 'b, T> {
     }
 }
 
-impl<'a, 'b, T> Iterator for SpanIterator<'a, 'b, T>
+impl<'a, 'b, T> Iterator for IteratorBySpan<'a, 'b, T>
 where
     T: ?Sized + IndexBySpan,
 {
@@ -37,7 +37,7 @@ where
     }
 }
 
-impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for SpanIterator<'a, 'b, T> {}
+impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'a, 'b, T> {}
 
 #[derive(Debug, Clone)]
 pub struct BytesIndices<'a> {
@@ -72,3 +72,30 @@ impl<'a> Iterator for BytesIndices<'a> {
 }
 
 impl<'a> ExactSizeIterator for BytesIndices<'a> {}
+
+pub struct SpanIterator<'a> {
+    offset: usize,
+
+    spans: &'a Vec<Span>,
+}
+
+impl<'a> SpanIterator<'a> {
+    pub fn new(spans: &'a Vec<Span>) -> Self {
+        Self { offset: 0, spans }
+    }
+}
+
+impl<'a> Iterator for SpanIterator<'a> {
+    type Item = Span;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let offset = self.offset;
+
+        if offset < self.spans.len() {
+            self.offset += 1;
+            self.spans.get(offset).map(|v| *v)
+        } else {
+            None
+        }
+    }
+}

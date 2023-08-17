@@ -97,8 +97,8 @@ impl JsonParser {
 
     pub fn try_mat<'a, 'c>(
         ctx: &mut BytesCtx<'c>,
-        parser: impl Parser<BytesCtx<'c>, Ret = Ret>,
-    ) -> Result<Ret, Error> {
+        parser: impl Parser<BytesCtx<'c>, Ret = Length>,
+    ) -> Result<Length, Error> {
         let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
 
         ctx.try_mat_policy(
@@ -109,7 +109,7 @@ impl JsonParser {
             },
             |ctx, ret| {
                 if let Ok(ret) = &ret {
-                    ctx.inc(ret.offset());
+                    ctx.inc(ret.length());
                 }
                 ret
             },
@@ -118,26 +118,25 @@ impl JsonParser {
 
     pub fn parse_key<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<&'a [u8], Error> {
         let str_quote = neure!(b'"');
-            let alpha = regex!( [b'a' - b'z' b'A' - b'Z' b'0' - b'9']);
-            let under_score = regex!(b'_');
-            let key = neure!((group!(&alpha, &under_score))+);
+        let alpha = regex!( [b'a' - b'z' b'A' - b'Z' b'0' - b'9']);
+        let under_score = regex!(b'_');
+        let key = neure!((group!(&alpha, &under_score))+);
 
-            if let Ok(_) = Self::try_mat(ctx, &str_quote) {
-                let start = ctx.offset();
+        if let Ok(_) = Self::try_mat(ctx, &str_quote) {
+            let start = ctx.offset();
 
-                ctx.try_mat(&key)?;
-                let ret = pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?;
+            ctx.try_mat(&key)?;
+            let ret = pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?;
 
-                ctx.try_mat(&str_quote)?;
-                Ok(ret)
-            } else {
-                Err(Error::Null)
-            }
+            ctx.try_mat(&str_quote)?;
+            Ok(ret)
+        } else {
+            Err(Error::Null)
+        }
     }
 
     pub fn parse_bool_or_null<'a>(ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
-        let space =
-                neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
+        let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
         let true_ = seq!(&space, neure::bytes(b"true"));
         let null_ = seq!(&space, neure::bytes(b"null"));
         let false_ = seq!(&space, neure::bytes(b"false"));
@@ -154,43 +153,42 @@ impl JsonParser {
 
     pub fn parse_string<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
         let str_quote = neure!(b'"');
-            let str_val = neure!( [^ b'"' ]*);
-            let start = ctx.offset();
+        let str_val = neure!( [^ b'"' ]*);
+        let start = ctx.offset();
 
-            if Self::try_mat(ctx, &str_quote).is_ok() {
-                ctx.try_mat(&str_val)?;
-                ctx.try_mat(&str_quote)?;
-                Ok(JsonZero::Str(
-                    pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?,
-                ))
-            } else {
-                Err(Error::Null)
-            }
+        if Self::try_mat(ctx, &str_quote).is_ok() {
+            ctx.try_mat(&str_val)?;
+            ctx.try_mat(&str_quote)?;
+            Ok(JsonZero::Str(
+                pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?,
+            ))
+        } else {
+            Err(Error::Null)
+        }
     }
 
     pub fn parse_number<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
         let sign = neure!( [b'+' b'-']);
-            let digit = neure!( [b'0' - b'9']+);
-            let dot = neure!(b'.');
-            let space =
-                neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
-            let _ = ctx.mat(&space);
-            let start = ctx.offset();
+        let digit = neure!( [b'0' - b'9']+);
+        let dot = neure!(b'.');
+        let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
+        let _ = ctx.mat(&space);
+        let start = ctx.offset();
 
-            ctx.mat(&sign);
-            if let Ok(_) = ctx.try_mat(&digit) {
-                if ctx.try_mat(&dot).is_ok() {
-                    ctx.try_mat(&digit)?;
-                }
-                Ok(JsonZero::Num(
-                    std::str::from_utf8(pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?)
-                        .unwrap()
-                        .parse::<f64>()
-                        .unwrap(),
-                ))
-            } else {
-                Err(Error::Null)
+        ctx.mat(&sign);
+        if let Ok(_) = ctx.try_mat(&digit) {
+            if cis_mattry_mat(&dot).is_ok() {
+                ctx.try_mat(&digit)?;
             }
+            Ok(JsonZero::Num(
+                std::str::from_utf8(pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?)
+                    .unwrap()
+                    .parse::<f64>()
+                    .unwrap(),
+            ))
+        } else {
+            Err(Error::Null)
+        }
     }
 }
 

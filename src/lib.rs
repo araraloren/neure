@@ -4,6 +4,7 @@ pub mod bytes;
 pub mod chars;
 pub mod ctx;
 pub mod err;
+pub mod ext;
 pub mod index;
 pub mod iter;
 pub mod parser;
@@ -14,12 +15,12 @@ pub mod span;
 pub use self::bytes::BytesCtx;
 pub use self::chars::CharsCtx;
 pub use self::ctx::Context;
+pub use self::ext::PolicyExtension;
 pub use self::index::IndexBySpan;
-pub use self::iter::SpanIterator;
+pub use self::iter::IteratorBySpan;
 pub use self::parser::*;
+pub use self::policy::Length;
 pub use self::policy::MatchPolicy;
-pub use self::policy::PolicyExtension;
-pub use self::policy::Ret;
 pub use self::regex::*;
 pub use self::span::Span;
 pub use self::span::SpanStore;
@@ -56,7 +57,7 @@ mod test {
             $ctx.reset_with($str);
             $storer.reset();
             $ctx.try_cap($id, &mut $storer, space_parser)?;
-            assert_eq!($storer.spans($id)?, &vec![$($span)*])
+            assert_eq!($storer.spans($id)?.collect::<Vec<_>>(), vec![$($span)*])
         };
     }
 

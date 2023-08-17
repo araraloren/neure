@@ -5,34 +5,40 @@ use crate::parser::Parser;
 use crate::span::{Span, SpanStore};
 use crate::CharsCtx;
 
+pub trait Ret {
+    fn count(&self) -> usize;
+
+    fn length(&self) -> usize;
+
+    fn is_zero(&self) -> bool;
+
+    fn new_from(ret: (usize, usize)) -> Self;
+}
+
 /// first is count of char, second is count of byte
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Ret(usize);
+pub struct Length(usize);
 
-impl Ret {
-    pub fn offset(&self) -> usize {
+impl Ret for Length {
+    fn count(&self) -> usize {
+        0
+    }
+
+    fn length(&self) -> usize {
         self.0
     }
 
-    pub fn is_zero(&self) -> bool {
-        self.0 == 0
+    fn is_zero(&self) -> bool {
+        self.length() == 0
     }
-}
 
-impl From<(usize, usize)> for Ret {
-    fn from(value: (usize, usize)) -> Self {
-        Self(value.1)
-    }
-}
-
-impl From<Ret> for (usize, usize) {
-    fn from(value: Ret) -> Self {
-        (0, value.0)
+    fn new_from(ret: (usize, usize)) -> Self {
+        Self(ret.1)
     }
 }
 
 pub trait MatchPolicy {
-    type Ret: From<(usize, usize)>;
+    type Ret: Ret;
 
     fn try_mat_policy(
         &mut self,
@@ -49,21 +55,22 @@ pub trait MatchPolicy {
         post_policy(self, ret)
     }
 
-    fn mat(&mut self, parser: impl Parser<Self, Ret = Self::Ret>) -> bool
+    fn is_mat(&mut self, parser: impl Parser<Self, Ret = Self::Ret>) -> bool
     where
         Self: Sized,
     {
         self.try_mat(parser).is_ok()
     }
 
-    fn cap(
+    fn is_cap<S>(
         &mut self,
-        id: usize,
-        storer: &mut impl SpanStore,
+        id: S::Id,
+        storer: &mut S,
         parser: impl Parser<Self, Ret = Self::Ret>,
     ) -> bool
     where
         Self: Sized,
+        S: SpanStore,
     {
         self.try_cap(id, storer, parser).is_ok()
     }
@@ -75,14 +82,15 @@ pub trait MatchPolicy {
         self.try_mat_reset(parser, false)
     }
 
-    fn try_cap(
+    fn try_cap<S>(
         &mut self,
-        id: usize,
-        storer: &mut impl SpanStore,
+        id: S::Id,
+        storer: &mut S,
         parser: impl Parser<Self, Ret = Self::Ret>,
     ) -> Result<Self::Ret, Error>
     where
         Self: Sized,
+        S: SpanStore,
     {
         self.try_cap_reset(id, storer, parser, false)
     }
@@ -95,19 +103,20 @@ pub trait MatchPolicy {
     where
         Self: Sized;
 
-    fn try_cap_reset(
+    fn try_cap_reset<S>(
         &mut self,
-        id: usize,
-        storer: &mut impl SpanStore,
+        id: S::Id,
+        storer: &mut S,
         parser: impl Parser<Self, Ret = Self::Ret>,
         reset: bool,
     ) -> Result<Self::Ret, Error>
     where
-        Self: Sized;
+        Self: Sized,
+        S: SpanStore;
 }
 
 impl MatchPolicy for CharsCtx<'_> {
-    type Ret = Ret;
+    type Ret = Length;
 
     fn try_mat_reset(
         &mut self,
@@ -127,22 +136,23 @@ impl MatchPolicy for CharsCtx<'_> {
             },
             |ctx, ret| {
                 if let Ok(ret) = &ret {
-                    ctx.inc(ret.offset());
+                    ctx.inc(ret.length());
                 }
                 ret
             },
         )
     }
 
-    fn try_cap_reset(
+    fn try_cap_reset<S>(
         &mut self,
-        id: usize,
-        storer: &mut impl SpanStore,
+        id: S::Id,
+        storer: &mut S,
         parser: impl Parser<Self, Ret = Self::Ret>,
         reset: bool,
     ) -> Result<Self::Ret, Error>
     where
         Self: Sized,
+        S: SpanStore,
     {
         self.try_mat_policy(
             parser,
@@ -158,10 +168,10 @@ impl MatchPolicy for CharsCtx<'_> {
                         id,
                         Span {
                             beg: ctx.offset(),
-                            len: ret.offset(),
+                            len: ret.length(),
                         },
                     );
-                    ctx.inc(ret.offset());
+                    ctx.inc(ret.length());
                 }
                 ret
             },
@@ -170,7 +180,7 @@ impl MatchPolicy for CharsCtx<'_> {
 }
 
 impl MatchPolicy for BytesCtx<'_> {
-    type Ret = Ret;
+    type Ret = Length;
 
     fn try_mat_reset(
         &mut self,
@@ -190,22 +200,23 @@ impl MatchPolicy for BytesCtx<'_> {
             },
             |ctx, ret| {
                 if let Ok(ret) = &ret {
-                    ctx.inc(ret.offset());
+                    ctx.inc(ret.length());
                 }
                 ret
             },
         )
     }
 
-    fn try_cap_reset(
+    fn try_cap_reset<S>(
         &mut self,
-        id: usize,
-        storer: &mut impl SpanStore,
+        id: S::Id,
+        storer: &mut S,
         parser: impl Parser<Self, Ret = Self::Ret>,
         reset: bool,
     ) -> Result<Self::Ret, Error>
     where
         Self: Sized,
+        S: SpanStore,
     {
         self.try_mat_policy(
             parser,
@@ -221,110 +232,13 @@ impl MatchPolicy for BytesCtx<'_> {
                         id,
                         Span {
                             beg: ctx.offset(),
-                            len: ret.offset(),
+                            len: ret.length(),
                         },
                     );
-                    ctx.inc(ret.offset());
+                    ctx.inc(ret.length());
                 }
                 ret
             },
         )
     }
 }
-
-pub trait PolicyExtension: MatchPolicy + Context
-where
-    Self: Sized,
-{
-    fn map<R>(
-        &mut self,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-        mut map: impl FnMut(&Self, usize, Self::Ret) -> Result<R, Error>,
-    ) -> Result<R, Error> {
-        let start = self.offset();
-        let ret = self.try_mat(parser);
-
-        if ret.is_ok() {
-            map(self, start, ret?)
-        } else {
-            Err(ret.err().unwrap())
-        }
-    }
-
-    fn map_orig<R>(
-        &mut self,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-        mut map: impl FnMut(&<Self as Context>::Orig) -> Result<R, Error>,
-    ) -> Result<R, Error>
-    where
-        Self::Ret: Into<(usize, usize)>,
-    {
-        let start = self.offset();
-        let ret = self.try_mat(parser);
-
-        if ret.is_ok() {
-            let (_, len) = ret?.into();
-
-            map(self.orig_sub(start, len)?)
-        } else {
-            Err(ret.err().unwrap())
-        }
-    }
-
-    fn quote_cont<R>(
-        &mut self,
-        left: impl Parser<Self, Ret = Self::Ret>,
-        right: impl Parser<Self, Ret = Self::Ret>,
-        mut cont: impl FnMut(&mut Self) -> Result<R, Error>,
-    ) -> Result<R, Error> {
-        if self.mat(left) {
-            let ret = cont(self);
-
-            self.try_mat(right)?;
-            ret
-        } else {
-            Err(Error::Quote)
-        }
-    }
-
-    fn quote<R>(
-        &mut self,
-        left: impl Parser<Self, Ret = Self::Ret>,
-        right: impl Parser<Self, Ret = Self::Ret>,
-        cont: impl Parser<Self, Ret = Self::Ret>,
-        mut map: impl FnMut(&Self, usize, Self::Ret) -> Result<R, Error>,
-    ) -> Result<R, Error> {
-        if self.mat(left) {
-            let start = self.offset();
-            let ret = self.try_mat(cont)?;
-            let ret = map(self, start, ret)?;
-
-            self.try_mat(right)?;
-            Ok(ret)
-        } else {
-            Err(Error::Quote)
-        }
-    }
-}
-
-impl<T: MatchPolicy + Context> PolicyExtension for T {}
-
-// pub fn terminated<C>(
-//     cont: impl Fn(&mut C) -> Result<C::Ret, Error>,
-//     sep: impl Fn(&mut C) -> Result<C::Ret, Error>,
-//     min: usize,
-//     sep_need: bool,
-// ) -> impl Fn(&mut C) -> Result<C::Ret, Error>
-// where
-//     C: Context + MatchPolicy,
-// {
-//     move |ctx: &mut C| {
-//         let ret = cont(ctx);
-
-//         if min == 0 && ret.is_err() {
-//             return Ok()
-//         }
-
-//         Ok(ret)
-//     }
-// }
