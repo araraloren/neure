@@ -15,7 +15,6 @@ pub mod span;
 pub use self::bytes::BytesCtx;
 pub use self::chars::CharsCtx;
 pub use self::ctx::Context;
-pub use self::ext::PolicyExtension;
 pub use self::index::IndexBySpan;
 pub use self::iter::IteratorBySpan;
 pub use self::parser::*;

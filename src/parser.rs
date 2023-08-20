@@ -3,12 +3,12 @@ use crate::err::Error;
 use crate::policy::Ret;
 use crate::MatchPolicy;
 
-pub trait Parser<T> {
+pub trait Parser<T> where Self: Sized {
     type Ret: Ret;
 
-    fn try_parse(&mut self, ctx: &mut T) -> Result<Self::Ret, Error>;
+    fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error>;
 
-    fn parse(&mut self, ctx: &mut T) -> bool {
+    fn parse(self, ctx: &mut T) -> bool {
         self.try_parse(ctx).is_ok()
     }
 }
@@ -16,11 +16,11 @@ pub trait Parser<T> {
 impl<T, H, R> Parser<T> for H
 where
     R: Ret,
-    H: FnMut(&mut T) -> Result<R, Error>,
+    H: FnOnce(&mut T) -> Result<R, Error>,
 {
     type Ret = R;
 
-    fn try_parse(&mut self, ctx: &mut T) -> Result<Self::Ret, Error> {
+    fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error> {
         (self)(ctx)
     }
 }

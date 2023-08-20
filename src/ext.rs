@@ -9,66 +9,63 @@ use mat::MatThen;
 use quote::Quote;
 use term::Term;
 
-pub trait PolicyExtension
-where
-    Self: Sized + MatchPolicy + Context,
-{
-    fn mat(
-        &mut self,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-    ) -> Result<MatThen<'_, Self, Self::Ret>, Error> {
-        let start = self.offset();
-        let ret = self.try_mat(parser);
+// pub trait PolicyExt<C>
+// where
+//     C: MatchPolicy + Context,
+// {
+//     fn ctx(&mut self) -> &mut C;
 
-        if ret.is_ok() {
-            Ok(MatThen::new(self, start, ret.unwrap()))
-        } else {
-            Err(ret.err().unwrap())
-        }
-    }
+//     fn mat(&mut self, parser: impl Parser<C, Ret = C::Ret>) -> MatThen<'_, C> {
+//         let ctx = self.ctx();
+//         let beg = ctx.offset();
 
-    fn cap<'a, P, S>(
-        &'a mut self,
-        id: S::Id,
-        storer: &mut S,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-    ) -> Result<MatThen<'a, Self, Self::Ret>, Error>
-    where
-        S: SpanStore,
-    {
-        let start = self.offset();
-        let ret = self.try_cap(id, storer, parser);
+//         MatThen::new(ctx, beg, ctx.try_mat(parser))
+//     }
 
-        if ret.is_ok() {
-            Ok(MatThen::new(self, start, ret.unwrap()))
-        } else {
-            Err(ret.err().unwrap())
-        }
-    }
+//     fn cap<'a, P, S>(
+//         &'a mut self,
+//         id: S::Id,
+//         storer: &mut S,
+//         parser: impl Parser<C, Ret = C::Ret>,
+//     ) -> Result<MatThen<'a, C>, Error>
+//     where
+//         S: SpanStore,
+//     {
+//         let ctx = self.ctx();
+//         let start = ctx.offset();
+//         let ret = ctx.try_cap(id, storer, parser);
 
-    // match left, then return quote with right
-    fn quote<L, R>(&mut self, left: L, right: R) -> Result<Quote<'_, Self, R>, Error>
-    where
-        L: Parser<Self, Ret = Self::Ret>,
-        R: Parser<Self, Ret = Self::Ret>,
-    {
-        let ret = self.try_mat(left);
+//         if ret.is_ok() {
+//             Ok(MatThen::new(ctx, start, ret.unwrap()))
+//         } else {
+//             Err(ret.err().unwrap())
+//         }
+//     }
 
-        if ret.is_ok() {
-            Ok(Quote::new(self, right))
-        } else {
-            Err(ret.err().unwrap())
-        }
-    }
+//     // match left, then return quote with right
+//     fn quote<L, R>(&mut self, left: L, right: R) -> Result<Quote<'_, C, R>, Error>
+//     where
+//         L: Parser<C, Ret = C::Ret>,
+//         R: Parser<C, Ret = C::Ret>,
+//     {
+//         let ctx = self.ctx();
+//         let ret = ctx.try_mat(left);
 
-    fn new_term<T, S>(&mut self, cont: T, sep: S) -> Term<'_, Self, T, S>
-    where
-        T: Parser<Self, Ret = Self::Ret>,
-        S: Parser<Self, Ret = Self::Ret>,
-    {
-        Term::new(self, cont, sep)
-    }
-}
+//         if ret.is_ok() {
+//             Ok(Quote::new(ctx, right))
+//         } else {
+//             Err(ret.err().unwrap())
+//         }
+//     }
+
+//     // fn new_term<T, S>(&mut self, cont: T, sep: S) -> Term<'_, C, T, S>
+//     // where
+//     //     T: Parser<C, Ret = C::Ret>,
+//     //     S: Parser<C, Ret = C::Ret>,
+//     // {
+//     //     Term::new(self, cont, sep)
+//     // }
+// }
 
 // map
 
@@ -84,23 +81,25 @@ where
 
 // and_then
 
-pub trait Map<C>
-where
-    C: MatchPolicy + Context,
-{
-    fn map<R>(self, map: impl FnMut(&C, usize, &C::Ret) -> Result<R, Error>) -> Result<R, Error>;
+// pub trait Operator<C>
+// where
+//     C: MatchPolicy + Context,
+// {
+//     fn map<R>(&mut self, func: impl FnMut(&C, usize, &C::Ret) -> R) -> Result<R, Error>;
 
-    fn map_orig<R>(self, map: impl FnMut(&C::Orig) -> Result<R, Error>) -> Result<R, Error>;
-}
+//     fn map_orig<R>(&mut self, func: impl FnMut(&C::Orig) -> R) -> Result<R, Error>;
+
+//     fn and<R>(&mut self, parser: impl Parser<C, Ret = C::Ret>) -> Result<MatThen<'_, C>, Error>;
+// }
 
 // pub trait PolicyExtension: MatchPolicy + Context
 // where
-//     Self: Sized,
+//     C: Sized,
 // {
 //     fn map<R>(
 //         &mut self,
-//         parser: impl Parser<Self, Ret = Self::Ret>,
-//         mut map: impl FnMut(&Self, usize, Self::Ret) -> Result<R, Error>,
+//         parser: impl Parser<C, Ret = C::Ret>,
+//         mut map: impl FnMut(&C, usize, C::Ret) -> Result<R, Error>,
 //     ) -> Result<R, Error> {
 //         let start = self.offset();
 //         let ret = self.try_mat(parser);
@@ -114,11 +113,11 @@ where
 
 //     fn map_orig<R>(
 //         &mut self,
-//         parser: impl Parser<Self, Ret = Self::Ret>,
-//         mut map: impl FnMut(&<Self as Context>::Orig) -> Result<R, Error>,
+//         parser: impl Parser<C, Ret = C::Ret>,
+//         mut map: impl FnMut(&<C as Context>::Orig) -> Result<R, Error>,
 //     ) -> Result<R, Error>
 //     where
-//         Self::Ret: Into<(usize, usize)>,
+//         C::Ret: Into<(usize, usize)>,
 //     {
 //         let start = self.offset();
 //         let ret = self.try_mat(parser);
@@ -134,9 +133,9 @@ where
 
 //     fn quote_cont<R>(
 //         &mut self,
-//         left: impl Parser<Self, Ret = Self::Ret>,
-//         right: impl Parser<Self, Ret = Self::Ret>,
-//         mut cont: impl FnMut(&mut Self) -> Result<R, Error>,
+//         left: impl Parser<C, Ret = C::Ret>,
+//         right: impl Parser<C, Ret = C::Ret>,
+//         mut cont: impl FnMut(&mut C) -> Result<R, Error>,
 //     ) -> Result<R, Error> {
 //         if self.mat(left) {
 //             let ret = cont(self);
@@ -150,10 +149,10 @@ where
 
 //     fn quote<R>(
 //         &mut self,
-//         left: impl Parser<Self, Ret = Self::Ret>,
-//         right: impl Parser<Self, Ret = Self::Ret>,
-//         cont: impl Parser<Self, Ret = Self::Ret>,
-//         mut map: impl FnMut(&Self, usize, Self::Ret) -> Result<R, Error>,
+//         left: impl Parser<C, Ret = C::Ret>,
+//         right: impl Parser<C, Ret = C::Ret>,
+//         cont: impl Parser<C, Ret = C::Ret>,
+//         mut map: impl FnMut(&C, usize, C::Ret) -> Result<R, Error>,
 //     ) -> Result<R, Error> {
 //         if self.mat(left) {
 //             let start = self.offset();
