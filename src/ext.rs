@@ -20,6 +20,45 @@ where
             parser,
         }
     }
+
+    fn term<T, S>(&mut self, cont: T, sep: S) -> Term<'_, C, T, S>
+    where
+        T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+        S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+    {
+        Term { ctx: self.ctx(), cont, sep }
+    }
+}
+
+pub struct Term<'a, C, T, S>
+where
+C: MatchPolicy + Context,
+T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone, {
+    ctx: &'a mut C,
+    cont: T,
+    sep: S,
+}
+
+impl<'a, C, T, S>  Term<'a, C, T, S>
+where
+C: MatchPolicy + Context,
+T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone, {
+    fn next(&mut self) -> Map<'_, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
+        let cont = self.cont.clone();
+        let sep = self.sep.clone();
+
+        Map {
+            ctx: self.ctx,
+            parser: move |ctx: &mut C| -> Result<<C as MatchPolicy>::Ret, Error> {
+                let ret = cont.try_parse(ctx)?;
+
+                sep.parse(ctx);
+                Ok(ret)
+            }
+        }
+    }
 }
 
 pub struct Map<'a, C, P>
@@ -75,8 +114,9 @@ mod test {
     #[test]
     fn test() {
         let mut c = CharsCtx::new("++++++");
-        let mut map = c.mat(neure!('+'));
-        let mut and = map.and(neure!('+'));
+        let value = neure!('+');
+        let mut map = c.term(&value, &value);
+        let mut and = map.next();
 
         dbg!(and.run());
     }
