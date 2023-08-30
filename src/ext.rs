@@ -1,13 +1,86 @@
-mod cap;
-mod mat;
-mod quote;
-mod term;
+// mod cap;
+// mod mat;
+// mod quote;
+// mod term;
 
-use crate::{err::Error, Context, MatchPolicy, Parser, SpanStore};
-use cap::CapThen;
-use mat::MatThen;
-use quote::Quote;
-use term::Term;
+use crate::{err::Error, policy::Ret, CharsCtx, Context, MatchPolicy, Parser, SpanStore};
+
+pub trait PolicyExt<C>
+where
+    C: MatchPolicy + Context,
+{
+    fn ctx(&mut self) -> &mut C;
+
+    fn mat<P>(&mut self, parser: P) -> Map<'_, C, P>
+    where
+        P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+    {
+        Map {
+            ctx: self.ctx(),
+            parser,
+        }
+    }
+}
+
+pub struct Map<'a, C, P>
+where
+    C: MatchPolicy + Context,
+    P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+{
+    ctx: &'a mut C,
+    parser: P,
+}
+
+impl<'a, C, P> Map<'a, C, P>
+where
+    C: MatchPolicy + Context,
+    P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+{
+    pub fn run(self) -> Result<C::Ret, Error> {
+        (self.parser)(self.ctx)
+    }
+
+    pub fn and(
+        self,
+        parser: impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+    ) -> Map<'a, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
+        let fst = self.parser;
+
+        Map {
+            ctx: self.ctx,
+            parser: move |ctx: &mut C| -> Result<<C as MatchPolicy>::Ret, Error> {
+                let fst = fst.try_parse(ctx)?;
+                let snd = parser.try_parse(ctx)?;
+
+                Ok(<C as MatchPolicy>::Ret::new_from((
+                    fst.count() + snd.count(),
+                    fst.length() + snd.length(),
+                )))
+            },
+        }
+    }
+}
+
+impl PolicyExt<Self> for CharsCtx<'_> {
+    fn ctx(&mut self) -> &mut Self {
+        self
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::*;
+
+    #[test]
+    fn test() {
+        let mut c = CharsCtx::new("++++++");
+        let mut map = c.mat(neure!('+'));
+        let mut and = map.and(neure!('+'));
+
+        dbg!(and.run());
+    }
+}
 
 // pub trait PolicyExt<C>
 // where
