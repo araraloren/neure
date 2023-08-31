@@ -1,9 +1,6 @@
-use crate::bytes::BytesCtx;
-use crate::ctx::Context;
 use crate::err::Error;
 use crate::parser::Parser;
-use crate::span::{Span, SpanStore};
-use crate::CharsCtx;
+use crate::span::SpanStore;
 
 pub trait Ret {
     fn count(&self) -> usize;
@@ -37,12 +34,48 @@ impl Ret for Length {
     }
 }
 
+pub trait Context {
+    type Orig: ?Sized;
+
+    type Item;
+
+    type Iter<'a>: Iterator<Item = (usize, Self::Item)>
+    where
+        Self: 'a;
+
+    fn len(&self) -> usize;
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    fn offset(&self) -> usize;
+
+    fn inc(&mut self, offset: usize) -> &mut Self;
+
+    fn dec(&mut self, offset: usize) -> &mut Self;
+
+    fn peek(&self) -> Result<Self::Iter<'_>, Error> {
+        self.peek_at(self.offset())
+    }
+
+    fn peek_at(&self, offset: usize) -> Result<Self::Iter<'_>, Error>;
+
+    fn orig(&self) -> Result<&Self::Orig, Error> {
+        self.orig_at(self.offset())
+    }
+
+    fn orig_at(&self, offset: usize) -> Result<&Self::Orig, Error>;
+
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<&Self::Orig, Error>;
+}
+
 pub trait MatchPolicy {
     type Ret: Ret;
 
     fn try_mat_policy(
         &mut self,
-        mut parser: impl Parser<Self, Ret = Self::Ret>,
+        parser: impl Parser<Self, Ret = Self::Ret>,
         mut pre_policy: impl FnMut(&mut Self) -> Result<(), Error>,
         mut post_policy: impl FnMut(&mut Self, Result<Self::Ret, Error>) -> Result<Self::Ret, Error>,
     ) -> Result<Self::Ret, Error>
@@ -115,130 +148,11 @@ pub trait MatchPolicy {
         S: SpanStore;
 }
 
-impl MatchPolicy for CharsCtx<'_> {
-    type Ret = Length;
+pub trait CtxReference<C>
+where
+    C: MatchPolicy + Context,
+{
+    fn ctx(&self) -> &C;
 
-    fn try_mat_reset(
-        &mut self,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-        reset: bool,
-    ) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-    {
-        self.try_mat_policy(
-            parser,
-            |ctx| {
-                if reset {
-                    ctx.reset();
-                }
-                Ok(())
-            },
-            |ctx, ret| {
-                if let Ok(ret) = &ret {
-                    ctx.inc(ret.length());
-                }
-                ret
-            },
-        )
-    }
-
-    fn try_cap_reset<S>(
-        &mut self,
-        id: S::Id,
-        storer: &mut S,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-        reset: bool,
-    ) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-        S: SpanStore,
-    {
-        self.try_mat_policy(
-            parser,
-            |ctx| {
-                if reset {
-                    ctx.reset();
-                }
-                Ok(())
-            },
-            |ctx, ret| {
-                if let Ok(ret) = &ret {
-                    storer.add_span(
-                        id,
-                        Span {
-                            beg: ctx.offset(),
-                            len: ret.length(),
-                        },
-                    );
-                    ctx.inc(ret.length());
-                }
-                ret
-            },
-        )
-    }
-}
-
-impl MatchPolicy for BytesCtx<'_> {
-    type Ret = Length;
-
-    fn try_mat_reset(
-        &mut self,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-        reset: bool,
-    ) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-    {
-        self.try_mat_policy(
-            parser,
-            |ctx| {
-                if reset {
-                    ctx.reset();
-                }
-                Ok(())
-            },
-            |ctx, ret| {
-                if let Ok(ret) = &ret {
-                    ctx.inc(ret.length());
-                }
-                ret
-            },
-        )
-    }
-
-    fn try_cap_reset<S>(
-        &mut self,
-        id: S::Id,
-        storer: &mut S,
-        parser: impl Parser<Self, Ret = Self::Ret>,
-        reset: bool,
-    ) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-        S: SpanStore,
-    {
-        self.try_mat_policy(
-            parser,
-            |ctx| {
-                if reset {
-                    ctx.reset();
-                }
-                Ok(())
-            },
-            |ctx, ret| {
-                if let Ok(ret) = &ret {
-                    storer.add_span(
-                        id,
-                        Span {
-                            beg: ctx.offset(),
-                            len: ret.length(),
-                        },
-                    );
-                    ctx.inc(ret.length());
-                }
-                ret
-            },
-        )
-    }
+    fn ctx_mut(&mut self) -> &mut C;
 }

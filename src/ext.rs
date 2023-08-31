@@ -1,8 +1,3 @@
-// mod cap;
-// mod mat;
-// mod quote;
-// mod term;
-
 use crate::{err::Error, policy::Ret, CharsCtx, Context, MatchPolicy, Parser, SpanStore};
 
 pub trait PolicyExt<C>
@@ -26,26 +21,34 @@ where
         T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
         S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
     {
-        Term { ctx: self.ctx(), cont, sep }
+        Term {
+            ctx: self.ctx(),
+            cont,
+            sep,
+        }
     }
 }
 
 pub struct Term<'a, C, T, S>
 where
-C: MatchPolicy + Context,
-T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone, {
+    C: MatchPolicy + Context,
+    T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+    S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+{
     ctx: &'a mut C,
     cont: T,
     sep: S,
 }
 
-impl<'a, C, T, S>  Term<'a, C, T, S>
+impl<'a, C, T, S> Term<'a, C, T, S>
 where
-C: MatchPolicy + Context,
-T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone, {
-    fn next(&mut self) -> Map<'_, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
+    C: MatchPolicy + Context,
+    T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+    S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+{
+    fn next(
+        &mut self,
+    ) -> Map<'_, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
         let cont = self.cont.clone();
         let sep = self.sep.clone();
 
@@ -56,7 +59,7 @@ S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone, {
 
                 sep.parse(ctx);
                 Ok(ret)
-            }
+            },
         }
     }
 }

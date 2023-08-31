@@ -2,9 +2,8 @@
 pub mod _macro;
 pub mod bytes;
 pub mod chars;
-pub mod ctx;
 pub mod err;
-pub mod ext;
+pub mod etx2;
 pub mod index;
 pub mod iter;
 pub mod parser;
@@ -14,10 +13,10 @@ pub mod span;
 
 pub use self::bytes::BytesCtx;
 pub use self::chars::CharsCtx;
-pub use self::ctx::Context;
 pub use self::index::IndexBySpan;
 pub use self::iter::IteratorBySpan;
 pub use self::parser::*;
+pub use self::policy::Context;
 pub use self::policy::Length;
 pub use self::policy::MatchPolicy;
 pub use self::regex::*;

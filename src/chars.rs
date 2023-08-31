@@ -1,7 +1,14 @@
 use std::str::CharIndices;
 
-use crate::ctx::Context;
 use crate::err::Error;
+use crate::parser::Parser;
+use crate::policy::Context;
+use crate::policy::CtxReference;
+use crate::policy::Length;
+use crate::policy::MatchPolicy;
+use crate::policy::Ret;
+use crate::span::Span;
+use crate::span::SpanStore;
 use crate::span::SpanStorer;
 
 #[derive(Debug, Default)]
@@ -76,5 +83,79 @@ impl<'a> Context for CharsCtx<'a> {
 
     fn orig_sub(&self, offset: usize, len: usize) -> Result<&Self::Orig, Error> {
         self.str.get(offset..(offset + len)).ok_or(Error::ReachEnd)
+    }
+}
+
+impl MatchPolicy for CharsCtx<'_> {
+    type Ret = Length;
+
+    fn try_mat_reset(
+        &mut self,
+        parser: impl Parser<Self, Ret = Self::Ret>,
+        reset: bool,
+    ) -> Result<Self::Ret, Error>
+    where
+        Self: Sized,
+    {
+        self.try_mat_policy(
+            parser,
+            |ctx| {
+                if reset {
+                    ctx.reset();
+                }
+                Ok(())
+            },
+            |ctx, ret| {
+                if let Ok(ret) = &ret {
+                    ctx.inc(ret.length());
+                }
+                ret
+            },
+        )
+    }
+
+    fn try_cap_reset<S>(
+        &mut self,
+        id: S::Id,
+        storer: &mut S,
+        parser: impl Parser<Self, Ret = Self::Ret>,
+        reset: bool,
+    ) -> Result<Self::Ret, Error>
+    where
+        Self: Sized,
+        S: SpanStore,
+    {
+        self.try_mat_policy(
+            parser,
+            |ctx| {
+                if reset {
+                    ctx.reset();
+                }
+                Ok(())
+            },
+            |ctx, ret| {
+                if let Ok(ret) = &ret {
+                    storer.add_span(
+                        id,
+                        Span {
+                            beg: ctx.offset(),
+                            len: ret.length(),
+                        },
+                    );
+                    ctx.inc(ret.length());
+                }
+                ret
+            },
+        )
+    }
+}
+
+impl<'a> CtxReference<CharsCtx<'a>> for CharsCtx<'a> {
+    fn ctx(&self) -> &CharsCtx<'a> {
+        self
+    }
+
+    fn ctx_mut(&mut self) -> &mut CharsCtx<'a> {
+        self
     }
 }

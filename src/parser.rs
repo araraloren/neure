@@ -1,9 +1,12 @@
-use crate::ctx::Context;
 use crate::err::Error;
+use crate::policy::Context;
 use crate::policy::Ret;
 use crate::MatchPolicy;
 
-pub trait Parser<T> where Self: Sized {
+pub trait Parser<T>
+where
+    Self: Sized,
+{
     type Ret: Ret;
 
     fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error>;
@@ -217,11 +220,6 @@ where
     C: Context<Orig = [u8]> + MatchPolicy,
 {
     move |dat: &mut C| {
-        println!("matcing. ..`{}`", std::str::from_utf8(lit).unwrap());
-        println!(
-            "...`{}`",
-            std::str::from_utf8(dat.orig_sub(dat.offset(), 200)?).unwrap()
-        );
         if !dat.orig()?.starts_with(lit) {
             Err(Error::Bytes)
         } else {
@@ -242,28 +240,3 @@ where
         }
     }
 }
-
-// pub fn seq<C>(
-//     parser1: impl Fn(&mut C) -> Result<C::Ret, Error>,
-//     parser2: impl Fn(&mut C) -> Result<C::Ret, Error>,
-// ) -> impl Fn(&mut C) -> Result<C::Ret, Error>
-// where
-//     C: Context + MatchPolicy,
-// {
-//     move |ctx: &mut C| {
-//         let start = ctx.offset();
-//         let ret1 = parser1(ctx);
-
-//         if ret1.is_ok() {
-//             let ret2 = parser2(ctx);
-
-//             if ret2.is_ok() {
-//                 Ok(<C::Ret>::new_from((1, ctx.offset() - start)))
-//             } else {
-//                 ret2
-//             }
-//         } else {
-//             ret1
-//         }
-//     }
-// }
