@@ -1,129 +1,129 @@
-use crate::{err::Error, policy::Ret, CharsCtx, Context, MatchPolicy, Parser, SpanStore};
+// use crate::{err::Error, policy::Ret, CharsCtx, Context, MatchPolicy, Parser, SpanStore};
 
-pub trait PolicyExt<C>
-where
-    C: MatchPolicy + Context,
-{
-    fn ctx(&mut self) -> &mut C;
+// pub trait PolicyExt<C>
+// where
+//     C: MatchPolicy + Context,
+// {
+//     fn ctx(&mut self) -> &mut C;
 
-    fn mat<P>(&mut self, parser: P) -> Map<'_, C, P>
-    where
-        P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
-    {
-        Map {
-            ctx: self.ctx(),
-            parser,
-        }
-    }
+//     fn mat<P>(&mut self, parser: P) -> Map<'_, C, P>
+//     where
+//         P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+//     {
+//         Map {
+//             ctx: self.ctx(),
+//             parser,
+//         }
+//     }
 
-    fn term<T, S>(&mut self, cont: T, sep: S) -> Term<'_, C, T, S>
-    where
-        T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-        S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-    {
-        Term {
-            ctx: self.ctx(),
-            cont,
-            sep,
-        }
-    }
-}
+//     fn term<T, S>(&mut self, cont: T, sep: S) -> Term<'_, C, T, S>
+//     where
+//         T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+//         S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+//     {
+//         Term {
+//             ctx: self.ctx(),
+//             cont,
+//             sep,
+//         }
+//     }
+// }
 
-pub struct Term<'a, C, T, S>
-where
-    C: MatchPolicy + Context,
-    T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-    S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-{
-    ctx: &'a mut C,
-    cont: T,
-    sep: S,
-}
+// pub struct Term<'a, C, T, S>
+// where
+//     C: MatchPolicy + Context,
+//     T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+//     S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+// {
+//     ctx: &'a mut C,
+//     cont: T,
+//     sep: S,
+// }
 
-impl<'a, C, T, S> Term<'a, C, T, S>
-where
-    C: MatchPolicy + Context,
-    T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-    S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
-{
-    fn next(
-        &mut self,
-    ) -> Map<'_, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
-        let cont = self.cont.clone();
-        let sep = self.sep.clone();
+// impl<'a, C, T, S> Term<'a, C, T, S>
+// where
+//     C: MatchPolicy + Context,
+//     T: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+//     S: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error> + Clone,
+// {
+//     fn next(
+//         &mut self,
+//     ) -> Map<'_, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
+//         let cont = self.cont.clone();
+//         let sep = self.sep.clone();
 
-        Map {
-            ctx: self.ctx,
-            parser: move |ctx: &mut C| -> Result<<C as MatchPolicy>::Ret, Error> {
-                let ret = cont.try_parse(ctx)?;
+//         Map {
+//             ctx: self.ctx,
+//             parser: move |ctx: &mut C| -> Result<<C as MatchPolicy>::Ret, Error> {
+//                 let ret = cont.try_parse(ctx)?;
 
-                sep.parse(ctx);
-                Ok(ret)
-            },
-        }
-    }
-}
+//                 sep.parse(ctx);
+//                 Ok(ret)
+//             },
+//         }
+//     }
+// }
 
-pub struct Map<'a, C, P>
-where
-    C: MatchPolicy + Context,
-    P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
-{
-    ctx: &'a mut C,
-    parser: P,
-}
+// pub struct Map<'a, C, P>
+// where
+//     C: MatchPolicy + Context,
+//     P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+// {
+//     ctx: &'a mut C,
+//     parser: P,
+// }
 
-impl<'a, C, P> Map<'a, C, P>
-where
-    C: MatchPolicy + Context,
-    P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
-{
-    pub fn run(self) -> Result<C::Ret, Error> {
-        (self.parser)(self.ctx)
-    }
+// impl<'a, C, P> Map<'a, C, P>
+// where
+//     C: MatchPolicy + Context,
+//     P: FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+// {
+//     pub fn run(self) -> Result<C::Ret, Error> {
+//         (self.parser)(self.ctx)
+//     }
 
-    pub fn and(
-        self,
-        parser: impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
-    ) -> Map<'a, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
-        let fst = self.parser;
+//     pub fn and(
+//         self,
+//         parser: impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>,
+//     ) -> Map<'a, C, impl FnOnce(&mut C) -> Result<<C as MatchPolicy>::Ret, Error>> {
+//         let fst = self.parser;
 
-        Map {
-            ctx: self.ctx,
-            parser: move |ctx: &mut C| -> Result<<C as MatchPolicy>::Ret, Error> {
-                let fst = fst.try_parse(ctx)?;
-                let snd = parser.try_parse(ctx)?;
+//         Map {
+//             ctx: self.ctx,
+//             parser: move |ctx: &mut C| -> Result<<C as MatchPolicy>::Ret, Error> {
+//                 let fst = fst.try_parse(ctx)?;
+//                 let snd = parser.try_parse(ctx)?;
 
-                Ok(<C as MatchPolicy>::Ret::new_from((
-                    fst.count() + snd.count(),
-                    fst.length() + snd.length(),
-                )))
-            },
-        }
-    }
-}
+//                 Ok(<C as MatchPolicy>::Ret::new_from((
+//                     fst.count() + snd.count(),
+//                     fst.length() + snd.length(),
+//                 )))
+//             },
+//         }
+//     }
+// }
 
-impl PolicyExt<Self> for CharsCtx<'_> {
-    fn ctx(&mut self) -> &mut Self {
-        self
-    }
-}
+// impl PolicyExt<Self> for CharsCtx<'_> {
+//     fn ctx(&mut self) -> &mut Self {
+//         self
+//     }
+// }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use crate::*;
+// #[cfg(test)]
+// mod test {
+//     use super::*;
+//     use crate::*;
 
-    #[test]
-    fn test() {
-        let mut c = CharsCtx::new("++++++");
-        let value = neure!('+');
-        let mut map = c.term(&value, &value);
-        let mut and = map.next();
+//     #[test]
+//     fn test() {
+//         let mut c = CharsCtx::new("++++++");
+//         let value = neure!('+');
+//         let mut map = c.term(&value, &value);
+//         let mut and = map.next();
 
-        dbg!(and.run());
-    }
-}
+//         dbg!(and.run());
+//     }
+// }
 
 // pub trait PolicyExt<C>
 // where
@@ -304,3 +304,92 @@ mod test {
 //         Ok(ret)
 //     }
 // }
+
+pub mod mat;
+pub mod quote;
+pub mod term;
+
+use self::term::Term;
+use self::term::TermIter;
+use self::{mat::MatchThen, quote::Quote};
+use crate::NullParser;
+use crate::{err::Error, CharsCtx, Context, MatchPolicy, Parser};
+
+pub trait MatchExtension<C: MatchPolicy> {
+    fn mat<P>(&mut self, parser: P) -> MatchThen<'_, C, P, NullParser<C>, NullParser<C>>
+    where
+        P: Parser<C, Ret = C::Ret>;
+
+    fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, C, L, R>
+    where
+        L: Parser<C, Ret = C::Ret>,
+        R: Parser<C, Ret = C::Ret>;
+
+    fn term<S>(&mut self, sep: S, optional: bool) -> Term<'_, C, S>;
+}
+
+impl<'a> MatchExtension<CharsCtx<'a>> for CharsCtx<'a> {
+    fn mat<P>(
+        &mut self,
+        parser: P,
+    ) -> MatchThen<'_, CharsCtx<'a>, P, NullParser<Self>, NullParser<Self>>
+    where
+        P: Parser<Self, Ret = <Self as MatchPolicy>::Ret>,
+    {
+        MatchThen::new(self, NullParser::default(), NullParser::default(), parser)
+    }
+
+    fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, CharsCtx<'a>, L, R>
+    where
+        L: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret>,
+        R: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret>,
+    {
+        Quote::new(self, left, right)
+    }
+
+    fn term<S>(&mut self, sep: S, optional: bool) -> Term<'_, CharsCtx<'a>, S> {
+        Term::new(self, sep, optional)
+    }
+}
+
+#[derive(Debug)]
+pub struct CtxGuard<'a, C>
+where
+    C: Context + MatchPolicy,
+{
+    offset: usize,
+
+    ctx: &'a mut C,
+}
+
+impl<'a, C> CtxGuard<'a, C>
+where
+    C: Context + MatchPolicy,
+{
+    pub fn new(ctx: &'a mut C) -> Self {
+        let offset = ctx.offset();
+
+        Self { ctx, offset }
+    }
+
+    pub fn beg(&self) -> usize {
+        self.offset
+    }
+
+    pub fn ctx(&mut self) -> &mut C {
+        self.ctx
+    }
+
+    pub fn try_mat(&mut self, parser: impl Parser<C, Ret = C::Ret>) -> Result<C::Ret, Error> {
+        self.ctx.try_mat(parser)
+    }
+}
+
+impl<'a, C> Drop for CtxGuard<'a, C>
+where
+    C: Context + MatchPolicy,
+{
+    fn drop(&mut self) {
+        self.ctx.set_offset(self.offset);
+    }
+}

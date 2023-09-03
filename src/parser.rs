@@ -1,6 +1,10 @@
+use std::fmt::Debug;
+use std::marker::PhantomData;
+
 use crate::err::Error;
 use crate::policy::Context;
 use crate::policy::Ret;
+use crate::Length;
 use crate::MatchPolicy;
 
 pub trait Parser<T>
@@ -25,6 +29,34 @@ where
 
     fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error> {
         (self)(ctx)
+    }
+}
+
+pub struct NullParser<T>(PhantomData<T>);
+
+impl<T> Debug for NullParser<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("NullParser").field(&self.0).finish()
+    }
+}
+
+impl<T> Clone for NullParser<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<T> Default for NullParser<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<T> Parser<T> for NullParser<T> {
+    type Ret = Length;
+
+    fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error> {
+        Ok(Length::new_from((0, 0)))
     }
 }
 

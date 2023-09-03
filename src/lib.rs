@@ -3,7 +3,7 @@ pub mod _macro;
 pub mod bytes;
 pub mod chars;
 pub mod err;
-pub mod etx2;
+pub mod ext;
 pub mod index;
 pub mod iter;
 pub mod parser;

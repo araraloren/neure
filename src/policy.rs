@@ -1,8 +1,13 @@
+use std::ops::AddAssign;
+
 use crate::err::Error;
 use crate::parser::Parser;
 use crate::span::SpanStore;
 
-pub trait Ret {
+pub trait Ret: AddAssign<Self>
+where
+    Self: Sized,
+{
     fn count(&self) -> usize;
 
     fn length(&self) -> usize;
@@ -34,6 +39,12 @@ impl Ret for Length {
     }
 }
 
+impl AddAssign<Length> for Length {
+    fn add_assign(&mut self, rhs: Length) {
+        self.0 += rhs.length();
+    }
+}
+
 pub trait Context {
     type Orig: ?Sized;
 
@@ -50,6 +61,8 @@ pub trait Context {
     }
 
     fn offset(&self) -> usize;
+
+    fn set_offset(&mut self, offset: usize) -> &mut Self;
 
     fn inc(&mut self, offset: usize) -> &mut Self;
 
@@ -146,13 +159,4 @@ pub trait MatchPolicy {
     where
         Self: Sized,
         S: SpanStore;
-}
-
-pub trait CtxReference<C>
-where
-    C: MatchPolicy + Context,
-{
-    fn ctx(&self) -> &C;
-
-    fn ctx_mut(&mut self) -> &mut C;
 }

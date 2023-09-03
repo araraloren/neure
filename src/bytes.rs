@@ -2,7 +2,6 @@ use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::parser::Parser;
 use crate::policy::Context;
-use crate::policy::CtxReference;
 use crate::policy::Length;
 use crate::policy::MatchPolicy;
 use crate::policy::Ret;
@@ -60,6 +59,11 @@ impl<'a> Context for BytesCtx<'a> {
 
     fn offset(&self) -> usize {
         self.offset
+    }
+
+    fn set_offset(&mut self, offset: usize) -> &mut Self {
+        self.offset = offset;
+        self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
@@ -148,15 +152,5 @@ impl MatchPolicy for BytesCtx<'_> {
                 ret
             },
         )
-    }
-}
-
-impl<'a> CtxReference<BytesCtx<'a>> for BytesCtx<'a> {
-    fn ctx(&self) -> &BytesCtx<'a> {
-        self
-    }
-
-    fn ctx_mut(&mut self) -> &mut BytesCtx<'a> {
-        self
     }
 }

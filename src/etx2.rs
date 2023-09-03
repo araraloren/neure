@@ -3,47 +3,61 @@ use crate::parser::Parser;
 use crate::policy::Context;
 use crate::policy::MatchPolicy;
 use crate::policy::Ret;
-use crate::SpanStore;
 
-pub trait MatchExt<C>
+///
+/// mat -> { map, and, or }
+/// 
+/// quote -> {
+///     mat -> { map, and, or }
+///     quote + parser -> ?
+///     term
+/// }
+/// 
+/// 
+pub trait Extension<C>
 where
     C: MatchPolicy + Context,
 {
-    fn mat<P>(&mut self, parser: P) -> Match<'_, C, P>
-    where
-        P: Parser<C, Ret = C::Ret>;
+    fn mat<P: Parser<C, Ret = C::Ret>>(&mut self, parser: P) -> Match<'_, C, P>;
 
-    fn cap<P, S>(&mut self, idx: S::Index, storer: &mut S, parser: P) -> Capture<'_, C, S, P>
+    fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, L, R, C>
     where
-        S: SpanStore,
-        P: Parser<C, Ret = C::Ret>;
+        L: Parser<C, Ret = C::Ret>,
+        R: Parser<C, Ret = C::Ret>;
+
+    fn term<T, S>(&mut self, cont: T, sep: S) -> Term<'_, T, S, C>
+    where
+        T: Parser<C, Ret = C::Ret>,
+        S: Parser<C, Ret = C::Ret>;
 }
 
 #[derive(Debug)]
-pub struct Capture<'a, C, S, P>
-where
-    S: SpanStore,
-{
-    parser: P,
+pub struct Term<'a, T, S, C> {
+    cont: T,
 
-    id: S::Id,
+    sep: S,
 
     ctx: &'a mut C,
-
-    storer: &'a mut S,
 }
 
-impl<'a, C, S, P> Capture<'a, C, S, P>
-where
-    S: SpanStore,
-{
-    pub fn new(ctx: &'a mut C, id: S::Id, storer: &'a mut S, parser: P) -> Self {
-        Self {
-            ctx,
-            id,
-            storer,
-            parser,
-        }
+impl<'a, L, R, C> Term<'a, L, R, C> {
+    pub fn new(ctx: &'a mut C, cont: L, sep: R) -> Self {
+        Self { ctx, cont, sep }
+    }
+}
+
+#[derive(Debug)]
+pub struct Quote<'a, L, R, C> {
+    left: L,
+
+    right: R,
+
+    ctx: &'a mut C,
+}
+
+impl<'a, L, R, C> Quote<'a, L, R, C> {
+    pub fn new(ctx: &'a mut C, left: L, right: R) -> Self {
+        Self { ctx, left, right }
     }
 }
 
@@ -72,7 +86,7 @@ where
         func(self.ctx.orig_sub(start, ret.length())?)
     }
 
-    pub fn and_mat(
+    pub fn and(
         self,
         parser: impl Parser<C, Ret = C::Ret>,
     ) -> Match<'a, C, impl Parser<C, Ret = C::Ret>> {
@@ -91,32 +105,16 @@ where
         })
     }
 
-    pub fn and_cap<S>(
+    pub fn or(
         self,
-        id: S::Id,
-        storer: &'a mut S,
         parser: impl Parser<C, Ret = C::Ret>,
-    ) -> Capture<'a, C, S, impl FnOnce(&mut C, S::Id, &mut S) -> Result<C::Ret, Error>>
-    where
-        S: SpanStore,
-    {
+    ) -> Match<'a, C, impl Parser<C, Ret = C::Ret>> {
         let fst = self.parser;
         let snd = parser;
         let ctx = self.ctx;
 
-        Capture::new(
-            ctx,
-            id,
-            storer,
-            move |ctx: &mut C, id: S::Id, storer: &mut S| -> Result<C::Ret, Error> {
-                let fst = ctx.try_mat(fst)?;
-                let snd = ctx.try_cap(id, storer, snd)?;
-
-                Ok(<C::Ret>::new_from((
-                    fst.count() + snd.count(),
-                    fst.length() + snd.length(),
-                )))
-            },
-        )
+        Match::new(ctx, move |ctx: &mut C| -> Result<C::Ret, Error> {
+            ctx.try_mat(fst).or(ctx.try_mat(snd))
+        })
     }
 }

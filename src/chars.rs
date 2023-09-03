@@ -3,7 +3,6 @@ use std::str::CharIndices;
 use crate::err::Error;
 use crate::parser::Parser;
 use crate::policy::Context;
-use crate::policy::CtxReference;
 use crate::policy::Length;
 use crate::policy::MatchPolicy;
 use crate::policy::Ret;
@@ -61,6 +60,11 @@ impl<'a> Context for CharsCtx<'a> {
 
     fn offset(&self) -> usize {
         self.offset
+    }
+
+    fn set_offset(&mut self, offset: usize) -> &mut Self {
+        self.offset = offset;
+        self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
@@ -147,15 +151,5 @@ impl MatchPolicy for CharsCtx<'_> {
                 ret
             },
         )
-    }
-}
-
-impl<'a> CtxReference<CharsCtx<'a>> for CharsCtx<'a> {
-    fn ctx(&self) -> &CharsCtx<'a> {
-        self
-    }
-
-    fn ctx_mut(&mut self) -> &mut CharsCtx<'a> {
-        self
     }
 }
