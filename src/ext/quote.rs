@@ -29,12 +29,19 @@ where
     {
         MatchThen::new(self.ctx, self.left, self.right, parser)
     }
+}
 
+impl<'a, C, L, R> Quote<'a, C, L, R>
+where
+    C: MatchPolicy + Context,
+    L: Parser<C, Ret = C::Ret>,
+    R: Parser<C, Ret = C::Ret> + Clone,
+{
     pub fn quote(
         self,
         left: impl Parser<C, Ret = C::Ret>,
-        right: impl Parser<C, Ret = C::Ret>,
-    ) -> Quote<'a, C, impl Parser<C, Ret = C::Ret>, impl Parser<C, Ret = C::Ret>> {
+        right: impl Parser<C, Ret = C::Ret> + Clone,
+    ) -> Quote<'a, C, impl Parser<C, Ret = C::Ret>, impl Parser<C, Ret = C::Ret> + Clone> {
         let next_left = left;
         let next_right = right;
         let left = self.left;
@@ -58,8 +65,11 @@ where
             },
         )
     }
-
-    pub fn term<S>(self, sep: S, optional: bool) -> Term<'a, C, S, L, R> {
+    
+    pub fn term<S>(self, sep: S, optional: bool) -> Term<'a, C, S, L, R>
+    where
+        S: Parser<C, Ret = C::Ret> + Clone,
+    {
         Term::new(self.ctx, Some(self.left), Some(self.right), sep, optional)
     }
 }

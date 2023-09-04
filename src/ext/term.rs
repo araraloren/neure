@@ -90,7 +90,13 @@ where
     }
 }
 
-pub struct Term<'a, C, S, PR, PO> {
+pub struct Term<'a, C, S, PR, PO>
+where
+    C: MatchPolicy + Context,
+    PR: Parser<C, Ret = C::Ret>,
+    PO: Parser<C, Ret = C::Ret> + Clone,
+    S: Parser<C, Ret = C::Ret> + Clone,
+{
     sep: S,
     pre: Option<PR>,
     post: Option<PO>,
@@ -98,7 +104,13 @@ pub struct Term<'a, C, S, PR, PO> {
     ctx: &'a mut C,
 }
 
-impl<'a, C, S, PR, PO> Term<'a, C, S, PR, PO> {
+impl<'a, C, S, PR, PO> Term<'a, C, S, PR, PO>
+where
+    C: MatchPolicy + Context,
+    PR: Parser<C, Ret = C::Ret>,
+    PO: Parser<C, Ret = C::Ret> + Clone,
+    S: Parser<C, Ret = C::Ret> + Clone,
+{
     pub fn new(ctx: &'a mut C, pre: Option<PR>, post: Option<PO>, sep: S, optional: bool) -> Self {
         Self {
             ctx,
@@ -226,10 +238,10 @@ where
         &'b mut self,
         sep: P,
         optional: bool,
-    ) -> Term<'c, C, P, impl Parser<C, Ret = C::Ret> + 'c, impl Parser<C, Ret = C::Ret> + 'c>
+    ) -> Term<'c, C, P, impl Parser<C, Ret = C::Ret> + 'c, impl Parser<C, Ret = C::Ret> + Clone + 'c>
     where
         'b: 'c,
-        P: Parser<C, Ret = C::Ret> + 'c,
+        P: Parser<C, Ret = C::Ret> + Clone + 'c,
     {
         let pre = self.pre.take();
         let pre = |ctx: &mut C| {

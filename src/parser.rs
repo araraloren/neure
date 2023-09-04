@@ -52,11 +52,14 @@ impl<T> Default for NullParser<T> {
     }
 }
 
-impl<T> Parser<T> for NullParser<T> {
-    type Ret = Length;
+impl<T> Parser<T> for NullParser<T>
+where
+    T: Context + MatchPolicy,
+{
+    type Ret = T::Ret;
 
     fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error> {
-        Ok(Length::new_from((0, 0)))
+        Ok(<Self::Ret>::new_from((0, 0)))
     }
 }
 

@@ -315,7 +315,7 @@ use self::{mat::MatchThen, quote::Quote};
 use crate::NullParser;
 use crate::{err::Error, CharsCtx, Context, MatchPolicy, Parser};
 
-pub trait MatchExtension<C: MatchPolicy> {
+pub trait MatchExtension<C: MatchPolicy + Context> {
     fn mat<'b, 'c, P>(&'b mut self, parser: P) -> MatchThen<'c, C, P, NullParser<C>, NullParser<C>>
     where
         'b: 'c,
@@ -326,7 +326,9 @@ pub trait MatchExtension<C: MatchPolicy> {
         L: Parser<C, Ret = C::Ret>,
         R: Parser<C, Ret = C::Ret>;
 
-    fn term<S>(&mut self, sep: S, optional: bool) -> Term<'_, C, S, NullParser<C>, NullParser<C>>;
+    fn term<S>(&mut self, sep: S, optional: bool) -> Term<'_, C, S, NullParser<C>, NullParser<C>>
+    where
+        S: Parser<C, Ret = C::Ret> + Clone;
 }
 
 impl<'a> MatchExtension<CharsCtx<'a>> for CharsCtx<'a> {
@@ -353,7 +355,10 @@ impl<'a> MatchExtension<CharsCtx<'a>> for CharsCtx<'a> {
         &mut self,
         sep: S,
         optional: bool,
-    ) -> Term<'_, CharsCtx<'a>, S, NullParser<Self>, NullParser<Self>> {
+    ) -> Term<'_, CharsCtx<'a>, S, NullParser<Self>, NullParser<Self>>
+    where
+        S: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret> + Clone,
+    {
         Term::new(
             self,
             Some(NullParser::default()),
