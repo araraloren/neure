@@ -1,6 +1,6 @@
 use super::mat::MatchThen;
-use super::CtxGuard;
 use super::term::Term;
+use super::CtxGuard;
 use crate::Context;
 use crate::MatchPolicy;
 use crate::Parser;
@@ -59,7 +59,7 @@ where
         )
     }
 
-    // pub fn term<S>(self, sep: S) -> Term<'a, C, impl Parser<C, Ret = C::Ret>> {
-
-    // }
+    pub fn term<S>(self, sep: S, optional: bool) -> Term<'a, C, S, L, R> {
+        Term::new(self.ctx, Some(self.left), Some(self.right), sep, optional)
+    }
 }
