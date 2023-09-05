@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::err::Error;
 use crate::policy::Context;
 use crate::policy::Ret;
-use crate::Length;
 use crate::MatchPolicy;
 
 pub trait Parser<T>
@@ -32,33 +31,33 @@ where
     }
 }
 
-pub struct NullParser<T>(PhantomData<T>);
+pub struct True<T>(PhantomData<T>);
 
-impl<T> Debug for NullParser<T> {
+impl<T> Debug for True<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("NullParser").field(&self.0).finish()
+        f.debug_tuple("True").field(&self.0).finish()
     }
 }
 
-impl<T> Clone for NullParser<T> {
+impl<T> Clone for True<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T> Default for NullParser<T> {
+impl<T> Default for True<T> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<T> Parser<T> for NullParser<T>
+impl<T> Parser<T> for True<T>
 where
     T: Context + MatchPolicy,
 {
     type Ret = T::Ret;
 
-    fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error> {
+    fn try_parse(self, _: &mut T) -> Result<Self::Ret, Error> {
         Ok(<Self::Ret>::new_from((0, 0)))
     }
 }

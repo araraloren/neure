@@ -312,57 +312,61 @@ pub mod term;
 use self::term::Term;
 use self::term::TermIter;
 use self::{mat::MatchThen, quote::Quote};
-use crate::NullParser;
+use crate::True;
 use crate::{err::Error, CharsCtx, Context, MatchPolicy, Parser};
 
 pub trait MatchExtension<C: MatchPolicy + Context> {
-    fn mat<'b, 'c, P>(&'b mut self, parser: P) -> MatchThen<'c, C, P, NullParser<C>, NullParser<C>>
+    fn mat<'b, 'c, P>(&'b mut self, parser: P) -> MatchThen<'c, C, P, True<C>, True<C>>
     where
         'b: 'c,
         P: Parser<C, Ret = C::Ret> + 'c;
 
-    fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, C, L, R>
+    fn quote<'b, 'c, L, R>(&'b mut self, left: L, right: R) -> Quote<'c, C, L, R>
     where
-        L: Parser<C, Ret = C::Ret>,
-        R: Parser<C, Ret = C::Ret>;
+        'b: 'c,
+        L: Parser<C, Ret = C::Ret> + 'c,
+        R: Parser<C, Ret = C::Ret> + 'c;
 
-    fn term<S>(&mut self, sep: S, optional: bool) -> Term<'_, C, S, NullParser<C>, NullParser<C>>
+    fn term<'b, 'c, S>(&'b mut self, sep: S, optional: bool) -> Term<'c, C, S, True<C>, True<C>>
     where
-        S: Parser<C, Ret = C::Ret> + Clone;
+        'b: 'c,
+        S: Parser<C, Ret = C::Ret> + Clone + 'c;
 }
 
 impl<'a> MatchExtension<CharsCtx<'a>> for CharsCtx<'a> {
     fn mat<'b, 'c, P>(
         &'b mut self,
         parser: P,
-    ) -> MatchThen<'c, CharsCtx<'a>, P, NullParser<Self>, NullParser<Self>>
+    ) -> MatchThen<'c, CharsCtx<'a>, P, True<Self>, True<Self>>
     where
         'b: 'c,
         P: Parser<Self, Ret = <Self as MatchPolicy>::Ret> + 'c,
     {
-        MatchThen::new(self, NullParser::default(), NullParser::default(), parser)
+        MatchThen::new(self, True::default(), True::default(), parser)
     }
 
-    fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, CharsCtx<'a>, L, R>
+    fn quote<'b, 'c, L, R>(&'b mut self, left: L, right: R) -> Quote<'c, CharsCtx<'a>, L, R>
     where
-        L: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret>,
-        R: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret>,
+        'b: 'c,
+        L: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret> + 'c,
+        R: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret> + 'c,
     {
         Quote::new(self, left, right)
     }
 
-    fn term<S>(
-        &mut self,
+    fn term<'b, 'c, S>(
+        &'b mut self,
         sep: S,
         optional: bool,
-    ) -> Term<'_, CharsCtx<'a>, S, NullParser<Self>, NullParser<Self>>
+    ) -> Term<'c, CharsCtx<'a>, S, True<Self>, True<Self>>
     where
-        S: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret> + Clone,
+        'b: 'c,
+        S: Parser<CharsCtx<'a>, Ret = <CharsCtx<'a> as MatchPolicy>::Ret> + Clone + 'c,
     {
         Term::new(
             self,
-            Some(NullParser::default()),
-            Some(NullParser::default()),
+            Some(True::default()),
+            Some(True::default()),
             sep,
             optional,
         )

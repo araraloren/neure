@@ -4,8 +4,8 @@ use super::CtxGuard;
 use crate::policy::Ret;
 use crate::Context;
 use crate::MatchPolicy;
-use crate::NullParser;
 use crate::Parser;
+use crate::True;
 
 pub struct TermIter<'a, C, T, S, PR, PO> {
     cont: T,
