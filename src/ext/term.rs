@@ -61,32 +61,25 @@ where
                 Ok(<C::Ret>::new_from((0, 0)))
             }
         };
-        let post = self.post.take();
-        let cont_post = post.clone();
-        let cont = self.cont.clone();
-        let parser = |ctx: &mut C| {
-            cont.try_parse(ctx).or_else(|e| {
-                if let Some(post) = cont_post {
-                    post.try_parse(ctx)
-                } else {
-                    Err(e)
-                }
-            })
-        };
+        let post = self.post.clone();
         let sep = self.sep.clone();
         let post = |ctx: &mut C| {
-            sep.try_parse(ctx).or_else(|e| {
-                if self.optional {
-                    Ok(<C::Ret>::new_from((0, 0)))
-                } else if let Some(post) = post {
-                    post.try_parse(ctx)
-                } else {
-                    Err(e)
+            let mut guard = CtxGuard::new(ctx);
+            let mut ret = guard.try_mat(sep);
+
+            if let Some(post) = post {
+                if let Ok(ret) = &mut ret {
+                    if let Ok(post_ret) = guard.try_mat(post) {
+                        *ret += post_ret;
+                    }
+                } else if self.optional {
+                    return guard.try_mat(post);
                 }
-            })
+            }
+            ret
         };
 
-        MatchThen::new(self.ctx, pre, post, parser)
+        MatchThen::new(self.ctx, pre, post, self.cont.clone())
     }
 }
 
@@ -192,11 +185,11 @@ where
         &'b mut self,
         left: L,
         right: R,
-    ) -> Quote<'c, C, impl Parser<C, Ret = C::Ret> + 'c, impl Parser<C, Ret = C::Ret> + 'c>
+    ) -> Quote<'c, C, impl Parser<C, Ret = C::Ret> + 'c, impl Parser<C, Ret = C::Ret> + Clone + 'c>
     where
         'b: 'c,
         L: Parser<C, Ret = C::Ret> + 'c,
-        R: Parser<C, Ret = C::Ret> + 'c,
+        R: Parser<C, Ret = C::Ret> + Clone + 'c,
     {
         let pre = self.pre.take();
         let pre = |ctx: &mut C| {

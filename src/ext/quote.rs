@@ -65,7 +65,7 @@ where
             },
         )
     }
-    
+
     pub fn term<S>(self, sep: S, optional: bool) -> Term<'a, C, S, L, R>
     where
         S: Parser<C, Ret = C::Ret> + Clone,
