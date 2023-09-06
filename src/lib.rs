@@ -19,7 +19,6 @@ pub use self::parser::*;
 pub use self::policy::Context;
 pub use self::policy::Length;
 pub use self::policy::MatchPolicy;
-pub use self::regex::*;
 pub use self::span::Span;
 pub use self::span::SpanStore;
 pub use self::span::SpanStorer;
