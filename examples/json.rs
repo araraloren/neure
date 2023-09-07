@@ -97,7 +97,7 @@ impl JsonParser {
 
     pub fn try_mat<'a, 'c>(
         ctx: &mut BytesCtx<'c>,
-        parser: impl Parser<BytesCtx<'c>, Ret = Length>,
+        parser: impl Pat<BytesCtx<'c>, Ret = Length>,
     ) -> Result<Length, Error> {
         let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
 

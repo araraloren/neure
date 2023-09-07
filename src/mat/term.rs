@@ -1,33 +1,33 @@
-use super::mat::MatchThen;
 use super::quote::Quote;
+use super::then::Then;
 use super::CtxGuard;
-use crate::policy::Ret;
-use crate::Context;
-use crate::MatchPolicy;
-use crate::Parser;
-use crate::True;
 
-pub struct TermIter<'a, C, T, S, PR, PO> {
-    cont: T,
-    sep: S,
-    pre: Option<PR>,
-    post: Option<PO>,
+use crate::ctx::Context;
+use crate::ctx::Pattern;
+use crate::policy::Policy;
+use crate::policy::Ret;
+
+pub struct TermIter<'a, Ctx, Pa, Sep, Pr, Po> {
+    pattern: Pa,
+    sep: Sep,
+    pre: Option<Pr>,
+    post: Option<Po>,
     optional: bool,
-    ctx: &'a mut C,
+    ctx: &'a mut Ctx,
 }
 
-impl<'a, C, T, S, PR, PO> TermIter<'a, C, T, S, PR, PO> {
+impl<'a, Ctx, Pa, Sep, Pr, Po> TermIter<'a, Ctx, Pa, Sep, Pr, Po> {
     pub fn new(
-        ctx: &'a mut C,
-        pre: Option<PR>,
-        post: Option<PO>,
-        cont: T,
-        sep: S,
+        ctx: &'a mut Ctx,
+        pre: Option<Pr>,
+        post: Option<Po>,
+        pattern: Pa,
+        sep: Sep,
         optional: bool,
     ) -> Self {
         Self {
             ctx,
-            cont,
+            pattern,
             sep,
             pre,
             post,
@@ -36,34 +36,34 @@ impl<'a, C, T, S, PR, PO> TermIter<'a, C, T, S, PR, PO> {
     }
 }
 
-impl<'a, C, T, S, PR, PO> TermIter<'a, C, T, S, PR, PO>
+impl<'a, 'd, Ctx, Pa, Sep, Pr, Po> TermIter<'a, Ctx, Pa, Sep, Pr, Po>
 where
-    C: Context + MatchPolicy,
-    PR: Parser<C, Ret = C::Ret>,
-    PO: Parser<C, Ret = C::Ret> + Clone,
-    T: Parser<C, Ret = C::Ret> + Clone,
-    S: Parser<C, Ret = C::Ret> + Clone,
+    Ctx: Context<'d> + Policy<Ctx>,
+    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
+    Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
+    Pa: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
+    Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
     pub fn next<'b: 'c, 'c>(
         &'b mut self,
-    ) -> MatchThen<
+    ) -> Then<
         'c,
-        C,
-        impl Parser<C, Ret = C::Ret> + 'c,
-        impl Parser<C, Ret = C::Ret> + 'c,
-        impl Parser<C, Ret = C::Ret> + 'c,
+        Ctx,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
     > {
         let pre = self.pre.take();
-        let pre = |ctx: &mut C| {
+        let pre = |ctx: &mut Ctx| {
             if let Some(pre) = pre {
                 pre.try_parse(ctx)
             } else {
-                Ok(<C::Ret>::new_from((0, 0)))
+                Ok(<Ctx::Ret>::new_from((0, 0)))
             }
         };
         let post = self.post.clone();
         let sep = self.sep.clone();
-        let post = |ctx: &mut C| {
+        let post = |ctx: &mut Ctx| {
             let mut guard = CtxGuard::new(ctx);
             let mut ret = guard.try_mat(sep);
 
@@ -79,32 +79,26 @@ where
             ret
         };
 
-        MatchThen::new(self.ctx, pre, post, self.cont.clone())
+        Then::new(self.ctx, pre, post, self.pattern.clone())
     }
 }
 
-pub struct Term<'a, C, S, PR, PO>
-where
-    C: MatchPolicy + Context,
-    PR: Parser<C, Ret = C::Ret>,
-    PO: Parser<C, Ret = C::Ret> + Clone,
-    S: Parser<C, Ret = C::Ret> + Clone,
-{
-    sep: S,
-    pre: Option<PR>,
-    post: Option<PO>,
+pub struct Term<'a, Ctx, Sep, Pr, Po> {
+    sep: Sep,
+    pre: Option<Pr>,
+    post: Option<Po>,
     optional: bool,
-    ctx: &'a mut C,
+    ctx: &'a mut Ctx,
 }
 
-impl<'a, C, S, PR, PO> Term<'a, C, S, PR, PO>
-where
-    C: MatchPolicy + Context,
-    PR: Parser<C, Ret = C::Ret>,
-    PO: Parser<C, Ret = C::Ret> + Clone,
-    S: Parser<C, Ret = C::Ret> + Clone,
-{
-    pub fn new(ctx: &'a mut C, pre: Option<PR>, post: Option<PO>, sep: S, optional: bool) -> Self {
+impl<'a, Ctx, Sep, Pr, Po> Term<'a, Ctx, Sep, Pr, Po> {
+    pub fn new(
+        ctx: &'a mut Ctx,
+        pre: Option<Pr>,
+        post: Option<Po>,
+        sep: Sep,
+        optional: bool,
+    ) -> Self {
         Self {
             ctx,
             sep,
@@ -115,16 +109,16 @@ where
     }
 }
 
-impl<'a, C, S, PR, PO> Term<'a, C, S, PR, PO>
+impl<'a, 'd, Ctx, Sep, Pr, Po> Term<'a, Ctx, Sep, Pr, Po>
 where
-    C: MatchPolicy + Context,
-    PR: Parser<C, Ret = C::Ret>,
-    PO: Parser<C, Ret = C::Ret> + Clone,
-    S: Parser<C, Ret = C::Ret> + Clone,
+    Ctx: Context<'d> + Policy<Ctx>,
+    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
+    Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
+    Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
-    pub fn iter<P>(self, parser: P) -> TermIter<'a, C, P, S, PR, PO>
+    pub fn iter<P>(self, parser: P) -> TermIter<'a, Ctx, P, Sep, Pr, Po>
     where
-        P: Parser<C, Ret = C::Ret>,
+        P: Pattern<Ctx, Ret = Ctx::Ret>,
     {
         TermIter::new(
             self.ctx,
@@ -136,27 +130,27 @@ where
         )
     }
 
-    pub fn next_with<'b: 'c, 'c, P: Parser<C, Ret = C::Ret> + Clone + 'c>(
+    pub fn next_with<'b: 'c, 'c, P: Pattern<Ctx, Ret = Ctx::Ret> + Clone + 'c>(
         &'b mut self,
         parser: P,
-    ) -> MatchThen<
+    ) -> Then<
         'c,
-        C,
-        impl Parser<C, Ret = C::Ret> + 'c,
-        impl Parser<C, Ret = C::Ret> + 'c,
-        impl Parser<C, Ret = C::Ret> + 'c,
+        Ctx,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
     > {
         let pre = self.pre.take();
-        let pre = |ctx: &mut C| {
+        let pre = |ctx: &mut Ctx| {
             if let Some(pre) = pre {
                 pre.try_parse(ctx)
             } else {
-                Ok(<C::Ret>::new_from((0, 0)))
+                Ok(<Ctx::Ret>::new_from((0, 0)))
             }
         };
         let post = self.post.take();
         let cont_post = post.clone();
-        let parser = |ctx: &mut C| {
+        let parser = |ctx: &mut Ctx| {
             parser.try_parse(ctx).or_else(|e| {
                 if let Some(post) = cont_post {
                     post.try_parse(ctx)
@@ -166,10 +160,10 @@ where
             })
         };
         let sep = self.sep.clone();
-        let post = |ctx: &mut C| {
+        let post = |ctx: &mut Ctx| {
             sep.try_parse(ctx).or_else(|e| {
                 if self.optional {
-                    Ok(<C::Ret>::new_from((0, 0)))
+                    Ok(<Ctx::Ret>::new_from((0, 0)))
                 } else if let Some(post) = post {
                     post.try_parse(ctx)
                 } else {
@@ -178,28 +172,33 @@ where
             })
         };
 
-        MatchThen::new(self.ctx, pre, post, parser)
+        Then::new(self.ctx, pre, post, parser)
     }
 
     pub fn next_quote<'b, 'c, L, R>(
         &'b mut self,
         left: L,
         right: R,
-    ) -> Quote<'c, C, impl Parser<C, Ret = C::Ret> + 'c, impl Parser<C, Ret = C::Ret> + Clone + 'c>
+    ) -> Quote<
+        'c,
+        Ctx,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + Clone + 'c,
+    >
     where
         'b: 'c,
-        L: Parser<C, Ret = C::Ret> + 'c,
-        R: Parser<C, Ret = C::Ret> + Clone + 'c,
+        L: Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        R: Pattern<Ctx, Ret = Ctx::Ret> + Clone + 'c,
     {
         let pre = self.pre.take();
-        let pre = |ctx: &mut C| {
+        let pre = |ctx: &mut Ctx| {
             if let Some(pre) = pre {
                 pre.try_parse(ctx)
             } else {
-                Ok(<C::Ret>::new_from((0, 0)))
+                Ok(<Ctx::Ret>::new_from((0, 0)))
             }
         };
-        let left = |ctx: &mut C| {
+        let left = |ctx: &mut Ctx| {
             let mut guard = CtxGuard::new(ctx);
             let mut ret = guard.try_mat(pre)?;
 
@@ -207,16 +206,16 @@ where
             Ok(ret)
         };
         let sep = self.sep.clone();
-        let sep = |ctx: &mut C| {
+        let sep = |ctx: &mut Ctx| {
             let ret = sep.try_parse(ctx);
 
             if ret.is_err() && self.optional {
-                Ok(<C::Ret>::new_from((0, 0)))
+                Ok(<Ctx::Ret>::new_from((0, 0)))
             } else {
                 ret
             }
         };
-        let right = |ctx: &mut C| {
+        let right = |ctx: &mut Ctx| {
             let mut guard = CtxGuard::new(ctx);
             let mut ret = guard.try_mat(right)?;
 
@@ -231,25 +230,31 @@ where
         &'b mut self,
         sep: P,
         optional: bool,
-    ) -> Term<'c, C, P, impl Parser<C, Ret = C::Ret> + 'c, impl Parser<C, Ret = C::Ret> + Clone + 'c>
+    ) -> Term<
+        'c,
+        Ctx,
+        P,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + 'c,
+        impl Pattern<Ctx, Ret = Ctx::Ret> + Clone + 'c,
+    >
     where
         'b: 'c,
-        P: Parser<C, Ret = C::Ret> + Clone + 'c,
+        P: Pattern<Ctx, Ret = Ctx::Ret> + Clone + 'c,
     {
         let pre = self.pre.take();
-        let pre = |ctx: &mut C| {
+        let pre = |ctx: &mut Ctx| {
             if let Some(pre) = pre {
                 pre.try_parse(ctx)
             } else {
-                Ok(<C::Ret>::new_from((0, 0)))
+                Ok(<Ctx::Ret>::new_from((0, 0)))
             }
         };
         let prev_sep = self.sep.clone();
-        let prev_sep = |ctx: &mut C| {
+        let prev_sep = |ctx: &mut Ctx| {
             let ret = prev_sep.try_parse(ctx);
 
             if ret.is_err() && self.optional {
-                Ok(<C::Ret>::new_from((0, 0)))
+                Ok(<Ctx::Ret>::new_from((0, 0)))
             } else {
                 ret
             }

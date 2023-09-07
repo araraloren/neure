@@ -1,6 +1,6 @@
 use crate::{
     err::Error,
-    index::IndexBySpan,
+    iter::IndexBySpan,
     iter::{IteratorBySpan, SpanIterator},
 };
 

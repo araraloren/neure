@@ -1,33 +1,33 @@
 #![doc = include_str!("../README.md")]
-pub mod _macro;
-pub mod bytes;
-pub mod chars;
+pub mod ctx;
 pub mod err;
-pub mod ext;
-pub mod index;
 pub mod iter;
-pub mod parser;
+pub mod mat;
 pub mod policy;
+pub mod quan;
 pub mod regex;
 pub mod span;
 
-pub use self::bytes::BytesCtx;
-pub use self::chars::CharsCtx;
-pub use self::index::IndexBySpan;
-pub use self::iter::IteratorBySpan;
-pub use self::parser::*;
-pub use self::policy::Context;
-pub use self::policy::Length;
-pub use self::policy::MatchPolicy;
-pub use self::span::Span;
-pub use self::span::SpanStore;
-pub use self::span::SpanStorer;
 pub use charize::charize;
+pub mod prelude {
+    pub use crate::ctx::Context;
+    pub use crate::ctx::Parser;
+    pub use crate::ctx::Pattern;
+    pub use crate::ctx::True;
+    pub use crate::policy::Length;
+    pub use crate::policy::Policy;
+    pub use crate::policy::Ret;
+    pub use crate::quan::*;
+    pub use crate::span::Span;
+    pub use crate::span::SpanStore;
+    pub use crate::span::SpanStorer;
+}
 
 #[cfg(test)]
 mod test {
 
-    use super::*;
+    use crate::neure;
+    use crate::prelude::*;
 
     #[test]
     fn test_all() {
@@ -59,7 +59,7 @@ mod test {
     }
 
     fn test_other() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(ctx, storer, "abedf", 0, neure!(.), Span { beg: 0, len: 1 });
@@ -122,7 +122,7 @@ mod test {
     }
 
     fn test_range_negative() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(
@@ -274,7 +274,7 @@ mod test {
     }
 
     fn test_range() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(
@@ -467,7 +467,7 @@ mod test {
     }
 
     fn test_chars_negative() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(
@@ -572,7 +572,7 @@ mod test {
     }
 
     fn test_chars() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(
@@ -742,7 +742,7 @@ mod test {
     }
 
     fn test_char() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(ctx, storer, "a", 0, neure!(a), Span { beg: 0, len: 1 });
@@ -844,7 +844,7 @@ mod test {
     }
 
     fn test_space() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = CharsCtx::new("");
+        let mut ctx = Parser::new("");
         let mut storer = SpanStorer::new(1);
 
         test_t!(ctx, storer, "\tcd", 0, neure!(), Span { beg: 0, len: 1 });

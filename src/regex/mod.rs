@@ -1,3 +1,5 @@
+pub mod r#macro;
+
 use std::ops::RangeBounds;
 
 pub fn char(ch: char) -> impl Fn(&char) -> bool {

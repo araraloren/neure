@@ -1,4 +1,6 @@
-use crate::{index::IndexBySpan, span::Span};
+use super::IndexBySpan;
+
+use crate::span::Span;
 
 #[derive(Debug, Clone, Copy)]
 pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
@@ -38,40 +40,6 @@ where
 }
 
 impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'a, 'b, T> {}
-
-#[derive(Debug, Clone)]
-pub struct BytesIndices<'a> {
-    offset: usize,
-
-    bytes: &'a [u8],
-}
-
-impl<'a> BytesIndices<'a> {
-    pub fn new(bytes: &'a [u8]) -> Self {
-        Self { offset: 0, bytes }
-    }
-}
-
-impl<'a> Iterator for BytesIndices<'a> {
-    type Item = (usize, u8);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.offset < self.bytes.len() {
-            let offset = self.offset;
-
-            self.offset += 1;
-            Some((offset, self.bytes[offset]))
-        } else {
-            None
-        }
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.bytes.len(), Some(self.bytes.len()))
-    }
-}
-
-impl<'a> ExactSizeIterator for BytesIndices<'a> {}
 
 pub struct SpanIterator<'a> {
     offset: usize,

@@ -1,75 +1,17 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
-
+use crate::ctx::Context;
+use crate::ctx::Pattern;
 use crate::err::Error;
-use crate::policy::Context;
+use crate::policy::Policy;
 use crate::policy::Ret;
-use crate::MatchPolicy;
 
-pub trait Parser<T>
-where
-    Self: Sized,
-{
-    type Ret: Ret;
-
-    fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error>;
-
-    fn parse(self, ctx: &mut T) -> bool {
-        self.try_parse(ctx).is_ok()
-    }
-}
-
-impl<T, H, R> Parser<T> for H
-where
-    R: Ret,
-    H: FnOnce(&mut T) -> Result<R, Error>,
-{
-    type Ret = R;
-
-    fn try_parse(self, ctx: &mut T) -> Result<Self::Ret, Error> {
-        (self)(ctx)
-    }
-}
-
-pub struct True<T>(PhantomData<T>);
-
-impl<T> Debug for True<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("True").field(&self.0).finish()
-    }
-}
-
-impl<T> Clone for True<T> {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-
-impl<T> Default for True<T> {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
-
-impl<T> Parser<T> for True<T>
-where
-    T: Context + MatchPolicy,
-{
-    type Ret = T::Ret;
-
-    fn try_parse(self, _: &mut T) -> Result<Self::Ret, Error> {
-        Ok(<Self::Ret>::new_from((0, 0)))
-    }
-}
-
-fn calc_len<T, C: Context>(offset: usize, ctx: &C, next: Option<(usize, T)>) -> usize {
+fn calc_len<'a, T, C: Context<'a>>(offset: usize, ctx: &C, next: Option<(usize, T)>) -> usize {
     let next_offset = next.map(|v| v.0).unwrap_or(ctx.len() - ctx.offset());
     next_offset - offset
 }
 
-pub fn one<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     move |ctx: &mut C| {
         let mut iter: C::Iter<'_> = ctx.peek()?;
@@ -86,9 +28,9 @@ where
     }
 }
 
-pub fn zero_one<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn zero_one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     move |ctx: &mut C| {
         if let Ok(mut iter) = ctx.peek() {
@@ -102,9 +44,9 @@ where
     }
 }
 
-pub fn zero_more<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn zero_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     move |ctx: &mut C| {
         let mut cnt = 0;
@@ -131,9 +73,9 @@ where
     }
 }
 
-pub fn one_more<C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn one_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     move |ctx: &mut C| {
         let mut cnt = 0;
@@ -159,21 +101,21 @@ where
     }
 }
 
-pub fn count<const M: usize, const N: usize, C>(
+pub fn count<'a, const M: usize, const N: usize, C>(
     re: impl Fn(&C::Item) -> bool,
-) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    count_if::<M, N, C>(re, |_, _| true)
+    count_if::<'_, M, N, C>(re, |_, _| true)
 }
 
-pub fn count_if<const M: usize, const N: usize, C>(
+pub fn count_if<'a, const M: usize, const N: usize, C>(
     re: impl Fn(&C::Item) -> bool,
-    r#if: impl Fn(&C, &(usize, C::Item)) -> bool,
-) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+    r#if: impl Fn(&C, &(usize, <C as Context<'_>>::Item)) -> bool,
+) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     debug_assert!(M <= N, "M must little than N");
     move |ctx: &mut C| {
@@ -210,9 +152,9 @@ where
     }
 }
 
-pub fn start<C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn start<'a, C>() -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     |dat: &mut C| {
         if dat.offset() == 0 {
@@ -223,9 +165,9 @@ where
     }
 }
 
-pub fn end<C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn end<'a, C>() -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     |dat: &mut C| {
         if dat.len() != dat.offset() {
@@ -236,9 +178,9 @@ where
     }
 }
 
-pub fn string<C>(lit: &'static str) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn string<'a, C>(lit: &'static str) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context<Orig = str> + MatchPolicy,
+    C: Context<'a, Orig = str> + Policy<C> + 'a,
 {
     move |dat: &mut C| {
         if !dat.orig()?.starts_with(lit) {
@@ -249,9 +191,9 @@ where
     }
 }
 
-pub fn bytes<C>(lit: &'static [u8]) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn bytes<'a, C>(lit: &'static [u8]) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context<Orig = [u8]> + MatchPolicy,
+    C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
 {
     move |dat: &mut C| {
         if !dat.orig()?.starts_with(lit) {
@@ -262,9 +204,9 @@ where
     }
 }
 
-pub fn consume<C>(length: usize) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+pub fn consume<'a, C>(length: usize) -> impl Pattern<C, Ret = C::Ret>
 where
-    C: Context + MatchPolicy,
+    C: Context<'a> + Policy<C> + 'a,
 {
     move |ctx: &mut C| {
         if ctx.len() - ctx.offset() >= length {

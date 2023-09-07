@@ -1,4 +1,11 @@
+mod byte;
+mod span;
+
 use crate::span::Span;
+
+pub use self::byte::BytesIndices;
+pub use self::span::IteratorBySpan;
+pub use self::span::SpanIterator;
 
 pub trait IndexBySpan {
     type Output: ?Sized;
