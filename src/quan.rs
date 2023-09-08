@@ -1,15 +1,14 @@
 use crate::ctx::Context;
-use crate::ctx::Pattern;
+use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::err::Error;
-use crate::policy::Policy;
-use crate::policy::Ret;
 
 fn calc_len<'a, T, C: Context<'a>>(offset: usize, ctx: &C, next: Option<(usize, T)>) -> usize {
     let next_offset = next.map(|v| v.0).unwrap_or(ctx.len() - ctx.offset());
     next_offset - offset
 }
 
-pub fn one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
+pub fn one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -28,7 +27,7 @@ where
     }
 }
 
-pub fn zero_one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
+pub fn zero_one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -44,7 +43,7 @@ where
     }
 }
 
-pub fn zero_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
+pub fn zero_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -73,7 +72,7 @@ where
     }
 }
 
-pub fn one_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Pattern<C, Ret = C::Ret>
+pub fn one_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -103,7 +102,7 @@ where
 
 pub fn count<'a, const M: usize, const N: usize, C>(
     re: impl Fn(&C::Item) -> bool,
-) -> impl Pattern<C, Ret = C::Ret>
+) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -113,7 +112,7 @@ where
 pub fn count_if<'a, const M: usize, const N: usize, C>(
     re: impl Fn(&C::Item) -> bool,
     r#if: impl Fn(&C, &(usize, <C as Context<'_>>::Item)) -> bool,
-) -> impl Pattern<C, Ret = C::Ret>
+) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -152,7 +151,7 @@ where
     }
 }
 
-pub fn start<'a, C>() -> impl Pattern<C, Ret = C::Ret>
+pub fn start<'a, C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -165,7 +164,7 @@ where
     }
 }
 
-pub fn end<'a, C>() -> impl Pattern<C, Ret = C::Ret>
+pub fn end<'a, C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -178,7 +177,7 @@ where
     }
 }
 
-pub fn string<'a, C>(lit: &'static str) -> impl Pattern<C, Ret = C::Ret>
+pub fn string<'a, C>(lit: &'static str) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a, Orig = str> + Policy<C> + 'a,
 {
@@ -191,7 +190,7 @@ where
     }
 }
 
-pub fn bytes<'a, C>(lit: &'static [u8]) -> impl Pattern<C, Ret = C::Ret>
+pub fn bytes<'a, C>(lit: &'static [u8]) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
 {
@@ -204,7 +203,7 @@ where
     }
 }
 
-pub fn consume<'a, C>(length: usize) -> impl Pattern<C, Ret = C::Ret>
+pub fn consume<'a, C>(length: usize) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
 {

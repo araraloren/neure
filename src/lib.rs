@@ -1,8 +1,8 @@
 #![doc = include_str!("../README.md")]
 pub mod ctx;
 pub mod err;
+pub mod ext;
 pub mod iter;
-pub mod mat;
 pub mod policy;
 pub mod quan;
 pub mod regex;
@@ -11,12 +11,12 @@ pub mod span;
 pub use charize::charize;
 pub mod prelude {
     pub use crate::ctx::Context;
+    pub use crate::ctx::Length;
     pub use crate::ctx::Parser;
     pub use crate::ctx::Pattern;
+    pub use crate::ctx::Policy;
+    pub use crate::ctx::Ret;
     pub use crate::ctx::True;
-    pub use crate::policy::Length;
-    pub use crate::policy::Policy;
-    pub use crate::policy::Ret;
     pub use crate::quan::*;
     pub use crate::span::Span;
     pub use crate::span::SpanStore;

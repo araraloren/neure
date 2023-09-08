@@ -3,11 +3,16 @@ use std::str::CharIndices;
 use super::Context;
 use super::Pattern;
 
+use crate::ctx::Length;
+use crate::ctx::Policy;
+use crate::ctx::Ret;
+use crate::ctx::True;
 use crate::err::Error;
+use crate::ext::Extract;
+use crate::ext::Quote;
+use crate::ext::Term;
+use crate::ext::Then;
 use crate::iter::BytesIndices;
-use crate::policy::Length;
-use crate::policy::Policy;
-use crate::policy::Ret;
 use crate::span::SpanStorer;
 
 #[derive(Debug)]
@@ -19,7 +24,24 @@ where
     offset: usize,
 }
 
-impl<'a, T> Parser<'a, T> {
+impl<'a, T> Clone for Parser<'a, T>
+where
+    T: ?Sized,
+{
+    fn clone(&self) -> Self {
+        Self {
+            dat: self.dat.clone(),
+            offset: self.offset.clone(),
+        }
+    }
+}
+
+impl<'a, T> Copy for Parser<'a, T> where T: ?Sized {}
+
+impl<'a, T> Parser<'a, T>
+where
+    T: ?Sized,
+{
     pub fn new(dat: &'a T) -> Self {
         Self { dat, offset: 0 }
     }
@@ -58,10 +80,7 @@ impl<'a, T> Parser<'a, T> {
     }
 }
 
-impl<'a> Context<'a> for Parser<'a, [u8]>
-where
-    u8: Copy,
-{
+impl<'a> Context<'a> for Parser<'a, [u8]> {
     type Orig = [u8];
 
     type Item = u8;
@@ -149,6 +168,7 @@ impl<'a> Context<'a> for Parser<'a, str> {
 
 impl<'a, T> Policy<Parser<'a, T>> for Parser<'a, T>
 where
+    T: ?Sized,
     Self: Context<'a>,
 {
     type Ret = Length;
@@ -185,5 +205,64 @@ where
         pre(self)?;
         let ret = pat.try_parse(self);
         post(self, ret)
+    }
+}
+
+impl<'a, T, R> Extract<'a, Self, R> for Parser<'a, T>
+where
+    T: ?Sized,
+    Self: Context<'a>,
+{
+    type Out<'b> = Parser<'a, T>;
+
+    type Error = Error;
+
+    fn extract(ctx: &Self, _: usize, _: &R) -> Result<Self::Out<'a>, Self::Error> {
+        Ok(Clone::clone(ctx))
+    }
+}
+
+impl<'a, T> Parser<'a, T>
+where
+    T: ?Sized,
+    Self: Context<'a> + Sized,
+{
+    pub fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, Self, L, R>
+    where
+        L: Pattern<Self, Ret = <Self as Policy<Self>>::Ret>,
+        R: Pattern<Self, Ret = <Self as Policy<Self>>::Ret>,
+    {
+        Quote::new(self, left, right)
+    }
+
+    pub fn mat<P>(&mut self, pattern: P) -> Then<'_, Self, P, True<Self>, True<Self>>
+    where
+        P: Pattern<Self, Ret = <Self as Policy<Self>>::Ret>,
+    {
+        Then::new(self, True::default(), True::default(), pattern)
+    }
+
+    pub fn term<S>(&mut self, sep: S) -> Term<'_, Self, S, True<Self>, True<Self>>
+    where
+        S: Pattern<Self, Ret = <Self as Policy<Self>>::Ret> + Clone,
+    {
+        self.term_opt(sep, true)
+    }
+
+    pub fn term_opt<S>(
+        &mut self,
+        sep: S,
+        optional: bool,
+    ) -> Term<'_, Self, S, True<Self>, True<Self>>
+    where
+        S: Pattern<Self, Ret = <Self as Policy<Self>>::Ret> + Clone,
+    {
+        Term::new(
+            self,
+            Some(True::default()),
+            Some(True::default()),
+            sep,
+            optional,
+        )
     }
 }

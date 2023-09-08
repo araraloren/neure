@@ -2,9 +2,11 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Pattern;
+use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::err::Error;
-use crate::policy::Policy;
-use crate::policy::Ret;
+use crate::ext::Extract;
+use crate::ext::Handler;
 
 use super::CtxGuard;
 
@@ -35,10 +37,11 @@ where
     Po: Pattern<Ctx, Ret = Ctx::Ret>,
     Pr: Pattern<Ctx, Ret = Ctx::Ret>,
 {
-    pub fn map<R>(
-        self,
-        mut func: impl FnMut(&'b Ctx::Orig) -> Result<R, Error>,
-    ) -> Result<R, Error> {
+    pub fn map<H, A, O>(self, mut func: H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
+    {
         let (beg, ret) = {
             self.ctx.try_mat(self.pre)?;
 
@@ -49,25 +52,8 @@ where
             (beg, ret)
         };
 
-        func(self.ctx.orig_sub(beg, ret.length())?)
+        func.invoke(A::extract(&self.ctx, beg, &ret)?)
     }
-
-    // pub fn map_pos<R>(
-    //     self,
-    //     mut func: impl FnMut(&Ctx, usize, &Ctx::Ret) -> Result<R, Error>,
-    // ) -> Result<R, Error> {
-    //     let (beg, ret) = {
-    //         self.ctx.try_mat(self.pre)?;
-
-    //         let beg = self.ctx.offset();
-    //         let ret = self.ctx.try_mat(self.parser)?;
-
-    //         self.ctx.try_mat(self.post)?;
-    //         (beg, ret)
-    //     };
-
-    //     func(self.ctx, beg, &ret)
-    // }
 
     pub fn and(
         self,

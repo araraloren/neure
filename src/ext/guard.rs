@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Pattern;
+use crate::ctx::Policy;
 use crate::err::Error;
-use crate::policy::Policy;
 
 #[derive(Debug)]
 pub struct CtxGuard<'a, 'b, C>

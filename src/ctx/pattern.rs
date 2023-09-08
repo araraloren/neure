@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::err::Error;
-use crate::policy::Policy;
-use crate::policy::Ret;
 
 pub trait Pattern<T>
 where

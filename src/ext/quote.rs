@@ -4,7 +4,7 @@ use super::CtxGuard;
 
 use crate::ctx::Context;
 use crate::ctx::Pattern;
-use crate::policy::Policy;
+use crate::ctx::Policy;
 
 pub struct Quote<'a, Ctx, Pl, Pr> {
     ctx: &'a mut Ctx,
@@ -28,11 +28,11 @@ where
     Pl: Pattern<Ctx, Ret = Ctx::Ret>,
     Pr: Pattern<Ctx, Ret = Ctx::Ret>,
 {
-    pub fn mat<P>(self, parser: P) -> Then<'a, Ctx, P, Pl, Pr>
+    pub fn mat<P>(self, pattern: P) -> Then<'a, Ctx, P, Pl, Pr>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret>,
     {
-        Then::new(self.ctx, self.pattern_l, self.pattern_r, parser)
+        Then::new(self.ctx, self.pattern_l, self.pattern_r, pattern)
     }
 }
 

@@ -4,8 +4,8 @@ use super::CtxGuard;
 
 use crate::ctx::Context;
 use crate::ctx::Pattern;
-use crate::policy::Policy;
-use crate::policy::Ret;
+use crate::ctx::Policy;
+use crate::ctx::Ret;
 
 pub struct TermIter<'a, Ctx, Pa, Sep, Pr, Po> {
     pattern: Pa,
@@ -116,7 +116,7 @@ where
     Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
-    pub fn iter<P>(self, parser: P) -> TermIter<'a, Ctx, P, Sep, Pr, Po>
+    pub fn iter<P>(self, pattern: P) -> TermIter<'a, Ctx, P, Sep, Pr, Po>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret>,
     {
@@ -124,7 +124,7 @@ where
             self.ctx,
             self.pre,
             self.post,
-            parser,
+            pattern,
             self.sep,
             self.optional,
         )
@@ -132,7 +132,7 @@ where
 
     pub fn next_with<'b: 'c, 'c, P: Pattern<Ctx, Ret = Ctx::Ret> + Clone + 'c>(
         &'b mut self,
-        parser: P,
+        pattern: P,
     ) -> Then<
         'c,
         Ctx,
@@ -150,8 +150,8 @@ where
         };
         let post = self.post.take();
         let cont_post = post.clone();
-        let parser = |ctx: &mut Ctx| {
-            parser.try_parse(ctx).or_else(|e| {
+        let pattern = |ctx: &mut Ctx| {
+            pattern.try_parse(ctx).or_else(|e| {
                 if let Some(post) = cont_post {
                     post.try_parse(ctx)
                 } else {
@@ -172,7 +172,7 @@ where
             })
         };
 
-        Then::new(self.ctx, pre, post, parser)
+        Then::new(self.ctx, pre, post, pattern)
     }
 
     pub fn next_quote<'b, 'c, L, R>(
