@@ -2,8 +2,8 @@ use std::str::CharIndices;
 
 use super::Context;
 use super::Pattern;
+use super::Return;
 
-use crate::ctx::Length;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::True;
@@ -171,7 +171,7 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    type Ret = Length;
+    type Ret = Return;
 
     fn try_mat<Pat>(&mut self, pat: Pat) -> Result<Self::Ret, Error>
     where

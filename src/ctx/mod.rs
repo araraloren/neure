@@ -1,13 +1,13 @@
-mod length;
 mod parser;
 mod pattern;
+mod r#return;
 
 use crate::err::Error;
 
-pub use self::length::Length;
 pub use self::parser::Parser;
 pub use self::pattern::Pattern;
 pub use self::pattern::True;
+pub use self::r#return::Return;
 
 pub trait Context<'a> {
     type Orig: ?Sized;
@@ -47,7 +47,7 @@ pub trait Context<'a> {
     fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
 }
 
-pub trait Ret: std::ops::AddAssign<Self> + std::ops::Add<Self>
+pub trait Ret
 where
     Self: Sized,
 {
@@ -58,6 +58,8 @@ where
     fn is_zero(&self) -> bool;
 
     fn new_from(ret: (usize, usize)) -> Self;
+
+    fn add_assign(&mut self, other: Self) -> &mut Self;
 }
 
 pub trait Policy<C> {

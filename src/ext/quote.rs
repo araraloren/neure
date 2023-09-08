@@ -1,6 +1,5 @@
 use super::term::Term;
 use super::then::Then;
-use super::CtxGuard;
 
 use crate::ctx::Context;
 use crate::ctx::Pattern;
@@ -40,6 +39,30 @@ impl<'a, 'b, Ctx, Pl, Pr> Quote<'a, Ctx, Pl, Pr>
 where
     Ctx: Context<'b> + Policy<Ctx>,
     Pl: Pattern<Ctx, Ret = Ctx::Ret>,
+    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
+{
+    pub fn quote_once(
+        self,
+        left: impl Pattern<Ctx, Ret = Ctx::Ret>,
+        right: impl Pattern<Ctx, Ret = Ctx::Ret>,
+    ) -> Quote<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>, impl Pattern<Ctx, Ret = Ctx::Ret>> {
+        let next_l = left;
+        let next_r = right;
+        let left = self.pattern_l;
+        let right = self.pattern_r;
+
+        Quote::new(
+            self.ctx,
+            move |ctx: &mut Ctx| super::and(left, next_l).try_parse(ctx),
+            move |ctx: &mut Ctx| super::and(next_r, right).try_parse(ctx),
+        )
+    }
+}
+
+impl<'a, 'b, Ctx, Pl, Pr> Quote<'a, Ctx, Pl, Pr>
+where
+    Ctx: Context<'b> + Policy<Ctx>,
+    Pl: Pattern<Ctx, Ret = Ctx::Ret>,
     Pr: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
     pub fn quote(
@@ -48,27 +71,15 @@ where
         right: impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     ) -> Quote<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>, impl Pattern<Ctx, Ret = Ctx::Ret> + Clone>
     {
-        let next_left = left;
-        let next_right = right;
+        let next_l = left;
+        let next_r = right;
         let left = self.pattern_l;
         let right = self.pattern_r;
 
         Quote::new(
             self.ctx,
-            move |ctx: &mut Ctx| {
-                let mut guard = CtxGuard::new(ctx);
-                let mut ret = guard.try_mat(left)?;
-
-                ret += guard.try_mat(next_left)?;
-                Ok(ret)
-            },
-            move |ctx: &mut Ctx| {
-                let mut guard = CtxGuard::new(ctx);
-                let mut ret = guard.try_mat(next_right)?;
-
-                ret += guard.try_mat(right)?;
-                Ok(ret)
-            },
+            move |ctx: &mut Ctx| super::and(left, next_l).try_parse(ctx),
+            move |ctx: &mut Ctx| super::and(next_r, right).try_parse(ctx),
         )
     }
 
