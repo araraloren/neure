@@ -3,7 +3,7 @@ pub mod ctx;
 pub mod err;
 pub mod ext;
 pub mod iter;
-pub mod quan;
+pub mod parser;
 pub mod regex;
 pub mod span;
 
@@ -16,7 +16,7 @@ pub mod prelude {
     pub use crate::ctx::Ret;
     pub use crate::ctx::Return;
     pub use crate::ctx::True;
-    pub use crate::quan::*;
+    pub use crate::parser::*;
     pub use crate::span::SimpleStorer;
     pub use crate::span::Span;
 }

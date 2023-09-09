@@ -1,25 +1,25 @@
 #[macro_export]
 macro_rules! neure {
     (@q * $($res:tt)*) => {
-        $crate::quan::zero_more($($res)*)
+        $crate::parser::zero_more($($res)*)
     };
     (@q ? $($res:tt)*) => {
-        $crate::quan::zero_one($($res)*)
+        $crate::parser::zero_one($($res)*)
     };
     (@q + $($res:tt)*) => {
-        $crate::quan::one_more($($res)*)
+        $crate::parser::one_more($($res)*)
     };
     (@q {$st:literal} $($res:tt)*) => {
-        $crate::quan::count::<$st, $st, _>($($res)*)
+        $crate::parser::count::<$st, $st, _>($($res)*)
     };
     (@q {$st:literal,} $($res:tt)*) => {
-        $crate::quan::count::<$st, {usize::MAX}, _>($($res)*)
+        $crate::parser::count::<$st, {usize::MAX}, _>($($res)*)
     };
     (@q {$st:literal, $ed:literal} $($res:tt)*) => {
-        $crate::quan::count::<$st, $ed, _>($($res)*)
+        $crate::parser::count::<$st, $ed, _>($($res)*)
     };
     (@q $($res:tt)*) => {
-        $crate::quan::one($($res)*)
+        $crate::parser::one($($res)*)
     };
 
     (@r ^ $($res:tt)*) => { // \S
