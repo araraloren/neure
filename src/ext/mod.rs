@@ -17,7 +17,6 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::err::Error;
 
-// todo! add `and` `or` `quote` `terminated`
 pub fn and<'a, C, P1, P2>(p1: P1, p2: P2) -> impl FnOnce(&mut C) -> Result<C::Ret, Error>
 where
     C::Ret: Ret,

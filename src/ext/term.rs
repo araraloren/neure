@@ -35,7 +35,7 @@ where
         impl Pattern<Ctx, Ret = Ctx::Ret>,
         impl Pattern<Ctx, Ret = Ctx::Ret>,
     > {
-        self.term.next_pat(self.pattern.clone())
+        self.term.next_pattern(self.pattern.clone())
     }
 }
 
@@ -87,7 +87,7 @@ where
         }
     }
 
-    pub fn next_pat<P>(
+    pub fn next_pattern<P>(
         &mut self,
         pattern: P,
     ) -> Then<

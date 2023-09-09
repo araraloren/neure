@@ -17,9 +17,8 @@ pub mod prelude {
     pub use crate::ctx::Return;
     pub use crate::ctx::True;
     pub use crate::quan::*;
+    pub use crate::span::SimpleStorer;
     pub use crate::span::Span;
-    pub use crate::span::SpanStore;
-    pub use crate::span::SpanStorer;
 }
 
 #[cfg(test)]
@@ -45,21 +44,21 @@ mod test {
 
             $ctx.reset_with($str);
             $storer.reset();
-            assert!($ctx.try_cap($id, &mut $storer, space_parser).is_err());
+            assert!($storer.try_cap(&mut $ctx, $id, space_parser).is_err());
         };
         ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr, $($span:expr)*) => {
             let space_parser = $parser;
 
             $ctx.reset_with($str);
             $storer.reset();
-            $ctx.try_cap($id, &mut $storer, space_parser)?;
-            assert_eq!($storer.spans($id)?.collect::<Vec<_>>(), vec![$($span)*])
+            $storer.try_cap(&mut $ctx, $id, space_parser)?;
+            assert_eq!($storer.spans_iter($id)?.collect::<Vec<_>>(), vec![$($span)*])
         };
     }
 
     fn test_other() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(ctx, storer, "abedf", 0, neure!(.), Span { beg: 0, len: 1 });
         test_t!(ctx, storer, "abedf", 0, neure!(.?), Span { beg: 0, len: 1 });
@@ -122,7 +121,7 @@ mod test {
 
     fn test_range_negative() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(
             ctx,
@@ -274,7 +273,7 @@ mod test {
 
     fn test_range() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(
             ctx,
@@ -467,7 +466,7 @@ mod test {
 
     fn test_chars_negative() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(
             ctx,
@@ -572,7 +571,7 @@ mod test {
 
     fn test_chars() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(
             ctx,
@@ -742,7 +741,7 @@ mod test {
 
     fn test_char() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(ctx, storer, "a", 0, neure!(a), Span { beg: 0, len: 1 });
         test_t!(ctx, storer, "a", 0, neure!('a'), Span { beg: 0, len: 1 });
@@ -844,7 +843,7 @@ mod test {
 
     fn test_space() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new("");
-        let mut storer = SpanStorer::new(1);
+        let mut storer = SimpleStorer::new(1);
 
         test_t!(ctx, storer, "\tcd", 0, neure!(), Span { beg: 0, len: 1 });
         test_t!(ctx, storer, "\tdwq", 0, neure!(?), Span { beg: 0, len: 1 });

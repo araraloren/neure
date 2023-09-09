@@ -76,7 +76,7 @@ where
         })
     }
 
-    pub fn with_value<V>(
+    pub fn with<V>(
         self,
         val: V,
     ) -> MatThenValue<'a, Ctx, impl FnOnce(&mut Ctx) -> Result<(V, Ctx::Ret), Error>, Pr, Po, V>

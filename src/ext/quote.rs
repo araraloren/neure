@@ -27,7 +27,7 @@ where
     Pl: Pattern<Ctx, Ret = Ctx::Ret>,
     Pr: Pattern<Ctx, Ret = Ctx::Ret>,
 {
-    pub fn mat<P>(self, pattern: P) -> Then<'a, Ctx, P, Pl, Pr>
+    pub fn pattern<P>(self, pattern: P) -> Then<'a, Ctx, P, Pl, Pr>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret>,
     {

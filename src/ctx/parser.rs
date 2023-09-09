@@ -13,7 +13,7 @@ use crate::ext::Quote;
 use crate::ext::Term;
 use crate::ext::Then;
 use crate::iter::BytesIndices;
-use crate::span::SpanStorer;
+use crate::span::SimpleStorer;
 
 #[derive(Debug)]
 pub struct Parser<'a, T>
@@ -75,8 +75,8 @@ where
         self
     }
 
-    pub fn span_storer(&self, capacity: usize) -> SpanStorer {
-        SpanStorer::new(capacity)
+    pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
+        SimpleStorer::new(capacity)
     }
 }
 
