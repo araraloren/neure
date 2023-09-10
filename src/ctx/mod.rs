@@ -4,10 +4,15 @@ mod r#return;
 
 use crate::err::Error;
 
+pub use self::parser::LazyContext;
+pub use self::parser::NonLazyContext;
 pub use self::parser::Parser;
 pub use self::pattern::Pattern;
 pub use self::pattern::True;
 pub use self::r#return::Return;
+
+pub type BytesCtx<'a> = Parser<'a, [u8]>;
+pub type CharsCtx<'a> = Parser<'a, str>;
 
 pub trait Context<'a> {
     type Orig: ?Sized;

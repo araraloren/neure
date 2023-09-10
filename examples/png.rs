@@ -1,34 +1,36 @@
+use neure::prelude::*;
 use neure::*;
+use nom::AsBytes;
 use std::{cell::RefCell, process::exit};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(file) = std::env::args().skip(1).next() {
         let head: &'static [u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
         let bytes = std::fs::read(file)?;
-        let head = neure::bytes(head);
-        let int32 = neure::consume(4);
-        let int8 = neure::consume(1);
-        let mut ctx = BytesCtx::new(&bytes);
-        let mut storer = SpanStorer::default().with_capacity(5);
+        let head = parser::bytes(head);
+        let int32 = parser::consume(4);
+        let int8 = parser::consume(1);
+        let mut ctx = Parser::new(bytes.as_bytes());
+        let mut storer = SimpleStorer::default().with_capacity(5);
 
-        if ctx.try_cap(0, &mut storer, &head).is_err() {
+        if storer.try_cap(0, &mut ctx, &head).is_err() {
             println!("Not a png file");
             exit(1)
         } else {
             println!("Matching the head, the file seems like a png file");
         }
         for idx in 0.. {
-            if ctx.try_cap(1, &mut storer, &int32) {
+            if let Ok(_) = storer.try_cap(1, &mut ctx, &int32) {
                 let length = storer.slice(&bytes, 1, idx)?;
                 let length = i32::from_be_bytes([length[0], length[1], length[2], length[3]]);
-                let data = neure::consume(length as usize);
+                let data = parser::consume(length as usize);
                 let crc_offset_beg = ctx.offset();
 
                 println!("In trunk {idx}: length = {length}");
-                ctx.try_cap(2, &mut storer, &int8)?;
-                ctx.try_cap(2, &mut storer, &int8)?;
-                ctx.try_cap(2, &mut storer, &int8)?;
-                ctx.try_cap(2, &mut storer, &int8)?;
+                storer.try_cap(2, &mut ctx, &int8)?;
+                storer.try_cap(2, &mut ctx, &int8)?;
+                storer.try_cap(2, &mut ctx, &int8)?;
+                storer.try_cap(2, &mut ctx, &int8)?;
 
                 let type_code = storer.slice_iter(&bytes, 2)?;
                 let mut type_code = type_code.skip(idx * 4);
@@ -76,10 +78,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "safe to copy"
                     }
                 );
-                println!("skip data data = {:?}", ctx.try_cap(3, &mut storer, &data)?);
+                println!("skip data data = {:?}", storer.try_cap(3, &mut ctx, &data)?);
                 let crc_data = &bytes[crc_offset_beg..ctx.offset()];
 
-                ctx.try_cap(4, &mut storer, &int32)?;
+                storer.try_cap(4, &mut ctx, &int32)?;
                 let crc_value = storer.slice(&bytes, 4, idx)?;
                 let crc_value =
                     u32::from_be_bytes([crc_value[0], crc_value[1], crc_value[2], crc_value[3]]);

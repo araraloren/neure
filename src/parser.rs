@@ -8,6 +8,7 @@ fn calc_len<'a, T, C: Context<'a>>(offset: usize, ctx: &C, next: Option<(usize, 
     next_offset - offset
 }
 
+#[inline(always)]
 pub fn one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -27,6 +28,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn zero_one<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -43,6 +45,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn zero_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -72,6 +75,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn one_more<'a, C>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -100,18 +104,20 @@ where
     }
 }
 
+#[inline(always)]
 pub fn count<'a, const M: usize, const N: usize, C>(
-    re: impl Fn(&C::Item) -> bool,
-) -> impl Fn(&mut C) -> Result<C::Ret, Error>
+    re: impl Fn(&C::Item) -> bool + 'a,
+) -> impl Fn(&mut C) -> Result<C::Ret, Error> + 'a
 where
     C: Context<'a> + Policy<C> + 'a,
 {
     count_if::<'_, M, N, C>(re, |_, _| true)
 }
 
+#[inline(always)]
 pub fn count_if<'a, const M: usize, const N: usize, C>(
     re: impl Fn(&C::Item) -> bool,
-    r#if: impl Fn(&C, &(usize, <C as Context<'_>>::Item)) -> bool,
+    r#if: impl Fn(&C, &(usize, <C as Context<'a>>::Item)) -> bool,
 ) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -151,6 +157,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn start<'a, C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -164,6 +171,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn end<'a, C>() -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,
@@ -177,6 +185,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn string<'a, C>(lit: &'static str) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a, Orig = str> + Policy<C> + 'a,
@@ -190,6 +199,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn bytes<'a, C>(lit: &'static [u8]) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
@@ -203,6 +213,7 @@ where
     }
 }
 
+#[inline(always)]
 pub fn consume<'a, C>(length: usize) -> impl Fn(&mut C) -> Result<C::Ret, Error>
 where
     C: Context<'a> + Policy<C> + 'a,

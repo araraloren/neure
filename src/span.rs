@@ -112,7 +112,7 @@ impl SimpleStorer {
 }
 
 impl SimpleStorer {
-    pub fn try_cap<'a, C, P>(&mut self, ctx: &mut C, id: usize, pattern: P) -> Result<C::Ret, Error>
+    pub fn try_cap<'a, C, P>(&mut self, id: usize, ctx: &mut C, pattern: P) -> Result<C::Ret, Error>
     where
         Self: Sized,
         C: Context<'a> + Policy<C>,

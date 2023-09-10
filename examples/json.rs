@@ -11,6 +11,7 @@ pub enum JsonZero<'a> {
 static JSON: &'static [u8] = include_bytes!("samples/sample.json");
 
 use neure::err::Error;
+use neure::prelude::*;
 use neure::*;
 
 #[derive(Debug, Default)]
@@ -19,16 +20,16 @@ pub struct JsonParser;
 impl JsonParser {
     pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
         let mut ctx = BytesCtx::new(pat);
-        let ret = Self::parse_object(pat, &mut ctx);
+        let ret = Self::parse_object(&mut ctx);
 
         if ret.is_err() {
-            Self::parse_array(pat, &mut ctx)
+            Self::parse_array(&mut ctx)
         } else {
             ret
         }
     }
 
-    pub fn parse_object<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
+    pub fn parse_object<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
         let hash_beg = neure!(b'{');
         let hash_end = neure!(b'}');
         let sep = neure!(b':');
@@ -37,18 +38,18 @@ impl JsonParser {
         if Self::try_mat(ctx, &hash_beg).is_ok() {
             let mut objs = Vec::default();
 
-            while let Ok(key) = Self::parse_key(pat, ctx) {
+            while let Ok(key) = Self::parse_key(ctx) {
                 Self::try_mat(ctx, &sep)?;
 
                 if let Ok(value) = Self::parse_bool_or_null(ctx) {
                     objs.push((key, value));
-                } else if let Ok(str) = Self::parse_string(pat, ctx) {
+                } else if let Ok(str) = Self::parse_string(ctx) {
                     objs.push((key, str));
-                } else if let Ok(num) = Self::parse_number(pat, ctx) {
+                } else if let Ok(num) = Self::parse_number(ctx) {
                     objs.push((key, num));
-                } else if let Ok(array) = Self::parse_array(pat, ctx) {
+                } else if let Ok(array) = Self::parse_array(ctx) {
                     objs.push((key, array));
-                } else if let Ok(object) = Self::parse_object(pat, ctx) {
+                } else if let Ok(object) = Self::parse_object(ctx) {
                     objs.push((key, object));
                 } else {
                     break;
@@ -63,7 +64,7 @@ impl JsonParser {
         Err(Error::Null)
     }
 
-    pub fn parse_array<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
+    pub fn parse_array<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
         let array_beg = neure!(b'[');
         let array_end = neure!(b']');
         let comma = neure!(b',');
@@ -74,13 +75,13 @@ impl JsonParser {
             loop {
                 if let Ok(value) = Self::parse_bool_or_null(ctx) {
                     objs.push(value);
-                } else if let Ok(str) = Self::parse_string(pat, ctx) {
+                } else if let Ok(str) = Self::parse_string(ctx) {
                     objs.push(str);
-                } else if let Ok(num) = Self::parse_number(pat, ctx) {
+                } else if let Ok(num) = Self::parse_number(ctx) {
                     objs.push(num);
-                } else if let Ok(array) = Self::parse_array(pat, ctx) {
+                } else if let Ok(array) = Self::parse_array(ctx) {
                     objs.push(array);
-                } else if let Ok(object) = Self::parse_object(pat, ctx) {
+                } else if let Ok(object) = Self::parse_object(ctx) {
                     objs.push(object);
                 } else {
                     break;
@@ -97,9 +98,9 @@ impl JsonParser {
 
     pub fn try_mat<'a, 'c>(
         ctx: &mut BytesCtx<'c>,
-        parser: impl Pat<BytesCtx<'c>, Ret = Length>,
-    ) -> Result<Length, Error> {
-        let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
+        parser: impl Pattern<BytesCtx<'c>, Ret = Return>,
+    ) -> Result<Return, Error> {
+        let space = parser::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
 
         ctx.try_mat_policy(
             parser,
@@ -116,79 +117,66 @@ impl JsonParser {
         )
     }
 
-    pub fn parse_key<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<&'a [u8], Error> {
+    pub fn parse_key<'a>(ctx: &mut BytesCtx<'a>) -> Result<&'a [u8], Error> {
+        let space = parser::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
         let str_quote = neure!(b'"');
         let alpha = regex!( [b'a' - b'z' b'A' - b'Z' b'0' - b'9']);
         let under_score = regex!(b'_');
         let key = neure!((group!(&alpha, &under_score))+);
 
-        if let Ok(_) = Self::try_mat(ctx, &str_quote) {
-            let start = ctx.offset();
-
-            ctx.try_mat(&key)?;
-            let ret = pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?;
-
-            ctx.try_mat(&str_quote)?;
-            Ok(ret)
-        } else {
-            Err(Error::Null)
-        }
+        ctx.try_mat(space)?;
+        ctx.lazy()
+            .quote(&str_quote, &str_quote)
+            .pattern(&key)
+            .map(|str: &'a [u8]| Ok(str))
     }
 
-    pub fn parse_bool_or_null<'a>(ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
-        let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
-        let true_ = seq!(&space, neure::bytes(b"true"));
-        let null_ = seq!(&space, neure::bytes(b"null"));
-        let false_ = seq!(&space, neure::bytes(b"false"));
+    pub fn parse_bool_or_null<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
+        let space = parser::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
+        let true_ = parser::bytes(b"true");
+        let false_ = parser::bytes(b"false");
+        let null = parser::bytes(b"null");
 
-        map!(
-            ctx {
-                &true_ => { Ok(JsonZero::Bool(true)) },
-                &false_ => { Ok(JsonZero::Bool(false)) },
-                &null_ => { Ok(JsonZero::Null) },
-                { Err(Error::Null) }
-            }
-        )
+        ctx.try_mat(space)?;
+        ctx.lazy()
+            .pat(&true_)
+            .with(JsonZero::Bool(true))
+            .or_with(&false_, JsonZero::Bool(false))
+            .or_with(&null, JsonZero::Null)
+            .map(|v: JsonZero<'a>| Ok(v))
     }
 
-    pub fn parse_string<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
+    pub fn parse_string<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
+        let space = parser::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
         let str_quote = neure!(b'"');
         let str_val = neure!( [^ b'"' ]*);
-        let start = ctx.offset();
 
-        if Self::try_mat(ctx, &str_quote).is_ok() {
-            ctx.try_mat(&str_val)?;
-            ctx.try_mat(&str_quote)?;
-            Ok(JsonZero::Str(
-                pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?,
-            ))
-        } else {
-            Err(Error::Null)
-        }
+        ctx.try_mat(space)?;
+        ctx.lazy()
+            .quote(&str_quote, &str_quote)
+            .pattern(&str_val)
+            .map(|str: &'a [u8]| Ok(JsonZero::Str(str)))
     }
 
-    pub fn parse_number<'a>(pat: &'a [u8], ctx: &mut BytesCtx) -> Result<JsonZero<'a>, Error> {
-        let sign = neure!( [b'+' b'-']);
-        let digit = neure!( [b'0' - b'9']+);
+    pub fn parse_number<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
+        let space = parser::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
+        let sign = neure!([b'+' b'-']{0,1});
+        let digit = neure!([b'0' - b'9']+);
         let dot = neure!(b'.');
-        let space = neure::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
-        let _ = ctx.mat(&space);
-        let start = ctx.offset();
 
-        ctx.mat(&sign);
-        if let Ok(_) = ctx.try_mat(&digit) {
-            if cis_mattry_mat(&dot).is_ok() {
-                ctx.try_mat(&digit)?;
-            }
-            Ok(JsonZero::Num(
-                std::str::from_utf8(pat.get(start..ctx.offset()).ok_or_else(|| Error::Null)?)
-                    .unwrap()
-                    .parse::<f64>()
-                    .unwrap(),
-            ))
-        } else {
-            Err(Error::Null)
-        }
+        ctx.try_mat(space)?;
+        ctx.lazy()
+            .pat(&sign)
+            .and(&digit)
+            .and_if(&dot, &digit)
+            .map(|str: &[u8]| {
+                Ok(JsonZero::Num(
+                    std::str::from_utf8(str)
+                        .map(|v| v.parse::<f64>())
+                        .unwrap()
+                        .unwrap(),
+                ))
+            })
     }
 }
 

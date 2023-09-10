@@ -1,4 +1,5 @@
 use ::regex::Regex;
+use neure::prelude::*;
 use neure::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,6 +16,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "email@subdomain.example.com",
     ];
     let parser = |str| -> Result<(), neure::err::Error> {
+        let mut ctx = Parser::new(str);
         let letter = regex!(['a' - 'z']);
         let number = regex!(['0' - '9']);
         let under_score = regex!('_');
@@ -23,13 +25,13 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         let minus = regex!('-');
         let at = neure!('@');
         let prefix = neure!((group!(&letter, &number, &under_score, &dot, &plus, &minus))+);
-        let start = neure::start();
-        let domain = neure::count_if::<0, { usize::MAX }, _>(
+        let start = parser::start();
+        let domain = parser::count_if::<0, { usize::MAX }, _>(
             group!(&letter, &number, &dot, &minus),
-            |ctx: &CharsCtx, char| {
+            |ctx: &Parser<str>, char| {
                 if char.1 == '.' {
                     // don't match dot if we don't have more dot
-                    if let Ok(str) = Context::orig_at(ctx, ctx.offset() + char.0 + 1) {
+                    if let Ok(str) = ctx.orig_at(ctx.offset() + char.0 + 1) {
                         return str.find('.').is_some();
                     }
                 }
@@ -38,8 +40,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         let postfix = neure!((group!(&letter, &dot)){2,6});
         let dot = neure!('.');
-        let end = neure::end();
-        let mut ctx = CharsCtx::new(str);
+        let end = parser::end();
 
         ctx.try_mat(&start)?;
         ctx.try_mat(&prefix)?;

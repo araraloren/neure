@@ -1,3 +1,5 @@
+use std::ops::Deref;
+use std::ops::DerefMut;
 use std::str::CharIndices;
 
 use super::Context;
@@ -9,11 +11,70 @@ use crate::ctx::Ret;
 use crate::ctx::True;
 use crate::err::Error;
 use crate::ext::Extract;
-use crate::ext::Quote;
-use crate::ext::Term;
-use crate::ext::Then;
+use crate::ext::LazyCtxExtension;
+use crate::ext::LazyPattern;
+use crate::ext::LazyQuote;
+use crate::ext::LazyTerm;
+use crate::ext::NonLazyCtxExtension;
+use crate::ext::NonLazyPattern;
+use crate::ext::NonLazyQuote;
+use crate::ext::NonLazyTerm;
 use crate::iter::BytesIndices;
 use crate::span::SimpleStorer;
+
+pub struct LazyContext<'a, 'b, T>
+where
+    T: ?Sized,
+{
+    pub(crate) parser: &'b mut Parser<'a, T>,
+}
+
+impl<'a, 'b, T> Deref for LazyContext<'a, 'b, T>
+where
+    T: ?Sized,
+{
+    type Target = &'b mut Parser<'a, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.parser
+    }
+}
+
+impl<'a, 'b, T> DerefMut for LazyContext<'a, 'b, T>
+where
+    T: ?Sized,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parser
+    }
+}
+
+pub struct NonLazyContext<'a, 'b, T>
+where
+    T: ?Sized,
+{
+    pub(crate) parser: &'b mut Parser<'a, T>,
+}
+
+impl<'a, 'b, T> Deref for NonLazyContext<'a, 'b, T>
+where
+    T: ?Sized,
+{
+    type Target = &'b mut Parser<'a, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.parser
+    }
+}
+
+impl<'a, 'b, T> DerefMut for NonLazyContext<'a, 'b, T>
+where
+    T: ?Sized,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parser
+    }
+}
 
 #[derive(Debug)]
 pub struct Parser<'a, T>
@@ -73,6 +134,14 @@ where
     pub fn reset(&mut self) -> &mut Self {
         self.offset = 0;
         self
+    }
+
+    pub fn lazy(&mut self) -> LazyContext<'a, '_, T> {
+        LazyContext { parser: self }
+    }
+
+    pub fn non_lazy(&mut self) -> NonLazyContext<'a, '_, T> {
+        NonLazyContext { parser: self }
     }
 
     pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
@@ -222,47 +291,85 @@ where
     }
 }
 
-impl<'a, T> Parser<'a, T>
+impl<'a, T: ?Sized> LazyCtxExtension<'a, Parser<'a, T>> for LazyContext<'a, '_, T>
 where
-    T: ?Sized,
-    Self: Context<'a> + Sized,
+    Parser<'a, T>: Context<'a>,
 {
-    pub fn quote<L, R>(&mut self, left: L, right: R) -> Quote<'_, Self, L, R>
+    fn quote<L, R>(&mut self, left: L, right: R) -> LazyQuote<'_, Parser<'a, T>, L, R>
     where
-        L: Pattern<Self, Ret = <Self as Policy<Self>>::Ret>,
-        R: Pattern<Self, Ret = <Self as Policy<Self>>::Ret>,
+        L: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
+        R: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
     {
-        Quote::new(self, left, right)
+        LazyQuote::new(self.parser, left, right)
     }
 
-    pub fn mat<P>(&mut self, pattern: P) -> Then<'_, Self, P, True<Self>, True<Self>>
+    fn pat<P>(
+        &mut self,
+        pattern: P,
+    ) -> LazyPattern<'_, Parser<'a, T>, P, True<Parser<'a, T>>, True<Parser<'a, T>>>
     where
-        P: Pattern<Self, Ret = <Self as Policy<Self>>::Ret>,
+        P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
     {
-        Then::new(self, True::default(), True::default(), pattern)
+        LazyPattern::new(self.parser, True::default(), True::default(), pattern)
     }
 
-    pub fn term<S>(&mut self, sep: S) -> Term<'_, Self, S, True<Self>, True<Self>>
-    where
-        S: Pattern<Self, Ret = <Self as Policy<Self>>::Ret> + Clone,
-    {
-        self.term_opt(sep, true)
-    }
-
-    pub fn term_opt<S>(
+    fn term_opt<S>(
         &mut self,
         sep: S,
         optional: bool,
-    ) -> Term<'_, Self, S, True<Self>, True<Self>>
+    ) -> LazyTerm<'_, Parser<'a, T>, S, True<Parser<'a, T>>, True<Parser<'a, T>>>
     where
-        S: Pattern<Self, Ret = <Self as Policy<Self>>::Ret> + Clone,
+        S: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret> + Clone,
     {
-        Term::new(
-            self,
+        LazyTerm::new(
+            self.parser,
             Some(True::default()),
             Some(True::default()),
             sep,
             optional,
         )
+    }
+}
+
+impl<'a, T: ?Sized> NonLazyCtxExtension<'a, Parser<'a, T>> for NonLazyContext<'a, '_, T>
+where
+    Parser<'a, T>: Context<'a>,
+{
+    fn quote<L, R>(
+        &mut self,
+        left: L,
+        right: R,
+    ) -> Result<NonLazyQuote<'_, Parser<'a, T>, R>, Error>
+    where
+        L: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
+        R: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
+    {
+        self.parser.try_mat(left)?;
+
+        Ok(NonLazyQuote::new(self.parser, right))
+    }
+
+    fn pat<P>(
+        &mut self,
+        pattern: P,
+    ) -> Result<NonLazyPattern<'_, Parser<'a, T>, True<Parser<'a, T>>>, Error>
+    where
+        P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
+    {
+        let beg = self.parser.offset();
+        let ret = self.parser.try_mat(pattern);
+
+        Ok(NonLazyPattern::new(self.parser, True::default(), beg, ret))
+    }
+
+    fn term_opt<S>(
+        &mut self,
+        sep: S,
+        optional: bool,
+    ) -> Result<NonLazyTerm<'_, Parser<'a, T>, S, True<Parser<'a, T>>>, Error>
+    where
+        S: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret> + Clone,
+    {
+        Ok(NonLazyTerm::new(self.parser, None, sep, optional))
     }
 }

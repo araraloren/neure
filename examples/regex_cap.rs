@@ -1,5 +1,5 @@
 use ::regex::Regex;
-use neure::*;
+use neure::{prelude::*, *};
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let test_cases = [
@@ -14,7 +14,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "firstname.lastname@example.com",
         "email@subdomain.example.com",
     ];
-    let parser = |storer: &mut SpanStorer, str| -> Result<(), neure::err::Error> {
+    let parser = |storer: &mut SimpleStorer, str| -> Result<(), neure::err::Error> {
         let letter = regex!(['a' - 'z']);
         let number = regex!(['0' - '9']);
         let under_score = regex!('_');
@@ -23,10 +23,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         let minus = regex!('-');
         let at = neure!('@');
         let prefix = neure!((group!(&letter, &number, &under_score, &dot, &plus, &minus))+);
-        let start = neure::start();
-        let domain = neure::count_if::<0, { usize::MAX }, _>(
+        let start = parser::start();
+        let domain = parser::count_if::<0, { usize::MAX }, _>(
             group!(&letter, &number, &dot, &minus),
-            |ctx: &CharsCtx, char| {
+            |ctx: &Parser<str>, char| {
                 if char.1 == '.' {
                     // don't match dot if we don't have more dot
                     if let Ok(str) = Context::orig_at(ctx, ctx.offset() + char.0 + 1) {
@@ -38,24 +38,24 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         let postfix = neure!((group!(&letter, &dot)){2,6});
         let dot = neure!('.');
-        let end = neure::end();
-        let mut ctx = CharsCtx::new(str);
+        let end = parser::end();
+        let mut ctx = Parser::new(str);
 
         ctx.try_mat(&start)?;
-        ctx.try_cap(0, storer, &prefix)?;
+        storer.try_cap(0, &mut ctx, &prefix)?;
         ctx.try_mat(&at)?;
-        ctx.try_cap(1, storer, &domain)?;
+        storer.try_cap(1, &mut ctx, &domain)?;
         ctx.try_mat(&dot)?;
-        ctx.try_cap(2, storer, &postfix)?;
+        storer.try_cap(2, &mut ctx, &postfix)?;
         ctx.try_mat(&end)?;
         Ok(())
     };
-    let mut storer = SpanStorer::new(3);
+    let mut storer = SimpleStorer::new(3);
 
     measure(1000000, 1000000, || {
         let mut count = 0;
         test_cases.iter().for_each(|test| {
-            parser(storer.reset(), test).is_ok().then(|| count += 1);
+            parser(storer.reset(), *test).is_ok().then(|| count += 1);
         });
         count
     });

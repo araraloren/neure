@@ -1,4 +1,4 @@
-use neure::*;
+use neure::{prelude::*, *};
 use nom::{
     bytes::complete::{tag, take_while_m_n},
     combinator::map_res,
@@ -33,31 +33,30 @@ fn hex_color(input: &str) -> IResult<&str, Color> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut storer = SpanStorer::new(1);
     let color_str = "#2F14DF";
 
-    fn parser(storer: &mut SpanStorer, str: &str) -> Result<(), neure::err::Error> {
+    fn parser(str: &str) -> Result<Color, neure::err::Error> {
         let pound = neure!('#');
         let hex = neure!(['0' - '9' 'A' - 'F']{2});
-        let mut ctx = CharsCtx::default().with_str(str);
+        let mut ctx = Parser::new(str);
+        let mut ctx = ctx.non_lazy();
+        let from_str =
+            |str: &str| u8::from_str_radix(str, 16).map_err(|_| neure::err::Error::Match);
 
         ctx.reset();
         ctx.try_mat(&pound)?;
-        ctx.try_cap(0, storer, &hex)?;
-        ctx.try_cap(0, storer, &hex)?;
-        ctx.try_cap(0, storer, &hex)?;
-        Ok(())
+
+        Ok(Color {
+            red: ctx.pat(&hex)?.map(&from_str)?,
+            green: ctx.pat(&hex)?.map(&from_str)?,
+            blue: ctx.pat(&hex)?.map(&from_str)?,
+        })
     }
 
     measure(1000_0000, 1000_0000, || {
-        if parser(storer.reset(), color_str).is_ok() {
-            let mut strs = storer.substrs(color_str, 0).unwrap();
+        if let Ok(color) = parser(color_str) {
             assert_eq!(
-                Color {
-                    red: u8::from_str_radix(strs.next().unwrap(), 16).unwrap(),
-                    green: u8::from_str_radix(strs.next().unwrap(), 16).unwrap(),
-                    blue: u8::from_str_radix(strs.next().unwrap(), 16).unwrap(),
-                },
+                color,
                 Color {
                     red: 47,
                     green: 20,

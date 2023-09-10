@@ -9,6 +9,8 @@ pub mod span;
 
 pub use charize::charize;
 pub mod prelude {
+    pub use crate::ctx::BytesCtx;
+    pub use crate::ctx::CharsCtx;
     pub use crate::ctx::Context;
     pub use crate::ctx::Parser;
     pub use crate::ctx::Pattern;
@@ -16,6 +18,8 @@ pub mod prelude {
     pub use crate::ctx::Ret;
     pub use crate::ctx::Return;
     pub use crate::ctx::True;
+    pub use crate::ext::LazyCtxExtension;
+    pub use crate::ext::NonLazyCtxExtension;
     pub use crate::parser::*;
     pub use crate::span::SimpleStorer;
     pub use crate::span::Span;
@@ -44,14 +48,14 @@ mod test {
 
             $ctx.reset_with($str);
             $storer.reset();
-            assert!($storer.try_cap(&mut $ctx, $id, space_parser).is_err());
+            assert!($storer.try_cap($id, &mut $ctx, space_parser).is_err());
         };
         ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr, $($span:expr)*) => {
             let space_parser = $parser;
 
             $ctx.reset_with($str);
             $storer.reset();
-            $storer.try_cap(&mut $ctx, $id, space_parser)?;
+            $storer.try_cap($id, &mut $ctx, space_parser)?;
             assert_eq!($storer.spans_iter($id)?.collect::<Vec<_>>(), vec![$($span)*])
         };
     }
