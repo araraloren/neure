@@ -141,10 +141,10 @@ where
 
 #[derive(Debug)]
 pub struct LazyPatternValue<'a, Ctx, Pa, Pr, Po, V> {
-    ctx: &'a mut Ctx,
     pre: Pr,
     post: Po,
     pattern: Pa,
+    ctx: &'a mut Ctx,
     marker: PhantomData<V>,
 }
 
@@ -253,9 +253,9 @@ where
 #[derive(Debug)]
 pub struct NonLazyPattern<'a, Ctx: Policy<Ctx>, Po> {
     post: Po,
+    ctx: &'a mut Ctx,
     beg: usize,
     ret: Result<Ctx::Ret, Error>,
-    ctx: &'a mut Ctx,
 }
 
 impl<'a, Ctx: Policy<Ctx>, Po> NonLazyPattern<'a, Ctx, Po> {
@@ -348,9 +348,9 @@ where
 #[derive(Debug)]
 pub struct NonLazyPatternValue<'a, Ctx: Policy<Ctx>, Po, Val> {
     post: Po,
+    ctx: &'a mut Ctx,
     beg: usize,
     ret: Result<Ctx::Ret, Error>,
-    ctx: &'a mut Ctx,
     val: Option<Val>,
 }
 

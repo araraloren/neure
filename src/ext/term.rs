@@ -46,8 +46,8 @@ pub struct LazyTerm<'a, Ctx, Sep, Pr, Po> {
     sep: Sep,
     pre: Option<Pr>,
     post: Option<Po>,
-    optional: bool,
     ctx: &'a mut Ctx,
+    opt: bool,
 }
 
 impl<'a, Ctx, Sep, Pr, Po> LazyTerm<'a, Ctx, Sep, Pr, Po> {
@@ -63,7 +63,7 @@ impl<'a, Ctx, Sep, Pr, Po> LazyTerm<'a, Ctx, Sep, Pr, Po> {
             sep,
             pre,
             post,
-            optional,
+            opt: optional,
         }
     }
 }
@@ -106,7 +106,7 @@ where
         let pre = self.take_pre_pattern();
         let post = self.post.clone();
         let sep = self.sep.clone();
-        let optional = self.optional;
+        let optional = self.opt;
         let post = move |ctx: &mut Ctx| {
             let mut guard = CtxGuard::new(ctx);
             let mut ret = guard.try_mat(sep);
@@ -143,7 +143,7 @@ where
         let pre = self.take_pre_pattern();
         let left = move |ctx: &mut Ctx| super::and(pre, left).try_parse(ctx);
         let sep = self.sep.clone();
-        let optional = self.optional;
+        let optional = self.opt;
         let sep = move |ctx: &mut Ctx| {
             sep.try_parse(ctx).or_else(|e| {
                 if optional {
@@ -233,8 +233,8 @@ where
 pub struct NonLazyTerm<'a, Ctx: Policy<Ctx>, Sep, Po> {
     sep: Sep,
     post: Option<Po>,
-    opt: bool,
     ctx: &'a mut Ctx,
+    opt: bool,
 }
 
 impl<'a, Ctx: Policy<Ctx>, Sep, Po> NonLazyTerm<'a, Ctx, Sep, Po> {

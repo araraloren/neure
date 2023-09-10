@@ -9,9 +9,9 @@ use crate::ctx::Policy;
 use crate::err::Error;
 
 pub struct LazyQuote<'a, Ctx, Pl, Pr> {
-    ctx: &'a mut Ctx,
     pattern_l: Pl,
     pattern_r: Pr,
+    ctx: &'a mut Ctx,
 }
 
 impl<'a, Ctx, Pl, Pr> LazyQuote<'a, Ctx, Pl, Pr> {
@@ -113,8 +113,8 @@ where
 }
 
 pub struct NonLazyQuote<'a, Ctx: Policy<Ctx>, Pr> {
-    ctx: &'a mut Ctx,
     pattern_r: Pr,
+    ctx: &'a mut Ctx,
 }
 
 impl<'a, Ctx: Policy<Ctx>, Pr> NonLazyQuote<'a, Ctx, Pr> {

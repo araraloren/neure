@@ -10,9 +10,9 @@ pub struct CtxGuard<'a, 'b, C>
 where
     C: Context<'b> + Policy<C>,
 {
-    offset: usize,
-
     ctx: &'a mut C,
+
+    offset: usize,
 
     marker: PhantomData<&'b ()>,
 }
