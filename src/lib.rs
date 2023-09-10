@@ -20,7 +20,7 @@ pub mod prelude {
     pub use crate::ctx::True;
     pub use crate::ext::LazyCtxExtension;
     pub use crate::ext::NonLazyCtxExtension;
-    pub use crate::parser::*;
+    pub use crate::parser;
     pub use crate::span::SimpleStorer;
     pub use crate::span::Span;
 }

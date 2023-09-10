@@ -1,5 +1,4 @@
 use neure::prelude::*;
-use neure::*;
 use nom::AsBytes;
 use std::{cell::RefCell, process::exit};
 
