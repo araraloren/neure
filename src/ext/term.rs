@@ -9,6 +9,7 @@ use crate::ctx::Pattern;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::err::Error;
+use crate::parser;
 
 pub struct LazyTermIter<'a, Ctx, Pa, Sep, Pr, Po> {
     pattern: Pa,
@@ -141,7 +142,7 @@ where
         R: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     {
         let pre = self.take_pre_pattern();
-        let left = move |ctx: &mut Ctx| super::and(pre, left).try_parse(ctx);
+        let left = move |ctx: &mut Ctx| parser::and(pre, left).try_parse(ctx);
         let sep = self.sep.clone();
         let optional = self.opt;
         let sep = move |ctx: &mut Ctx| {
@@ -153,7 +154,7 @@ where
                 }
             })
         };
-        let right = |ctx: &mut Ctx| super::and(right, sep).try_parse(ctx);
+        let right = |ctx: &mut Ctx| parser::and(right, sep).try_parse(ctx);
 
         LazyQuote::new(self.ctx, left, right)
     }
@@ -317,7 +318,7 @@ where
                 }
             })
         };
-        let right = |ctx: &mut Ctx| super::and(right, sep).try_parse(ctx);
+        let right = |ctx: &mut Ctx| parser::and(right, sep).try_parse(ctx);
 
         Ok(NonLazyQuote::new(self.ctx, right))
     }

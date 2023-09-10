@@ -7,6 +7,7 @@ use crate::ctx::Context;
 use crate::ctx::Pattern;
 use crate::ctx::Policy;
 use crate::err::Error;
+use crate::parser;
 
 pub struct LazyQuote<'a, Ctx, Pl, Pr> {
     pattern_l: Pl,
@@ -57,8 +58,8 @@ where
 
         LazyQuote::new(
             self.ctx,
-            move |ctx: &mut Ctx| super::and(left, next_l).try_parse(ctx),
-            move |ctx: &mut Ctx| super::and(next_r, right).try_parse(ctx),
+            move |ctx: &mut Ctx| parser::and(left, next_l).try_parse(ctx),
+            move |ctx: &mut Ctx| parser::and(next_r, right).try_parse(ctx),
         )
     }
 }
@@ -86,8 +87,8 @@ where
 
         LazyQuote::new(
             self.ctx,
-            move |ctx: &mut Ctx| super::and(left, next_l).try_parse(ctx),
-            move |ctx: &mut Ctx| super::and(next_r, right).try_parse(ctx),
+            move |ctx: &mut Ctx| parser::and(left, next_l).try_parse(ctx),
+            move |ctx: &mut Ctx| parser::and(next_r, right).try_parse(ctx),
         )
     }
 
@@ -156,7 +157,7 @@ where
         self.ctx.try_mat(left)?;
 
         Ok(NonLazyQuote::new(self.ctx, move |ctx: &mut Ctx| {
-            super::and(right, self.pattern_r).try_parse(ctx)
+            parser::and(right, self.pattern_r).try_parse(ctx)
         }))
     }
 

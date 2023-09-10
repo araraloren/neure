@@ -6,6 +6,7 @@ use crate::ctx::Policy;
 use crate::err::Error;
 use crate::ext::Extract;
 use crate::ext::Handler;
+use crate::parser;
 use crate::prelude::Ret;
 
 use super::CtxGuard;
@@ -72,7 +73,7 @@ where
         let snd = pattern;
 
         LazyPattern::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
-            super::and(fst, snd).try_parse(ctx)
+            parser::and(fst, snd).try_parse(ctx)
         })
     }
 
@@ -104,7 +105,7 @@ where
         let snd = parser;
 
         LazyPattern::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
-            super::or(fst, snd).try_parse(ctx)
+            parser::or(fst, snd).try_parse(ctx)
         })
     }
 
