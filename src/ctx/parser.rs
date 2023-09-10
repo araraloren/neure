@@ -346,6 +346,7 @@ where
         Ok(NonLazyQuote::new(self.parser, right))
     }
 
+    #[inline(always)]
     fn pat<P>(
         &mut self,
         pattern: P,
@@ -354,9 +355,18 @@ where
         P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
     {
         let beg = self.parser.offset();
-        let ret = self.parser.try_mat(pattern);
+        let (ret, error) = match self.parser.try_mat(pattern) {
+            Ok(ret) => (Some(ret), Error::Null),
+            Err(e) => (None, e),
+        };
 
-        Ok(NonLazyPattern::new(self.parser, True::default(), beg, ret))
+        Ok(NonLazyPattern::new(
+            self.parser,
+            True::default(),
+            beg,
+            ret,
+            error,
+        ))
     }
 
     fn term_opt<S>(

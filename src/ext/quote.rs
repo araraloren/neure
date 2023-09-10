@@ -133,10 +133,13 @@ where
         P: Pattern<Ctx, Ret = Ctx::Ret>,
     {
         let beg = self.ctx.offset();
-        let ret = self.ctx.try_mat(pattern);
+        let (ret, error) = match self.ctx.try_mat(pattern) {
+            Ok(ret) => (Some(ret), Error::Null),
+            Err(e) => (None, e),
+        };
         let post = self.pattern_r;
 
-        Ok(NonLazyPattern::new(self.ctx, post, beg, ret))
+        Ok(NonLazyPattern::new(self.ctx, post, beg, ret, error))
     }
 }
 

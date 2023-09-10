@@ -255,16 +255,24 @@ pub struct NonLazyPattern<'a, Ctx: Policy<Ctx>, Po> {
     post: Po,
     ctx: &'a mut Ctx,
     beg: usize,
-    ret: Result<Ctx::Ret, Error>,
+    error: Error,
+    ret: Option<Ctx::Ret>,
 }
 
 impl<'a, Ctx: Policy<Ctx>, Po> NonLazyPattern<'a, Ctx, Po> {
-    pub fn new(ctx: &'a mut Ctx, post: Po, beg: usize, ret: Result<Ctx::Ret, Error>) -> Self {
+    pub fn new(
+        ctx: &'a mut Ctx,
+        post: Po,
+        beg: usize,
+        ret: Option<Ctx::Ret>,
+        error: Error,
+    ) -> Self {
         Self {
             post,
             beg,
             ret,
             ctx,
+            error,
         }
     }
 }
@@ -275,10 +283,13 @@ where
     Po: Pattern<Ctx, Ret = Ctx::Ret>,
 {
     pub fn run(self) -> Result<Ctx::Ret, Error> {
-        let ret = self.ret?;
+        if self.ret.is_none() {
+            Err(self.error)
+        } else {
+            self.ctx.try_mat(self.post)?;
 
-        self.ctx.try_mat(self.post)?;
-        Ok(ret)
+            Ok(self.ret.unwrap())
+        }
     }
 
     #[inline(always)]
@@ -287,32 +298,44 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
-        let ret = self.ret?;
-
-        self.ctx.try_mat(self.post)?;
-        func.invoke(A::extract(self.ctx, self.beg, &ret)?)
+        if self.ret.is_none() {
+            Err(self.error)
+        } else {
+            self.ctx.try_mat(self.post)?;
+            func.invoke(A::extract(self.ctx, self.beg, self.ret.as_ref().unwrap())?)
+        }
     }
 
     pub fn and(self, pattern: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
-        let ret = {
-            let mut prev_ret = self.ret?;
-
-            match self.ctx.try_mat(pattern) {
-                Ok(ret) => {
-                    prev_ret.add_assign(ret);
-                    Ok(prev_ret)
+        if self.ret.is_none() {
+            Err(self.error)
+        } else {
+            let mut prev_ret = self.ret.unwrap();
+            let (ret, error) = {
+                match self.ctx.try_mat(pattern) {
+                    Ok(ret) => {
+                        prev_ret.add_assign(ret);
+                        (Some(prev_ret), Error::Null)
+                    }
+                    Err(e) => (None, e),
                 }
-                Err(e) => Err(e),
-            }
-        };
+            };
 
-        Ok(Self::new(self.ctx, self.post, self.beg, ret))
+            Ok(Self::new(self.ctx, self.post, self.beg, ret, error))
+        }
     }
 
     pub fn or(self, pattern: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
-        let ret = self.ret.or(self.ctx.try_mat(pattern));
+        if self.ret.is_none() {
+            let (ret, error) = match self.ctx.try_mat(pattern) {
+                Ok(ret) => (Some(ret), Error::Null),
+                Err(e) => (None, e),
+            };
 
-        Ok(Self::new(self.ctx, self.post, self.beg, ret))
+            Ok(Self::new(self.ctx, self.post, self.beg, ret, error))
+        } else {
+            Ok(self)
+        }
     }
 
     pub fn with<V>(self, val: V) -> Result<NonLazyPatternValue<'a, Ctx, Po, V>, Error> {
@@ -322,6 +345,7 @@ where
             Some(val),
             self.beg,
             self.ret,
+            self.error,
         ))
     }
 
@@ -333,14 +357,14 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
-        let val = if let Ok(ret) = &self.ret {
+        let val = if let Some(ret) = &self.ret {
             func.invoke(A::extract(self.ctx, self.beg, ret)?).ok()
         } else {
             None
         };
 
         Ok(NonLazyPatternValue::new(
-            self.ctx, self.post, val, self.beg, self.ret,
+            self.ctx, self.post, val, self.beg, self.ret, self.error,
         ))
     }
 }
@@ -350,7 +374,8 @@ pub struct NonLazyPatternValue<'a, Ctx: Policy<Ctx>, Po, Val> {
     post: Po,
     ctx: &'a mut Ctx,
     beg: usize,
-    ret: Result<Ctx::Ret, Error>,
+    error: Error,
+    ret: Option<Ctx::Ret>,
     val: Option<Val>,
 }
 
@@ -360,13 +385,15 @@ impl<'a, Ctx: Policy<Ctx>, Po, Val> NonLazyPatternValue<'a, Ctx, Po, Val> {
         post: Po,
         val: Option<Val>,
         beg: usize,
-        ret: Result<Ctx::Ret, Error>,
+        ret: Option<Ctx::Ret>,
+        error: Error,
     ) -> Self {
         Self {
             ctx,
             post,
             beg,
             ret,
+            error,
             val,
         }
     }
@@ -382,10 +409,14 @@ where
         H: HandlerV<Val, A, Out = O, Error = Error>,
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
-        let ret = self.ret?;
-        let val = self.val.unwrap();
+        if self.ret.is_none() {
+            Err(self.error)
+        } else {
+            let ret = self.ret.unwrap();
+            let val = self.val.unwrap();
 
-        func.invoke(val, A::extract(self.ctx, self.beg, &ret)?)
+            func.invoke(val, A::extract(self.ctx, self.beg, &ret)?)
+        }
     }
 
     pub fn or_with(
@@ -393,11 +424,14 @@ where
         pattern: impl Pattern<Ctx, Ret = Ctx::Ret>,
         val: Val,
     ) -> Result<NonLazyPatternValue<'a, Ctx, Po, Val>, Error> {
-        if self.ret.is_ok() {
+        if self.ret.is_some() {
             Ok(self)
         } else {
             let beg = self.ctx.offset();
-            let ret = self.ctx.try_mat(pattern);
+            let (ret, error) = match self.ctx.try_mat(pattern) {
+                Ok(ret) => (Some(ret), Error::Null),
+                Err(e) => (None, e),
+            };
 
             Ok(NonLazyPatternValue::new(
                 self.ctx,
@@ -405,6 +439,7 @@ where
                 Some(val),
                 beg,
                 ret,
+                error,
             ))
         }
     }
@@ -419,18 +454,23 @@ where
         H: Handler<A, Out = Val, Error = Error>,
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
-        if self.ret.is_ok() {
+        if self.ret.is_some() {
             Ok(self)
         } else {
             let beg = self.ctx.offset();
-            let ret = self.ctx.try_mat(pattern);
-            let val = if let Ok(ret) = &ret {
+            let (ret, error) = match self.ctx.try_mat(pattern) {
+                Ok(ret) => (Some(ret), Error::Null),
+                Err(e) => (None, e),
+            };
+            let val = if let Some(ret) = &ret {
                 func.invoke(A::extract(self.ctx, beg, ret)?).ok()
             } else {
                 None
             };
 
-            Ok(NonLazyPatternValue::new(self.ctx, self.post, val, beg, ret))
+            Ok(NonLazyPatternValue::new(
+                self.ctx, self.post, val, beg, ret, error,
+            ))
         }
     }
 }

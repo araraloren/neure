@@ -269,7 +269,10 @@ where
         P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     {
         let beg = self.ctx.offset();
-        let ret = self.ctx.try_mat(pattern);
+        let (ret, error) = match self.ctx.try_mat(pattern) {
+            Ok(ret) => (Some(ret), Error::Null),
+            Err(e) => (None, e),
+        };
         let post = self.post.clone();
         let sep = self.sep.clone();
         let opt = self.opt;
@@ -289,7 +292,7 @@ where
             ret
         };
 
-        Ok(NonLazyPattern::new(self.ctx, post, beg, ret))
+        Ok(NonLazyPattern::new(self.ctx, post, beg, ret, error))
     }
 
     pub fn next_quote<L, R>(
