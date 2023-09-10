@@ -35,21 +35,20 @@ fn hex_color(input: &str) -> IResult<&str, Color> {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let color_str = "#2F14DF";
 
-    fn parser(str: &str) -> Result<Color, neure::err::Error> {
+    fn parser(str: &str) -> Result<Color, Box<dyn std::error::Error>> {
         let pound = neure!('#');
         let hex = neure!(['0' - '9' 'A' - 'F']{2});
         let mut ctx = Parser::new(str);
         let mut ctx = ctx.non_lazy();
-        let from_str =
-            |str: &str| u8::from_str_radix(str, 16).map_err(|_| neure::err::Error::Match);
+        let from_str = |str: &str| Ok(u8::from_str_radix(str, 16));
 
         ctx.reset();
         ctx.try_mat(&pound)?;
 
         Ok(Color {
-            red: ctx.pat(&hex)?.map(&from_str)?,
-            green: ctx.pat(&hex)?.map(&from_str)?,
-            blue: ctx.pat(&hex)?.map(&from_str)?,
+            red: ctx.pat(&hex)?.map(&from_str)??,
+            green: ctx.pat(&hex)?.map(&from_str)??,
+            blue: ctx.pat(&hex)?.map(&from_str)??,
         })
     }
 

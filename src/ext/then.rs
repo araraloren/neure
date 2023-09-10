@@ -250,6 +250,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub struct NonLazyPattern<'a, Ctx: Policy<Ctx>, Po> {
     post: Po,
     beg: usize,
@@ -280,6 +281,7 @@ where
         Ok(ret)
     }
 
+    #[inline(always)]
     pub fn map<H, A, O>(self, mut func: H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,

@@ -31,6 +31,7 @@ macro_rules! impl_extracter_for {
 
             type Error = Error;
 
+
             fn extract(ctx: &Ctx, beg: usize, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
                 Ok(($($arg::extract(ctx, beg, ret)?,)*))
             }
@@ -66,7 +67,7 @@ macro_rules! impl_handler_for {
             type Out = Out;
             type Error = Error;
 
-            #[inline]
+
             #[allow(non_snake_case)]
             fn invoke(&mut self, ($($arg,)*): ($($arg,)*)) -> Result<Self::Out, Self::Error> {
                 (self)($($arg,)*)
@@ -135,7 +136,7 @@ macro_rules! impl_handler_for {
             type Out = Out;
             type Error = Error;
 
-            #[inline]
+
             #[allow(non_snake_case)]
             fn invoke(&mut self, v: V, ($($arg,)*): ($($arg,)*)) -> Result<Self::Out, Self::Error> {
                 (self)(v, $($arg,)*)
