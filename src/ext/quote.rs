@@ -31,11 +31,11 @@ where
     Pl: Pattern<Ctx, Ret = Ctx::Ret>,
     Pr: Pattern<Ctx, Ret = Ctx::Ret>,
 {
-    pub fn pattern<P>(self, pattern: P) -> LazyPattern<'a, Ctx, P, Pl, Pr>
+    pub fn pat<P>(self, pat: P) -> LazyPattern<'a, Ctx, P, Pl, Pr>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret>,
     {
-        LazyPattern::new(self.ctx, self.pattern_l, self.pattern_r, pattern)
+        LazyPattern::new(self.ctx, self.pattern_l, self.pattern_r, pat)
     }
 }
 
@@ -129,12 +129,12 @@ where
     Ctx: Context<'b> + Policy<Ctx>,
     Pr: Pattern<Ctx, Ret = Ctx::Ret>,
 {
-    pub fn pat<P>(self, pattern: P) -> Result<NonLazyPattern<'a, Ctx, Pr>, Error>
+    pub fn pat<P>(self, pat: P) -> Result<NonLazyPattern<'a, Ctx, Pr>, Error>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret>,
     {
         let beg = self.ctx.offset();
-        let (ret, error) = match self.ctx.try_mat(pattern) {
+        let (ret, error) = match self.ctx.try_mat(pat) {
             Ok(ret) => (Some(ret), Error::Null),
             Err(e) => (None, e),
         };

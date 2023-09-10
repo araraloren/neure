@@ -12,13 +12,13 @@ use crate::err::Error;
 use crate::parser;
 
 pub struct LazyTermIter<'a, Ctx, Pa, Sep, Pr, Po> {
-    pattern: Pa,
+    pat: Pa,
     term: LazyTerm<'a, Ctx, Sep, Pr, Po>,
 }
 
 impl<'a, Ctx, Pa, Sep, Pr, Po> LazyTermIter<'a, Ctx, Pa, Sep, Pr, Po> {
-    pub fn new(term: LazyTerm<'a, Ctx, Sep, Pr, Po>, pattern: Pa) -> Self {
-        Self { term, pattern }
+    pub fn new(term: LazyTerm<'a, Ctx, Sep, Pr, Po>, pat: Pa) -> Self {
+        Self { term, pat }
     }
 }
 
@@ -39,7 +39,7 @@ where
         impl Pattern<Ctx, Ret = Ctx::Ret>,
         impl Pattern<Ctx, Ret = Ctx::Ret>,
     > {
-        self.term.next_pat(self.pattern.clone())
+        self.term.next_pat(self.pat.clone())
     }
 }
 
@@ -76,11 +76,11 @@ where
     Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
-    pub fn iter<P>(self, pattern: P) -> LazyTermIter<'a, Ctx, P, Sep, Pr, Po>
+    pub fn iter<P>(self, pat: P) -> LazyTermIter<'a, Ctx, P, Sep, Pr, Po>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     {
-        LazyTermIter::new(self, pattern)
+        LazyTermIter::new(self, pat)
     }
 
     fn take_pre_pattern(&mut self) -> impl Pattern<Ctx, Ret = Ctx::Ret> {
@@ -93,7 +93,7 @@ where
 
     pub fn next_pat<P>(
         &mut self,
-        pattern: P,
+        pat: P,
     ) -> LazyPattern<
         '_,
         Ctx,
@@ -124,7 +124,7 @@ where
             ret
         };
 
-        LazyPattern::new(self.ctx, pre, post, pattern)
+        LazyPattern::new(self.ctx, pre, post, pat)
     }
 
     pub fn next_quote<L, R>(
@@ -206,13 +206,13 @@ where
 }
 
 pub struct NonLazyTermIter<'a, Ctx: Policy<Ctx>, Pa, Sep, Po> {
-    pattern: Pa,
+    pat: Pa,
     term: NonLazyTerm<'a, Ctx, Sep, Po>,
 }
 
 impl<'a, Ctx: Policy<Ctx>, Pa, Sep, Po> NonLazyTermIter<'a, Ctx, Pa, Sep, Po> {
-    pub fn new(term: NonLazyTerm<'a, Ctx, Sep, Po>, pattern: Pa) -> Self {
-        Self { term, pattern }
+    pub fn new(term: NonLazyTerm<'a, Ctx, Sep, Po>, pat: Pa) -> Self {
+        Self { term, pat }
     }
 }
 
@@ -227,7 +227,7 @@ where
     pub fn next(
         &mut self,
     ) -> Result<NonLazyPattern<'_, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>>, Error> {
-        self.term.next_pat(self.pattern.clone())
+        self.term.next_pat(self.pat.clone())
     }
 }
 
@@ -255,22 +255,22 @@ where
     Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
-    pub fn iter<P>(self, pattern: P) -> NonLazyTermIter<'a, Ctx, P, Sep, Po>
+    pub fn iter<P>(self, pat: P) -> NonLazyTermIter<'a, Ctx, P, Sep, Po>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     {
-        NonLazyTermIter::new(self, pattern)
+        NonLazyTermIter::new(self, pat)
     }
 
     pub fn next_pat<P>(
         &mut self,
-        pattern: P,
+        pat: P,
     ) -> Result<NonLazyPattern<'_, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>>, Error>
     where
         P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     {
         let beg = self.ctx.offset();
-        let (ret, error) = match self.ctx.try_mat(pattern) {
+        let (ret, error) = match self.ctx.try_mat(pat) {
             Ok(ret) => (Some(ret), Error::Null),
             Err(e) => (None, e),
         };

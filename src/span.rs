@@ -114,14 +114,14 @@ impl SimpleStorer {
 }
 
 impl SimpleStorer {
-    pub fn try_cap<'a, C, P>(&mut self, id: usize, ctx: &mut C, pattern: P) -> Result<C::Ret, Error>
+    pub fn try_cap<'a, C, P>(&mut self, id: usize, ctx: &mut C, pat: P) -> Result<C::Ret, Error>
     where
         Self: Sized,
         C: Context<'a> + Policy<C>,
         P: Pattern<C, Ret = C::Ret>,
     {
         let beg = ctx.offset();
-        let ret = ctx.try_mat(pattern)?;
+        let ret = ctx.try_mat(pat)?;
 
         self.add_span(
             id,

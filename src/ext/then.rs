@@ -16,17 +16,17 @@ use super::HandlerV;
 pub struct LazyPattern<'a, Ctx, Pa, Pr, Po> {
     pre: Pr,
     post: Po,
-    pattern: Pa,
+    pat: Pa,
     ctx: &'a mut Ctx,
 }
 
 impl<'a, Ctx, Pa, Pr, Po> LazyPattern<'a, Ctx, Pa, Pr, Po> {
-    pub fn new(ctx: &'a mut Ctx, pre: Pr, post: Po, pattern: Pa) -> Self {
+    pub fn new(ctx: &'a mut Ctx, pre: Pr, post: Po, pat: Pa) -> Self {
         Self {
             ctx,
             pre,
             post,
-            pattern,
+            pat,
         }
     }
 }
@@ -41,7 +41,7 @@ where
 {
     pub fn run(self) -> Result<Ctx::Ret, Error> {
         self.ctx.try_mat(self.pre)?;
-        let ret = self.ctx.try_mat(self.pattern)?;
+        let ret = self.ctx.try_mat(self.pat)?;
 
         self.ctx.try_mat(self.post)?;
         Ok(ret)
@@ -56,7 +56,7 @@ where
             self.ctx.try_mat(self.pre)?;
 
             let beg = self.ctx.offset();
-            let ret = self.ctx.try_mat(self.pattern)?;
+            let ret = self.ctx.try_mat(self.pat)?;
 
             self.ctx.try_mat(self.post)?;
             (beg, ret)
@@ -67,10 +67,10 @@ where
 
     pub fn and(
         self,
-        pattern: impl Pattern<Ctx, Ret = Ctx::Ret>,
+        pat: impl Pattern<Ctx, Ret = Ctx::Ret>,
     ) -> LazyPattern<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>, Pr, Po> {
-        let fst = self.pattern;
-        let snd = pattern;
+        let fst = self.pat;
+        let snd = pat;
 
         LazyPattern::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
             parser::and(fst, snd).try_parse(ctx)
@@ -80,10 +80,10 @@ where
     pub fn and_if(
         self,
         r#if: impl Pattern<Ctx, Ret = Ctx::Ret>,
-        pattern: impl Pattern<Ctx, Ret = Ctx::Ret>,
+        pat: impl Pattern<Ctx, Ret = Ctx::Ret>,
     ) -> LazyPattern<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>, Pr, Po> {
-        let fst = self.pattern;
-        let snd = pattern;
+        let fst = self.pat;
+        let snd = pat;
 
         LazyPattern::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
             let mut guard = CtxGuard::new(ctx);
@@ -101,7 +101,7 @@ where
         self,
         parser: impl Pattern<Ctx, Ret = Ctx::Ret>,
     ) -> LazyPattern<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>, Pr, Po> {
-        let fst = self.pattern;
+        let fst = self.pat;
         let snd = parser;
 
         LazyPattern::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
@@ -114,7 +114,7 @@ where
         val: V,
     ) -> LazyPatternValue<'a, Ctx, impl FnOnce(&mut Ctx) -> Result<(V, Ctx::Ret), Error>, Pr, Po, V>
     {
-        let fst = self.pattern;
+        let fst = self.pat;
 
         LazyPatternValue::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
             fst.try_parse(ctx).map(|v| (val, v))
@@ -129,7 +129,7 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
-        let fst = self.pattern;
+        let fst = self.pat;
 
         LazyPatternValue::new(self.ctx, self.pre, self.post, move |ctx: &mut Ctx| {
             let beg = ctx.offset();
@@ -144,18 +144,18 @@ where
 pub struct LazyPatternValue<'a, Ctx, Pa, Pr, Po, V> {
     pre: Pr,
     post: Po,
-    pattern: Pa,
+    pat: Pa,
     ctx: &'a mut Ctx,
     marker: PhantomData<V>,
 }
 
 impl<'a, Ctx, Pa, Pr, Po, V> LazyPatternValue<'a, Ctx, Pa, Pr, Po, V> {
-    pub fn new(ctx: &'a mut Ctx, pre: Pr, post: Po, pattern: Pa) -> Self {
+    pub fn new(ctx: &'a mut Ctx, pre: Pr, post: Po, pat: Pa) -> Self {
         Self {
             ctx,
             pre,
             post,
-            pattern,
+            pat,
             marker: PhantomData,
         }
     }
@@ -173,7 +173,7 @@ where
 
         self.ctx.try_mat(self.pre)?;
         let ret = self.ctx.try_mat(|ctx: &mut Ctx| {
-            (self.pattern)(ctx).map(|(ret_val, ret)| {
+            (self.pat)(ctx).map(|(ret_val, ret)| {
                 val = Some(ret_val);
                 ret
             })
@@ -194,7 +194,7 @@ where
 
             let beg = self.ctx.offset();
             let ret = self.ctx.try_mat(|ctx: &mut Ctx| {
-                (self.pattern)(ctx).map(|(ret_val, ret)| {
+                (self.pat)(ctx).map(|(ret_val, ret)| {
                     val = Some(ret_val);
                     ret
                 })
@@ -209,12 +209,12 @@ where
 
     pub fn or_with(
         self,
-        pattern: impl Pattern<Ctx, Ret = Ctx::Ret>,
+        pat: impl Pattern<Ctx, Ret = Ctx::Ret>,
         val: V,
     ) -> LazyPatternValue<'a, Ctx, impl FnOnce(&mut Ctx) -> Result<(V, Ctx::Ret), Error>, Pr, Po, V>
     {
-        let fst = self.pattern;
-        let snd = pattern;
+        let fst = self.pat;
+        let snd = pat;
 
         LazyPatternValue::new(self.ctx, self.pre, self.post, |ctx: &mut Ctx| {
             if let Ok((ret_val, ret)) = (fst)(ctx) {
@@ -227,7 +227,7 @@ where
 
     pub fn or_map<H, A, P>(
         self,
-        pattern: P,
+        pat: P,
         mut func: H,
     ) -> LazyPatternValue<'a, Ctx, impl FnOnce(&mut Ctx) -> Result<(V, Ctx::Ret), Error>, Pr, Po, V>
     where
@@ -235,8 +235,8 @@ where
         H: Handler<A, Out = V, Error = Error>,
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
-        let fst = self.pattern;
-        let snd = pattern;
+        let fst = self.pat;
+        let snd = pat;
 
         LazyPatternValue::new(self.ctx, self.pre, self.post, move |ctx: &mut Ctx| {
             if let Ok((ret_val, ret)) = (fst)(ctx) {
@@ -307,13 +307,13 @@ where
         }
     }
 
-    pub fn and(self, pattern: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
+    pub fn and(self, pat: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
         if self.ret.is_none() {
             Err(self.error)
         } else {
             let mut prev_ret = self.ret.unwrap();
             let (ret, error) = {
-                match self.ctx.try_mat(pattern) {
+                match self.ctx.try_mat(pat) {
                     Ok(ret) => {
                         prev_ret.add_assign(ret);
                         (Some(prev_ret), Error::Null)
@@ -326,9 +326,9 @@ where
         }
     }
 
-    pub fn or(self, pattern: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
+    pub fn or(self, pat: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
         if self.ret.is_none() {
-            let (ret, error) = match self.ctx.try_mat(pattern) {
+            let (ret, error) = match self.ctx.try_mat(pat) {
                 Ok(ret) => (Some(ret), Error::Null),
                 Err(e) => (None, e),
             };
@@ -422,14 +422,14 @@ where
 
     pub fn or_with(
         self,
-        pattern: impl Pattern<Ctx, Ret = Ctx::Ret>,
+        pat: impl Pattern<Ctx, Ret = Ctx::Ret>,
         val: Val,
     ) -> Result<NonLazyPatternValue<'a, Ctx, Po, Val>, Error> {
         if self.ret.is_some() {
             Ok(self)
         } else {
             let beg = self.ctx.offset();
-            let (ret, error) = match self.ctx.try_mat(pattern) {
+            let (ret, error) = match self.ctx.try_mat(pat) {
                 Ok(ret) => (Some(ret), Error::Null),
                 Err(e) => (None, e),
             };
@@ -447,7 +447,7 @@ where
 
     pub fn or_map<H, A, P>(
         self,
-        pattern: P,
+        pat: P,
         mut func: H,
     ) -> Result<NonLazyPatternValue<'a, Ctx, Po, Val>, Error>
     where
@@ -459,7 +459,7 @@ where
             Ok(self)
         } else {
             let beg = self.ctx.offset();
-            let (ret, error) = match self.ctx.try_mat(pattern) {
+            let (ret, error) = match self.ctx.try_mat(pat) {
                 Ok(ret) => (Some(ret), Error::Null),
                 Err(e) => (None, e),
             };

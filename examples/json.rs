@@ -127,7 +127,7 @@ impl JsonParser {
         ctx.try_mat(space)?;
         ctx.lazy()
             .quote(&str_quote, &str_quote)
-            .pattern(&key)
+            .pat(&key)
             .map(|str: &'a [u8]| Ok(str))
     }
 
@@ -154,7 +154,7 @@ impl JsonParser {
         ctx.try_mat(space)?;
         ctx.lazy()
             .quote(&str_quote, &str_quote)
-            .pattern(&str_val)
+            .pat(&str_val)
             .map(|str: &'a [u8]| Ok(JsonZero::Str(str)))
     }
 

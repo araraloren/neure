@@ -28,7 +28,7 @@ pub trait LazyCtxExtension<'a, C: Context<'a> + Policy<C>> {
         L: Pattern<C, Ret = <C as Policy<C>>::Ret>,
         R: Pattern<C, Ret = <C as Policy<C>>::Ret>;
 
-    fn pat<P>(&mut self, pattern: P) -> LazyPattern<'_, C, P, True<C>, True<C>>
+    fn pat<P>(&mut self, pat: P) -> LazyPattern<'_, C, P, True<C>, True<C>>
     where
         P: Pattern<C, Ret = <C as Policy<C>>::Ret>;
 
@@ -50,7 +50,7 @@ pub trait NonLazyCtxExtension<'a, C: Context<'a> + Policy<C>> {
         L: Pattern<C, Ret = <C as Policy<C>>::Ret>,
         R: Pattern<C, Ret = <C as Policy<C>>::Ret>;
 
-    fn pat<P>(&mut self, pattern: P) -> Result<NonLazyPattern<'_, C, True<C>>, Error>
+    fn pat<P>(&mut self, pat: P) -> Result<NonLazyPattern<'_, C, True<C>>, Error>
     where
         P: Pattern<C, Ret = <C as Policy<C>>::Ret>;
 

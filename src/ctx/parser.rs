@@ -302,12 +302,12 @@ where
 
     fn pat<P>(
         &mut self,
-        pattern: P,
+        pat: P,
     ) -> LazyPattern<'_, Parser<'a, T>, P, True<Parser<'a, T>>, True<Parser<'a, T>>>
     where
         P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
     {
-        LazyPattern::new(self.parser, True::default(), True::default(), pattern)
+        LazyPattern::new(self.parser, True::default(), True::default(), pat)
     }
 
     fn term_opt<S>(
@@ -349,13 +349,13 @@ where
     #[inline(always)]
     fn pat<P>(
         &mut self,
-        pattern: P,
+        pat: P,
     ) -> Result<NonLazyPattern<'_, Parser<'a, T>, True<Parser<'a, T>>>, Error>
     where
         P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
     {
         let beg = self.parser.offset();
-        let (ret, error) = match self.parser.try_mat(pattern) {
+        let (ret, error) = match self.parser.try_mat(pat) {
             Ok(ret) => (Some(ret), Error::Null),
             Err(e) => (None, e),
         };
