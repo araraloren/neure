@@ -23,13 +23,13 @@ macro_rules! neure {
     };
 
     (@r ^ $($res:tt)*) => { // \S
-        neure!(@q $($res)* crate::regex!(^))
+        neure!(@q $($res)* $crate::regex!(^))
     };
     (@r . $($res:tt)*) => { // .
-        neure!(@q $($res)* crate::regex!(.))
+        neure!(@q $($res)* $crate::regex!(.))
     };
     (@r [ $($range:tt)+ ] $($res:tt)*) => {
-        neure!(@q $($res)* crate::regex!([$($range)+]))
+        neure!(@q $($res)* $crate::regex!([$($range)+]))
     };
     (@r $ch:ident $($res:tt)*) => {
         neure!(@q $($res)* $crate::regex::equal($crate::charize!($ch)))

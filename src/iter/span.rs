@@ -61,7 +61,7 @@ impl<'a> Iterator for SpanIterator<'a> {
 
         if offset < self.spans.len() {
             self.offset += 1;
-            self.spans.get(offset).map(|v| *v)
+            self.spans.get(offset).copied()
         } else {
             None
         }

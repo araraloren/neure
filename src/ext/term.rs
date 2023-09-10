@@ -85,7 +85,7 @@ where
     fn take_pre_pattern(&mut self) -> impl Pattern<Ctx, Ret = Ctx::Ret> {
         let pre = self.pre.take();
         move |ctx: &mut Ctx| {
-            pre.and_then(|v| Some(v.try_parse(ctx)))
+            pre.map(|v| v.try_parse(ctx))
                 .unwrap_or(Ok(<Ctx::Ret>::new_from((0, 0))))
         }
     }
@@ -222,6 +222,7 @@ where
     Pa: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
     Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
 {
+    #[allow(clippy::should_implement_trait)]
     pub fn next(
         &mut self,
     ) -> Result<NonLazyPattern<'_, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>>, Error> {

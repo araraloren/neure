@@ -55,12 +55,14 @@ impl SimpleStorer {
     }
 
     pub fn clr_span(&mut self, id: usize) -> &mut Self {
-        self.spans.get_mut(id).map(|v| v.clear());
+        if let Some(v) = self.spans.get_mut(id) {
+            v.clear()
+        };
         self
     }
 
     pub fn span(&self, id: usize, index: usize) -> Result<&Span, Error> {
-        self.spans[id].get(index).ok_or_else(|| Error::SpanIndex)
+        self.spans[id].get(index).ok_or(Error::SpanIndex)
     }
 
     pub fn spans(&self, id: usize) -> Result<&Vec<Span>, Error> {
@@ -77,7 +79,7 @@ impl SimpleStorer {
         let span = &self.spans[id];
 
         if !span.is_empty() {
-            Ok(SpanIterator::new(&span))
+            Ok(SpanIterator::new(span))
         } else {
             Err(Error::SpanID)
         }
@@ -96,7 +98,7 @@ impl SimpleStorer {
     {
         let span = self.span(id, index)?;
 
-        value.get_by_span(&span).ok_or(Error::IndexBySpan)
+        value.get_by_span(span).ok_or(Error::IndexBySpan)
     }
 
     pub fn slice_iter<'a, T>(

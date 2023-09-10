@@ -90,10 +90,7 @@ where
     T: ?Sized,
 {
     fn clone(&self) -> Self {
-        Self {
-            dat: self.dat.clone(),
-            offset: self.offset.clone(),
-        }
+        *self
     }
 }
 

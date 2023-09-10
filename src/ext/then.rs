@@ -61,7 +61,7 @@ where
             (beg, ret)
         };
 
-        func.invoke(A::extract(&self.ctx, beg, &ret)?)
+        func.invoke(A::extract(self.ctx, beg, &ret)?)
     }
 
     pub fn and(
@@ -172,9 +172,9 @@ where
 
         self.ctx.try_mat(self.pre)?;
         let ret = self.ctx.try_mat(|ctx: &mut Ctx| {
-            (self.pattern)(ctx).and_then(|(ret_val, ret)| {
+            (self.pattern)(ctx).map(|(ret_val, ret)| {
                 val = Some(ret_val);
-                Ok(ret)
+                ret
             })
         })?;
 
@@ -193,9 +193,9 @@ where
 
             let beg = self.ctx.offset();
             let ret = self.ctx.try_mat(|ctx: &mut Ctx| {
-                (self.pattern)(ctx).and_then(|(ret_val, ret)| {
+                (self.pattern)(ctx).map(|(ret_val, ret)| {
                     val = Some(ret_val);
-                    Ok(ret)
+                    ret
                 })
             })?;
 
@@ -203,7 +203,7 @@ where
             (beg, ret)
         };
 
-        func.invoke(val.unwrap(), A::extract(&self.ctx, beg, &ret)?)
+        func.invoke(val.unwrap(), A::extract(self.ctx, beg, &ret)?)
     }
 
     pub fn or_with(
@@ -288,7 +288,7 @@ where
         let ret = self.ret?;
 
         self.ctx.try_mat(self.post)?;
-        func.invoke(A::extract(&self.ctx, self.beg, &ret)?)
+        func.invoke(A::extract(self.ctx, self.beg, &ret)?)
     }
 
     pub fn and(self, pattern: impl Pattern<Ctx, Ret = Ctx::Ret>) -> Result<Self, Error> {
@@ -332,7 +332,7 @@ where
         A: Extract<'b, Ctx, Ctx::Ret, Out<'b> = A, Error = Error>,
     {
         let val = if let Ok(ret) = &self.ret {
-            func.invoke(A::extract(&self.ctx, self.beg, ret)?).ok()
+            func.invoke(A::extract(self.ctx, self.beg, ret)?).ok()
         } else {
             None
         };
@@ -383,7 +383,7 @@ where
         let ret = self.ret?;
         let val = self.val.unwrap();
 
-        func.invoke(val, A::extract(&self.ctx, self.beg, &ret)?)
+        func.invoke(val, A::extract(self.ctx, self.beg, &ret)?)
     }
 
     pub fn or_with(
@@ -423,7 +423,7 @@ where
             let beg = self.ctx.offset();
             let ret = self.ctx.try_mat(pattern);
             let val = if let Ok(ret) = &ret {
-                func.invoke(A::extract(&self.ctx, beg, ret)?).ok()
+                func.invoke(A::extract(self.ctx, beg, ret)?).ok()
             } else {
                 None
             };
