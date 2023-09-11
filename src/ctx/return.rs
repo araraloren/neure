@@ -8,26 +8,29 @@ use super::Ret;
 pub struct Return(usize, usize);
 
 impl Ret for Return {
-    fn count(&self) -> usize {
+    fn fst(&self) -> usize {
         self.0
     }
 
-    fn length(&self) -> usize {
+    fn snd(&self) -> usize {
         self.1
     }
 
     fn is_zero(&self) -> bool {
-        self.length() == 0 && self.count() == 0
-    }
-
-    fn new_from(ret: (usize, usize)) -> Self {
-        Return(ret.0, ret.1)
+        self.snd() == 0 && self.fst() == 0
     }
 
     fn add_assign(&mut self, other: Self) -> &mut Self {
         self.0 += other.0;
         self.1 += other.1;
         self
+    }
+
+    fn from<'a, C>(_: &mut C, info: (usize, usize)) -> Self
+    where
+        C: Context<'a>,
+    {
+        Return(info.0, info.1)
     }
 }
 

@@ -110,7 +110,7 @@ impl JsonParser {
             },
             |ctx, ret| {
                 if let Ok(ret) = &ret {
-                    ctx.inc(ret.length());
+                    ctx.inc(ret.snd());
                 }
                 ret
             },

@@ -17,12 +17,9 @@ pub mod prelude {
     pub use crate::ctx::Policy;
     pub use crate::ctx::Ret;
     pub use crate::ctx::Return;
-    pub use crate::ctx::True;
-    pub use crate::ext::LazyCtxExtension;
-    pub use crate::ext::NonLazyCtxExtension;
+    pub use crate::ctx::Span;
     pub use crate::parser;
     pub use crate::span::SimpleStorer;
-    pub use crate::span::Span;
 }
 
 #[cfg(test)]
@@ -48,14 +45,14 @@ mod test {
 
             $ctx.reset_with($str);
             $storer.reset();
-            assert!($storer.try_cap($id, &mut $ctx, space_parser).is_err());
+            assert!($storer.try_cap($id, &mut $ctx, &space_parser).is_err());
         };
         ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr, $($span:expr)*) => {
             let space_parser = $parser;
 
             $ctx.reset_with($str);
             $storer.reset();
-            $storer.try_cap($id, &mut $ctx, space_parser)?;
+            $storer.try_cap($id, &mut $ctx, &space_parser)?;
             assert_eq!($storer.spans_iter($id)?.collect::<Vec<_>>(), vec![$($span)*])
         };
     }

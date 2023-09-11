@@ -4,21 +4,10 @@ use std::str::CharIndices;
 
 use super::Context;
 use super::Pattern;
-use super::Return;
 
 use crate::ctx::Policy;
-use crate::ctx::Ret;
-use crate::ctx::True;
 use crate::err::Error;
 use crate::ext::Extract;
-use crate::ext::LazyCtxExtension;
-use crate::ext::LazyPattern;
-use crate::ext::LazyQuote;
-use crate::ext::LazyTerm;
-use crate::ext::NonLazyCtxExtension;
-use crate::ext::NonLazyPattern;
-use crate::ext::NonLazyQuote;
-use crate::ext::NonLazyTerm;
 use crate::iter::BytesIndices;
 use crate::span::SimpleStorer;
 
@@ -237,37 +226,16 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    type Ret = Return;
-
-    fn try_mat<Pat>(&mut self, pat: Pat) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-        Pat: Pattern<Self, Ret = Self::Ret>,
-    {
-        self.try_mat_policy(
-            pat,
-            |_| Ok(()),
-            |ctx, ret| {
-                if let Ok(ret) = &ret {
-                    Context::inc(ctx, ret.length());
-                }
-                ret
-            },
-        )
+    fn try_mat<Pat: Pattern<Parser<'a, T>>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error> {
+        self.try_mat_policy(pat, |_| Ok(()), |_, ret| ret)
     }
 
-    fn try_mat_policy<Pat, Pre, Post>(
+    fn try_mat_policy<Pat: Pattern<Parser<'a, T>>>(
         &mut self,
-        pat: Pat,
-        mut pre: Pre,
-        mut post: Post,
-    ) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-        Pat: Pattern<Self, Ret = Self::Ret>,
-        Pre: FnMut(&mut Self) -> Result<(), Error>,
-        Post: FnMut(&mut Self, Result<Self::Ret, Error>) -> Result<Self::Ret, Error>,
-    {
+        pat: &Pat,
+        mut pre: impl FnMut(&mut Parser<'a, T>) -> Result<(), Error>,
+        mut post: impl FnMut(&mut Parser<'a, T>, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
+    ) -> Result<Pat::Ret, Error> {
         pre(self)?;
         let ret = pat.try_parse(self);
         post(self, ret)
@@ -285,98 +253,5 @@ where
 
     fn extract(ctx: &Self, _: usize, _: &R) -> Result<Self::Out<'a>, Self::Error> {
         Ok(Clone::clone(ctx))
-    }
-}
-
-impl<'a, T: ?Sized> LazyCtxExtension<'a, Parser<'a, T>> for LazyContext<'a, '_, T>
-where
-    Parser<'a, T>: Context<'a>,
-{
-    fn quote<L, R>(&mut self, left: L, right: R) -> LazyQuote<'_, Parser<'a, T>, L, R>
-    where
-        L: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
-        R: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
-    {
-        LazyQuote::new(self.parser, left, right)
-    }
-
-    fn pat<P>(
-        &mut self,
-        pat: P,
-    ) -> LazyPattern<'_, Parser<'a, T>, P, True<Parser<'a, T>>, True<Parser<'a, T>>>
-    where
-        P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
-    {
-        LazyPattern::new(self.parser, True::default(), True::default(), pat)
-    }
-
-    fn term_opt<S>(
-        &mut self,
-        sep: S,
-        optional: bool,
-    ) -> LazyTerm<'_, Parser<'a, T>, S, True<Parser<'a, T>>, True<Parser<'a, T>>>
-    where
-        S: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret> + Clone,
-    {
-        LazyTerm::new(
-            self.parser,
-            Some(True::default()),
-            Some(True::default()),
-            sep,
-            optional,
-        )
-    }
-}
-
-impl<'a, T: ?Sized> NonLazyCtxExtension<'a, Parser<'a, T>> for NonLazyContext<'a, '_, T>
-where
-    Parser<'a, T>: Context<'a>,
-{
-    fn quote<L, R>(
-        &mut self,
-        left: L,
-        right: R,
-    ) -> Result<NonLazyQuote<'_, Parser<'a, T>, R>, Error>
-    where
-        L: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
-        R: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
-    {
-        self.parser.try_mat(left)?;
-
-        Ok(NonLazyQuote::new(self.parser, right))
-    }
-
-    #[inline(always)]
-    fn pat<P>(
-        &mut self,
-        pat: P,
-    ) -> Result<NonLazyPattern<'_, Parser<'a, T>, True<Parser<'a, T>>>, Error>
-    where
-        P: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret>,
-    {
-        let beg = self.parser.offset();
-        let (ret, error) = match self.parser.try_mat(pat) {
-            Ok(ret) => (Some(ret), Error::Null),
-            Err(e) => (None, e),
-        };
-
-        Ok(NonLazyPattern::new(
-            self.parser,
-            True::default(),
-            beg,
-            ret,
-            error,
-        ))
-    }
-
-    fn term_opt<S>(
-        &mut self,
-        sep: S,
-        optional: bool,
-    ) -> Result<NonLazyTerm<'_, Parser<'a, T>, S, True<Parser<'a, T>>>, Error>
-    where
-        S: Pattern<Parser<'a, T>, Ret = <Parser<'a, T> as Policy<Parser<'a, T>>>::Ret> + Clone,
-    {
-        Ok(NonLazyTerm::new(self.parser, None, sep, optional))
     }
 }

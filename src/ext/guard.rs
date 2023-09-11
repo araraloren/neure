@@ -14,6 +14,8 @@ where
 
     offset: usize,
 
+    reset: bool,
+
     marker: PhantomData<&'b ()>,
 }
 
@@ -27,6 +29,7 @@ where
         Self {
             ctx,
             offset,
+            reset: true,
             marker: PhantomData,
         }
     }
@@ -39,8 +42,11 @@ where
         self.ctx
     }
 
-    pub fn try_mat(&mut self, parser: impl Pattern<C, Ret = C::Ret>) -> Result<C::Ret, Error> {
-        self.ctx.try_mat(parser)
+    pub fn try_mat<P: Pattern<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
+        let ret = self.ctx.try_mat(pattern);
+
+        self.reset = ret.is_ok();
+        ret
     }
 }
 
@@ -49,6 +55,8 @@ where
     C: Context<'b> + Policy<C>,
 {
     fn drop(&mut self) {
-        self.ctx.set_offset(self.offset);
+        if self.reset {
+            self.ctx.set_offset(self.offset);
+        }
     }
 }

@@ -10,13 +10,13 @@ macro_rules! neure {
         $crate::parser::one_more($($res)*)
     };
     (@q {$st:literal} $($res:tt)*) => {
-        $crate::parser::count::<$st, $st, _>($($res)*)
+        $crate::parser::count::<$st, $st, _, _>($($res)*)
     };
     (@q {$st:literal,} $($res:tt)*) => {
-        $crate::parser::count::<$st, {usize::MAX}, _>($($res)*)
+        $crate::parser::count::<$st, {usize::MAX}, _, _>($($res)*)
     };
     (@q {$st:literal, $ed:literal} $($res:tt)*) => {
-        $crate::parser::count::<$st, $ed, _>($($res)*)
+        $crate::parser::count::<$st, $ed, _, _>($($res)*)
     };
     (@q $($res:tt)*) => {
         $crate::parser::one($($res)*)

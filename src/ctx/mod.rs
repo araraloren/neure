@@ -1,6 +1,7 @@
 mod parser;
 mod pattern;
 mod r#return;
+mod span;
 
 use crate::err::Error;
 
@@ -8,8 +9,8 @@ pub use self::parser::LazyContext;
 pub use self::parser::NonLazyContext;
 pub use self::parser::Parser;
 pub use self::pattern::Pattern;
-pub use self::pattern::True;
 pub use self::r#return::Return;
+pub use self::span::Span;
 
 pub type BytesCtx<'a> = Parser<'a, [u8]>;
 pub type CharsCtx<'a> = Parser<'a, str>;
@@ -56,42 +57,30 @@ pub trait Ret
 where
     Self: Sized,
 {
-    fn count(&self) -> usize;
+    fn fst(&self) -> usize;
 
-    fn length(&self) -> usize;
+    fn snd(&self) -> usize;
 
     fn is_zero(&self) -> bool;
 
-    fn new_from(ret: (usize, usize)) -> Self;
-
     fn add_assign(&mut self, other: Self) -> &mut Self;
+
+    fn from<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
+    where
+        C: Context<'a>;
 }
 
 pub trait Policy<C> {
-    type Ret: Ret;
-
-    fn is_mat<Pat>(&mut self, pat: Pat) -> bool
-    where
-        Self: Sized,
-        Pat: Pattern<C, Ret = Self::Ret>,
-    {
+    fn is_mat<Pat: Pattern<C>>(&mut self, pat: &Pat) -> bool {
         self.try_mat(pat).is_ok()
     }
 
-    fn try_mat<Pat>(&mut self, pat: Pat) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-        Pat: Pattern<C, Ret = Self::Ret>;
+    fn try_mat<Pat: Pattern<C>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
 
-    fn try_mat_policy<Pat, Pre, Post>(
+    fn try_mat_policy<Pat: Pattern<C>>(
         &mut self,
-        pat: Pat,
-        pre: Pre,
-        post: Post,
-    ) -> Result<Self::Ret, Error>
-    where
-        Self: Sized,
-        Pat: Pattern<C, Ret = Self::Ret>,
-        Pre: FnMut(&mut C) -> Result<(), Error>,
-        Post: FnMut(&mut C, Result<Self::Ret, Error>) -> Result<Self::Ret, Error>;
+        pat: &Pat,
+        pre: impl FnMut(&mut C) -> Result<(), Error>,
+        post: impl FnMut(&mut C, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
+    ) -> Result<Pat::Ret, Error>;
 }
