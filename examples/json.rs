@@ -98,7 +98,7 @@ impl JsonParser {
 
     pub fn try_mat<'a, 'c>(
         ctx: &mut BytesCtx<'c>,
-        parser: impl Pattern<BytesCtx<'c>, Ret = Return>,
+        parser: impl Parse<BytesCtx<'c>, Ret = Return>,
     ) -> Result<Return, Error> {
         let space = parser::zero_more(|byte| char::from_u32(*byte as u32).unwrap().is_whitespace());
 

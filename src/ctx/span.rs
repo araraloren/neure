@@ -1,5 +1,8 @@
 use super::Ret;
+
 use crate::ctx::Context;
+use crate::err::Error;
+use crate::ext::Extract;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Span {
@@ -40,5 +43,15 @@ impl Ret for Span {
             beg: ctx.offset(),
             len: info.1,
         }
+    }
+}
+
+impl<'a, C: Context<'a>> Extract<'a, C, Span> for Span {
+    type Out<'b> = Span;
+
+    type Error = Error;
+
+    fn extract(_: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
+        Ok(Clone::clone(ret))
     }
 }

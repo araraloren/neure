@@ -8,7 +8,7 @@ use crate::err::Error;
 pub use self::parser::LazyContext;
 pub use self::parser::NonLazyContext;
 pub use self::parser::Parser;
-pub use self::pattern::Pattern;
+pub use self::pattern::Parse;
 pub use self::r#return::Return;
 pub use self::span::Span;
 
@@ -71,13 +71,13 @@ where
 }
 
 pub trait Policy<C> {
-    fn is_mat<Pat: Pattern<C>>(&mut self, pat: &Pat) -> bool {
+    fn is_mat<Pat: Parse<C>>(&mut self, pat: &Pat) -> bool {
         self.try_mat(pat).is_ok()
     }
 
-    fn try_mat<Pat: Pattern<C>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+    fn try_mat<Pat: Parse<C>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
 
-    fn try_mat_policy<Pat: Pattern<C>>(
+    fn try_mat_policy<Pat: Parse<C>>(
         &mut self,
         pat: &Pat,
         pre: impl FnMut(&mut C) -> Result<(), Error>,

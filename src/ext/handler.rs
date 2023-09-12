@@ -1,12 +1,11 @@
 use crate::ctx::Context;
-use crate::ctx::Ret;
 use crate::err::Error;
 
 pub trait Extract<'a, C: Context<'a>, R> {
     type Out<'b>;
     type Error: Into<Error>;
 
-    fn extract(ctx: &C, beg: usize, ret: &R) -> Result<Self::Out<'a>, Self::Error>;
+    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error>;
 }
 
 impl<'a, C: Context<'a>, R> Extract<'a, C, R> for () {
@@ -14,7 +13,7 @@ impl<'a, C: Context<'a>, R> Extract<'a, C, R> for () {
 
     type Error = Error;
 
-    fn extract(_: &C, _: usize, _: &R) -> Result<Self::Out<'a>, Self::Error> {
+    fn extract(_: &C, _: &R) -> Result<Self::Out<'a>, Self::Error> {
         Ok(())
     }
 }
@@ -32,8 +31,8 @@ macro_rules! impl_extracter_for {
             type Error = Error;
 
 
-            fn extract(ctx: &Ctx, beg: usize, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
-                Ok(($($arg::extract(ctx, beg, ret)?,)*))
+            fn extract(ctx: &Ctx, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
+                Ok(($($arg::extract(ctx, ret)?,)*))
             }
         }
     };
@@ -89,36 +88,6 @@ impl_handler_for!(A B C D);
 impl_handler_for!(A B C D E);
 
 impl_handler_for!(A B C D E F);
-
-impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for &'a str {
-    type Out<'b> = &'b str;
-
-    type Error = Error;
-
-    fn extract(ctx: &C, beg: usize, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(beg, ret.snd())
-    }
-}
-
-impl<'a, C: Context<'a, Orig = [u8]>, R: Ret> Extract<'a, C, R> for &'a [u8] {
-    type Out<'b> = &'b [u8];
-
-    type Error = Error;
-
-    fn extract(ctx: &C, beg: usize, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(beg, ret.snd())
-    }
-}
-
-impl<'a, C: Context<'a>, R> Extract<'a, C, R> for usize {
-    type Out<'b> = usize;
-
-    type Error = Error;
-
-    fn extract(_: &C, beg: usize, _: &R) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(beg)
-    }
-}
 
 pub trait HandlerV<V, Args> {
     type Out;

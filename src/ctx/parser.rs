@@ -3,7 +3,7 @@ use std::ops::DerefMut;
 use std::str::CharIndices;
 
 use super::Context;
-use super::Pattern;
+use super::Parse;
 
 use crate::ctx::Policy;
 use crate::err::Error;
@@ -226,11 +226,11 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    fn try_mat<Pat: Pattern<Parser<'a, T>>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error> {
+    fn try_mat<Pat: Parse<Parser<'a, T>>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error> {
         self.try_mat_policy(pat, |_| Ok(()), |_, ret| ret)
     }
 
-    fn try_mat_policy<Pat: Pattern<Parser<'a, T>>>(
+    fn try_mat_policy<Pat: Parse<Parser<'a, T>>>(
         &mut self,
         pat: &Pat,
         mut pre: impl FnMut(&mut Parser<'a, T>) -> Result<(), Error>,
@@ -251,7 +251,7 @@ where
 
     type Error = Error;
 
-    fn extract(ctx: &Self, _: usize, _: &R) -> Result<Self::Out<'a>, Self::Error> {
+    fn extract(ctx: &Self, _: &R) -> Result<Self::Out<'a>, Self::Error> {
         Ok(Clone::clone(ctx))
     }
 }

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Pattern;
+use crate::ctx::Parse;
 use crate::ctx::Policy;
 use crate::err::Error;
 
@@ -42,11 +42,11 @@ where
         self.ctx
     }
 
-    pub fn try_mat<P: Pattern<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
-        let ret = self.ctx.try_mat(pattern);
-
-        self.reset = ret.is_ok();
-        ret
+    pub fn try_mat<P: Parse<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
+        self.ctx.try_mat(pattern).and_then(|r| {
+            self.reset = false;
+            Ok(r)
+        })
     }
 }
 

@@ -1,12 +1,11 @@
 use crate::ctx::Context;
-use crate::ctx::Pattern;
+use crate::ctx::Parse;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::iter::IndexBySpan;
 use crate::iter::IteratorBySpan;
 use crate::iter::SpanIterator;
-use crate::prelude::Ret;
 
 #[derive(Debug, Clone, Default)]
 pub struct SimpleStorer {
@@ -108,26 +107,18 @@ impl SimpleStorer {
 }
 
 impl SimpleStorer {
-    pub fn try_cap<'a, C, P: Pattern<C>>(
+    pub fn try_cap<'a, C, P: Parse<C, Ret = Span>>(
         &mut self,
         id: usize,
         ctx: &mut C,
         pat: &P,
     ) -> Result<P::Ret, Error>
     where
-        P::Ret: Ret,
         C: Context<'a> + Policy<C>,
     {
-        let beg = ctx.offset();
         let ret = ctx.try_mat(pat)?;
 
-        self.add_span(
-            id,
-            Span {
-                beg,
-                len: ret.snd(),
-            },
-        );
+        self.add_span(id, ret);
         Ok(ret)
     }
 }

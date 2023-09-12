@@ -12,8 +12,8 @@ pub mod prelude {
     pub use crate::ctx::BytesCtx;
     pub use crate::ctx::CharsCtx;
     pub use crate::ctx::Context;
+    pub use crate::ctx::Parse;
     pub use crate::ctx::Parser;
-    pub use crate::ctx::Pattern;
     pub use crate::ctx::Policy;
     pub use crate::ctx::Ret;
     pub use crate::ctx::Return;
