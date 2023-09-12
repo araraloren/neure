@@ -161,9 +161,13 @@ use neure::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let digits = neure!(['0' - '9']+);
-    let mut ctx = CharsCtx::new("123,4354,6546,675");
+    let square_l = neure!('[');
+    let square_r = neure!(']');
+    let mut ctx = CharsCtx::new("[123]");
     let mut pat = digits.pattern();
-    let val: String = pat.map_orig(&mut ctx)?.to_string();
+    let mut quote = pat.quote(&square_l, &square_r);
+
+    let val: String = quote.map(&mut ctx, |str: &str| Ok(str.to_string()))?;
 
     dbg!(val);
 
