@@ -1,358 +1,72 @@
-use super::quote::LazyQuote;
-use super::quote::NonLazyQuote;
-use super::then::LazyPattern;
+use std::marker::PhantomData;
+
+use super::Collect;
 use super::CtxGuard;
-use super::NonLazyPattern;
+use super::Extract;
+use super::Handler;
+use super::Mapper;
 
 use crate::ctx::Context;
-use crate::ctx::Pattern;
+use crate::ctx::Parse;
 use crate::ctx::Policy;
-use crate::ctx::Ret;
+use crate::ctx::Span;
 use crate::err::Error;
-use crate::parser;
 
-pub struct LazyTermIter<'a, Ctx, Pa, Sep, Pr, Po> {
-    pat: Pa,
-    term: LazyTerm<'a, Ctx, Sep, Pr, Po>,
+pub struct Terminated<P, S, M, O> {
+    pat: P,
+    sep: S,
+    marker: PhantomData<(M, O)>,
 }
 
-impl<'a, Ctx, Pa, Sep, Pr, Po> LazyTermIter<'a, Ctx, Pa, Sep, Pr, Po> {
-    pub fn new(term: LazyTerm<'a, Ctx, Sep, Pr, Po>, pat: Pa) -> Self {
-        Self { term, pat }
-    }
-}
-
-impl<'a, 'b, Ctx, Pa, Sep, Pr, Po> LazyTermIter<'a, Ctx, Pa, Sep, Pr, Po>
-where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
-    Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    Pa: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-{
-    pub fn next(
-        &mut self,
-    ) -> LazyPattern<
-        '_,
-        Ctx,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-    > {
-        self.term.next_pat(self.pat.clone())
-    }
-}
-
-pub struct LazyTerm<'a, Ctx, Sep, Pr, Po> {
-    sep: Sep,
-    pre: Option<Pr>,
-    post: Option<Po>,
-    ctx: &'a mut Ctx,
-    opt: bool,
-}
-
-impl<'a, Ctx, Sep, Pr, Po> LazyTerm<'a, Ctx, Sep, Pr, Po> {
-    pub fn new(
-        ctx: &'a mut Ctx,
-        pre: Option<Pr>,
-        post: Option<Po>,
-        sep: Sep,
-        optional: bool,
-    ) -> Self {
+impl<P, S, M, O> Terminated<P, S, M, O> {
+    pub fn new(pat: P, sep: S) -> Self {
         Self {
-            ctx,
+            pat,
             sep,
-            pre,
-            post,
-            opt: optional,
+            marker: PhantomData,
         }
     }
 }
 
-impl<'a, 'b, Ctx, Sep, Pr, Po> LazyTerm<'a, Ctx, Sep, Pr, Po>
+impl<P, S, M, O> Terminated<P, S, M, O> {
+    pub fn collect<V>(self) -> Collect<Self, M, O, V> {
+        Collect::new(self)
+    }
+}
+
+impl<'a, C, S, P, M, O> Mapper<'a, C, M, O> for Terminated<P, S, M, O>
 where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
-    Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
+    S: Parse<C, Ret = Span>,
+    P: Mapper<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
 {
-    pub fn iter<P>(self, pat: P) -> LazyTermIter<'a, Ctx, P, Sep, Pr, Po>
+    fn map<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
-        P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        LazyTermIter::new(self, pat)
-    }
+        let mut g = CtxGuard::new(ctx);
+        let ret = self.pat.map(g.ctx(), func);
+        let ret = g.process_ret(ret)?;
 
-    fn take_pre_pattern(&mut self) -> impl Pattern<Ctx, Ret = Ctx::Ret> {
-        let pre = self.pre.take();
-        move |ctx: &mut Ctx| {
-            pre.map(|v| v.try_parse(ctx))
-                .unwrap_or(Ok(<Ctx::Ret>::new_from((0, 0))))
-        }
-    }
-
-    pub fn next_pat<P>(
-        &mut self,
-        pat: P,
-    ) -> LazyPattern<
-        '_,
-        Ctx,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-    >
-    where
-        P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        let pre = self.take_pre_pattern();
-        let post = self.post.clone();
-        let sep = self.sep.clone();
-        let optional = self.opt;
-        let post = move |ctx: &mut Ctx| {
-            let mut guard = CtxGuard::new(ctx);
-            let mut ret = guard.try_mat(sep);
-
-            if let Some(post) = post {
-                if let Ok(ret) = &mut ret {
-                    if let Ok(post_ret) = guard.try_mat(post) {
-                        ret.add_assign(post_ret);
-                    }
-                } else if optional {
-                    return guard.try_mat(post);
-                }
-            }
-            ret
-        };
-
-        LazyPattern::new(self.ctx, pre, post, pat)
-    }
-
-    pub fn next_quote<L, R>(
-        &mut self,
-        left: L,
-        right: R,
-    ) -> LazyQuote<
-        '_,
-        Ctx,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    >
-    where
-        L: Pattern<Ctx, Ret = Ctx::Ret>,
-        R: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        let pre = self.take_pre_pattern();
-        let left = move |ctx: &mut Ctx| parser::and(pre, left).try_parse(ctx);
-        let sep = self.sep.clone();
-        let optional = self.opt;
-        let sep = move |ctx: &mut Ctx| {
-            sep.try_parse(ctx).or_else(|e| {
-                if optional {
-                    Ok(<Ctx::Ret>::new_from((0, 0)))
-                } else {
-                    Err(e)
-                }
-            })
-        };
-        let right = |ctx: &mut Ctx| parser::and(right, sep).try_parse(ctx);
-
-        LazyQuote::new(self.ctx, left, right)
-    }
-
-    pub fn next_term<S>(
-        &mut self,
-        sep: S,
-    ) -> LazyTerm<
-        '_,
-        Ctx,
-        S,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    >
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        self.next_term_opt(sep, true)
-    }
-
-    pub fn next_term_opt<S>(
-        &mut self,
-        sep: S,
-        optional: bool,
-    ) -> LazyTerm<
-        '_,
-        Ctx,
-        S,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    >
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        let pre = self.take_pre_pattern();
-        let prev_sep = self.sep.clone();
-        let prev_sep = move |ctx: &mut Ctx| {
-            prev_sep.try_parse(ctx).or_else(|e| {
-                if optional {
-                    Ok(<Ctx::Ret>::new_from((0, 0)))
-                } else {
-                    Err(e)
-                }
-            })
-        };
-
-        LazyTerm::new(self.ctx, Some(pre), Some(prev_sep), sep, optional)
+        g.try_mat(&self.sep)?;
+        Ok(ret)
     }
 }
 
-pub struct NonLazyTermIter<'a, Ctx: Policy<Ctx>, Pa, Sep, Po> {
-    pat: Pa,
-    term: NonLazyTerm<'a, Ctx, Sep, Po>,
-}
-
-impl<'a, Ctx: Policy<Ctx>, Pa, Sep, Po> NonLazyTermIter<'a, Ctx, Pa, Sep, Po> {
-    pub fn new(term: NonLazyTerm<'a, Ctx, Sep, Po>, pat: Pa) -> Self {
-        Self { term, pat }
-    }
-}
-
-impl<'a, 'b, Ctx, Pa, Sep, Po> NonLazyTermIter<'a, Ctx, Pa, Sep, Po>
+impl<'a, C, S, P, M, O> Parse<C> for Terminated<P, S, M, O>
 where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    Pa: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
+    S: Parse<C, Ret = Span>,
+    P: Parse<C, Ret = Span>,
+    C: Context<'a> + Policy<C>,
 {
-    #[allow(clippy::should_implement_trait)]
-    pub fn next(
-        &mut self,
-    ) -> Result<NonLazyPattern<'_, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>>, Error> {
-        self.term.next_pat(self.pat.clone())
-    }
-}
+    type Ret = P::Ret;
 
-pub struct NonLazyTerm<'a, Ctx: Policy<Ctx>, Sep, Po> {
-    sep: Sep,
-    post: Option<Po>,
-    ctx: &'a mut Ctx,
-    opt: bool,
-}
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let mut g = CtxGuard::new(ctx);
+        let ret = g.try_mat(&self.pat)?;
 
-impl<'a, Ctx: Policy<Ctx>, Sep, Po> NonLazyTerm<'a, Ctx, Sep, Po> {
-    pub fn new(ctx: &'a mut Ctx, post: Option<Po>, sep: Sep, optional: bool) -> Self {
-        Self {
-            ctx,
-            sep,
-            post,
-            opt: optional,
-        }
-    }
-}
-
-impl<'a, 'b, Ctx, Sep, Po> NonLazyTerm<'a, Ctx, Sep, Po>
-where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Po: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    Sep: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-{
-    pub fn iter<P>(self, pat: P) -> NonLazyTermIter<'a, Ctx, P, Sep, Po>
-    where
-        P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        NonLazyTermIter::new(self, pat)
-    }
-
-    pub fn next_pat<P>(
-        &mut self,
-        pat: P,
-    ) -> Result<NonLazyPattern<'_, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>>, Error>
-    where
-        P: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        let beg = self.ctx.offset();
-        let (ret, error) = match self.ctx.try_mat(pat) {
-            Ok(ret) => (Some(ret), Error::Null),
-            Err(e) => (None, e),
-        };
-        let post = self.post.clone();
-        let sep = self.sep.clone();
-        let opt = self.opt;
-        let post = move |ctx: &mut Ctx| {
-            let mut guard = CtxGuard::new(ctx);
-            let mut ret = guard.try_mat(sep);
-
-            if let Some(post) = post {
-                if let Ok(ret) = &mut ret {
-                    if let Ok(post_ret) = guard.try_mat(post) {
-                        ret.add_assign(post_ret);
-                    }
-                } else if opt {
-                    return guard.try_mat(post);
-                }
-            }
-            ret
-        };
-
-        Ok(NonLazyPattern::new(self.ctx, post, beg, ret, error))
-    }
-
-    pub fn next_quote<L, R>(
-        &mut self,
-        left: L,
-        right: R,
-    ) -> Result<NonLazyQuote<'_, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret> + Clone>, Error>
-    where
-        L: Pattern<Ctx, Ret = Ctx::Ret>,
-        R: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        self.ctx.try_mat(left)?;
-
-        let sep = self.sep.clone();
-        let optional = self.opt;
-        let sep = move |ctx: &mut Ctx| {
-            sep.try_parse(ctx).or_else(|e| {
-                if optional {
-                    Ok(<Ctx::Ret>::new_from((0, 0)))
-                } else {
-                    Err(e)
-                }
-            })
-        };
-        let right = |ctx: &mut Ctx| parser::and(right, sep).try_parse(ctx);
-
-        Ok(NonLazyQuote::new(self.ctx, right))
-    }
-
-    pub fn next_term<S>(
-        &mut self,
-        sep: S,
-    ) -> Result<NonLazyTerm<'_, Ctx, S, impl Pattern<Ctx, Ret = Ctx::Ret> + Clone>, Error>
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        self.next_term_opt(sep, true)
-    }
-
-    pub fn next_term_opt<S>(
-        &mut self,
-        sep: S,
-        optional: bool,
-    ) -> Result<NonLazyTerm<'_, Ctx, S, impl Pattern<Ctx, Ret = Ctx::Ret> + Clone>, Error>
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        let prev_sep = self.sep.clone();
-        let prev_sep = move |ctx: &mut Ctx| {
-            prev_sep.try_parse(ctx).or_else(|e| {
-                if optional {
-                    Ok(<Ctx::Ret>::new_from((0, 0)))
-                } else {
-                    Err(e)
-                }
-            })
-        };
-        let post = Some(prev_sep);
-
-        Ok(NonLazyTerm::new(self.ctx, post, sep, optional))
+        g.try_mat(&self.sep)?;
+        Ok(ret)
     }
 }

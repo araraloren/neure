@@ -1,5 +1,4 @@
 mod parser;
-mod pattern;
 mod r#return;
 mod span;
 
@@ -8,12 +7,32 @@ use crate::err::Error;
 pub use self::parser::LazyContext;
 pub use self::parser::NonLazyContext;
 pub use self::parser::Parser;
-pub use self::pattern::Parse;
 pub use self::r#return::Return;
 pub use self::span::Span;
 
 pub type BytesCtx<'a> = Parser<'a, [u8]>;
 pub type CharsCtx<'a> = Parser<'a, str>;
+
+pub trait Parse<C> {
+    type Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error>;
+
+    fn parse(&self, ctx: &mut C) -> bool {
+        self.try_parse(ctx).is_ok()
+    }
+}
+
+impl<C, F, R> Parse<C> for F
+where
+    F: Fn(&mut C) -> Result<R, Error>,
+{
+    type Ret = R;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        (self)(ctx)
+    }
+}
 
 pub trait Context<'a> {
     type Orig: ?Sized;

@@ -29,7 +29,7 @@ where
         Self {
             ctx,
             offset,
-            reset: true,
+            reset: false,
             marker: PhantomData,
         }
     }
@@ -40,6 +40,13 @@ where
 
     pub fn ctx(&mut self) -> &mut C {
         self.ctx
+    }
+
+    pub fn process_ret<R>(&mut self, ret: Result<R, Error>) -> Result<R, Error> {
+        if ret.is_err() {
+            self.reset = true;
+        }
+        ret
     }
 
     pub fn try_mat<P: Parse<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {

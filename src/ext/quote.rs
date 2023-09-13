@@ -1,179 +1,73 @@
-use super::term::LazyTerm;
-use super::term::NonLazyTerm;
-use super::then::LazyPattern;
-use super::NonLazyPattern;
+use std::marker::PhantomData;
+
+use super::CtxGuard;
+use super::Extract;
+use super::Handler;
+use super::Mapper;
 
 use crate::ctx::Context;
-use crate::ctx::Pattern;
+use crate::ctx::Parse;
 use crate::ctx::Policy;
+use crate::ctx::Span;
 use crate::err::Error;
-use crate::parser;
 
-pub struct LazyQuote<'a, Ctx, Pl, Pr> {
-    pattern_l: Pl,
-    pattern_r: Pr,
-    ctx: &'a mut Ctx,
+pub struct Quote<P, L, R, M, O> {
+    pat: P,
+    left: L,
+    right: R,
+    marker: PhantomData<(M, O)>,
 }
 
-impl<'a, Ctx, Pl, Pr> LazyQuote<'a, Ctx, Pl, Pr> {
-    pub fn new(ctx: &'a mut Ctx, pattern_l: Pl, pattern_r: Pr) -> Self {
+impl<P, L, R, M, O> Quote<P, L, R, M, O> {
+    pub fn new(pat: P, left: L, right: R) -> Self {
         Self {
-            ctx,
-            pattern_l,
-            pattern_r,
+            pat,
+            left,
+            right,
+            marker: PhantomData,
         }
     }
 }
 
-impl<'a, 'b, Ctx, Pl, Pr> LazyQuote<'a, Ctx, Pl, Pr>
+impl<'a, C, L, R, P, M, O> Mapper<'a, C, M, O> for Quote<P, L, R, M, O>
 where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pl: Pattern<Ctx, Ret = Ctx::Ret>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
+    L: Parse<C, Ret = Span>,
+    R: Parse<C, Ret = Span>,
+    P: Mapper<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
 {
-    pub fn pat<P>(self, pat: P) -> LazyPattern<'a, Ctx, P, Pl, Pr>
+    fn map<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
-        P: Pattern<Ctx, Ret = Ctx::Ret>,
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        LazyPattern::new(self.ctx, self.pattern_l, self.pattern_r, pat)
+        let mut g = CtxGuard::new(ctx);
+
+        g.try_mat(&self.left)?;
+        let ret = self.pat.map(g.ctx(), func);
+        let ret = g.process_ret(ret)?;
+
+        g.try_mat(&self.right)?;
+        Ok(ret)
     }
 }
 
-impl<'a, 'b, Ctx, Pl, Pr> LazyQuote<'a, Ctx, Pl, Pr>
+impl<'a, C, L, R, P, M, O> Parse<C> for Quote<P, L, R, M, O>
 where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pl: Pattern<Ctx, Ret = Ctx::Ret>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
+    L: Parse<C, Ret = Span>,
+    R: Parse<C, Ret = Span>,
+    P: Parse<C, Ret = Span>,
+    C: Context<'a> + Policy<C>,
 {
-    pub fn quote_once(
-        self,
-        left: impl Pattern<Ctx, Ret = Ctx::Ret>,
-        right: impl Pattern<Ctx, Ret = Ctx::Ret>,
-    ) -> LazyQuote<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret>, impl Pattern<Ctx, Ret = Ctx::Ret>>
-    {
-        let next_l = left;
-        let next_r = right;
-        let left = self.pattern_l;
-        let right = self.pattern_r;
+    type Ret = P::Ret;
 
-        LazyQuote::new(
-            self.ctx,
-            move |ctx: &mut Ctx| parser::and(left, next_l).try_parse(ctx),
-            move |ctx: &mut Ctx| parser::and(next_r, right).try_parse(ctx),
-        )
-    }
-}
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let mut g = CtxGuard::new(ctx);
 
-impl<'a, 'b, Ctx, Pl, Pr> LazyQuote<'a, Ctx, Pl, Pr>
-where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pl: Pattern<Ctx, Ret = Ctx::Ret>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-{
-    pub fn quote(
-        self,
-        left: impl Pattern<Ctx, Ret = Ctx::Ret>,
-        right: impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    ) -> LazyQuote<
-        'a,
-        Ctx,
-        impl Pattern<Ctx, Ret = Ctx::Ret>,
-        impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    > {
-        let next_l = left;
-        let next_r = right;
-        let left = self.pattern_l;
-        let right = self.pattern_r;
+        g.try_mat(&self.left)?;
+        let ret = g.try_mat(&self.pat)?;
 
-        LazyQuote::new(
-            self.ctx,
-            move |ctx: &mut Ctx| parser::and(left, next_l).try_parse(ctx),
-            move |ctx: &mut Ctx| parser::and(next_r, right).try_parse(ctx),
-        )
-    }
-
-    pub fn term<S>(self, sep: S) -> LazyTerm<'a, Ctx, S, Pl, Pr>
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        self.term_opt(sep, true)
-    }
-
-    pub fn term_opt<S>(self, sep: S, optional: bool) -> LazyTerm<'a, Ctx, S, Pl, Pr>
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    {
-        LazyTerm::new(
-            self.ctx,
-            Some(self.pattern_l),
-            Some(self.pattern_r),
-            sep,
-            optional,
-        )
-    }
-}
-
-pub struct NonLazyQuote<'a, Ctx: Policy<Ctx>, Pr> {
-    pattern_r: Pr,
-    ctx: &'a mut Ctx,
-}
-
-impl<'a, Ctx: Policy<Ctx>, Pr> NonLazyQuote<'a, Ctx, Pr> {
-    pub fn new(ctx: &'a mut Ctx, pattern_r: Pr) -> Self {
-        Self { ctx, pattern_r }
-    }
-}
-
-impl<'a, 'b, Ctx, Pr> NonLazyQuote<'a, Ctx, Pr>
-where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret>,
-{
-    pub fn pat<P>(self, pat: P) -> Result<NonLazyPattern<'a, Ctx, Pr>, Error>
-    where
-        P: Pattern<Ctx, Ret = Ctx::Ret>,
-    {
-        let beg = self.ctx.offset();
-        let (ret, error) = match self.ctx.try_mat(pat) {
-            Ok(ret) => (Some(ret), Error::Null),
-            Err(e) => (None, e),
-        };
-        let post = self.pattern_r;
-
-        Ok(NonLazyPattern::new(self.ctx, post, beg, ret, error))
-    }
-}
-
-impl<'a, 'b, Ctx, Pr> NonLazyQuote<'a, Ctx, Pr>
-where
-    Ctx: Context<'b> + Policy<Ctx>,
-    Pr: Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-{
-    pub fn quote(
-        self,
-        left: impl Pattern<Ctx, Ret = Ctx::Ret>,
-        right: impl Pattern<Ctx, Ret = Ctx::Ret> + Clone,
-    ) -> Result<NonLazyQuote<'a, Ctx, impl Pattern<Ctx, Ret = Ctx::Ret> + Clone>, Error> {
-        self.ctx.try_mat(left)?;
-
-        Ok(NonLazyQuote::new(self.ctx, move |ctx: &mut Ctx| {
-            parser::and(right, self.pattern_r).try_parse(ctx)
-        }))
-    }
-
-    pub fn term<S>(self, sep: S) -> Result<NonLazyTerm<'a, Ctx, S, Pr>, Error>
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret>,
-    {
-        self.term_opt(sep, true)
-    }
-
-    pub fn term_opt<S>(self, sep: S, optional: bool) -> Result<NonLazyTerm<'a, Ctx, S, Pr>, Error>
-    where
-        S: Pattern<Ctx, Ret = Ctx::Ret>,
-    {
-        let post = Some(self.pattern_r);
-
-        Ok(NonLazyTerm::new(self.ctx, post, sep, optional))
+        g.try_mat(&self.right)?;
+        Ok(ret)
     }
 }

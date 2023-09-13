@@ -1,4 +1,5 @@
 use crate::ctx::Context;
+use crate::ctx::Ret;
 use crate::err::Error;
 
 pub trait Extract<'a, C: Context<'a>, R> {
@@ -127,3 +128,33 @@ impl_handler_for!(A B C D);
 impl_handler_for!(A B C D E);
 
 impl_handler_for!(A B C D E F);
+
+impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for &'a str {
+    type Out<'b> = &'b str;
+
+    type Error = Error;
+
+    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
+        ctx.orig_sub(ret.fst(), ret.snd())
+    }
+}
+
+impl<'a, C: Context<'a, Orig = [u8]>, R: Ret> Extract<'a, C, R> for &'a [u8] {
+    type Out<'b> = &'b [u8];
+
+    type Error = Error;
+
+    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
+        ctx.orig_sub(ret.fst(), ret.snd())
+    }
+}
+
+impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for String {
+    type Out<'b> = String;
+
+    type Error = Error;
+
+    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
+        Ok(String::from(ctx.orig_sub(ret.fst(), ret.snd())?))
+    }
+}

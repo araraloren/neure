@@ -163,11 +163,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let digits = neure!(['0' - '9']+);
     let square_l = neure!('[');
     let square_r = neure!(']');
-    let mut ctx = CharsCtx::new("[123]");
-    let mut pat = digits.pattern();
-    let mut quote = pat.quote(&square_l, &square_r);
+    let comma = neure!(','{0,1});
+    let mut ctx = CharsCtx::new("[123,456]");
+    let quote = digits
+        .map_value(|str: &str| str.parse::<f64>().unwrap())
+        .map_value(|val: f64| val.to_be_bytes())
+        .terminated(comma)
+        .collect()
+        .quote(&square_l, &square_r);
 
-    let val: String = quote.map(&mut ctx, |str: &str| Ok(str.to_string()))?;
+    let val: Vec<[u8; 8]> = quote.map_orig(&mut ctx)?;
 
     dbg!(val);
 
