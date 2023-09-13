@@ -13,7 +13,7 @@ where
 {
     fn pattern<M, O>(self) -> Pattern<Self, M, O>;
 
-    fn map_value<F, M, O>(self, f: F) -> MapValue<Self, F, M, O>;
+    fn map_value<F, M, O, V>(self, f: F) -> MapValue<Self, F, M, O, V>;
 
     fn quote<L, R, M, O>(self, left: L, right: R) -> Quote<Self, L, R, M, O>;
 
@@ -29,7 +29,7 @@ where
         Pattern::new(self)
     }
 
-    fn map_value<F, M, O>(self, func: F) -> MapValue<Self, F, M, O> {
+    fn map_value<F, M, O, V>(self, func: F) -> MapValue<Self, F, M, O, V> {
         MapValue::new(self, func)
     }
 
