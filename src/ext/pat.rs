@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use super::Extract;
 use super::Handler;
-use super::Mapper;
+use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Parse;
@@ -24,12 +24,12 @@ impl<P, M, O> Pattern<P, M, O> {
     }
 }
 
-impl<'a, C, M, P> Mapper<'a, C, M, M> for Pattern<P, M, M>
+impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<P, M, M>
 where
     P: Parse<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    fn map<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,

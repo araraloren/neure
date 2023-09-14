@@ -4,7 +4,7 @@ use super::Collect;
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
-use super::Mapper;
+use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Parse;
@@ -34,19 +34,19 @@ impl<P, S, M, O> Terminated<P, S, M, O> {
     }
 }
 
-impl<'a, C, S, P, M, O> Mapper<'a, C, M, O> for Terminated<P, S, M, O>
+impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<P, S, M, O>
 where
     S: Parse<C, Ret = Span>,
-    P: Mapper<'a, C, M, O>,
+    P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn map<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = self.pat.map(g.ctx(), func);
+        let ret = self.pat.invoke(g.ctx(), func);
         let ret = g.process_ret(ret)?;
 
         g.try_mat(&self.sep)?;

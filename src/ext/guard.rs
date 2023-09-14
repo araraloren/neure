@@ -42,6 +42,11 @@ where
         self.ctx
     }
 
+    pub fn reset(&mut self) -> &mut Self {
+        self.ctx.set_offset(self.offset);
+        self
+    }
+
     pub fn process_ret<R>(&mut self, ret: Result<R, Error>) -> Result<R, Error> {
         if ret.is_err() {
             self.reset = true;

@@ -34,6 +34,54 @@ where
     }
 }
 
+impl<'a, C> Parse<C> for char
+where
+    C: Context<'a, Item = char> + Policy<C> + 'a,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::parser::one(crate::regex::char(*self));
+        ctx.try_mat(&pattern)
+    }
+}
+
+impl<'a, 'b, C> Parse<C> for &'b str
+where
+    C: Context<'a, Orig = str> + Policy<C> + 'a,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::parser::string(self);
+        ctx.try_mat(&pattern)
+    }
+}
+
+impl<'a, C> Parse<C> for u8
+where
+    C: Context<'a, Item = u8> + Policy<C> + 'a,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::parser::one(crate::regex::equal(*self));
+        ctx.try_mat(&pattern)
+    }
+}
+
+impl<'a, 'b, C> Parse<C> for &'b [u8]
+where
+    C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::parser::bytes(self);
+        ctx.try_mat(&pattern)
+    }
+}
+
 pub trait Context<'a> {
     type Orig: ?Sized;
 

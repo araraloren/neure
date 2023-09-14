@@ -159,20 +159,23 @@ use neure::*;
 //     Ok(())
 // }
 
+#[derive(Debug)]
+pub enum Value<'a> {
+    A(i64),
+
+    B(&'a str),
+
+    C(&'a str),
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let digits = neure!(['0' - '9']+);
-    let square_l = neure!('[');
-    let square_r = neure!(']');
+    let letters = neure!(['A' - 'Z']+);
     let comma = neure!(','{0,1});
-    let mut ctx = CharsCtx::new("[123,456]");
-    let quote = digits
-        .map_value(|str: &str| str.parse::<f64>().unwrap())
-        .map_value(|val: f64| val.to_be_bytes())
-        .terminated(comma)
-        .collect()
-        .quote(&square_l, &square_r);
+    let mut ctx = CharsCtx::new("[123,ABC]");
+    let quote = digits.then(comma).then(letters).quote("[", ']');
 
-    let val: Vec<[u8; 8]> = quote.map_orig(&mut ctx)?;
+    let val: &str = ctx.map(&quote)?;
 
     dbg!(val);
 

@@ -195,7 +195,7 @@ where
     }
 }
 
-pub fn string<'a, C, R>(lit: &'static str) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn string<'a, 'b, C, R>(lit: &'b str) -> impl Fn(&mut C) -> Result<R, Error> + 'b
 where
     R: Ret,
     C: Context<'a, Orig = str>,
@@ -204,12 +204,15 @@ where
         if !ctx.orig()?.starts_with(lit) {
             Err(Error::String)
         } else {
-            Ok(R::from(ctx, (1, lit.len())))
+            let len = lit.len();
+
+            ctx.inc(len);
+            Ok(R::from(ctx, (1, len)))
         }
     }
 }
 
-pub fn bytes<'a, C, R>(lit: &'static [u8]) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn bytes<'a, 'b, C, R>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<R, Error> + 'b
 where
     R: Ret,
     C: Context<'a, Orig = [u8]>,
@@ -218,7 +221,10 @@ where
         if !ctx.orig()?.starts_with(lit) {
             Err(Error::Bytes)
         } else {
-            Ok(R::from(ctx, (1, lit.len())))
+            let len = lit.len();
+
+            ctx.inc(len);
+            Ok(R::from(ctx, (1, len)))
         }
     }
 }
@@ -230,6 +236,7 @@ where
 {
     move |ctx: &mut C| {
         if ctx.len() - ctx.offset() >= length {
+            ctx.inc(length);
             Ok(R::from(ctx, (1, length)))
         } else {
             Err(Error::Consume)

@@ -4,10 +4,13 @@ use std::str::CharIndices;
 
 use super::Context;
 use super::Parse;
+use super::Span;
 
 use crate::ctx::Policy;
 use crate::err::Error;
 use crate::ext::Extract;
+use crate::ext::Handler;
+use crate::ext::Invoke;
 use crate::iter::BytesIndices;
 use crate::span::SimpleStorer;
 
@@ -253,5 +256,29 @@ where
 
     fn extract(ctx: &Self, _: &R) -> Result<Self::Out<'a>, Self::Error> {
         Ok(Clone::clone(ctx))
+    }
+}
+
+impl<'a, T> Parser<'a, T>
+where
+    T: ?Sized,
+    Self: Context<'a>,
+{
+    pub fn map_with<H, A, P, M, O>(&mut self, pat: &P, func: &mut H) -> Result<O, Error>
+    where
+        P: Invoke<'a, Self, M, O>,
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
+    {
+        pat.invoke(self, func)
+    }
+
+    pub fn map<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    where
+        P: Invoke<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
+        &'a <Self as Context<'a>>::Orig:
+            Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
+    {
+        self.map_with(pat, &mut |orig: &'a <Self as Context<'a>>::Orig| Ok(orig))
     }
 }

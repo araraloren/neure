@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
-use super::Mapper;
+use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Parse;
@@ -26,19 +26,19 @@ impl<P, M, O, V> Collect<P, M, O, V> {
     }
 }
 
-impl<'a, C, P, M, O, V> Mapper<'a, C, M, V> for Collect<P, M, O, V>
+impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<P, M, O, V>
 where
     V: FromIterator<O>,
-    P: Mapper<'a, C, M, O>,
+    P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn map<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         Ok(V::from_iter(std::iter::from_fn(|| {
-            self.pat.map(ctx, func).ok()
+            self.pat.invoke(ctx, func).ok()
         })))
     }
 }
@@ -61,33 +61,41 @@ where
     }
 }
 
-// pub struct CollectWith<P, O> {
+// pub struct CollectWith<P, M, O, V> {
 //     pat: P,
-//     cap: usize,
+//     dat: Option<V>,
+//     marker: PhantomData<(M, O)>,
 // }
 
-// impl<'a, C, P, M, O> Mapper<'a, C, M, O> for CollectWith<P>
+// impl<P, M, O, V> CollectWith<P, M, O, V> {
+//     pub fn new(pat: P, dat: V) -> Self {
+//         Self {
+//             pat,
+//             dat: Some(dat),
+//             marker: PhantomData,
+//         }
+//     }
+// }
+
+// impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for CollectWith<P, M, O, V>
 // where
-//     O: FromIterator<M>,
-//     P: Mapper<'a, C, M, M>,
+//     V: Extend<O>,
+//     P: Invoke<'a, C, M, O>,
 //     C: Context<'a> + Policy<C>,
 // {
-//     fn map<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+//     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
 //     where
 //         H: Handler<A, Out = M, Error = Error>,
 //         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 //     {
-//         let mut g = CtxGuard::new(ctx);
-
-//         Ok(O::from_iter(std::iter::from_fn(|| {
-//             let ret = self.pat.map(g.ctx(), func);
-
-//             g.process_ret(ret).ok()
-//         })))
+//         V::extend(&mut self.dat, std::iter::from_fn(|| {
+//             self.pat.invoke(ctx, func).ok()
+//         }));
+//         Ok()
 //     }
 // }
 
-// impl<'a, C, P> Parse<C> for Collect<P>
+// impl<'a, C, P, M, O, V> Parse<C> for CollectWith<P, M, O, V>
 // where
 //     P: Parse<C, Ret = Span>,
 //     C: Context<'a> + Policy<C>,
