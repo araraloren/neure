@@ -24,6 +24,11 @@ impl<P, M, O, V> Collect<P, M, O, V> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
 }
 
 impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<P, M, O, V>

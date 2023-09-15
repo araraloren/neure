@@ -33,6 +33,8 @@ pub enum Error {
     Consume,
 
     Quote,
+
+    Convert,
 }
 
 impl std::error::Error for Error {}
@@ -56,6 +58,7 @@ impl Display for Error {
             Error::Quote => write!(f, "Error::Quote"),
             Error::String => write!(f, "Error::String"),
             Error::Bytes => write!(f, "Error::Bytes"),
+            Error::Convert => write!(f, "Error::Convert"),
         }
     }
 }

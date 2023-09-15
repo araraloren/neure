@@ -1,3 +1,9 @@
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
+
 use super::Extract;
 use super::Handler;
 
@@ -32,38 +38,74 @@ where
     }
 }
 
-// pub trait InvokeOrig<'a, C, O>
-// where
-//     C: Context<'a>,
-// {
-//     fn invoke(&self, ctx: &mut C) -> Result<O, Error>;
-// }
+impl<'a, C, M, O, I> Invoke<'a, C, M, O> for RefCell<I>
+where
+    I: Invoke<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        Invoke::invoke(&*self.borrow(), ctx, func)
+    }
+}
 
-// impl<'a, C, O, T> InvokeOrig<'a, C, O> for T
-// where
-//     C: Context<'a>,
-//     T: Invoke<'a, C, &'a C::Orig, O>,
-//     &'a C::Orig: Extract<'a, C, Span, Out<'a> = &'a C::Orig, Error = Error> + 'a,
-// {
-//     fn invoke(&self, ctx: &mut C) -> Result<O, Error> {
-//         self.invoke_with(ctx, &mut |orig: &'a C::Orig| Ok(orig))
-//     }
-// }
+impl<'a, C, M, O, I> Invoke<'a, C, M, O> for Cell<I>
+where
+    I: Invoke<'a, C, M, O> + Copy,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        Invoke::invoke(&self.get(), ctx, func)
+    }
+}
 
-// pub trait InvokeSpan<'a, C, O>
-// where
-//     C: Context<'a>,
-// {
-//     fn invoke_span(&self, ctx: &mut C) -> Result<O, Error>;
-// }
+impl<'a, C, M, O, I> Invoke<'a, C, M, O> for Mutex<I>
+where
+    I: Invoke<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
 
-// impl<'a, C, O, T> InvokeSpan<'a, C, O> for T
-// where
-//     C: Context<'a>,
-//     T: Invoke<'a, C, Span, O>,
-//     Span: Extract<'a, C, Span, Out<'a> = Span, Error = Error> + 'a,
-// {
-//     fn invoke_span(&self, ctx: &mut C) -> Result<O, Error> {
-//         self.invoke_with(ctx, &mut |orig: Span| Ok(orig))
-//     }
-// }
+        Invoke::invoke(&*ret, ctx, func)
+    }
+}
+
+impl<'a, C, M, O, I> Invoke<'a, C, M, O> for Arc<I>
+where
+    I: Invoke<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        Invoke::invoke(self.as_ref(), ctx, func)
+    }
+}
+
+impl<'a, C, M, O, I> Invoke<'a, C, M, O> for Rc<I>
+where
+    I: Invoke<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        Invoke::invoke(self.as_ref(), ctx, func)
+    }
+}

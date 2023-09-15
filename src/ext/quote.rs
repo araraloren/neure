@@ -27,6 +27,21 @@ impl<P, L, R, M, O> Quote<P, L, R, M, O> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
+    pub fn set_left(&mut self, left: L) -> &mut Self {
+        self.left = left;
+        self
+    }
+
+    pub fn set_right(&mut self, right: R) -> &mut Self {
+        self.right = right;
+        self
+    }
 }
 
 impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<P, L, R, M, O>

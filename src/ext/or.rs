@@ -25,6 +25,16 @@ impl<P1, P2, M, O> Or<P1, P2, M, O> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat1(&mut self, pat1: P1) -> &mut Self {
+        self.pat1 = pat1;
+        self
+    }
+
+    pub fn set_pat2(&mut self, pat2: P2) -> &mut Self {
+        self.pat2 = pat2;
+        self
+    }
 }
 
 impl<'a, C, P1, P2, M, O> Invoke<'a, C, M, O> for Or<P1, P2, M, O>

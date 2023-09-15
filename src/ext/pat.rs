@@ -22,6 +22,11 @@ impl<P, M, O> Pattern<P, M, O> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
 }
 
 impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<P, M, M>

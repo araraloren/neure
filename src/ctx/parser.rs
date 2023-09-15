@@ -1,5 +1,3 @@
-use std::ops::Deref;
-use std::ops::DerefMut;
 use std::str::CharIndices;
 
 use super::Context;
@@ -13,60 +11,6 @@ use crate::ext::Handler;
 use crate::ext::Invoke;
 use crate::iter::BytesIndices;
 use crate::span::SimpleStorer;
-
-pub struct LazyContext<'a, 'b, T>
-where
-    T: ?Sized,
-{
-    pub(crate) parser: &'b mut Parser<'a, T>,
-}
-
-impl<'a, 'b, T> Deref for LazyContext<'a, 'b, T>
-where
-    T: ?Sized,
-{
-    type Target = &'b mut Parser<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.parser
-    }
-}
-
-impl<'a, 'b, T> DerefMut for LazyContext<'a, 'b, T>
-where
-    T: ?Sized,
-{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.parser
-    }
-}
-
-pub struct NonLazyContext<'a, 'b, T>
-where
-    T: ?Sized,
-{
-    pub(crate) parser: &'b mut Parser<'a, T>,
-}
-
-impl<'a, 'b, T> Deref for NonLazyContext<'a, 'b, T>
-where
-    T: ?Sized,
-{
-    type Target = &'b mut Parser<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.parser
-    }
-}
-
-impl<'a, 'b, T> DerefMut for NonLazyContext<'a, 'b, T>
-where
-    T: ?Sized,
-{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.parser
-    }
-}
 
 #[derive(Debug)]
 pub struct Parser<'a, T>
@@ -123,14 +67,6 @@ where
     pub fn reset(&mut self) -> &mut Self {
         self.offset = 0;
         self
-    }
-
-    pub fn lazy(&mut self) -> LazyContext<'a, '_, T> {
-        LazyContext { parser: self }
-    }
-
-    pub fn non_lazy(&mut self) -> NonLazyContext<'a, '_, T> {
-        NonLazyContext { parser: self }
     }
 
     pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
@@ -229,11 +165,14 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    fn try_mat<Pat: Parse<Parser<'a, T>>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error> {
+    fn try_mat<Pat: Parse<Parser<'a, T>> + ?Sized>(
+        &mut self,
+        pat: &Pat,
+    ) -> Result<Pat::Ret, Error> {
         self.try_mat_policy(pat, |_| Ok(()), |_, ret| ret)
     }
 
-    fn try_mat_policy<Pat: Parse<Parser<'a, T>>>(
+    fn try_mat_policy<Pat: Parse<Parser<'a, T>> + ?Sized>(
         &mut self,
         pat: &Pat,
         mut pre: impl FnMut(&mut Parser<'a, T>) -> Result<(), Error>,
@@ -241,6 +180,7 @@ where
     ) -> Result<Pat::Ret, Error> {
         pre(self)?;
         let ret = pat.try_parse(self);
+
         post(self, ret)
     }
 }

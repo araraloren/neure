@@ -16,6 +16,12 @@ lto = true
 [dev-dependencies]
 regex = "^1.0"
 nom = "^7.1"
+tracing-subscriber = { version = "0.3.2", features = ["env-filter"] }
+color-eyre = "0.5.11"
 
 [dependencies]
 charize = "0.0.2"
+tracing = { version = "0.1", optional = true }
+
+[features]
+log = ["tracing"]

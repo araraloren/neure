@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::marker::PhantomData;
+use std::rc::Rc;
 
 use neure::err::Error;
 use neure::ext::*;
@@ -168,14 +170,24 @@ pub enum Value<'a> {
     C(&'a str),
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let digits = neure!(['0' - '9']+);
-    let letters = neure!(['A' - 'Z']+);
-    let comma = neure!(','{0,1});
-    let mut ctx = CharsCtx::new("[123,ABC]");
-    let quote = digits.then(comma).then(letters).quote("[", ']');
+fn main() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
 
-    let val: &str = ctx.map(&quote)?;
+    let digits = neure!(['0' - '9']+);
+    // let letters = neure!(['A' - 'Z']+);
+    // let comma = neure!(','{0,1});
+    let mut ctx = CharsCtx::new("[{[{123}]}]");
+    let then: Rc<dyn Parse<_, Ret = _>> = Rc::new(parser::null());
+    let quote1 = Rc::new(RefCell::new(digits.quote('{', '}').then(then)));
+    let quote2: Rc<dyn Parse<_, Ret = _>> =
+        Rc::new(parser::null().quote("[", ']').then(quote1.clone()));
+
+    quote1.borrow_mut().set_then(quote2.clone());
+
+    let val = ctx.try_mat(&quote1)?;
 
     dbg!(val);
 

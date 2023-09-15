@@ -26,6 +26,16 @@ impl<P, S, M, O> Terminated<P, S, M, O> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
+    pub fn set_sep(&mut self, sep: S) -> &mut Self {
+        self.sep = sep;
+        self
+    }
 }
 
 impl<P, S, M, O> Terminated<P, S, M, O> {

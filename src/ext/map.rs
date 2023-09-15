@@ -24,6 +24,16 @@ impl<P, F, M, O, V> Map<P, F, M, O, V> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
+    pub fn set_func(&mut self, func: F) -> &mut Self {
+        self.func = func;
+        self
+    }
 }
 
 impl<'a, C, M, O, V, P, F> Invoke<'a, C, M, V> for Map<P, F, M, O, V>

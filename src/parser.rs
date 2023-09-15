@@ -4,6 +4,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::err::Error;
 use crate::ext::CtxGuard;
+use crate::trace_log;
 
 fn length<'a, T, C: Context<'a>>(offset: usize, ctx: &C, next: Option<(usize, T)>) -> usize {
     let next_offset = next.map(|v| v.0).unwrap_or(ctx.len() - ctx.offset());
@@ -174,6 +175,7 @@ where
 {
     |ctx: &mut C| {
         if ctx.offset() == 0 {
+            trace_log!("match start of context");
             Ok(R::from(ctx, (0, 0)))
         } else {
             Err(Error::NotStart)
@@ -190,6 +192,7 @@ where
         if ctx.len() != ctx.offset() {
             Err(Error::NotEnd)
         } else {
+            trace_log!("match end of context");
             Ok(R::from(ctx, (0, 0)))
         }
     }
@@ -205,7 +208,9 @@ where
             Err(Error::String)
         } else {
             let len = lit.len();
+            let _str = ctx.orig_sub(ctx.offset(), len)?;
 
+            trace_log!("match string \"{}\" with {}", lit, _str);
             ctx.inc(len);
             Ok(R::from(ctx, (1, len)))
         }
@@ -222,7 +227,9 @@ where
             Err(Error::Bytes)
         } else {
             let len = lit.len();
+            let _byte = ctx.orig_sub(ctx.offset(), len)?;
 
+            trace_log!("match string \"{:?}\" with {:?}", lit, _byte);
             ctx.inc(len);
             Ok(R::from(ctx, (1, len)))
         }
@@ -236,12 +243,21 @@ where
 {
     move |ctx: &mut C| {
         if ctx.len() - ctx.offset() >= length {
+            trace_log!("consume length {}", length);
             ctx.inc(length);
             Ok(R::from(ctx, (1, length)))
         } else {
             Err(Error::Consume)
         }
     }
+}
+
+pub fn null<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+where
+    R: Ret,
+    C: Context<'a>,
+{
+    move |ctx: &mut C| Ok(R::from(ctx, (0, 0)))
 }
 
 pub fn and<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>

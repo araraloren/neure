@@ -2,10 +2,14 @@ mod parser;
 mod r#return;
 mod span;
 
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
+
 use crate::err::Error;
 
-pub use self::parser::LazyContext;
-pub use self::parser::NonLazyContext;
 pub use self::parser::Parser;
 pub use self::r#return::Return;
 pub use self::span::Span;
@@ -21,6 +25,76 @@ pub trait Parse<C> {
     fn parse(&self, ctx: &mut C) -> bool {
         self.try_parse(ctx).is_ok()
     }
+}
+
+pub trait Context<'a> {
+    type Orig: ?Sized;
+
+    type Item;
+
+    type Iter<'b>: Iterator<Item = (usize, Self::Item)>
+    where
+        Self: 'b;
+
+    fn len(&self) -> usize;
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    fn offset(&self) -> usize;
+
+    fn set_offset(&mut self, offset: usize) -> &mut Self;
+
+    fn inc(&mut self, offset: usize) -> &mut Self;
+
+    fn dec(&mut self, offset: usize) -> &mut Self;
+
+    fn peek(&self) -> Result<Self::Iter<'a>, Error> {
+        self.peek_at(self.offset())
+    }
+
+    fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error>;
+
+    fn orig(&self) -> Result<&'a Self::Orig, Error> {
+        self.orig_at(self.offset())
+    }
+
+    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error>;
+
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
+}
+
+pub trait Ret
+where
+    Self: Sized,
+{
+    fn fst(&self) -> usize;
+
+    fn snd(&self) -> usize;
+
+    fn is_zero(&self) -> bool;
+
+    fn add_assign(&mut self, other: Self) -> &mut Self;
+
+    fn from<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
+    where
+        C: Context<'a>;
+}
+
+pub trait Policy<C> {
+    fn is_mat<Pat: Parse<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
+        self.try_mat(pat).is_ok()
+    }
+
+    fn try_mat<Pat: Parse<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+
+    fn try_mat_policy<Pat: Parse<C> + ?Sized>(
+        &mut self,
+        pat: &Pat,
+        pre: impl FnMut(&mut C) -> Result<(), Error>,
+        post: impl FnMut(&mut C, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
+    ) -> Result<Pat::Ret, Error>;
 }
 
 impl<C, F, R> Parse<C> for F
@@ -82,72 +156,96 @@ where
     }
 }
 
-pub trait Context<'a> {
-    type Orig: ?Sized;
-
-    type Item;
-
-    type Iter<'b>: Iterator<Item = (usize, Self::Item)>
-    where
-        Self: 'b;
-
-    fn len(&self) -> usize;
-
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    fn offset(&self) -> usize;
-
-    fn set_offset(&mut self, offset: usize) -> &mut Self;
-
-    fn inc(&mut self, offset: usize) -> &mut Self;
-
-    fn dec(&mut self, offset: usize) -> &mut Self;
-
-    fn peek(&self) -> Result<Self::Iter<'a>, Error> {
-        self.peek_at(self.offset())
-    }
-
-    fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error>;
-
-    fn orig(&self) -> Result<&'a Self::Orig, Error> {
-        self.orig_at(self.offset())
-    }
-
-    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error>;
-
-    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
-}
-
-pub trait Ret
+impl<'a, 'b, Ret, C> Parse<C> for Box<dyn Parse<C, Ret = Ret>>
 where
-    Self: Sized,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    fn fst(&self) -> usize;
+    type Ret = Ret;
 
-    fn snd(&self) -> usize;
-
-    fn is_zero(&self) -> bool;
-
-    fn add_assign(&mut self, other: Self) -> &mut Self;
-
-    fn from<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
-    where
-        C: Context<'a>;
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
 }
 
-pub trait Policy<C> {
-    fn is_mat<Pat: Parse<C>>(&mut self, pat: &Pat) -> bool {
-        self.try_mat(pat).is_ok()
+impl<'a, 'b, P, C> Parse<C> for RefCell<P>
+where
+    P: Parse<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(&*self.borrow())
     }
+}
 
-    fn try_mat<Pat: Parse<C>>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+impl<'a, 'b, P, C> Parse<C> for Cell<P>
+where
+    P: Parse<C> + Copy,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
 
-    fn try_mat_policy<Pat: Parse<C>>(
-        &mut self,
-        pat: &Pat,
-        pre: impl FnMut(&mut C) -> Result<(), Error>,
-        post: impl FnMut(&mut C, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
-    ) -> Result<Pat::Ret, Error>;
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(&self.get())
+    }
+}
+
+impl<'a, 'b, P, C> Parse<C> for Mutex<P>
+where
+    P: Parse<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
+        ctx.try_mat(&*ret)
+    }
+}
+
+impl<'a, 'b, P, C> Parse<C> for Arc<P>
+where
+    P: Parse<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, 'b, Ret, C> Parse<C> for Arc<dyn Parse<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, 'b, P, C> Parse<C> for Rc<P>
+where
+    P: Parse<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, 'b, Ret, C> Parse<C> for Rc<dyn Parse<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
 }

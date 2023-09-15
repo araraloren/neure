@@ -7,6 +7,17 @@ pub mod parser;
 pub mod regex;
 pub mod span;
 
+#[cfg(feature = "log")]
+pub(crate) use tracing::trace as trace_log;
+#[cfg(not(feature = "log"))]
+#[macro_use]
+pub(crate) mod log {
+    #[macro_export]
+    macro_rules! trace_log {
+        ($($arg:tt)*) => {};
+    }
+}
+
 pub use charize::charize;
 pub mod prelude {
     pub use crate::ctx::BytesCtx;

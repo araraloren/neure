@@ -27,6 +27,21 @@ impl<P1, P2, F, M, O, V> OrMap<P1, P2, F, M, O, V> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat1(&mut self, pat1: P1) -> &mut Self {
+        self.pat1 = pat1;
+        self
+    }
+
+    pub fn set_pat2(&mut self, pat2: P2) -> &mut Self {
+        self.pat2 = pat2;
+        self
+    }
+
+    pub fn set_func(&mut self, func: F) -> &mut Self {
+        self.func = func;
+        self
+    }
 }
 
 impl<'a, C, P1, P2, F, M, O, V> Invoke<'a, C, M, V> for OrMap<P1, P2, F, M, O, V>

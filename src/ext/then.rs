@@ -25,6 +25,16 @@ impl<P, T, M, O> Then<P, T, M, O> {
             marker: PhantomData,
         }
     }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
+    pub fn set_then(&mut self, then: T) -> &mut Self {
+        self.then = then;
+        self
+    }
 }
 
 impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<P, T, M, O>
@@ -39,15 +49,12 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
+        let ret = self.pat.invoke(g.ctx(), func);
+        #[allow(unused)]
+        let ret = g.process_ret(ret);
+        let ret = self.then.invoke(g.ctx(), func);
 
-        match self.pat.invoke(g.ctx(), func) {
-            Ok(_) => {
-                let ret = self.then.invoke(g.reset().ctx(), func);
-
-                g.process_ret(ret)
-            }
-            Err(e) => Err(e),
-        }
+        g.process_ret(ret)
     }
 }
 
@@ -61,7 +68,8 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let _ = g.try_mat(&self.pat);
 
-        g.try_mat(&self.pat).or(g.reset().try_mat(&self.then))
+        g.try_mat(&self.then)
     }
 }
