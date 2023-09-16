@@ -11,6 +11,7 @@ use crate::ext::Handler;
 use crate::ext::Invoke;
 use crate::iter::BytesIndices;
 use crate::span::SimpleStorer;
+use crate::trace_log;
 
 #[derive(Debug)]
 pub struct Parser<'a, T>
@@ -133,16 +134,19 @@ impl<'a> Context<'a> for Parser<'a, str> {
     }
 
     fn set_offset(&mut self, offset: usize) -> &mut Self {
+        trace_log!("set offset <- {offset}");
         self.offset = offset;
         self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
+        trace_log!("offset + {offset}");
         self.offset += offset;
         self
     }
 
     fn dec(&mut self, offset: usize) -> &mut Self {
+        trace_log!("offset - {offset}");
         self.offset -= offset;
         self
     }
@@ -204,21 +208,57 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    pub fn map_with<H, A, P, M, O>(&mut self, pat: &P, func: &mut H) -> Result<O, Error>
+    pub fn invoke_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
     where
         P: Invoke<'a, Self, M, O>,
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
     {
-        pat.invoke(self, func)
+        pat.invoke(self, handler)
     }
 
-    pub fn map<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    pub fn invoke<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
         P: Invoke<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
     {
-        self.map_with(pat, &mut |orig: &'a <Self as Context<'a>>::Orig| Ok(orig))
+        self.invoke_with(pat, &mut |orig: &'a <Self as Context<'a>>::Orig| Ok(orig))
+    }
+
+    pub fn map<H, A, O, P>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    where
+        P: Parse<Self>,
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, Self, P::Ret, Out<'a> = A, Error = Error>,
+    {
+        let ret = self.try_mat(pat)?;
+
+        handler.invoke(A::extract(self, &ret)?)
+    }
+
+    pub fn map_orig<O, P>(
+        &mut self,
+        pat: &P,
+        mut func: impl FnMut(&'a <Self as Context<'a>>::Orig) -> Result<O, Error>,
+    ) -> Result<O, Error>
+    where
+        P: Parse<Self>,
+        &'a <Self as Context<'a>>::Orig:
+            Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
+    {
+        (func)(self.map(pat, |orig: &'a <Self as Context<'a>>::Orig| Ok(orig))?)
+    }
+
+    pub fn map_span<O, P>(
+        &mut self,
+        pat: &P,
+        mut func: impl FnMut(Span) -> Result<O, Error>,
+    ) -> Result<O, Error>
+    where
+        P: Parse<Self>,
+        Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
+    {
+        (func)(self.map(pat, |span: Span| Ok(span))?)
     }
 }

@@ -11,30 +11,54 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
-pub struct OrMap<P1, P2, F, M, O, V> {
-    pat1: P1,
-    pat2: P2,
+pub struct OrMap<L, R, F, O> {
+    left: L,
+    right: R,
     func: F,
-    marker: PhantomData<(M, O, V)>,
+    marker: PhantomData<O>,
 }
 
-impl<P1, P2, F, M, O, V> OrMap<P1, P2, F, M, O, V> {
-    pub fn new(pat1: P1, pat2: P2, func: F) -> Self {
+impl<L, R, F, O> OrMap<L, R, F, O> {
+    pub fn new(pat1: L, pat2: R, func: F) -> Self {
         Self {
-            pat1,
-            pat2,
+            left: pat1,
+            right: pat2,
             func,
             marker: PhantomData,
         }
     }
 
-    pub fn set_pat1(&mut self, pat1: P1) -> &mut Self {
-        self.pat1 = pat1;
+    pub fn func(&self) -> &F {
+        &self.func
+    }
+
+    pub fn func_mut(&mut self) -> &mut F {
+        &mut self.func
+    }
+
+    pub fn left(&self) -> &L {
+        &self.left
+    }
+
+    pub fn left_mut(&mut self) -> &mut L {
+        &mut self.left
+    }
+
+    pub fn right(&self) -> &R {
+        &self.right
+    }
+
+    pub fn right_mut(&mut self) -> &mut R {
+        &mut self.right
+    }
+
+    pub fn set_left(&mut self, left: L) -> &mut Self {
+        self.left = left;
         self
     }
 
-    pub fn set_pat2(&mut self, pat2: P2) -> &mut Self {
-        self.pat2 = pat2;
+    pub fn set_right(&mut self, right: R) -> &mut Self {
+        self.right = right;
         self
     }
 
@@ -44,10 +68,10 @@ impl<P1, P2, F, M, O, V> OrMap<P1, P2, F, M, O, V> {
     }
 }
 
-impl<'a, C, P1, P2, F, M, O, V> Invoke<'a, C, M, V> for OrMap<P1, P2, F, M, O, V>
+impl<'a, C, L, R, F, M, O, V> Invoke<'a, C, M, V> for OrMap<L, R, F, O>
 where
-    P1: Invoke<'a, C, M, V>,
-    P2: Invoke<'a, C, M, O>,
+    L: Invoke<'a, C, M, V>,
+    R: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
     F: Fn(O) -> Result<V, Error>,
 {
@@ -58,10 +82,10 @@ where
     {
         let mut g = CtxGuard::new(ctx);
 
-        match self.pat1.invoke(g.ctx(), func) {
+        match self.left.invoke(g.ctx(), func) {
             Ok(ret) => Ok(ret),
             Err(_) => {
-                let ret = self.pat2.invoke(g.reset().ctx(), func);
+                let ret = self.right.invoke(g.reset().ctx(), func);
 
                 (self.func)(g.process_ret(ret)?)
             }
@@ -69,17 +93,18 @@ where
     }
 }
 
-impl<'a, C, P1, P2, F, M, O, V> Parse<C> for OrMap<P1, P2, F, M, O, V>
+impl<'a, C, L, R, F, O> Parse<C> for OrMap<L, R, F, O>
 where
-    P1: Parse<C, Ret = Span>,
-    P2: Parse<C, Ret = Span>,
+    L: Parse<C, Ret = Span>,
+    R: Parse<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = P1::Ret;
+    type Ret = L::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
 
-        g.try_mat(&self.pat1).or(g.reset().try_mat(&self.pat2))
+        g.try_mat(&self.left)
+            .or_else(|_| g.reset().try_mat(&self.right))
     }
 }

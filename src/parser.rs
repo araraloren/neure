@@ -155,7 +155,7 @@ where
                 break;
             }
             if cnt >= M {
-                let end = end.or(iter.next());
+                let end = end.or_else(|| iter.next());
 
                 return Ok(make_ret_and_inc(
                     ctx,
@@ -283,7 +283,7 @@ where
     P2: Parse<C, Ret = O>,
     C: Context<'a> + Policy<C>,
 {
-    move |ctx: &mut C| p1.try_parse(ctx).or(p2.try_parse(ctx))
+    move |ctx: &mut C| p1.try_parse(ctx).or_else(|_| p2.try_parse(ctx))
 }
 
 pub fn quote<'a, C, L, R, P, O>(l: L, r: R, p: P) -> impl Fn(&mut C) -> Result<O, Error>

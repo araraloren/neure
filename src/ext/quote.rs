@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -11,21 +9,39 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
-pub struct Quote<P, L, R, M, O> {
+pub struct Quote<P, L, R> {
     pat: P,
     left: L,
     right: R,
-    marker: PhantomData<(M, O)>,
 }
 
-impl<P, L, R, M, O> Quote<P, L, R, M, O> {
+impl<P, L, R> Quote<P, L, R> {
     pub fn new(pat: P, left: L, right: R) -> Self {
-        Self {
-            pat,
-            left,
-            right,
-            marker: PhantomData,
-        }
+        Self { pat, left, right }
+    }
+
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
+    }
+
+    pub fn left(&self) -> &L {
+        &self.left
+    }
+
+    pub fn left_mut(&mut self) -> &mut L {
+        &mut self.left
+    }
+
+    pub fn right(&self) -> &R {
+        &self.right
+    }
+
+    pub fn right_mut(&mut self) -> &mut R {
+        &mut self.right
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -44,7 +60,7 @@ impl<P, L, R, M, O> Quote<P, L, R, M, O> {
     }
 }
 
-impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<P, L, R, M, O>
+impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<P, L, R>
 where
     L: Parse<C, Ret = Span>,
     R: Parse<C, Ret = Span>,
@@ -67,7 +83,7 @@ where
     }
 }
 
-impl<'a, C, L, R, P, M, O> Parse<C> for Quote<P, L, R, M, O>
+impl<'a, C, L, R, P> Parse<C> for Quote<P, L, R>
 where
     L: Parse<C, Ret = Span>,
     R: Parse<C, Ret = Span>,

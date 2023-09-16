@@ -177,17 +177,25 @@ fn main() -> color_eyre::Result<()> {
         .init();
 
     let digits = neure!(['0' - '9']+);
-    // let letters = neure!(['A' - 'Z']+);
-    // let comma = neure!(','{0,1});
-    let mut ctx = CharsCtx::new("[{[{123}]}]");
-    let then: Rc<dyn Parse<_, Ret = _>> = Rc::new(parser::null());
-    let quote1 = Rc::new(RefCell::new(digits.quote('{', '}').then(then)));
-    let quote2: Rc<dyn Parse<_, Ret = _>> =
-        Rc::new(parser::null().quote("[", ']').then(quote1.clone()));
+    let mut ctx = CharsCtx::new("{[{[{{123}}]}]}");
+    let hole = parser::null().into_dyn_box().into_rc();
+    let digit_or = Rc::new(RefCell::new(digits.or(hole)));
+    let inner = Rc::new(
+        digit_or
+            .clone()
+            .quote('{', '}')
+            .or(digit_or.clone().quote('[', ']')),
+    );
+    let outer: Rc<Box<dyn Parse<_, Ret = _>>> = Rc::new(Box::new(
+        inner
+            .clone()
+            .quote('[', ']')
+            .or(inner.clone().quote('{', '}')),
+    ));
 
-    quote1.borrow_mut().set_then(quote2.clone());
+    digit_or.borrow_mut().set_right(outer.clone());
 
-    let val = ctx.try_mat(&quote1)?;
+    let val: &str = ctx.map(&outer, |str| Ok(str))?;
 
     dbg!(val);
 

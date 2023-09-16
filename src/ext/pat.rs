@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use super::Extract;
 use super::Handler;
 use super::Invoke;
@@ -10,17 +8,21 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
-pub struct Pattern<P, M, O> {
+pub struct Pattern<P> {
     pat: P,
-    marker: PhantomData<(M, O)>,
 }
 
-impl<P, M, O> Pattern<P, M, O> {
+impl<P> Pattern<P> {
     pub fn new(pat: P) -> Self {
-        Self {
-            pat,
-            marker: PhantomData,
-        }
+        Self { pat }
+    }
+
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -29,7 +31,7 @@ impl<P, M, O> Pattern<P, M, O> {
     }
 }
 
-impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<P, M, M>
+impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<P>
 where
     P: Parse<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -45,7 +47,7 @@ where
     }
 }
 
-impl<'a, C, P, M, O> Parse<C> for Pattern<P, M, O>
+impl<'a, C, P> Parse<C> for Pattern<P>
 where
     P: Parse<C, Ret = Span>,
     C: Context<'a> + Policy<C>,

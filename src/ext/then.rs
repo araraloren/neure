@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -11,19 +9,30 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
-pub struct Then<P, T, M, O> {
+pub struct Then<P, T> {
     pat: P,
     then: T,
-    marker: PhantomData<(M, O)>,
 }
 
-impl<P, T, M, O> Then<P, T, M, O> {
+impl<P, T> Then<P, T> {
     pub fn new(pat1: P, then: T) -> Self {
-        Self {
-            pat: pat1,
-            then,
-            marker: PhantomData,
-        }
+        Self { pat: pat1, then }
+    }
+
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
+    }
+
+    pub fn then(&self) -> &T {
+        &self.then
+    }
+
+    pub fn then_mut(&mut self) -> &mut T {
+        &mut self.then
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -37,7 +46,7 @@ impl<P, T, M, O> Then<P, T, M, O> {
     }
 }
 
-impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<P, T, M, O>
+impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<P, T>
 where
     P: Invoke<'a, C, M, O>,
     T: Invoke<'a, C, M, O>,
@@ -58,7 +67,7 @@ where
     }
 }
 
-impl<'a, C, P, T, M, O> Parse<C> for Then<P, T, M, O>
+impl<'a, C, P, T> Parse<C> for Then<P, T>
 where
     P: Parse<C, Ret = Span>,
     T: Parse<C, Ret = Span>,

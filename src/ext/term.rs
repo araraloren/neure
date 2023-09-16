@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use super::Collect;
 use super::CtxGuard;
 use super::Extract;
@@ -12,19 +10,30 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
-pub struct Terminated<P, S, M, O> {
+pub struct Terminated<P, S> {
     pat: P,
     sep: S,
-    marker: PhantomData<(M, O)>,
 }
 
-impl<P, S, M, O> Terminated<P, S, M, O> {
+impl<P, S> Terminated<P, S> {
     pub fn new(pat: P, sep: S) -> Self {
-        Self {
-            pat,
-            sep,
-            marker: PhantomData,
-        }
+        Self { pat, sep }
+    }
+
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
+    }
+
+    pub fn sep(&self) -> &S {
+        &self.sep
+    }
+
+    pub fn sep_mut(&mut self) -> &mut S {
+        &mut self.sep
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -38,13 +47,13 @@ impl<P, S, M, O> Terminated<P, S, M, O> {
     }
 }
 
-impl<P, S, M, O> Terminated<P, S, M, O> {
-    pub fn collect<V>(self) -> Collect<Self, M, O, V> {
+impl<P, S> Terminated<P, S> {
+    pub fn collect<O>(self) -> Collect<Self, O> {
         Collect::new(self)
     }
 }
 
-impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<P, S, M, O>
+impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<P, S>
 where
     S: Parse<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
@@ -64,7 +73,7 @@ where
     }
 }
 
-impl<'a, C, S, P, M, O> Parse<C> for Terminated<P, S, M, O>
+impl<'a, C, S, P> Parse<C> for Terminated<P, S>
 where
     S: Parse<C, Ret = Span>,
     P: Parse<C, Ret = Span>,

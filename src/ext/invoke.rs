@@ -16,7 +16,7 @@ pub trait Invoke<'a, C, M, O>
 where
     C: Context<'a>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>;
@@ -27,14 +27,14 @@ where
     C: Context<'a> + Policy<C>,
     F: Fn(&mut C) -> Result<Span, Error>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let ret = ctx.try_mat(self)?;
 
-        func.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(A::extract(ctx, &ret)?)
     }
 }
 
@@ -43,12 +43,12 @@ where
     I: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Invoke::invoke(&*self.borrow(), ctx, func)
+        Invoke::invoke(&*self.borrow(), ctx, handler)
     }
 }
 
@@ -57,12 +57,12 @@ where
     I: Invoke<'a, C, M, O> + Copy,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Invoke::invoke(&self.get(), ctx, func)
+        Invoke::invoke(&self.get(), ctx, handler)
     }
 }
 
@@ -71,14 +71,14 @@ where
     I: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
 
-        Invoke::invoke(&*ret, ctx, func)
+        Invoke::invoke(&*ret, ctx, handler)
     }
 }
 
@@ -87,12 +87,12 @@ where
     I: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Invoke::invoke(self.as_ref(), ctx, func)
+        Invoke::invoke(self.as_ref(), ctx, handler)
     }
 }
 
@@ -101,11 +101,11 @@ where
     I: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Invoke::invoke(self.as_ref(), ctx, func)
+        Invoke::invoke(self.as_ref(), ctx, handler)
     }
 }

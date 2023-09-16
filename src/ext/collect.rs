@@ -12,17 +12,25 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::prelude::Ret;
 
-pub struct Collect<P, M, O, V> {
+pub struct Collect<P, O> {
     pat: P,
-    marker: PhantomData<(M, O, V)>,
+    marker: PhantomData<O>,
 }
 
-impl<P, M, O, V> Collect<P, M, O, V> {
+impl<P, O> Collect<P, O> {
     pub fn new(pat: P) -> Self {
         Self {
             pat,
             marker: PhantomData,
         }
+    }
+
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -31,7 +39,7 @@ impl<P, M, O, V> Collect<P, M, O, V> {
     }
 }
 
-impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<P, M, O, V>
+impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<P, O>
 where
     V: FromIterator<O>,
     P: Invoke<'a, C, M, O>,
@@ -48,7 +56,7 @@ where
     }
 }
 
-impl<'a, C, P, M, O, V> Parse<C> for Collect<P, M, O, V>
+impl<'a, C, P, O> Parse<C> for Collect<P, O>
 where
     P: Parse<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
