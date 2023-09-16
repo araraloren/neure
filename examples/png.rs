@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
 
+    // png reference http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
     if let Some(file) = std::env::args().skip(1).next() {
         let head: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
         let bytes = std::fs::read(file)?;
@@ -74,10 +75,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
                 let data = parser::consume(length as usize);
 
-                println!("In trunk {idx}: length = {length}");
+                println!("In trunk {idx}: data length = {length}");
                 println!(
                     "skip data data = {:?}",
-                    ctx.map_orig(&data, |orig| Ok(orig))?
+                    ctx.map_span(&data, |span| Ok(span))?
                 );
 
                 let crc_data = ctx.orig_sub(crc_offset_beg, ctx.offset() - crc_offset_beg)?;

@@ -209,10 +209,11 @@ where
         } else {
             let len = lit.len();
             let _str = ctx.orig_sub(ctx.offset(), len)?;
+            let ret = R::from(ctx, (1, len));
 
             trace_log!("match string \"{}\" with {}", lit, _str);
             ctx.inc(len);
-            Ok(R::from(ctx, (1, len)))
+            Ok(ret)
         }
     }
 }
@@ -228,10 +229,11 @@ where
         } else {
             let len = lit.len();
             let _byte = ctx.orig_sub(ctx.offset(), len)?;
+            let ret = R::from(ctx, (1, len));
 
             trace_log!("match bytes \"{:?}\" with {:?}", lit, _byte);
             ctx.inc(len);
-            Ok(R::from(ctx, (1, len)))
+            Ok(ret)
         }
     }
 }
@@ -249,8 +251,10 @@ where
             ctx.len()
         );
         if ctx.len() - ctx.offset() >= length {
+            let ret = R::from(ctx, (1, length));
+
             ctx.inc(length);
-            Ok(R::from(ctx, (1, length)))
+            Ok(ret)
         } else {
             Err(Error::Consume)
         }

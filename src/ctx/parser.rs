@@ -234,6 +234,7 @@ where
     {
         let ret = self.try_mat(pat)?;
 
+        trace_log!("try mat return span in map: {:?}", ret);
         handler.invoke(A::extract(self, &ret)?)
     }
 
