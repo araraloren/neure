@@ -228,7 +228,7 @@ where
 
     pub fn map<H, A, O, P>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
-        P: Parse<Self>,
+        P: Parse<Self, Ret = Span>,
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, Self, P::Ret, Out<'a> = A, Error = Error>,
     {
@@ -243,7 +243,7 @@ where
         mut func: impl FnMut(&'a <Self as Context<'a>>::Orig) -> Result<O, Error>,
     ) -> Result<O, Error>
     where
-        P: Parse<Self>,
+        P: Parse<Self, Ret = Span>,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
@@ -256,7 +256,7 @@ where
         mut func: impl FnMut(Span) -> Result<O, Error>,
     ) -> Result<O, Error>
     where
-        P: Parse<Self>,
+        P: Parse<Self, Ret = Span>,
         Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
     {
         (func)(self.map(pat, |span: Span| Ok(span))?)

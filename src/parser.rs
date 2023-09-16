@@ -229,7 +229,7 @@ where
             let len = lit.len();
             let _byte = ctx.orig_sub(ctx.offset(), len)?;
 
-            trace_log!("match string \"{:?}\" with {:?}", lit, _byte);
+            trace_log!("match bytes \"{:?}\" with {:?}", lit, _byte);
             ctx.inc(len);
             Ok(R::from(ctx, (1, len)))
         }
@@ -242,8 +242,13 @@ where
     C: Context<'a>,
 {
     move |ctx: &mut C| {
+        trace_log!(
+            "try to consume length {}, current offset = {}, total = {}",
+            length,
+            ctx.offset(),
+            ctx.len()
+        );
         if ctx.len() - ctx.offset() >= length {
-            trace_log!("consume length {}", length);
             ctx.inc(length);
             Ok(R::from(ctx, (1, length)))
         } else {
