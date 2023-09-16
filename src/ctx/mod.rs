@@ -249,3 +249,28 @@ where
         ctx.try_mat(self.as_ref())
     }
 }
+
+impl Ret for () {
+    fn fst(&self) -> usize {
+        0
+    }
+
+    fn snd(&self) -> usize {
+        0
+    }
+
+    fn is_zero(&self) -> bool {
+        true
+    }
+
+    fn add_assign(&mut self, _: Self) -> &mut Self {
+        self
+    }
+
+    fn from<'a, C>(_: &mut C, _: (usize, usize)) -> Self
+    where
+        C: Context<'a>,
+    {
+        ()
+    }
+}

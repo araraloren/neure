@@ -19,14 +19,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut ctx = Parser::new(str);
         let letter = regex!(['a' - 'z']);
         let number = regex!(['0' - '9']);
-        let under_score = regex!('_');
+        let us = regex!('_');
         let dot = regex!('.');
         let plus = regex!('+');
         let minus = regex!('-');
         let at = neure!('@');
-        let prefix = neure!((group!(&letter, &number, &under_score, &dot, &plus, &minus))+);
+        let pre = neure!((group!(&letter, &number, &us, &dot, &plus, &minus))+);
         let start = parser::start();
-        let domain = parser::count_if::<0, { usize::MAX }, _>(
+        let domain = parser::count_if::<0, { usize::MAX }, _, _>(
             group!(&letter, &number, &dot, &minus),
             |ctx: &Parser<str>, char| {
                 if char.1 == '.' {
@@ -38,16 +38,16 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 true
             },
         );
-        let postfix = neure!((group!(&letter, &dot)){2,6});
+        let post = neure!((group!(&letter, &dot)){2,6});
         let dot = neure!('.');
         let end = parser::end();
 
         ctx.try_mat(&start)?;
-        ctx.try_mat(&prefix)?;
+        ctx.try_mat(&pre)?;
         ctx.try_mat(&at)?;
         ctx.try_mat(&domain)?;
         ctx.try_mat(&dot)?;
-        ctx.try_mat(&postfix)?;
+        ctx.try_mat(&post)?;
         ctx.try_mat(&end)?;
         Ok(())
     };

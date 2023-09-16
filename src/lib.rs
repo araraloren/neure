@@ -29,6 +29,9 @@ pub mod prelude {
     pub use crate::ctx::Ret;
     pub use crate::ctx::Return;
     pub use crate::ctx::Span;
+    pub use crate::ext::IntoDynamic;
+    pub use crate::ext::IntoNonDynamic;
+    pub use crate::ext::ParseExtension;
     pub use crate::parser;
     pub use crate::span::SimpleStorer;
 }
