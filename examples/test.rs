@@ -7,7 +7,7 @@ use neure::ext::*;
 use neure::prelude::*;
 use neure::*;
 
-// pub struct Terminated<S, P, C> {
+//  pub struct Terminated<S, P, C> {
 //     sep: S,
 //     pat: P,
 //     marker: PhantomData<C>,
