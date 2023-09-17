@@ -58,12 +58,18 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = self.pat.invoke(g.ctx(), func);
-        #[allow(unused)]
-        let ret = g.process_ret(ret);
-        let ret = self.then.invoke(g.ctx(), func);
 
-        g.process_ret(ret)
+        match self.pat.invoke(g.ctx(), func) {
+            Ok(_) => {
+                let ret = self.then.invoke(g.ctx(), func);
+
+                g.process_ret(ret)
+            }
+            Err(e) => {
+                g.reset();
+                Err(e)
+            }
+        }
     }
 }
 

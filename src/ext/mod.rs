@@ -8,6 +8,7 @@ mod ormap;
 mod parse;
 mod pat;
 mod quote;
+mod repeat;
 mod term;
 mod then;
 
@@ -21,6 +22,7 @@ pub use self::ormap::OrMap;
 pub use self::parse::ParseExtension;
 pub use self::pat::Pattern;
 pub use self::quote::Quote;
+pub use self::repeat::Repeat;
 pub use self::term::Terminated;
 pub use self::then::Then;
 

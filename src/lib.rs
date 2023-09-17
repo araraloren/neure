@@ -33,6 +33,8 @@ pub mod prelude {
     pub use crate::ext::IntoNonDynamic;
     pub use crate::ext::ParseExtension;
     pub use crate::parser;
+    pub use crate::regex::Regex;
+    pub use crate::regex::RegexExtension;
     pub use crate::span::SimpleStorer;
 }
 

@@ -4,10 +4,11 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::err::Error;
 use crate::ext::CtxGuard;
+use crate::regex::Regex;
 use crate::trace_log;
 
-fn length<'a, T, C: Context<'a>>(offset: usize, ctx: &C, next: Option<(usize, T)>) -> usize {
-    let next_offset = next.map(|v| v.0).unwrap_or(ctx.len() - ctx.offset());
+fn length<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option<usize>) -> usize {
+    let next_offset = next.unwrap_or(ctx.len() - ctx.offset());
     next_offset - offset
 }
 
@@ -18,7 +19,7 @@ fn make_ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: 
     ret
 }
 
-pub fn one<'a, C, R>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn one<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -27,8 +28,12 @@ where
         let mut iter: C::Iter<'_> = ctx.peek()?;
 
         if let Some((offset, item)) = iter.next() {
-            if re(&item) {
-                Ok(make_ret_and_inc(ctx, 1, length(offset, ctx, iter.next())))
+            if re.is_match(&item) {
+                Ok(make_ret_and_inc(
+                    ctx,
+                    1,
+                    length(offset, ctx, iter.next().map(|v| v.0)),
+                ))
             } else {
                 Err(Error::Match)
             }
@@ -38,7 +43,7 @@ where
     }
 }
 
-pub fn zero_one<'a, C, R>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn zero_one<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -46,8 +51,12 @@ where
     move |ctx: &mut C| {
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
-                if re(&item) {
-                    return Ok(make_ret_and_inc(ctx, 1, length(offset, ctx, iter.next())));
+                if re.is_match(&item) {
+                    return Ok(make_ret_and_inc(
+                        ctx,
+                        1,
+                        length(offset, ctx, iter.next().map(|v| v.0)),
+                    ));
                 }
             }
         }
@@ -55,7 +64,7 @@ where
     }
 }
 
-pub fn zero_more<'a, C, R>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn zero_more<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -67,7 +76,7 @@ where
 
         if let Ok(mut iter) = ctx.peek() {
             for (offset, item) in iter.by_ref() {
-                if !re(&item) {
+                if !re.is_match(&item) {
                     end = Some((offset, item));
                     break;
                 }
@@ -78,14 +87,18 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(make_ret_and_inc(ctx, cnt, length(start, ctx, end)))
+            Ok(make_ret_and_inc(
+                ctx,
+                cnt,
+                length(start, ctx, end.map(|v| v.0)),
+            ))
         } else {
             Ok(R::from(ctx, (0, 0)))
         }
     }
 }
 
-pub fn one_more<'a, C, R>(re: impl Fn(&C::Item) -> bool) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn one_more<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -97,7 +110,7 @@ where
         let mut iter = ctx.peek()?;
 
         for (offset, item) in iter.by_ref() {
-            if !re(&item) {
+            if !re.is_match(&item) {
                 end = Some((offset, item));
                 break;
             }
@@ -107,7 +120,11 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(make_ret_and_inc(ctx, cnt, length(start, ctx, end)))
+            Ok(make_ret_and_inc(
+                ctx,
+                cnt,
+                length(start, ctx, end.map(|v| v.0)),
+            ))
         } else {
             Err(Error::NeedOneMore)
         }
@@ -115,7 +132,7 @@ where
 }
 
 pub fn count<'a, const M: usize, const N: usize, C, R>(
-    re: impl Fn(&C::Item) -> bool + 'a,
+    re: impl Regex<C::Item> + 'a,
 ) -> impl Fn(&mut C) -> Result<R, Error> + 'a
 where
     R: Ret + 'a,
@@ -125,7 +142,7 @@ where
 }
 
 pub fn count_if<'a, const M: usize, const N: usize, C, R>(
-    re: impl Fn(&C::Item) -> bool,
+    re: impl Regex<C::Item>,
     r#if: impl Fn(&C, &(usize, <C as Context<'a>>::Item)) -> bool,
 ) -> impl Fn(&mut C) -> Result<R, Error>
 where
@@ -142,7 +159,7 @@ where
         if let Ok(mut iter) = iter {
             while cnt < N {
                 if let Some(pair) = iter.next() {
-                    if re(&pair.1) && r#if(ctx, &pair) {
+                    if re.is_match(&pair.1) && r#if(ctx, &pair) {
                         cnt += 1;
                         if beg.is_none() {
                             beg = Some(pair.0);
@@ -155,7 +172,7 @@ where
                 break;
             }
             if cnt >= M {
-                let end = end.or_else(|| iter.next());
+                let end = end.or_else(|| iter.next()).map(|v| v.0);
 
                 return Ok(make_ret_and_inc(
                     ctx,

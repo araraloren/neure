@@ -1,161 +1,128 @@
+pub mod ext;
+pub mod func;
 pub mod r#macro;
 
-use std::ops::RangeBounds;
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
 
-use crate::trace_log;
+pub use self::ext::RegexExtension;
+pub use self::func::*;
 
-#[inline(always)]
-pub fn char(ch: char) -> impl Fn(&char) -> bool {
-    move |dat: &char| {
-        trace_log!("match a char {ch} with {dat}(in)");
-        dat == &ch
+pub trait Regex<T> {
+    fn is_match(&self, other: &T) -> bool;
+}
+
+impl<T, F> Regex<T> for F
+where
+    F: Fn(&T) -> bool,
+{
+    fn is_match(&self, other: &T) -> bool {
+        (self)(other)
     }
 }
 
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn equal<T: PartialEq>(val: T) -> impl Fn(&T) -> bool {
-    move |dat: &T| dat == &val
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn equal<T: PartialEq + std::fmt::Debug>(val: T) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("match a value {val:?} with {dat:?}(in)");
-        dat == &val
+impl<T> Regex<T> for char
+where
+    Self: PartialEq<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        self == other
     }
 }
 
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn array<const N: usize, T: PartialEq>(vals: [T; N]) -> impl Fn(&T) -> bool {
-    move |dat: &T| vals.contains(dat)
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn array<const N: usize, T: PartialEq + std::fmt::Debug>(vals: [T; N]) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("match a array {vals:?} with {dat:?}(in)");
-        vals.contains(dat)
+impl<'a, T> Regex<T> for &'a str
+where
+    Self: PartialEq<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        self == other
     }
 }
 
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn vector<T: PartialEq>(vals: Vec<T>) -> impl Fn(&T) -> bool {
-    move |dat: &T| vals.contains(dat)
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn vector<T: PartialEq + std::fmt::Debug>(vals: Vec<T>) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("match a vector {vals:?} with {dat:?}(in)");
-        vals.contains(dat)
+impl<T> Regex<T> for u8
+where
+    Self: PartialEq<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        self == other
     }
 }
 
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn range<T: PartialOrd>(bound: impl RangeBounds<T>) -> impl Fn(&T) -> bool {
-    move |dat: &T| bound.contains(dat)
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn range<T: PartialOrd + std::fmt::Debug>(
-    bound: impl RangeBounds<T> + std::fmt::Debug,
-) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("match a range {bound:?} with {dat:?}(in)");
-        bound.contains(dat)
+impl<'a, T> Regex<T> for &'a [u8]
+where
+    Self: PartialEq<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        self == other
     }
 }
 
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn always_t<T>() -> impl Fn(&T) -> bool {
-    |_dat: &T| true
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn always_t<T: std::fmt::Debug>() -> impl Fn(&T) -> bool {
-    |_dat: &T| {
-        trace_log!("always true, consume {_dat:?}(in)");
-        true
+impl<'a, T> Regex<T> for Box<dyn Regex<T>> {
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(self.as_ref(), other)
     }
 }
 
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn always_f<T>() -> impl Fn(&T) -> bool {
-    |_dat: &T| false
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn always_f<T: std::fmt::Debug>() -> impl Fn(&T) -> bool {
-    |_dat: &T| {
-        trace_log!("always false, consume {_dat:?}(in)");
-        false
+impl<'a, R, T> Regex<T> for RefCell<R>
+where
+    R: Regex<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(&*self.borrow(), other)
     }
 }
 
-#[inline(always)]
-pub fn space() -> impl Fn(&char) -> bool {
-    |dat: &char| {
-        trace_log!("match space with {dat:?}(in)");
-        dat.is_whitespace()
+impl<'a, R, T> Regex<T> for Cell<R>
+where
+    R: Regex<T> + Copy,
+{
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(&self.get(), other)
     }
 }
 
-#[inline(always)]
-pub fn digit() -> impl Fn(&char) -> bool {
-    |dat: &char| {
-        trace_log!("match ascii digit with {dat:?}(in)");
-        dat.is_ascii_digit()
+impl<'a, R, T> Regex<T> for Mutex<R>
+where
+    R: Regex<T> + Copy,
+{
+    fn is_match(&self, other: &T) -> bool {
+        let ret = self
+            .lock()
+            .expect("Oops ?! Can not unwrap mutex for regex ...");
+
+        Regex::is_match(&*ret, other)
     }
 }
 
-#[inline(always)]
-pub fn wild() -> impl Fn(&char) -> bool {
-    |dat: &char| {
-        trace_log!("match wild(.) with {dat:?}(in)");
-        dat != &'\n'
+impl<'a, R, T> Regex<T> for Arc<R>
+where
+    R: Regex<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(self.as_ref(), other)
     }
 }
 
-#[inline(always)]
-pub fn not<T>(func: impl Fn(&T) -> bool) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("Change the match logical, not");
-        !func(dat)
+impl<'a, T> Regex<T> for Arc<dyn Regex<T>> {
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(self.as_ref(), other)
     }
 }
 
-#[inline(always)]
-pub fn and<T>(func1: impl Fn(&T) -> bool, func2: impl Fn(&T) -> bool) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("Change the match logical, and");
-        func1(dat) && func2(dat)
+impl<'a, R, T> Regex<T> for Rc<R>
+where
+    R: Regex<T>,
+{
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(self.as_ref(), other)
     }
 }
 
-#[inline(always)]
-pub fn or<T>(func1: impl Fn(&T) -> bool, func2: impl Fn(&T) -> bool) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("Change the match logical, or");
-        func1(dat) || func2(dat)
-    }
-}
-
-#[inline(always)]
-pub fn byte(byte: u8) -> impl Fn(&u8) -> bool {
-    move |dat: &u8| {
-        trace_log!("match byte {byte} with {dat}(in)");
-        byte == *dat
+impl<'a, T> Regex<T> for Rc<dyn Regex<T>> {
+    fn is_match(&self, other: &T) -> bool {
+        Regex::is_match(self.as_ref(), other)
     }
 }

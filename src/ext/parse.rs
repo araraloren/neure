@@ -1,8 +1,10 @@
+use super::repeat::TryRepeat;
 use super::Map;
 use super::Or;
 use super::OrMap;
 use super::Pattern;
 use super::Quote;
+use super::Repeat;
 use super::Terminated;
 use super::Then;
 
@@ -27,6 +29,10 @@ where
     fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<Self, P, F, O>;
 
     fn then<T>(self, then: T) -> Then<Self, T>;
+
+    fn repeat(self, times: usize) -> Repeat<Self>;
+
+    fn try_repeat(self, times: usize) -> TryRepeat<Self>;
 }
 
 impl<'a, C, T> ParseExtension<'a, C> for T
@@ -60,5 +66,13 @@ where
 
     fn then<P>(self, then: P) -> Then<Self, P> {
         Then::new(self, then)
+    }
+
+    fn repeat(self, times: usize) -> Repeat<Self> {
+        Repeat::new(self, times)
+    }
+
+    fn try_repeat(self, times: usize) -> TryRepeat<Self> {
+        TryRepeat::new(self, times)
     }
 }
