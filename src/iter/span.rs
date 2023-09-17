@@ -41,6 +41,7 @@ where
 
 impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'a, 'b, T> {}
 
+#[derive(Debug, Clone)]
 pub struct SpanIterator<'a> {
     offset: usize,
 

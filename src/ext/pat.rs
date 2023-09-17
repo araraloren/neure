@@ -8,6 +8,7 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Pattern<P> {
     pat: P,
 }

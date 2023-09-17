@@ -10,6 +10,7 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::prelude::Ret;
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Repeat<P> {
     pat: P,
     times: usize,

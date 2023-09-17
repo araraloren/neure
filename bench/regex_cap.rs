@@ -76,10 +76,10 @@ mod email_neure {
         let plus = regex!('+');
         let minus = regex!('-');
         let at = neure!('@');
-        let pre = neure!((group!(&letter, &number, &us, &dot, &plus, &minus))+);
+        let pre = neure!((group!(letter, number, us, dot, plus, minus))+);
         let start = parser::start();
         let domain = parser::count_if::<0, { usize::MAX }, _, _>(
-            group!(&letter, &number, &dot, &minus),
+            group!(letter, number, dot, minus),
             |ctx: &Parser<str>, &(length, ch)| {
                 if ch == '.' {
                     // don't match dot if we don't have more dot
@@ -90,7 +90,7 @@ mod email_neure {
                 true
             },
         );
-        let post = neure!((group!(&letter, &dot)){2,6});
+        let post = neure!((group!(letter, dot)){2,6});
         let dot = neure!('.');
         let end = parser::end();
         let mut ctx = Parser::new(str);

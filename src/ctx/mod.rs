@@ -139,7 +139,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::parser::one(crate::regex::equal(*self));
+        let pattern = crate::parser::one(crate::regex::Equal::new(*self));
         ctx.try_mat(&pattern)
     }
 }

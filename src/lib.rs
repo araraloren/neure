@@ -18,6 +18,24 @@ pub(crate) mod log {
     }
 }
 
+/// PartialEq
+#[cfg(feature = "log")]
+pub trait PartialEq<Rhs: ?Sized = Self>: std::cmp::PartialEq<Rhs> + std::fmt::Debug {}
+
+#[cfg(not(feature = "log"))]
+pub trait PartialEq<Rhs: ?Sized = Self>: std::cmp::PartialEq<Rhs> {}
+
+impl<T, Rhs> PartialEq<Rhs> for T where T: std::cmp::PartialEq<Rhs> {}
+
+/// PartialOrd
+#[cfg(feature = "log")]
+pub trait PartialOrd<Rhs: ?Sized = Self>: std::cmp::PartialOrd<Rhs> + std::fmt::Debug {}
+
+#[cfg(not(feature = "log"))]
+pub trait PartialOrd<Rhs: ?Sized = Self>: std::cmp::PartialOrd<Rhs> {}
+
+impl<T, Rhs> PartialOrd<Rhs> for T where T: std::cmp::PartialOrd<Rhs> {}
+
 pub use charize::charize;
 pub mod prelude {
     pub use crate::ctx::BytesCtx;

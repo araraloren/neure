@@ -18,6 +18,10 @@ pub trait RegexExtension<T> {
     fn not(self) -> Not<Self>
     where
         Self: Sized;
+
+    fn repeat<R>(self, range: R) -> Repeat<Self, R, usize>
+    where
+        Self: Sized;
 }
 
 impl<T, Regex> RegexExtension<T> for Regex
@@ -44,8 +48,16 @@ where
     {
         Not::new(self)
     }
+
+    fn repeat<R>(self, range: R) -> Repeat<Self, R, usize>
+    where
+        Self: Sized,
+    {
+        Repeat::new(self, range)
+    }
 }
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Or<L, R> {
     left: L,
     regex: R,
@@ -67,6 +79,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct And<L, R> {
     left: L,
     right: R,
@@ -88,6 +101,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Not<R> {
     regex: R,
 }
@@ -107,6 +121,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Repeat<R, B, O> {
     regex: R,
     range: B,

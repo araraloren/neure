@@ -1,6 +1,8 @@
+mod equal;
 pub mod ext;
 pub mod func;
 pub mod r#macro;
+mod range;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -8,8 +10,10 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+pub use self::equal::Equal;
 pub use self::ext::RegexExtension;
 pub use self::func::*;
+pub use self::range::Range;
 
 pub trait Regex<T> {
     fn is_match(&self, other: &T) -> bool;

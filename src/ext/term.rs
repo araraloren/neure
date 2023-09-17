@@ -10,6 +10,7 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Terminated<P, S> {
     pat: P,
     sep: S,

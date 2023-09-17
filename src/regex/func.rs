@@ -1,27 +1,16 @@
+use std::ops::Bound;
 use std::ops::RangeBounds;
 
 use crate::trace_log;
+use crate::PartialEq;
+
+use super::Regex;
 
 #[inline(always)]
 pub fn char(ch: char) -> impl Fn(&char) -> bool {
     move |dat: &char| {
         trace_log!("match a char {ch} with {dat}(in)");
         dat == &ch
-    }
-}
-
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn equal<T: PartialEq>(val: T) -> impl Fn(&T) -> bool {
-    move |dat: &T| dat == &val
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn equal<T: PartialEq + std::fmt::Debug>(val: T) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("match a value {val:?} with {dat:?}(in)");
-        dat == &val
     }
 }
 
@@ -52,23 +41,6 @@ pub fn vector<T: PartialEq + std::fmt::Debug>(vals: Vec<T>) -> impl Fn(&T) -> bo
     move |dat: &T| {
         trace_log!("match a vector {vals:?} with {dat:?}(in)");
         vals.contains(dat)
-    }
-}
-
-#[cfg(not(feature = "log"))]
-#[inline(always)]
-pub fn range<T: PartialOrd>(bound: impl RangeBounds<T>) -> impl Fn(&T) -> bool {
-    move |dat: &T| bound.contains(dat)
-}
-
-#[cfg(feature = "log")]
-#[inline(always)]
-pub fn range<T: PartialOrd + std::fmt::Debug>(
-    bound: impl RangeBounds<T> + std::fmt::Debug,
-) -> impl Fn(&T) -> bool {
-    move |dat: &T| {
-        trace_log!("match a range {bound:?} with {dat:?}(in)");
-        bound.contains(dat)
     }
 }
 
@@ -127,26 +99,26 @@ pub fn wild() -> impl Fn(&char) -> bool {
 }
 
 #[inline(always)]
-pub fn not<T>(func: impl Fn(&T) -> bool) -> impl Fn(&T) -> bool {
+pub fn not<T>(re: impl Regex<T>) -> impl Fn(&T) -> bool {
     move |dat: &T| {
         trace_log!("Change the match logical, not");
-        !func(dat)
+        !re.is_match(dat)
     }
 }
 
 #[inline(always)]
-pub fn and<T>(func1: impl Fn(&T) -> bool, func2: impl Fn(&T) -> bool) -> impl Fn(&T) -> bool {
+pub fn and<T>(re1: impl Regex<T>, re2: impl Regex<T>) -> impl Fn(&T) -> bool {
     move |dat: &T| {
         trace_log!("Change the match logical, and");
-        func1(dat) && func2(dat)
+        re1.is_match(dat) && re2.is_match(dat)
     }
 }
 
 #[inline(always)]
-pub fn or<T>(func1: impl Fn(&T) -> bool, func2: impl Fn(&T) -> bool) -> impl Fn(&T) -> bool {
+pub fn or<T>(re1: impl Regex<T>, re2: impl Regex<T>) -> impl Fn(&T) -> bool {
     move |dat: &T| {
         trace_log!("Change the match logical, or");
-        func1(dat) || func2(dat)
+        re1.is_match(dat) || re2.is_match(dat)
     }
 }
 
