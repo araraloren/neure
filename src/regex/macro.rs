@@ -41,7 +41,7 @@ macro_rules! neure {
         neure!(@q $($res)* $regex)
     };
     (@r $($res:tt)*) => {
-        neure!(@q $($res)* $crate::regex::space())
+        neure!(@q $($res)* $crate::regex::Space::new())
     };
     ($($res:tt)*) => {
         neure!(@r $($res)*)
@@ -51,56 +51,56 @@ macro_rules! neure {
 #[macro_export]
 macro_rules! regex {
     (^) => { // \S
-        $crate::regex::not($crate::regex::space())
+        $crate::regex::Space::new().not()
     };
     (.) => { // .
-        $crate::regex::wild()
+        $crate::regex::Wild::new()
     };
     ([^$l:literal - $r:literal] ) => {
-        $crate::regex::not($crate::regex::Range::from($l..=$r))
+        $crate::regex::CopyRange::from($l..=$r).not()
     };
     ([^$l:ident - $r:ident] ) => {
-        $crate::regex::not($crate::regex::Range::from($crate::charize!($l)..=$crate::charize!($r)))
+        $crate::regex::CopyRange::from($crate::charize!($l)..=$crate::charize!($r)).not()
     };
     ([$l:literal - $r:literal] ) => {
-        $crate::regex::Range::from($l..=$r)
+        $crate::regex::CopyRange::from($l..=$r)
     };
     ([$l:ident - $r:ident] ) => {
-        $crate::regex::Range::from($crate::charize!($l)..=$crate::charize!($r))
+        $crate::regex::CopyRange::from($crate::charize!($l)..=$crate::charize!($r))
     };
 
     ([^$($l:literal - $r:literal)+] ) => {// [ ^ 'a'-'z' 'A'-'Z' ]
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Range::from($l..=$r), re);
+                let re = re.or($crate::regex::CopyRange::from($l..=$r));
             )+
-            $crate::regex::not(re)
+            re.not()
         }
     };
     ([^$($l:ident - $r:ident)+] ) => { // [ ^ a-z A-Z ]
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Range::from($crate::charize!($l)..=$crate::charize!($r)), re);
+                let re = re.or($crate::regex::CopyRange::from($crate::charize!($l)..=$crate::charize!($r)));
             )+
-            $crate::regex::not(re)
+            re.not()
         }
     };
     ([$($l:literal - $r:literal)+] ) => { // [ 'a'-'Z' 'A'-'Z' ]
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Range::from($l..=$r), re);
+                let re = re.or($crate::regex::CopyRange::from($l..=$r));
             )+
             re
         }
     };
     ([$($l:ident - $r:ident)+] ) => { // [ a-Z A-Z ]
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Range::from($crate::charize!($l)..=$crate::charize!($r)), re);
+                let re = re.or($crate::regex::CopyRange::from($crate::charize!($l)..=$crate::charize!($r)));
             )+
             re
         }
@@ -109,36 +109,36 @@ macro_rules! regex {
 
     ([ ^ $($ch:literal)+ ] ) => { // [ ^ 'a' 'b' 'c']
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Equal::new($ch), re);
+                let re = re.or($crate::regex::Equal::new($ch));
             )+
-            $crate::regex::not(re)
+            re.not()
         }
     };
     ([ ^ $($ch:ident)+ ] ) => { // [^ a b c]
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Equal::new($crate::charize!($ch)), re);
+                let re = re.or($crate::regex::Equal::new($crate::charize!($ch)));
             )+
-            $crate::regex::not(re)
+            re.not()
         }
     };
     ([ $($ch:literal)+ ] ) => { // ['a' 'b' 'c']
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Equal::new($ch), re);
+                let re = re.or($crate::regex::Equal::new($ch));
             )+
             re
         }
     };
     ([ $($ch:ident)+ ] ) => { // [a b c]
         {
-            let re = $crate::regex::always_f();
+            let re = $crate::regex::False::new();
             $(
-                let re = $crate::regex::or($crate::regex::Equal::new($crate::charize!($ch)), re);
+                let re = re.or($crate::regex::Equal::new($crate::charize!($ch)));
             )+
             re
         }
@@ -164,9 +164,9 @@ macro_rules! group {
         $regex
     };
     ($regex:ident, $($res:tt)+) => {
-        $crate::regex::or($regex, group!($($res)+))
+        $regex.or(group!($($res)+))
     };
     ($regex:expr, $($res:tt)+) => {
-        $crate::regex::or($regex, group!($($res)+))
+        $regex.or(group!($($res)+))
     };
 }

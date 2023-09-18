@@ -24,10 +24,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         let plus = regex!('+');
         let minus = regex!('-');
         let at = neure!('@');
-        let pre = neure!((group!(&letter, &number, &us, &dot, &plus, &minus))+);
+        let pre = neure!((group!(letter, number, us, dot, plus, minus))+);
         let start = parser::start();
         let domain = parser::count_if::<0, { usize::MAX }, _, _>(
-            group!(&letter, &number, &dot, &minus),
+            group!(letter, number, dot, minus),
             |ctx: &Parser<str>, char| {
                 if char.1 == '.' {
                     // don't match dot if we don't have more dot
@@ -38,7 +38,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 true
             },
         );
-        let post = neure!((group!(&letter, &dot)){2,6});
+        let post = neure!((group!(letter, dot)){2,6});
         let dot = neure!('.');
         let end = parser::end();
 

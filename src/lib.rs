@@ -18,23 +18,17 @@ pub(crate) mod log {
     }
 }
 
-/// PartialEq
 #[cfg(feature = "log")]
-pub trait PartialEq<Rhs: ?Sized = Self>: std::cmp::PartialEq<Rhs> + std::fmt::Debug {}
+pub trait LogOrNot: std::fmt::Debug {}
+
+#[cfg(feature = "log")]
+impl<T> LogOrNot for T where T: std::fmt::Debug {}
 
 #[cfg(not(feature = "log"))]
-pub trait PartialEq<Rhs: ?Sized = Self>: std::cmp::PartialEq<Rhs> {}
-
-impl<T, Rhs> PartialEq<Rhs> for T where T: std::cmp::PartialEq<Rhs> {}
-
-/// PartialOrd
-#[cfg(feature = "log")]
-pub trait PartialOrd<Rhs: ?Sized = Self>: std::cmp::PartialOrd<Rhs> + std::fmt::Debug {}
+pub trait LogOrNot {}
 
 #[cfg(not(feature = "log"))]
-pub trait PartialOrd<Rhs: ?Sized = Self>: std::cmp::PartialOrd<Rhs> {}
-
-impl<T, Rhs> PartialOrd<Rhs> for T where T: std::cmp::PartialOrd<Rhs> {}
+impl<T> LogOrNot for T {}
 
 pub use charize::charize;
 pub mod prelude {
@@ -52,7 +46,7 @@ pub mod prelude {
     pub use crate::ext::ParseExtension;
     pub use crate::parser;
     pub use crate::regex::Regex;
-    pub use crate::regex::RegexExtension;
+    pub use crate::regex::RegexExt;
     pub use crate::span::SimpleStorer;
 }
 

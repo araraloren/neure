@@ -8,6 +8,7 @@ use crate::ctx::Parse;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::trace_log;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Or<L, R> {
@@ -84,7 +85,9 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
 
-        g.try_mat(&self.left)
-            .or_else(|_| g.reset().try_mat(&self.right))
+        g.try_mat(&self.left).or_else(|_| {
+            trace_log!("or ... offset = {}", g.ctx().offset());
+            g.reset().try_mat(&self.right)
+        })
     }
 }

@@ -183,14 +183,14 @@ fn main() -> color_eyre::Result<()> {
     let inner = Rc::new(
         digit_or
             .clone()
-            .quote('{', '}')
-            .or(digit_or.clone().quote('[', ']')),
+            .quote("{", "}")
+            .or(digit_or.clone().quote('['.repeat(1), ']'.repeat(1))),
     );
     let outer: Rc<Box<dyn Parse<_, Ret = _>>> = Rc::new(Box::new(
         inner
             .clone()
-            .quote('[', ']')
-            .or(inner.clone().quote('{', '}')),
+            .quote('['.repeat(1), ']'.repeat(1))
+            .or(inner.clone().quote('{'.repeat(1), '}'.repeat(1))),
     ));
 
     digit_or.borrow_mut().set_right(outer.clone());
