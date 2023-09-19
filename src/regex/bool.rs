@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use super::Regex;
@@ -5,8 +6,27 @@ use super::Regex;
 use crate::trace_log;
 use crate::LogOrNot;
 
-#[derive(Debug, Clone, Default, Copy)]
 pub struct True<T>(PhantomData<T>);
+
+impl<T> Debug for True<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("True").field(&self.0).finish()
+    }
+}
+
+impl<T> Default for True<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<T> Clone for True<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<T> Copy for True<T> {}
 
 impl<T> True<T> {
     pub fn new() -> Self {
@@ -21,8 +41,27 @@ impl<T: LogOrNot> Regex<T> for True<T> {
     }
 }
 
-#[derive(Debug, Clone, Default, Copy)]
 pub struct False<T>(PhantomData<T>);
+
+impl<T> Debug for False<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("True").field(&self.0).finish()
+    }
+}
+
+impl<T> Default for False<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<T> Clone for False<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<T> Copy for False<T> {}
 
 impl<T> False<T> {
     pub fn new() -> Self {
@@ -35,4 +74,40 @@ impl<T: LogOrNot> Regex<T> for False<T> {
         trace_log!("always false: ({:?})(in)", _other);
         false
     }
+}
+
+/// Always return true.
+///
+/// # Example
+/// ```
+/// use neure::prelude::*;
+/// use neure::regex::*;
+///
+/// fn main() {
+///    let any = any();
+///    let mut ctx = CharsCtx::new("abc%$#&");
+///
+///    assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
+/// }
+/// ```
+pub fn any<T: LogOrNot>() -> True<T> {
+    True::default()
+}
+
+/// Always return false.
+///
+/// # Example
+/// ```
+/// use neure::prelude::*;
+/// use neure::regex::*;
+///
+/// fn main() {
+///    let none = none();
+///    let mut ctx = CharsCtx::new("abc%$#&");
+///
+///    assert!(ctx.try_mat(&none.repeat(6)).is_err());
+/// }
+/// ```
+pub fn none<T: LogOrNot>() -> False<T> {
+    False::default()
 }

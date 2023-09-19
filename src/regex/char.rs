@@ -81,3 +81,15 @@ impl Regex<char> for Wild {
         other != &'\n'
     }
 }
+
+pub fn space() -> Space {
+    Space::default()
+}
+
+pub fn ascii_space() -> AsciiSpace {
+    AsciiSpace::default()
+}
+
+pub fn digit() -> Digit {
+    Digit::default()
+}

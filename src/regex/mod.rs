@@ -1,8 +1,7 @@
-mod array;
 mod bool;
 mod char;
 mod equal;
-mod exts;
+mod op;
 mod range;
 
 pub mod r#macro;
@@ -18,7 +17,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::array::Array;
+use crate::ctx::Span;
+
 pub use self::bool::False;
 pub use self::bool::True;
 pub use self::char::AsciiSpace;
@@ -27,12 +27,14 @@ pub use self::char::HexDigit;
 pub use self::char::Space;
 pub use self::char::Wild;
 pub use self::equal::Equal;
-pub use self::exts::And;
-pub use self::exts::Not;
-pub use self::exts::Or;
-pub use self::exts::RegexExt;
-pub use self::exts::Repeat;
+pub use self::op::And;
+pub use self::op::Not;
+pub use self::op::Or;
+pub use self::op::Repeat;
 pub use self::range::CopyRange;
+
+pub use self::bool::any;
+pub use self::bool::none;
 
 pub trait Regex<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
@@ -138,6 +140,53 @@ impl<T> Regex<T> for Rc<dyn Regex<T>> {
     }
 }
 
+impl<const N: usize, T: PartialEq + LogOrNot> Regex<T> for [T; N] {
+    ///
+    /// Match any character in the array.
+    ///
+    /// # Example
+    /// ```
+    /// use neure::prelude::*;
+    ///
+    /// fn main() {
+    ///     let arr = ['a', 'c', 'f', 'e'];
+    ///     let mut ctx1 = CharsCtx::new("aaffeeeaccc");
+    ///     let mut ctx2 = CharsCtx::new("acdde");
+    ///
+    ///     assert_eq!(ctx1.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 5));
+    ///     assert_eq!(ctx2.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 2));
+    /// }
+    /// ```
+    fn is_match(&self, other: &T) -> bool {
+        trace_log!("match array({:?}) with value ({:?})(in)", self, other);
+        self.contains(other)
+    }
+}
+
+impl<'a, T: PartialEq + LogOrNot> Regex<T> for &'a [T] {
+    ///
+    /// Match any character in the array.
+    ///
+    /// # Example
+    /// ```
+    /// use neure::prelude::*;
+    ///
+    /// fn main() {
+    ///     let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
+    ///     let arr = RegexExt::repeat(arr, 2..=5);
+    ///     let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
+    ///     let mut ctx2 = BytesCtx::new(b"acdde");
+    ///
+    ///     assert_eq!(ctx1.try_mat(&arr).unwrap(), Span::new(0, 5));
+    ///     assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
+    /// }
+    /// ```
+    fn is_match(&self, other: &T) -> bool {
+        trace_log!("match array({:?}) with value ({:?})(in)", self, other);
+        self.contains(other)
+    }
+}
+
 impl<T: PartialEq + LogOrNot> Regex<T> for Vec<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match vector({:?}) with value ({:?})(in)", self, other);
@@ -232,5 +281,79 @@ impl<T: PartialOrd + LogOrNot> Regex<T> for std::ops::RangeToInclusive<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
+    }
+}
+
+pub trait RegexExt<T> {
+    fn or<R>(self, regex: R) -> Or<Self, R, T>
+    where
+        R: Regex<T>,
+        Self: Regex<T> + Sized;
+
+    fn and<R>(self, regex: R) -> And<Self, R, T>
+    where
+        R: Regex<T>,
+        Self: Regex<T> + Sized;
+
+    fn not(self) -> Not<Self, T>
+    where
+        Self: Regex<T> + Sized;
+
+    fn repeat<R>(self, range: R) -> Repeat<Self, CopyRange<usize>, Span, T>
+    where
+        Self: Regex<T> + Sized,
+        R: Into<CopyRange<usize>>;
+}
+
+impl<T, Re> RegexExt<T> for Re
+where
+    Re: Regex<T>,
+{
+    fn or<R>(self, regex: R) -> Or<Self, R, T>
+    where
+        R: Regex<T>,
+        Self: Regex<T> + Sized,
+    {
+        Or::new(self, regex)
+    }
+
+    fn and<R>(self, regex: R) -> And<Self, R, T>
+    where
+        R: Regex<T>,
+        Self: Regex<T> + Sized,
+    {
+        And::new(self, regex)
+    }
+
+    fn not(self) -> Not<Self, T>
+    where
+        Self: Regex<T> + Sized,
+    {
+        Not::new(self)
+    }
+
+    fn repeat<R>(self, range: R) -> Repeat<Self, CopyRange<usize>, Span, T>
+    where
+        Self: Regex<T> + Sized,
+        R: Into<CopyRange<usize>>,
+    {
+        Repeat::new(self, range.into())
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+    use crate::prelude::*;
+
+    #[test]
+    fn test_array() {
+        let arr = ['a', 'c', 'f', 'e'];
+        let mut ctx1 = CharsCtx::new("aaffeeeaccc");
+        let mut ctx2 = CharsCtx::new("acdde");
+
+        assert_eq!(ctx1.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 5));
+        assert_eq!(ctx2.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 2));
     }
 }

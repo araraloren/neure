@@ -37,6 +37,7 @@ impl SimpleStorer {
         self
     }
 }
+
 impl SimpleStorer {
     pub fn contain(&self, id: usize) -> bool {
         self.spans.get(id).map(|v| !v.is_empty()).unwrap_or(false)
