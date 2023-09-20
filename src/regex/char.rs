@@ -82,6 +82,27 @@ impl Regex<char> for Wild {
     }
 }
 
+/// 
+/// Reference [`is_whitespace`](std::primitive::char::is_whitespace).
+/// 
+/// # Example
+/// 
+/// ```
+/// use neure::prelude::*;
+/// use neure::*;
+/// 
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let space = regex::space();
+///     let space1 = space.repeat(1);
+///     let space3 = space.repeat(3);
+///     let mut ctx = CharsCtx::new("   \u{A0}abcd");
+///
+///     assert_eq!(ctx.try_mat(&space1)?, Span::new(0, 1));
+///     assert_eq!(ctx.try_mat(&space3)?, Span::new(1, 4));
+///     assert!(ctx.try_mat(&space1).is_err());
+///     Ok(())
+/// }
+/// ```
 pub fn space() -> Space {
     Space::default()
 }
@@ -92,4 +113,12 @@ pub fn ascii_space() -> AsciiSpace {
 
 pub fn digit() -> Digit {
     Digit::default()
+}
+
+pub fn hex_digit() -> HexDigit {
+    HexDigit::default()
+}
+
+pub fn wild() -> Wild {
+    Wild::default()
 }

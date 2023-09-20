@@ -1,7 +1,11 @@
 mod bool;
 mod char;
 mod equal;
-mod op;
+mod op_and;
+mod op_if;
+mod op_not;
+mod op_or;
+mod op_repeat;
 mod range;
 
 pub mod r#macro;
@@ -27,14 +31,20 @@ pub use self::char::HexDigit;
 pub use self::char::Space;
 pub use self::char::Wild;
 pub use self::equal::Equal;
-pub use self::op::And;
-pub use self::op::Not;
-pub use self::op::Or;
-pub use self::op::Repeat;
+pub use self::op_and::And;
+pub use self::op_if::RepeatIf;
+pub use self::op_not::Not;
+pub use self::op_or::Or;
+pub use self::op_repeat::Repeat;
 pub use self::range::CopyRange;
 
 pub use self::bool::any;
 pub use self::bool::none;
+pub use self::char::ascii_space;
+pub use self::char::digit;
+pub use self::char::hex_digit;
+pub use self::char::space;
+pub use self::char::wild;
 
 pub trait Regex<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
