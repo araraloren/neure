@@ -2,11 +2,11 @@ use super::Extract;
 use super::Handler;
 use super::Invoke;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Span;
 use crate::err::Error;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Span;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Pattern<P> {
@@ -34,7 +34,7 @@ impl<P> Pattern<P> {
 
 impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<P>
 where
-    P: Parse<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
@@ -48,9 +48,9 @@ where
     }
 }
 
-impl<'a, C, P> Parse<C> for Pattern<P>
+impl<'a, C, P> Regex<C> for Pattern<P>
 where
-    P: Parse<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;

@@ -12,8 +12,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(file) = std::env::args().skip(1).next() {
         let head: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
         let bytes = std::fs::read(file)?;
-        let uint32 = parser::consume(4);
-        let uint8 = parser::consume(1);
+        let uint32 = regex::consume(4);
+        let uint8 = regex::consume(1);
         let as_uint = |dat: &[u8]| {
             assert_eq!(dat.len(), 4);
             Ok(u32::from_be_bytes([dat[0], dat[1], dat[2], dat[3]]))
@@ -73,7 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "safe to copy"
                     }
                 );
-                let data = parser::consume(length as usize);
+                let data = regex::consume(length as usize);
 
                 println!("In trunk {idx}: data length = {length}");
                 println!(

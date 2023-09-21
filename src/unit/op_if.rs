@@ -1,22 +1,22 @@
 use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Ret;
-use crate::ctx::Span;
 use crate::err::Error;
-use crate::ext::Extract;
-use crate::ext::Handler;
-use crate::ext::Invoke;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Ret;
+use crate::parser::Span;
+use crate::regex::Extract;
+use crate::regex::Handler;
+use crate::regex::Invoke;
+use crate::regex::Regex;
 
-use super::Regex;
+use super::Unit;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct RepeatIf<R, B, O, T, F>
 where
-    R: Regex<T>,
+    R: Unit<T>,
     B: RangeBounds<usize>,
 {
     r#if: F,
@@ -27,7 +27,7 @@ where
 
 impl<R, B, O, T, F> RepeatIf<R, B, O, T, F>
 where
-    R: Regex<T>,
+    R: Unit<T>,
     B: RangeBounds<usize>,
 {
     pub fn new(regex: R, range: B, r#if: F) -> Self {
@@ -54,7 +54,7 @@ where
 impl<'a, R, B, C, M, F> Invoke<'a, C, M, M> for RepeatIf<R, B, Span, C::Item, F>
 where
     C: Context<'a> + 'a,
-    R: Regex<C::Item>,
+    R: Unit<C::Item>,
     B: RangeBounds<usize>,
     C: Context<'a> + Policy<C>,
     F: Fn(&C, &(usize, C::Item)) -> bool,
@@ -70,10 +70,10 @@ where
     }
 }
 
-impl<'a, R, B, C, F> Parse<C> for RepeatIf<R, B, Span, C::Item, F>
+impl<'a, R, B, C, F> Regex<C> for RepeatIf<R, B, Span, C::Item, F>
 where
     C: Context<'a> + 'a,
-    R: Regex<C::Item>,
+    R: Unit<C::Item>,
     B: RangeBounds<usize>,
     F: Fn(&C, &(usize, C::Item)) -> bool,
 {

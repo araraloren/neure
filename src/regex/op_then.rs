@@ -3,11 +3,11 @@ use super::Extract;
 use super::Handler;
 use super::Invoke;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Span;
 use crate::err::Error;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Span;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Then<P, T> {
@@ -74,10 +74,10 @@ where
     }
 }
 
-impl<'a, C, P, T> Parse<C> for Then<P, T>
+impl<'a, C, P, T> Regex<C> for Then<P, T>
 where
-    P: Parse<C, Ret = Span>,
-    T: Parse<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
+    T: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;

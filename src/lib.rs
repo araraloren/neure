@@ -1,11 +1,11 @@
 #![doc = include_str!("../README.md")]
-pub mod ctx;
 pub mod err;
-pub mod ext;
 pub mod iter;
+pub mod r#macro;
 pub mod parser;
 pub mod regex;
 pub mod span;
+pub mod unit;
 
 #[cfg(feature = "log")]
 pub(crate) use tracing::trace as trace_log;
@@ -32,22 +32,23 @@ impl<T> LogOrNot for T {}
 
 pub use charize::charize;
 pub mod prelude {
-    pub use crate::ctx::BytesCtx;
-    pub use crate::ctx::CharsCtx;
-    pub use crate::ctx::Context;
-    pub use crate::ctx::Parse;
-    pub use crate::ctx::Parser;
-    pub use crate::ctx::Policy;
-    pub use crate::ctx::Ret;
-    pub use crate::ctx::Return;
-    pub use crate::ctx::Span;
-    pub use crate::ext::IntoDynamic;
-    pub use crate::ext::IntoNonDynamic;
-    pub use crate::ext::ParseExtension;
-    pub use crate::parser;
+    pub use crate::parser::BytesCtx;
+    pub use crate::parser::CharsCtx;
+    pub use crate::parser::Context;
+    pub use crate::parser::Parser;
+    pub use crate::parser::Policy;
+    pub use crate::parser::Ret;
+    pub use crate::parser::Return;
+    pub use crate::parser::Span;
+    pub use crate::regex;
+    pub use crate::regex::IntoDynamic;
+    pub use crate::regex::IntoNonDynamic;
     pub use crate::regex::Regex;
-    pub use crate::regex::RegexExt;
+    pub use crate::regex::RegexOp;
     pub use crate::span::SimpleStorer;
+    pub use crate::unit;
+    pub use crate::unit::RegexExt;
+    pub use crate::unit::Unit;
 }
 
 #[cfg(test)]

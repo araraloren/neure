@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::ops::Bound;
 use std::ops::RangeBounds;
 
-use super::Regex;
+use super::Unit;
 
 use crate::trace_log;
 use crate::LogOrNot;
@@ -48,7 +48,7 @@ impl<T> RangeBounds<T> for CopyRange<T> {
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Regex<T> for CopyRange<T> {
+impl<T: PartialOrd + LogOrNot> Unit<T> for CopyRange<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match ({:?}) with value ({:?})(in)", self, other);
         self.contains(other)

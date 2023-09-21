@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
-use super::Regex;
+use super::Unit;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Not<R, T>
 where
-    R: Regex<T>,
+    R: Unit<T>,
 {
     regex: R,
     marker: PhantomData<T>,
@@ -13,7 +13,7 @@ where
 
 impl<R, T> Not<R, T>
 where
-    R: Regex<T>,
+    R: Unit<T>,
 {
     pub fn new(regex: R) -> Self {
         Self {
@@ -23,9 +23,9 @@ where
     }
 }
 
-impl<R, T> Regex<T> for Not<R, T>
+impl<R, T> Unit<T> for Not<R, T>
 where
-    R: Regex<T>,
+    R: Unit<T>,
 {
     fn is_match(&self, other: &T) -> bool {
         !self.regex.is_match(other)

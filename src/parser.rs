@@ -1,346 +1,243 @@
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Ret;
+mod parser;
+mod r#return;
+mod span;
+
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
+
 use crate::err::Error;
-use crate::ext::CtxGuard;
 use crate::regex::Regex;
-use crate::trace_log;
 
-fn length<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option<usize>) -> usize {
-    let next_offset = next.unwrap_or(ctx.len() - ctx.offset());
-    next_offset - offset
+pub use self::parser::Parser;
+pub use self::r#return::Return;
+pub use self::span::Span;
+
+pub type BytesCtx<'a> = Parser<'a, [u8]>;
+pub type CharsCtx<'a> = Parser<'a, str>;
+
+pub trait Context<'a> {
+    type Orig: ?Sized;
+
+    type Item;
+
+    type Iter<'b>: Iterator<Item = (usize, Self::Item)>
+    where
+        Self: 'b;
+
+    fn len(&self) -> usize;
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    fn offset(&self) -> usize;
+
+    fn set_offset(&mut self, offset: usize) -> &mut Self;
+
+    fn inc(&mut self, offset: usize) -> &mut Self;
+
+    fn dec(&mut self, offset: usize) -> &mut Self;
+
+    fn peek(&self) -> Result<Self::Iter<'a>, Error> {
+        self.peek_at(self.offset())
+    }
+
+    fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error>;
+
+    fn orig(&self) -> Result<&'a Self::Orig, Error> {
+        self.orig_at(self.offset())
+    }
+
+    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error>;
+
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
 }
 
-fn make_ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
-    let ret = R::from(ctx, (count, len));
-
-    ctx.inc(len);
-    ret
-}
-
-pub fn one<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub trait Ret
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    Self: Sized,
 {
-    move |ctx: &mut C| {
-        let mut iter: C::Iter<'_> = ctx.peek()?;
+    fn fst(&self) -> usize;
 
-        if let Some((offset, item)) = iter.next() {
-            if re.is_match(&item) {
-                Ok(make_ret_and_inc(
-                    ctx,
-                    1,
-                    length(offset, ctx, iter.next().map(|v| v.0)),
-                ))
-            } else {
-                Err(Error::Match)
-            }
-        } else {
-            Err(Error::NeedOne)
-        }
+    fn snd(&self) -> usize;
+
+    fn is_zero(&self) -> bool;
+
+    fn add_assign(&mut self, other: Self) -> &mut Self;
+
+    fn from<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
+    where
+        C: Context<'a>;
+}
+
+pub trait Policy<C> {
+    fn is_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
+        self.try_mat(pat).is_ok()
+    }
+
+    fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+
+    fn try_mat_policy<Pat: Regex<C> + ?Sized>(
+        &mut self,
+        pat: &Pat,
+        pre: impl FnMut(&mut C) -> Result<(), Error>,
+        post: impl FnMut(&mut C, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
+    ) -> Result<Pat::Ret, Error>;
+}
+
+impl<C, F, R> Regex<C> for F
+where
+    F: Fn(&mut C) -> Result<R, Error>,
+{
+    type Ret = R;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        (self)(ctx)
     }
 }
 
-pub fn zero_one<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, C> Regex<C> for &'b str
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    C: Context<'a, Orig = str> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| {
-        if let Ok(mut iter) = ctx.peek() {
-            if let Some((offset, item)) = iter.next() {
-                if re.is_match(&item) {
-                    return Ok(make_ret_and_inc(
-                        ctx,
-                        1,
-                        length(offset, ctx, iter.next().map(|v| v.0)),
-                    ));
-                }
-            }
-        }
-        Ok(R::from(ctx, (0, 0)))
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::regex::string(self);
+        ctx.try_mat(&pattern)
     }
 }
 
-pub fn zero_more<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, C> Regex<C> for &'b [u8]
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
+    type Ret = Span;
 
-        if let Ok(mut iter) = ctx.peek() {
-            for (offset, item) in iter.by_ref() {
-                if !re.is_match(&item) {
-                    end = Some((offset, item));
-                    break;
-                }
-                cnt += 1;
-                if beg.is_none() {
-                    beg = Some(offset);
-                }
-            }
-        }
-        if let Some(start) = beg {
-            Ok(make_ret_and_inc(
-                ctx,
-                cnt,
-                length(start, ctx, end.map(|v| v.0)),
-            ))
-        } else {
-            Ok(R::from(ctx, (0, 0)))
-        }
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::regex::bytes(self);
+        ctx.try_mat(&pattern)
     }
 }
 
-pub fn one_more<'a, C, R>(re: impl Regex<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
-        let mut iter = ctx.peek()?;
+    type Ret = Ret;
 
-        for (offset, item) in iter.by_ref() {
-            if !re.is_match(&item) {
-                end = Some((offset, item));
-                break;
-            }
-            cnt += 1;
-            if beg.is_none() {
-                beg = Some(offset);
-            }
-        }
-        if let Some(start) = beg {
-            Ok(make_ret_and_inc(
-                ctx,
-                cnt,
-                length(start, ctx, end.map(|v| v.0)),
-            ))
-        } else {
-            Err(Error::NeedOneMore)
-        }
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
     }
 }
 
-pub fn count<'a, const M: usize, const N: usize, C, R>(
-    re: impl Regex<C::Item> + 'a,
-) -> impl Fn(&mut C) -> Result<R, Error> + 'a
+impl<'a, 'b, P, C> Regex<C> for RefCell<P>
 where
-    R: Ret + 'a,
-    C: Context<'a> + 'a,
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    count_if::<'a, M, N, C, R>(re, |_, _| true)
-}
+    type Ret = P::Ret;
 
-pub fn count_if<'a, const M: usize, const N: usize, C, R>(
-    re: impl Regex<C::Item>,
-    r#if: impl Fn(&C, &(usize, <C as Context<'a>>::Item)) -> bool,
-) -> impl Fn(&mut C) -> Result<R, Error>
-where
-    R: Ret,
-    C: Context<'a> + 'a,
-{
-    debug_assert!(M <= N, "M must little than N");
-    move |ctx: &mut C| {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
-        let iter = ctx.peek();
-
-        if let Ok(mut iter) = iter {
-            while cnt < N {
-                if let Some(pair) = iter.next() {
-                    if re.is_match(&pair.1) && r#if(ctx, &pair) {
-                        cnt += 1;
-                        if beg.is_none() {
-                            beg = Some(pair.0);
-                        }
-                        continue;
-                    } else {
-                        end = Some(pair);
-                    }
-                }
-                break;
-            }
-            if cnt >= M {
-                let end = end.or_else(|| iter.next()).map(|v| v.0);
-
-                return Ok(make_ret_and_inc(
-                    ctx,
-                    cnt,
-                    beg.map(|v| length(v, ctx, end)).unwrap_or(0),
-                ));
-            }
-        }
-        Err(Error::NeedMore)
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(&*self.borrow())
     }
 }
 
-pub fn start<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, P, C> Regex<C> for Cell<P>
 where
-    R: Ret,
-    C: Context<'a>,
+    P: Regex<C> + Copy,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    |ctx: &mut C| {
-        if ctx.offset() == 0 {
-            trace_log!("match start of context");
-            Ok(R::from(ctx, (0, 0)))
-        } else {
-            Err(Error::NotStart)
-        }
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(&self.get())
     }
 }
 
-pub fn end<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, P, C> Regex<C> for Mutex<P>
 where
-    R: Ret,
-    C: Context<'a>,
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    |ctx: &mut C| {
-        if ctx.len() != ctx.offset() {
-            Err(Error::NotEnd)
-        } else {
-            trace_log!("match end of context");
-            Ok(R::from(ctx, (0, 0)))
-        }
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
+        ctx.try_mat(&*ret)
     }
 }
 
-pub fn string<'a, 'b, C, R>(lit: &'b str) -> impl Fn(&mut C) -> Result<R, Error> + 'b
+impl<'a, 'b, P, C> Regex<C> for Arc<P>
 where
-    R: Ret,
-    C: Context<'a, Orig = str>,
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| {
-        if !ctx.orig()?.starts_with(lit) {
-            Err(Error::String)
-        } else {
-            let len = lit.len();
-            let _str = ctx.orig_sub(ctx.offset(), len)?;
-            let ret = R::from(ctx, (1, len));
+    type Ret = P::Ret;
 
-            trace_log!("match string \"{}\" with {}", lit, _str);
-            ctx.inc(len);
-            Ok(ret)
-        }
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
     }
 }
 
-pub fn bytes<'a, 'b, C, R>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<R, Error> + 'b
+impl<'a, 'b, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
 where
-    R: Ret,
-    C: Context<'a, Orig = [u8]>,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| {
-        if !ctx.orig()?.starts_with(lit) {
-            Err(Error::Bytes)
-        } else {
-            let len = lit.len();
-            let _byte = ctx.orig_sub(ctx.offset(), len)?;
-            let ret = R::from(ctx, (1, len));
+    type Ret = Ret;
 
-            trace_log!("match bytes \"{:?}\" with {:?}", lit, _byte);
-            ctx.inc(len);
-            Ok(ret)
-        }
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
     }
 }
 
-pub fn consume<'a, C, R>(length: usize) -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, P, C> Regex<C> for Rc<P>
 where
-    R: Ret,
-    C: Context<'a>,
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| {
-        trace_log!(
-            "try to consume length {}, current offset = {}, total = {}",
-            length,
-            ctx.offset(),
-            ctx.len()
-        );
-        if ctx.len() - ctx.offset() >= length {
-            let ret = R::from(ctx, (1, length));
+    type Ret = P::Ret;
 
-            ctx.inc(length);
-            Ok(ret)
-        } else {
-            Err(Error::Consume)
-        }
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
     }
 }
 
-pub fn null<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+impl<'a, 'b, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
 where
-    R: Ret,
-    C: Context<'a>,
+    C: Context<'a> + Policy<C> + 'a,
 {
-    move |ctx: &mut C| Ok(R::from(ctx, (0, 0)))
-}
+    type Ret = Ret;
 
-pub fn and<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
-where
-    O: Ret,
-    P1: Parse<C, Ret = O>,
-    P2: Parse<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&p1)?;
-
-        ret.add_assign(g.try_mat(&p2)?);
-        Ok(ret)
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
     }
 }
 
-pub fn or<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
-where
-    O: Ret,
-    P1: Parse<C, Ret = O>,
-    P2: Parse<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| p1.try_parse(ctx).or_else(|_| p2.try_parse(ctx))
-}
-
-pub fn quote<'a, C, L, R, P, O>(l: L, r: R, p: P) -> impl Fn(&mut C) -> Result<O, Error>
-where
-    L: Parse<C>,
-    R: Parse<C>,
-    P: Parse<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-
-        g.try_mat(&l)?;
-        let ret = g.try_mat(&p)?;
-
-        g.try_mat(&r)?;
-        Ok(ret)
+impl Ret for () {
+    fn fst(&self) -> usize {
+        0
     }
-}
 
-pub fn terminated<'a, C, S, P, O>(sep: S, p: P) -> impl Fn(&mut C) -> Result<O, Error>
-where
-    S: Parse<C>,
-    P: Parse<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(&p)?;
+    fn snd(&self) -> usize {
+        0
+    }
 
-        g.try_mat(&sep)?;
-        Ok(ret)
+    fn is_zero(&self) -> bool {
+        true
+    }
+
+    fn add_assign(&mut self, _: Self) -> &mut Self {
+        self
+    }
+
+    fn from<'a, C>(_: &mut C, _: (usize, usize)) -> Self
+    where
+        C: Context<'a>,
+    {
+        ()
     }
 }

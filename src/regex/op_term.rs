@@ -4,11 +4,11 @@ use super::Extract;
 use super::Handler;
 use super::Invoke;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Span;
 use crate::err::Error;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Span;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Terminated<P, S> {
@@ -56,7 +56,7 @@ impl<P, S> Terminated<P, S> {
 
 impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<P, S>
 where
-    S: Parse<C, Ret = Span>,
+    S: Regex<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
@@ -74,10 +74,10 @@ where
     }
 }
 
-impl<'a, C, S, P> Parse<C> for Terminated<P, S>
+impl<'a, C, S, P> Regex<C> for Terminated<P, S>
 where
-    S: Parse<C, Ret = Span>,
-    P: Parse<C, Ret = Span>,
+    S: Regex<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;

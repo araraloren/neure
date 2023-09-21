@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
-use super::Regex;
+use super::Unit;
 
 use crate::trace_log;
 use crate::LogOrNot;
@@ -34,7 +34,7 @@ impl<T> True<T> {
     }
 }
 
-impl<T: LogOrNot> Regex<T> for True<T> {
+impl<T: LogOrNot> Unit<T> for True<T> {
     fn is_match(&self, _other: &T) -> bool {
         trace_log!("always true: ({:?})(in)", _other);
         true
@@ -69,7 +69,7 @@ impl<T> False<T> {
     }
 }
 
-impl<T: LogOrNot> Regex<T> for False<T> {
+impl<T: LogOrNot> Unit<T> for False<T> {
     fn is_match(&self, _other: &T) -> bool {
         trace_log!("always false: ({:?})(in)", _other);
         false

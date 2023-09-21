@@ -1,9 +1,9 @@
 use std::marker::PhantomData;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
 use crate::err::Error;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::regex::Regex;
 
 #[derive(Debug)]
 pub struct CtxGuard<'a, 'b, C>
@@ -54,7 +54,7 @@ where
         ret
     }
 
-    pub fn try_mat<P: Parse<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
+    pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
         self.ctx.try_mat(pattern).and_then(|r| {
             self.reset = false;
             Ok(r)

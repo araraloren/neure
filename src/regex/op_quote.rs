@@ -3,11 +3,11 @@ use super::Extract;
 use super::Handler;
 use super::Invoke;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Span;
 use crate::err::Error;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Span;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Quote<P, L, R> {
@@ -63,8 +63,8 @@ impl<P, L, R> Quote<P, L, R> {
 
 impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<P, L, R>
 where
-    L: Parse<C, Ret = Span>,
-    R: Parse<C, Ret = Span>,
+    L: Regex<C, Ret = Span>,
+    R: Regex<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
@@ -84,11 +84,11 @@ where
     }
 }
 
-impl<'a, C, L, R, P> Parse<C> for Quote<P, L, R>
+impl<'a, C, L, R, P> Regex<C> for Quote<P, L, R>
 where
-    L: Parse<C, Ret = Span>,
-    R: Parse<C, Ret = Span>,
-    P: Parse<C, Ret = Span>,
+    L: Regex<C, Ret = Span>,
+    R: Regex<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;

@@ -1,15 +1,15 @@
 use std::str::CharIndices;
 
 use super::Context;
-use super::Parse;
+use super::Regex;
 use super::Span;
 
-use crate::ctx::Policy;
 use crate::err::Error;
-use crate::ext::Extract;
-use crate::ext::Handler;
-use crate::ext::Invoke;
 use crate::iter::BytesIndices;
+use crate::parser::Policy;
+use crate::regex::Extract;
+use crate::regex::Handler;
+use crate::regex::Invoke;
 use crate::span::SimpleStorer;
 use crate::trace_log;
 
@@ -169,14 +169,14 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    fn try_mat<Pat: Parse<Parser<'a, T>> + ?Sized>(
+    fn try_mat<Pat: Regex<Parser<'a, T>> + ?Sized>(
         &mut self,
         pat: &Pat,
     ) -> Result<Pat::Ret, Error> {
         self.try_mat_policy(pat, |_| Ok(()), |_, ret| ret)
     }
 
-    fn try_mat_policy<Pat: Parse<Parser<'a, T>> + ?Sized>(
+    fn try_mat_policy<Pat: Regex<Parser<'a, T>> + ?Sized>(
         &mut self,
         pat: &Pat,
         mut pre: impl FnMut(&mut Parser<'a, T>) -> Result<(), Error>,
@@ -228,7 +228,7 @@ where
 
     pub fn map<H, A, O, P>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
-        P: Parse<Self, Ret = Span>,
+        P: Regex<Self, Ret = Span>,
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, Self, P::Ret, Out<'a> = A, Error = Error>,
     {
@@ -244,7 +244,7 @@ where
         mut func: impl FnMut(&'a <Self as Context<'a>>::Orig) -> Result<O, Error>,
     ) -> Result<O, Error>
     where
-        P: Parse<Self, Ret = Span>,
+        P: Regex<Self, Ret = Span>,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
@@ -257,7 +257,7 @@ where
         mut func: impl FnMut(Span) -> Result<O, Error>,
     ) -> Result<O, Error>
     where
-        P: Parse<Self, Ret = Span>,
+        P: Regex<Self, Ret = Span>,
         Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
     {
         (func)(self.map(pat, |span: Span| Ok(span))?)

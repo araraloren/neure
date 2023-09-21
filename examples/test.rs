@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 use std::rc::Rc;
 
 use neure::err::Error;
-use neure::ext::*;
 use neure::prelude::*;
+use neure::regex::*;
 use neure::*;
 
 //  pub struct Terminated<S, P, C> {
@@ -178,7 +178,7 @@ fn main() -> color_eyre::Result<()> {
 
     let digits = neure!(['0' - '9']+);
     let mut ctx = CharsCtx::new("{[{[{{123}}]}]}");
-    let hole = parser::null().into_dyn_box().into_rc();
+    let hole = regex::null().into_dyn_box().into_rc();
     let digit_or = Rc::new(RefCell::new(digits.or(hole)));
     let inner = Rc::new(
         digit_or
@@ -186,7 +186,7 @@ fn main() -> color_eyre::Result<()> {
             .quote("{", "}")
             .or(digit_or.clone().quote('['.repeat(1), ']'.repeat(1))),
     );
-    let outer: Rc<Box<dyn Parse<_, Ret = _>>> = Rc::new(Box::new(
+    let outer: Rc<Box<dyn Regex<_, Ret = _>>> = Rc::new(Box::new(
         inner
             .clone()
             .quote('['.repeat(1), ']'.repeat(1))

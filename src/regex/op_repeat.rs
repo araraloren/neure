@@ -1,113 +1,161 @@
-use std::marker::PhantomData;
-use std::ops::RangeBounds;
+use super::CtxGuard;
+use super::Extract;
+use super::Handler;
+use super::Invoke;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Ret;
-use crate::ctx::Span;
 use crate::err::Error;
-use crate::ext::Extract;
-use crate::ext::Handler;
-use crate::ext::Invoke;
-
-use super::Regex;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Span;
+use crate::prelude::Ret;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]
-pub struct Repeat<R, B, O, T>
-where
-    R: Regex<T>,
-    B: RangeBounds<usize>,
-{
-    regex: R,
-    range: B,
-    marker: PhantomData<(O, T)>,
+pub struct Repeat<P> {
+    pat: P,
+    times: usize,
 }
 
-impl<R, B, O, T> Repeat<R, B, O, T>
-where
-    R: Regex<T>,
-    B: RangeBounds<usize>,
-{
-    pub fn new(regex: R, range: B) -> Self {
-        Self {
-            regex,
-            range,
-            marker: PhantomData,
-        }
+impl<P> Repeat<P> {
+    pub fn new(pat: P, times: usize) -> Self {
+        Self { pat, times }
     }
 
-    pub fn is_contain(&self, count: usize) -> bool
-    where
-        B: RangeBounds<usize>,
-    {
-        match self.range.end_bound() {
-            std::ops::Bound::Included(max) => count < *max,
-            std::ops::Bound::Excluded(max) => count < max.saturating_sub(1),
-            std::ops::Bound::Unbounded => true,
-        }
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn times(&self) -> usize {
+        self.times
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
+    }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
+    pub fn set_times(&mut self, times: usize) -> &mut Self {
+        self.times = times;
+        self
     }
 }
 
-impl<'a, R, B, C, M> Invoke<'a, C, M, M> for Repeat<R, B, Span, C::Item>
+impl<'a, C, P, M, O> Invoke<'a, C, M, O> for Repeat<P>
 where
-    C: Context<'a> + 'a,
-    R: Regex<C::Item>,
-    B: RangeBounds<usize>,
+    O: FromIterator<M>,
+    P: Invoke<'a, C, M, M>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = ctx.try_mat(self)?;
-
-        func.invoke(A::extract(ctx, &ret)?)
+        Ok(O::from_iter(
+            std::iter::repeat(self.times)
+                .map(|_| self.pat.invoke(ctx, handler))
+                .collect::<Result<Vec<M>, _>>()?,
+        ))
     }
 }
 
-impl<'a, R, B, C> Parse<C> for Repeat<R, B, Span, C::Item>
+impl<'a, C, P> Regex<C> for Repeat<P>
 where
-    C: Context<'a> + 'a,
-    R: Regex<C::Item>,
-    B: RangeBounds<usize>,
+    P: Regex<C, Ret = Span>,
+    C: Context<'a> + Policy<C>,
 {
-    type Ret = Span;
+    type Ret = P::Ret;
 
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
-        let iter = ctx.peek();
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let mut g = CtxGuard::new(ctx);
+        let mut ret = Span::new(0, 0);
 
-        if let Ok(mut iter) = iter {
-            while self.is_contain(cnt) {
-                if let Some(pair) = iter.next() {
-                    if self.regex.is_match(&pair.1) {
-                        cnt += 1;
-                        if beg.is_none() {
-                            beg = Some(pair.0);
-                        }
-                        continue;
-                    } else {
-                        end = Some(pair);
-                    }
-                }
+        for _ in 0..self.times {
+            ret.add_assign(g.try_mat(&self.pat)?);
+        }
+        Ok(ret)
+    }
+}
+
+pub struct TryRepeat<P> {
+    pat: P,
+    times: usize,
+}
+
+impl<P> TryRepeat<P> {
+    pub fn new(pat: P, times: usize) -> Self {
+        Self { pat, times }
+    }
+
+    pub fn pat(&self) -> &P {
+        &self.pat
+    }
+
+    pub fn times(&self) -> usize {
+        self.times
+    }
+
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
+    }
+
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
+    pub fn set_times(&mut self, times: usize) -> &mut Self {
+        self.times = times;
+        self
+    }
+}
+
+impl<'a, C, P, M, O> Invoke<'a, C, M, O> for TryRepeat<P>
+where
+    O: FromIterator<M>,
+    P: Invoke<'a, C, M, M>,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let mut count = 0;
+
+        Ok(O::from_iter(std::iter::from_fn(|| {
+            count += 1;
+            if count > self.times {
+                None
+            } else {
+                self.pat.invoke(ctx, handler).ok()
+            }
+        })))
+    }
+}
+
+impl<'a, C, P> Regex<C> for TryRepeat<P>
+where
+    P: Regex<C, Ret = Span>,
+    C: Context<'a> + Policy<C>,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let mut g = CtxGuard::new(ctx);
+        let mut ret = Span::new(0, 0);
+
+        for _ in 0..self.times {
+            if let Ok(span) = g.try_mat(&self.pat) {
+                ret.add_assign(span);
+            } else {
                 break;
             }
-            if self.range.contains(&cnt) {
-                let end = end.or_else(|| iter.next()).map(|v| v.0);
-                let length = beg
-                    .map(|beg| end.unwrap_or(ctx.len() - ctx.offset()) - beg)
-                    .unwrap_or(0);
-
-                let ret = <Self::Ret as Ret>::from(ctx, (cnt, length));
-
-                ctx.inc(length);
-                return Ok(ret);
-            }
         }
-        Err(crate::err::Error::NeedMore)
+        Ok(ret)
     }
 }

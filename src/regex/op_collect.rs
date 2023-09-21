@@ -5,12 +5,12 @@ use super::Extract;
 use super::Handler;
 use super::Invoke;
 
-use crate::ctx::Context;
-use crate::ctx::Parse;
-use crate::ctx::Policy;
-use crate::ctx::Span;
 use crate::err::Error;
+use crate::parser::Context;
+use crate::parser::Policy;
+use crate::parser::Span;
 use crate::prelude::Ret;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Collect<P, O> {
@@ -57,9 +57,9 @@ where
     }
 }
 
-impl<'a, C, P, O> Parse<C> for Collect<P, O>
+impl<'a, C, P, O> Regex<C> for Collect<P, O>
 where
-    P: Parse<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
