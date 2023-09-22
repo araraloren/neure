@@ -16,7 +16,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "email@subdomain.example.com",
     ];
     let parser = |str| -> Result<(), neure::err::Error> {
-        let mut ctx = Parser::new(str);
+        let mut ctx = RegexCtx::new(str);
         let letter = regex!(['a' - 'z']);
         let number = regex!(['0' - '9']);
         let us = regex!('_');
@@ -28,7 +28,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         let start = regex::start();
         let domain = regex::count_if::<0, { usize::MAX }, _, _>(
             group!(letter, number, dot, minus),
-            |ctx: &Parser<str>, char| {
+            |ctx: &RegexCtx<str>, char| {
                 if char.1 == '.' {
                     // don't match dot if we don't have more dot
                     if let Ok(str) = ctx.orig_at(ctx.offset() + char.0 + 1) {

@@ -41,6 +41,25 @@ impl<T: LogOrNot> Unit<T> for True<T> {
     }
 }
 
+
+/// Always return true.
+///
+/// # Example
+/// ```
+/// use neure::prelude::*;
+/// use neure::unit::*;
+///
+/// fn main() {
+///    let any = any();
+///    let mut ctx = CharsCtx::new("abc%$#&");
+///
+///    assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
+/// }
+/// ```
+pub fn any<T: LogOrNot>() -> True<T> {
+    True::default()
+}
+
 pub struct False<T>(PhantomData<T>);
 
 impl<T> Debug for False<T> {
@@ -76,30 +95,12 @@ impl<T: LogOrNot> Unit<T> for False<T> {
     }
 }
 
-/// Always return true.
-///
-/// # Example
-/// ```
-/// use neure::prelude::*;
-/// use neure::regex::*;
-///
-/// fn main() {
-///    let any = any();
-///    let mut ctx = CharsCtx::new("abc%$#&");
-///
-///    assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
-/// }
-/// ```
-pub fn any<T: LogOrNot>() -> True<T> {
-    True::default()
-}
-
 /// Always return false.
 ///
 /// # Example
 /// ```
 /// use neure::prelude::*;
-/// use neure::regex::*;
+/// use neure::unit::*;
 ///
 /// fn main() {
 ///    let none = none();

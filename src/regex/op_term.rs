@@ -4,10 +4,10 @@ use super::Extract;
 use super::Handler;
 use super::Invoke;
 
+use crate::ctx::Context;
+use crate::ctx::Policy;
+use crate::ctx::Span;
 use crate::err::Error;
-use crate::parser::Context;
-use crate::parser::Policy;
-use crate::parser::Span;
 use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default, Copy)]

@@ -80,7 +80,7 @@ mod email_neure {
         let start = regex::start();
         let domain = regex::count_if::<0, { usize::MAX }, _, _>(
             group!(letter, number, dot, minus),
-            |ctx: &Parser<str>, &(length, ch)| {
+            |ctx: &RegexCtx<str>, &(length, ch)| {
                 if ch == '.' {
                     // don't match dot if we don't have more dot
                     if let Ok(str) = Context::orig_at(ctx, ctx.offset() + length + 1) {
@@ -93,7 +93,7 @@ mod email_neure {
         let post = neure!((group!(letter, dot)){2,6});
         let dot = neure!('.');
         let end = regex::end();
-        let mut ctx = Parser::new(str);
+        let mut ctx = RegexCtx::new(str);
 
         ctx.try_mat(&start)?;
         storer.try_cap(0, &mut ctx, &pre)?;

@@ -28,10 +28,10 @@ pub use self::op_repeat::TryRepeat;
 pub use self::op_term::Terminated;
 pub use self::op_then::Then;
 
+use crate::ctx::Context;
+use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::err::Error;
-use crate::parser::Context;
-use crate::parser::Policy;
-use crate::parser::Ret;
 use crate::trace_log;
 use crate::unit::Unit;
 

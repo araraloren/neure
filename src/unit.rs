@@ -19,7 +19,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::parser::Span;
+use crate::ctx::Span;
 
 pub use self::bool::False;
 pub use self::bool::True;
@@ -51,6 +51,8 @@ pub use self::op_or::Or;
 pub use self::op_repeat::Repeat;
 pub use self::range::CopyRange;
 
+pub use self::char::alphanumeric;
+pub use self::char::alphabetic;
 pub use self::bool::any;
 pub use self::bool::none;
 pub use self::char::ascii_whitespace;
@@ -59,6 +61,9 @@ pub use self::char::hex_digit;
 pub use self::char::whitespace;
 pub use self::char::wild;
 pub use self::equal::equal;
+pub use self::char::ascii;
+pub use self::char::ascii_alphabetic;
+pub use self::char::ascii_alphanumeric;
 
 pub trait Unit<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
@@ -197,7 +202,7 @@ impl<'a, T: PartialEq + LogOrNot> Unit<T> for &'a [T] {
     ///
     /// fn main() {
     ///     let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-    ///     let arr = RegexExt::repeat(arr, 2..=5);
+    ///     let arr = UnitOp::repeat(arr, 2..=5);
     ///     let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
     ///     let mut ctx2 = BytesCtx::new(b"acdde");
     ///
@@ -308,7 +313,7 @@ impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeToInclusive<T> {
     }
 }
 
-pub trait RegexExt<T> {
+pub trait UnitOp<T> {
     fn or<R>(self, regex: R) -> Or<Self, R, T>
     where
         R: Unit<T>,
@@ -329,7 +334,7 @@ pub trait RegexExt<T> {
         R: Into<CopyRange<usize>>;
 }
 
-impl<T, Re> RegexExt<T> for Re
+impl<T, Re> UnitOp<T> for Re
 where
     Re: Unit<T>,
 {

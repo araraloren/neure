@@ -4,9 +4,9 @@ use super::Context;
 use super::Regex;
 use super::Span;
 
+use crate::ctx::Policy;
 use crate::err::Error;
 use crate::iter::BytesIndices;
-use crate::parser::Policy;
 use crate::regex::Extract;
 use crate::regex::Handler;
 use crate::regex::Invoke;
@@ -14,7 +14,7 @@ use crate::span::SimpleStorer;
 use crate::trace_log;
 
 #[derive(Debug)]
-pub struct Parser<'a, T>
+pub struct RegexCtx<'a, T>
 where
     T: ?Sized,
 {
@@ -22,7 +22,7 @@ where
     offset: usize,
 }
 
-impl<'a, T> Clone for Parser<'a, T>
+impl<'a, T> Clone for RegexCtx<'a, T>
 where
     T: ?Sized,
 {
@@ -31,9 +31,9 @@ where
     }
 }
 
-impl<'a, T> Copy for Parser<'a, T> where T: ?Sized {}
+impl<'a, T> Copy for RegexCtx<'a, T> where T: ?Sized {}
 
-impl<'a, T> Parser<'a, T>
+impl<'a, T> RegexCtx<'a, T>
 where
     T: ?Sized,
 {
@@ -75,7 +75,7 @@ where
     }
 }
 
-impl<'a> Context<'a> for Parser<'a, [u8]> {
+impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
     type Orig = [u8];
 
     type Item = u8;
@@ -118,7 +118,7 @@ impl<'a> Context<'a> for Parser<'a, [u8]> {
     }
 }
 
-impl<'a> Context<'a> for Parser<'a, str> {
+impl<'a> Context<'a> for RegexCtx<'a, str> {
     type Orig = str;
 
     type Item = char;
@@ -164,23 +164,23 @@ impl<'a> Context<'a> for Parser<'a, str> {
     }
 }
 
-impl<'a, T> Policy<Parser<'a, T>> for Parser<'a, T>
+impl<'a, T> Policy<RegexCtx<'a, T>> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,
 {
-    fn try_mat<Pat: Regex<Parser<'a, T>> + ?Sized>(
+    fn try_mat<Pat: Regex<RegexCtx<'a, T>> + ?Sized>(
         &mut self,
         pat: &Pat,
     ) -> Result<Pat::Ret, Error> {
         self.try_mat_policy(pat, |_| Ok(()), |_, ret| ret)
     }
 
-    fn try_mat_policy<Pat: Regex<Parser<'a, T>> + ?Sized>(
+    fn try_mat_policy<Pat: Regex<RegexCtx<'a, T>> + ?Sized>(
         &mut self,
         pat: &Pat,
-        mut pre: impl FnMut(&mut Parser<'a, T>) -> Result<(), Error>,
-        mut post: impl FnMut(&mut Parser<'a, T>, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
+        mut pre: impl FnMut(&mut RegexCtx<'a, T>) -> Result<(), Error>,
+        mut post: impl FnMut(&mut RegexCtx<'a, T>, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
     ) -> Result<Pat::Ret, Error> {
         pre(self)?;
         let ret = pat.try_parse(self);
@@ -189,12 +189,12 @@ where
     }
 }
 
-impl<'a, T, R> Extract<'a, Self, R> for Parser<'a, T>
+impl<'a, T, R> Extract<'a, Self, R> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,
 {
-    type Out<'b> = Parser<'a, T>;
+    type Out<'b> = RegexCtx<'a, T>;
 
     type Error = Error;
 
@@ -203,7 +203,7 @@ where
     }
 }
 
-impl<'a, T> Parser<'a, T>
+impl<'a, T> RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,

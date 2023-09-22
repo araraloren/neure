@@ -13,19 +13,13 @@ See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
 ## Example
 
 ```rust
-use neure::neure;
 use neure::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let digit = neure!(['0' - '9']+); // match digit from 0 to 9 more than once
+    let digit = regex!(['0' - '9']+); // match digit from 0 to 9 more than once
     let mut ctx = CharsCtx::new("2023rust");
 
-    assert_eq!(
-        ctx.lazy()
-            .pat(&digit)
-            .map(|v: &str| Ok(v.parse::<u64>()))??,
-        2023
-    );
+    assert_eq!(ctx.map(&digit, |v: &str| Ok(v.parse::<u64>()))??, 2023);
 
     Ok(())
 }
@@ -35,9 +29,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use ::regex::Regex;
-use neure::group;
-use neure::neure;
-use neure::parser;
 use neure::prelude::*;
 use neure::regex;
 
@@ -59,18 +50,18 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "email@subdomain.example.com",
     ];
 
-    let letter = regex!(['a' - 'z']);
-    let number = regex!(['0' - '9']);
-    let under_score = regex!('_');
-    let dot = regex!('.');
-    let plus = regex!('+');
-    let minus = regex!('-');
-    let at = neure!('@');
-    let prefix = neure!((group!(&letter, &number, &under_score, &dot, &plus, &minus))+);
-    let start = parser::start();
-    let domain = parser::count_if::<0, { usize::MAX }, _>(
-        group!(&letter, &number, &dot, &minus),
-        |ctx: &CharsCtx, char| {
+    let un_letter = unit!(['a' - 'z']);
+    let un_number = unit!(['0' - '9']);
+    let un_us = unit!('_');
+    let un_dot = unit!('.');
+    let un_plus = unit!('+');
+    let un_minus = unit!('-');
+    let re_at = regex!('@');
+    let un_postfix = un_letter.or(un_dot);
+    let un_domain = un_postfix.or(un_number.or(un_minus));
+    let re_prefix = regex!((un_domain.or(un_us.or(un_plus)))+);
+    let re_domain =
+        regex::count_if::<0, { usize::MAX }, _, _>(un_domain, |ctx: &CharsCtx, char| {
             if char.1 == '.' {
                 // don't match dot if we don't have more dot
                 if let Ok(str) = ctx.orig_at(ctx.offset() + char.0 + 1) {
@@ -78,21 +69,21 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             true
-        },
-    );
-    let postfix = neure!((group!(&letter, &dot)){2,6});
-    let dot = neure!('.');
-    let end = parser::end();
+        });
+    let re_postfix = regex!((un_postfix){2,6});
+    let re_dot = regex!('.');
+    let re_start = regex::start();
+    let re_end = regex::end();
     let parser = |storer: &mut SimpleStorer, str| -> Result<(), neure::err::Error> {
         let mut ctx = CharsCtx::new(str);
 
-        ctx.try_mat(&start)?;
-        storer.try_cap(0, &mut ctx, &prefix)?;
-        ctx.try_mat(&at)?;
-        storer.try_cap(1, &mut ctx, &domain)?;
-        ctx.try_mat(&dot)?;
-        storer.try_cap(2, &mut ctx, &postfix)?;
-        ctx.try_mat(&end)?;
+        ctx.try_mat(&re_start)?;
+        storer.try_cap(0, &mut ctx, &re_prefix)?;
+        ctx.try_mat(&re_at)?;
+        storer.try_cap(1, &mut ctx, &re_domain)?;
+        ctx.try_mat(&re_dot)?;
+        storer.try_cap(2, &mut ctx, &re_postfix)?;
+        ctx.try_mat(&re_end)?;
         Ok(())
     };
 

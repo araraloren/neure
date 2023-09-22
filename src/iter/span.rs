@@ -1,6 +1,6 @@
 use super::IndexBySpan;
 
-use crate::parser::Span;
+use crate::ctx::Span;
 
 #[derive(Debug, Clone, Copy)]
 pub struct IteratorBySpan<'a, 'b, T: ?Sized> {

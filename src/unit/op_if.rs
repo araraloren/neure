@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
+use crate::ctx::Context;
+use crate::ctx::Policy;
+use crate::ctx::Ret;
+use crate::ctx::Span;
 use crate::err::Error;
-use crate::parser::Context;
-use crate::parser::Policy;
-use crate::parser::Ret;
-use crate::parser::Span;
 use crate::regex::Extract;
 use crate::regex::Handler;
 use crate::regex::Invoke;

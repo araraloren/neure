@@ -18,6 +18,29 @@ impl Unit<char> for Alphabetic {
     }
 }
 
+///
+/// Reference [`is_alphabetic`](std::primitive::char::is_alphabetic).
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use unit::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let alpha = alphabetic();
+///     let alpha = alpha.repeat(1);
+///     let mut ctx = CharsCtx::new("a💝abcd");
+///
+///     assert_eq!(ctx.try_mat(&alpha)?, Span::new(0, 1));
+///     assert!(ctx.try_mat(&alpha).is_err());
+///     Ok(())
+/// }
+/// ```
+pub fn alphabetic() -> Alphabetic {
+    Alphabetic::default()
+}
+
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Alphanumeric;
 
@@ -32,6 +55,30 @@ impl Unit<char> for Alphanumeric {
         trace_log!("match alphanumeric with value ({})(in)", other);
         other.is_alphanumeric()
     }
+}
+
+///
+/// Reference [`is_alphanumeric`](std::primitive::char::is_alphanumeric).
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use unit::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let alphanumeric = alphanumeric();
+///     let alphanumeric = alphanumeric.repeat(2);
+///     let mut ctx = CharsCtx::new("①7Kوf");
+///
+///     assert_eq!(ctx.try_mat(&alphanumeric)?, Span::new(0, 4));
+///     assert_eq!(ctx.try_mat(&alphanumeric)?, Span::new(4, 3));
+///     assert!(ctx.try_mat(&alphanumeric).is_err());
+///     Ok(())
+/// }
+/// ```
+pub fn alphanumeric() -> Alphanumeric {
+    Alphanumeric::default()
 }
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -50,6 +97,29 @@ impl Unit<char> for Ascii {
     }
 }
 
+///
+/// Reference [`is_ascii`](std::primitive::char::is_ascii).
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use unit::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ascii = ascii();
+///     let ascii = ascii.repeat(2);
+///     let mut ctx = CharsCtx::new("ab❤e");
+///
+///     assert_eq!(ctx.try_mat(&ascii)?, Span::new(0, 2));
+///     assert!(ctx.try_mat(&ascii).is_err());
+///     Ok(())
+/// }
+/// ```
+pub fn ascii() -> Ascii {
+    Ascii::default()
+}
+
 #[derive(Debug, Clone, Default, Copy)]
 pub struct AsciiAlphabetic;
 
@@ -66,6 +136,29 @@ impl Unit<char> for AsciiAlphabetic {
     }
 }
 
+///
+/// Reference [`is_ascii_alphabetic`](std::primitive::char::is_ascii_alphabetic).
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use unit::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ascii_alphabetic = ascii_alphabetic();
+///     let ascii_alphabetic = ascii_alphabetic.repeat(2);
+///     let mut ctx = CharsCtx::new("ab%e");
+///
+///     assert_eq!(ctx.try_mat(&ascii_alphabetic)?, Span::new(0, 2));
+///     assert!(ctx.try_mat(&ascii_alphabetic).is_err());
+///     Ok(())
+/// }
+/// ```
+pub fn ascii_alphabetic() -> AsciiAlphabetic {
+    AsciiAlphabetic::default()
+}
+
 #[derive(Debug, Clone, Default, Copy)]
 pub struct AsciiAlphanumeric;
 
@@ -80,6 +173,29 @@ impl Unit<char> for AsciiAlphanumeric {
         trace_log!("match ascii alphanumeric with value ({})(in)", other);
         other.is_ascii_alphanumeric()
     }
+}
+
+///
+/// Reference [`is_ascii_alphanumeric`](std::primitive::char::is_ascii_alphanumeric).
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use unit::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ascii_alphanumeric = ascii_alphanumeric();
+///     let ascii_alphanumeric = ascii_alphanumeric.repeat(2);
+///     let mut ctx = CharsCtx::new("8a%e");
+///
+///     assert_eq!(ctx.try_mat(&ascii_alphanumeric)?, Span::new(0, 2));
+///     assert!(ctx.try_mat(&ascii_alphanumeric).is_err());
+///     Ok(())
+/// }
+/// ```
+pub fn ascii_alphanumeric() -> AsciiAlphanumeric {
+    AsciiAlphanumeric::default()
 }
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -329,10 +445,10 @@ impl Unit<char> for Wild {
 ///
 /// ```
 /// use neure::prelude::*;
-/// use neure::*;
+/// use unit::*;
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let space = regex::whitespace();
+///     let space = whitespace();
 ///     let space1 = space.repeat(1);
 ///     let space3 = space.repeat(3);
 ///     let mut ctx = CharsCtx::new("   \u{A0}abcd");
@@ -354,10 +470,10 @@ pub fn whitespace() -> WhiteSpace {
 ///
 /// ```
 /// use neure::prelude::*;
-/// use neure::*;
+/// use unit::*;
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let space = regex::ascii_whitespace();
+///     let space = ascii_whitespace();
 ///     let space1 = space.repeat(1);
 ///     let space3 = space.repeat(3);
 ///     let mut ctx = CharsCtx::new("    \u{A0}abcd");

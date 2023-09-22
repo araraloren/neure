@@ -78,7 +78,7 @@ mod color_neure {
         let hex = neure!(['0' - '9' 'A' - 'F']{2});
         let from_str = |str: &str| Ok(u8::from_str_radix(str, 16));
         let hex = hex.map(from_str);
-        let mut ctx = Parser::new(str);
+        let mut ctx = RegexCtx::new(str);
 
         ctx.reset();
         ctx.try_mat(&pound)?;

@@ -1,5 +1,5 @@
-mod parser;
-mod r#return;
+mod ctx;
+mod ret;
 mod span;
 
 use std::cell::Cell;
@@ -11,12 +11,12 @@ use std::sync::Mutex;
 use crate::err::Error;
 use crate::regex::Regex;
 
-pub use self::parser::Parser;
-pub use self::r#return::Return;
+pub use self::ctx::RegexCtx;
+pub use self::ret::Return;
 pub use self::span::Span;
 
-pub type BytesCtx<'a> = Parser<'a, [u8]>;
-pub type CharsCtx<'a> = Parser<'a, str>;
+pub type BytesCtx<'a> = RegexCtx<'a, [u8]>;
+pub type CharsCtx<'a> = RegexCtx<'a, str>;
 
 pub trait Context<'a> {
     type Orig: ?Sized;

@@ -1,10 +1,10 @@
+use crate::ctx::Context;
+use crate::ctx::Policy;
+use crate::ctx::Span;
 use crate::err::Error;
 use crate::iter::IndexBySpan;
 use crate::iter::IteratorBySpan;
 use crate::iter::SpanIterator;
-use crate::parser::Context;
-use crate::parser::Policy;
-use crate::parser::Span;
 use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default)]

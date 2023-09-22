@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             assert_eq!(dat.len(), 1);
             char::from_u32(u8::from_be_bytes([dat[0]]) as u32).ok_or(Error::Convert)
         };
-        let mut ctx = Parser::new(bytes.as_bytes());
+        let mut ctx = RegexCtx::new(bytes.as_bytes());
 
         if let Ok::<Span, _>(_) = ctx.try_mat(&head) {
             println!("Matching the head, the file seems like a png file");

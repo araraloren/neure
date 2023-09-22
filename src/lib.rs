@@ -1,8 +1,8 @@
 #![doc = include_str!("../README.md")]
+pub mod ctx;
 pub mod err;
 pub mod iter;
 pub mod r#macro;
-pub mod parser;
 pub mod regex;
 pub mod span;
 pub mod unit;
@@ -32,14 +32,14 @@ impl<T> LogOrNot for T {}
 
 pub use charize::charize;
 pub mod prelude {
-    pub use crate::parser::BytesCtx;
-    pub use crate::parser::CharsCtx;
-    pub use crate::parser::Context;
-    pub use crate::parser::Parser;
-    pub use crate::parser::Policy;
-    pub use crate::parser::Ret;
-    pub use crate::parser::Return;
-    pub use crate::parser::Span;
+    pub use crate::ctx::BytesCtx;
+    pub use crate::ctx::CharsCtx;
+    pub use crate::ctx::Context;
+    pub use crate::ctx::Policy;
+    pub use crate::ctx::RegexCtx;
+    pub use crate::ctx::Ret;
+    pub use crate::ctx::Return;
+    pub use crate::ctx::Span;
     pub use crate::regex;
     pub use crate::regex::IntoDynamic;
     pub use crate::regex::IntoNonDynamic;
@@ -47,15 +47,15 @@ pub mod prelude {
     pub use crate::regex::RegexOp;
     pub use crate::span::SimpleStorer;
     pub use crate::unit;
-    pub use crate::unit::RegexExt;
+    pub use crate::unit::UnitOp;
     pub use crate::unit::Unit;
 }
 
 #[cfg(test)]
 mod test {
 
-    use crate::neure;
     use crate::prelude::*;
+    use crate::regex;
 
     #[test]
     fn test_all() {
@@ -87,45 +87,45 @@ mod test {
     }
 
     fn test_other() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
-        test_t!(ctx, storer, "abedf", 0, neure!(.), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "abedf", 0, neure!(.?), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "abedf", 0, regex!(.), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "abedf", 0, regex!(.?), Span { beg: 0, len: 1 });
         test_t!(
             ctx,
             storer,
             "\nabedf",
             0,
-            neure!(.?),
+            regex!(.?),
             Span { beg: 0, len: 0 }
         );
-        test_t!(ctx, storer, "abedf", 0, neure!(.*), Span { beg: 0, len: 5 });
+        test_t!(ctx, storer, "abedf", 0, regex!(.*), Span { beg: 0, len: 5 });
         test_t!(
             ctx,
             storer,
             "\nabedf",
             0,
-            neure!(.*),
+            regex!(.*),
             Span { beg: 0, len: 0 }
         );
-        test_t!(ctx, storer, "abedf", 0, neure!(.+), Span { beg: 0, len: 5 });
-        test_t!(ctx, storer, "\nabedf", 0, neure!(.+));
+        test_t!(ctx, storer, "abedf", 0, regex!(.+), Span { beg: 0, len: 5 });
+        test_t!(ctx, storer, "\nabedf", 0, regex!(.+));
         test_t!(
             ctx,
             storer,
             "abedf",
             0,
-            neure!(.{2}),
+            regex!(.{2}),
             Span { beg: 0, len: 2 }
         );
-        test_t!(ctx, storer, "ab\nedf", 0, neure!(.{3}));
+        test_t!(ctx, storer, "ab\nedf", 0, regex!(.{3}));
         test_t!(
             ctx,
             storer,
             "abedf",
             0,
-            neure!(.{2,}),
+            regex!(.{2,}),
             Span { beg: 0, len: 5 }
         );
         test_t!(
@@ -133,16 +133,16 @@ mod test {
             storer,
             "abedf",
             0,
-            neure!(.{4,6}),
+            regex!(.{4,6}),
             Span { beg: 0, len: 5 }
         );
-        test_t!(ctx, storer, "abe\ndf", 0, neure!(.{4,6}));
+        test_t!(ctx, storer, "abe\ndf", 0, regex!(.{4,6}));
         test_t!(
             ctx,
             storer,
             "c\nabedf",
             0,
-            neure!(^),
+            regex!(^),
             Span { beg: 0, len: 1 }
         );
 
@@ -150,7 +150,7 @@ mod test {
     }
 
     fn test_range_negative() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
         test_t!(
@@ -158,7 +158,7 @@ mod test {
             storer,
             "Raefc",
             0,
-            neure!([^a - z]),
+            regex!([^a - z]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -166,7 +166,7 @@ mod test {
             storer,
             "你aefc",
             0,
-            neure!([^a - z A - Z]),
+            regex!([^a - z A - Z]),
             Span { beg: 0, len: 3 }
         );
         test_t!(
@@ -174,7 +174,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^a - z]?),
+            regex!([^a - z]?),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -182,7 +182,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([^a - z]?),
+            regex!([^a - z]?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -190,7 +190,7 @@ mod test {
             storer,
             "&AEUF",
             0,
-            neure!([^a - z A - Z]),
+            regex!([^a - z A - Z]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -198,7 +198,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([^a-z]*),
+            regex!([^a-z]*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -206,7 +206,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^a-z]*),
+            regex!([^a-z]*),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -214,7 +214,7 @@ mod test {
             storer,
             "@#$%",
             0,
-            neure!([^a - z A - Z]*),
+            regex!([^a - z A - Z]*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -222,44 +222,44 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([^a-z]+),
+            regex!([^a-z]+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^a-z]+));
+        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]+));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!([^a-z]{3}),
+            regex!([^a-z]{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^a-z]{3}));
+        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]{3}));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!([^a-z]{3,6}),
+            regex!([^a-z]{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^a-z]{3,6}));
+        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]{3,6}));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!([^a-z]{3,}),
+            regex!([^a-z]{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^a-z]{3,}));
+        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]{3,}));
 
         test_t!(
             ctx,
             storer,
             "@#$%",
             0,
-            neure!([^'a' - 'z' 'A' - 'Z']*),
+            regex!([^'a' - 'z' 'A' - 'Z']*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -267,42 +267,42 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([^'a'-'z']+),
+            regex!([^'a'-'z']+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^'a'-'z']+));
+        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']+));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!([^'a'-'z']{3}),
+            regex!([^'a'-'z']{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^'a'-'z']{3}));
+        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3}));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!([^'a'-'z']{3,6}),
+            regex!([^'a'-'z']{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^'a'-'z']{3,6}));
+        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3,6}));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!([^'a'-'z']{3,}),
+            regex!([^'a'-'z']{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, neure!([^'a'-'z']{3,}));
+        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3,}));
         Ok(())
     }
 
     fn test_range() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
         test_t!(
@@ -310,7 +310,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([a - z]),
+            regex!([a - z]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -318,7 +318,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([a - z A - Z]),
+            regex!([a - z A - Z]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -326,7 +326,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([a - z]?),
+            regex!([a - z]?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -334,7 +334,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([a - z]?),
+            regex!([a - z]?),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -342,7 +342,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([a - z A - Z]),
+            regex!([a - z A - Z]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -350,7 +350,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([a-z]*),
+            regex!([a-z]*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -358,7 +358,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([a-z]*),
+            regex!([a-z]*),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -366,7 +366,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!([a - z A - Z]*),
+            regex!([a - z A - Z]*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -374,44 +374,44 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([a-z]+),
+            regex!([a-z]+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!([a-z]+));
+        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]+));
         test_t!(
             ctx,
             storer,
             "aefc",
             0,
-            neure!([a-z]{3}),
+            regex!([a-z]{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!([a-z]{3}));
+        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]{3}));
         test_t!(
             ctx,
             storer,
             "aefc",
             0,
-            neure!([a-z]{3,6}),
+            regex!([a-z]{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!([a-z]{3,6}));
+        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]{3,6}));
         test_t!(
             ctx,
             storer,
             "aefc",
             0,
-            neure!([a-z]{3,}),
+            regex!([a-z]{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!([a-z]{3,}));
+        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]{3,}));
 
         test_t!(
             ctx,
             storer,
             "aefc",
             0,
-            neure!(['a' - 'z']),
+            regex!(['a' - 'z']),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -419,7 +419,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!(['a' - 'z']?),
+            regex!(['a' - 'z']?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -427,7 +427,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!(['a' - 'z']?),
+            regex!(['a' - 'z']?),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -435,7 +435,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!(['a'-'z']*),
+            regex!(['a'-'z']*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -443,7 +443,7 @@ mod test {
             storer,
             "AEUF",
             0,
-            neure!(['a'-'z']*),
+            regex!(['a'-'z']*),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -451,16 +451,16 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!(['a'-'z']+),
+            regex!(['a'-'z']+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!(['a'-'z']+));
+        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']+));
         test_t!(
             ctx,
             storer,
             "AEUF",
             0,
-            neure!(['a'-'z''A'-'Z']+),
+            regex!(['a'-'z''A'-'Z']+),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -468,34 +468,34 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!(['a'-'z']{3}),
+            regex!(['a'-'z']{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!(['a'-'z']{3}));
+        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']{3}));
         test_t!(
             ctx,
             storer,
             "aefc",
             0,
-            neure!(['a'-'z']{3,6}),
+            regex!(['a'-'z']{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!(['a'-'z']{3,6}));
+        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']{3,6}));
         test_t!(
             ctx,
             storer,
             "aefc",
             0,
-            neure!(['a'-'z']{3,}),
+            regex!(['a'-'z']{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, neure!(['a'-'z']{3,}));
+        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']{3,}));
 
         Ok(())
     }
 
     fn test_chars_negative() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
         test_t!(
@@ -503,7 +503,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^b c d]),
+            regex!([^b c d]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -511,7 +511,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^b c d]?),
+            regex!([^b c d]?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -519,7 +519,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^'b' 'c' 'd']),
+            regex!([^'b' 'c' 'd']),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -527,7 +527,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^'b' 'c' 'd']?),
+            regex!([^'b' 'c' 'd']?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -535,7 +535,7 @@ mod test {
             storer,
             "daefc",
             0,
-            neure!([^b c d]?),
+            regex!([^b c d]?),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -543,7 +543,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^b c d]*),
+            regex!([^b c d]*),
             Span { beg: 0, len: 3 }
         );
         test_t!(
@@ -551,7 +551,7 @@ mod test {
             storer,
             "daefc",
             0,
-            neure!([^b c d]*),
+            regex!([^b c d]*),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -559,7 +559,7 @@ mod test {
             storer,
             "aefc",
             0,
-            neure!([^b c d]+),
+            regex!([^b c d]+),
             Span { beg: 0, len: 3 }
         );
         test_t!(
@@ -567,16 +567,16 @@ mod test {
             storer,
             "aefcddd",
             0,
-            neure!([^b c d]+),
+            regex!([^b c d]+),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "baefcddd", 0, neure!([^b c d]+));
+        test_t!(ctx, storer, "baefcddd", 0, regex!([^b c d]+));
         test_t!(
             ctx,
             storer,
             "aefh",
             0,
-            neure!([^b c d]{4}),
+            regex!([^b c d]{4}),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -584,7 +584,7 @@ mod test {
             storer,
             "aefhcc",
             0,
-            neure!([^b c d]{4,}),
+            regex!([^b c d]{4,}),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -592,15 +592,15 @@ mod test {
             storer,
             "aefhccd",
             0,
-            neure!([^b c d]{4,7}),
+            regex!([^b c d]{4,7}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aecfhccd", 0, neure!([^b c d]{4,7}));
+        test_t!(ctx, storer, "aecfhccd", 0, regex!([^b c d]{4,7}));
         Ok(())
     }
 
     fn test_chars() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
         test_t!(
@@ -608,7 +608,7 @@ mod test {
             storer,
             "dabcd",
             0,
-            neure!([b c d]),
+            regex!([b c d]),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -616,7 +616,7 @@ mod test {
             storer,
             "dabcd",
             0,
-            neure!([b c d]?),
+            regex!([b c d]?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -624,7 +624,7 @@ mod test {
             storer,
             "edabcd",
             0,
-            neure!([b c d]?),
+            regex!([b c d]?),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -632,7 +632,7 @@ mod test {
             storer,
             "dbcd",
             0,
-            neure!([b c d]*),
+            regex!([b c d]*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -640,7 +640,7 @@ mod test {
             storer,
             "aeuyf",
             0,
-            neure!([b c d]*),
+            regex!([b c d]*),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -648,7 +648,7 @@ mod test {
             storer,
             "dabcd",
             0,
-            neure!([b c d]+),
+            regex!([b c d]+),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -656,16 +656,16 @@ mod test {
             storer,
             "dbcdfff",
             0,
-            neure!([b c d]+),
+            regex!([b c d]+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "abcd", 0, neure!([b c d]+));
+        test_t!(ctx, storer, "abcd", 0, regex!([b c d]+));
         test_t!(
             ctx,
             storer,
             "dbcd",
             0,
-            neure!([b c d]{4}),
+            regex!([b c d]{4}),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -673,7 +673,7 @@ mod test {
             storer,
             "dbcdccc",
             0,
-            neure!([b c d]{4,}),
+            regex!([b c d]{4,}),
             Span { beg: 0, len: 7 }
         );
         test_t!(
@@ -681,7 +681,7 @@ mod test {
             storer,
             "dbcdbb",
             0,
-            neure!([b c d]{4,7}),
+            regex!([b c d]{4,7}),
             Span { beg: 0, len: 6 }
         );
 
@@ -690,7 +690,7 @@ mod test {
             storer,
             "dabcd",
             0,
-            neure!(['b' 'c' 'd']),
+            regex!(['b' 'c' 'd']),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -698,7 +698,7 @@ mod test {
             storer,
             "dabcd",
             0,
-            neure!(['b' 'c' 'd']?),
+            regex!(['b' 'c' 'd']?),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -706,7 +706,7 @@ mod test {
             storer,
             "edabcd",
             0,
-            neure!(['b' 'c' 'd']?),
+            regex!(['b' 'c' 'd']?),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -714,7 +714,7 @@ mod test {
             storer,
             "dbcd",
             0,
-            neure!(['b' 'c' 'd']*),
+            regex!(['b' 'c' 'd']*),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -722,7 +722,7 @@ mod test {
             storer,
             "aeuyf",
             0,
-            neure!(['b' 'c' 'd']*),
+            regex!(['b' 'c' 'd']*),
             Span { beg: 0, len: 0 }
         );
         test_t!(
@@ -730,7 +730,7 @@ mod test {
             storer,
             "dabcd",
             0,
-            neure!(['b' 'c' 'd']+),
+            regex!(['b' 'c' 'd']+),
             Span { beg: 0, len: 1 }
         );
         test_t!(
@@ -738,16 +738,16 @@ mod test {
             storer,
             "dbcdfff",
             0,
-            neure!(['b' 'c' 'd']+),
+            regex!(['b' 'c' 'd']+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "abcd", 0, neure!(['b' 'c' 'd']+));
+        test_t!(ctx, storer, "abcd", 0, regex!(['b' 'c' 'd']+));
         test_t!(
             ctx,
             storer,
             "dbcd",
             0,
-            neure!(['b' 'c' 'd']{4}),
+            regex!(['b' 'c' 'd']{4}),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -755,7 +755,7 @@ mod test {
             storer,
             "dbcdccc",
             0,
-            neure!(['b' 'c' 'd']{4,}),
+            regex!(['b' 'c' 'd']{4,}),
             Span { beg: 0, len: 7 }
         );
         test_t!(
@@ -763,48 +763,48 @@ mod test {
             storer,
             "dbcdbb",
             0,
-            neure!(['b' 'c' 'd']{4,7}),
+            regex!(['b' 'c' 'd']{4,7}),
             Span { beg: 0, len: 6 }
         );
         Ok(())
     }
 
     fn test_char() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
-        test_t!(ctx, storer, "a", 0, neure!(a), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "a", 0, neure!('a'), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "a", 0, neure!(a?), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "a", 0, neure!('a'?), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "你", 0, neure!(你), Span { beg: 0, len: 3 });
+        test_t!(ctx, storer, "a", 0, regex!(a), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "a", 0, regex!('a'), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "a", 0, regex!(a?), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "a", 0, regex!('a'?), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "你", 0, regex!(你), Span { beg: 0, len: 3 });
         test_t!(
             ctx,
             storer,
             "你you",
             0,
-            neure!('你'),
+            regex!('你'),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "@", 0, neure!('@'), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "der", 0, neure!(a?), Span { beg: 0, len: 0 });
-        test_t!(ctx, storer, "", 0, neure!('a'?), Span { beg: 0, len: 0 });
-        test_t!(ctx, storer, "a", 0, neure!(a*), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "@", 0, regex!('@'), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "der", 0, regex!(a?), Span { beg: 0, len: 0 });
+        test_t!(ctx, storer, "", 0, regex!('a'?), Span { beg: 0, len: 0 });
+        test_t!(ctx, storer, "a", 0, regex!(a*), Span { beg: 0, len: 1 });
         test_t!(
             ctx,
             storer,
             "aaaaaee",
             0,
-            neure!('a'*),
+            regex!('a'*),
             Span { beg: 0, len: 5 }
         );
-        test_t!(ctx, storer, "cde", 0, neure!(a*), Span { beg: 0, len: 0 });
+        test_t!(ctx, storer, "cde", 0, regex!(a*), Span { beg: 0, len: 0 });
         test_t!(
             ctx,
             storer,
             "aaaaee",
             0,
-            neure!('a'+),
+            regex!('a'+),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -812,16 +812,16 @@ mod test {
             storer,
             "你你你",
             0,
-            neure!(你+),
+            regex!(你+),
             Span { beg: 0, len: 9 }
         );
-        test_t!(ctx, storer, "我你你你", 0, neure!(你+));
+        test_t!(ctx, storer, "我你你你", 0, regex!(你+));
         test_t!(
             ctx,
             storer,
             "aaaaee",
             0,
-            neure!('a'{2}),
+            regex!('a'{2}),
             Span { beg: 0, len: 2 }
         );
         test_t!(
@@ -829,16 +829,16 @@ mod test {
             storer,
             "你你你",
             0,
-            neure!(你{2}),
+            regex!(你{2}),
             Span { beg: 0, len: 6 }
         );
-        test_t!(ctx, storer, "你", 0, neure!(你{2}));
+        test_t!(ctx, storer, "你", 0, regex!(你{2}));
         test_t!(
             ctx,
             storer,
             "aaaaee",
             0,
-            neure!('a'{2,}),
+            regex!('a'{2,}),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -846,16 +846,16 @@ mod test {
             storer,
             "你你你",
             0,
-            neure!(你{2,}),
+            regex!(你{2,}),
             Span { beg: 0, len: 9 }
         );
-        test_t!(ctx, storer, "你", 0, neure!(你{2,}));
+        test_t!(ctx, storer, "你", 0, regex!(你{2,}));
         test_t!(
             ctx,
             storer,
             "aaaaee",
             0,
-            neure!('a'{2,3}),
+            regex!('a'{2,3}),
             Span { beg: 0, len: 3 }
         );
         test_t!(
@@ -863,55 +863,55 @@ mod test {
             storer,
             "你你你你你啊",
             0,
-            neure!(你{2,4}),
+            regex!(你{2,4}),
             Span { beg: 0, len: 12 }
         );
-        test_t!(ctx, storer, "你啊", 0, neure!(你{2,4}));
+        test_t!(ctx, storer, "你啊", 0, regex!(你{2,4}));
 
         Ok(())
     }
 
     fn test_space() -> Result<(), Box<dyn std::error::Error>> {
-        let mut ctx = Parser::new("");
+        let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
-        test_t!(ctx, storer, "\tcd", 0, neure!(), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "\tdwq", 0, neure!(?), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "dwq", 0, neure!(?), Span { beg: 0, len: 0 });
+        test_t!(ctx, storer, "\tcd", 0, regex!(), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "\tdwq", 0, regex!(?), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "dwq", 0, regex!(?), Span { beg: 0, len: 0 });
         test_t!(
             ctx,
             storer,
             "\t\n\rdda",
             0,
-            neure!(*),
+            regex!(*),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "dda", 0, neure!(*), Span { beg: 0, len: 0 });
+        test_t!(ctx, storer, "dda", 0, regex!(*), Span { beg: 0, len: 0 });
         test_t!(
             ctx,
             storer,
             "\t\n\rdda",
             0,
-            neure!(+),
+            regex!(+),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "\tdda", 0, neure!(+), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "dda", 0, neure!(+));
+        test_t!(ctx, storer, "\tdda", 0, regex!(+), Span { beg: 0, len: 1 });
+        test_t!(ctx, storer, "dda", 0, regex!(+));
         test_t!(
             ctx,
             storer,
             " \u{A0}dda",
             0,
-            neure!({ 2 }),
+            regex!({ 2 }),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "\u{A0}dda", 0, neure!({ 2 }));
+        test_t!(ctx, storer, "\u{A0}dda", 0, regex!({ 2 }));
         test_t!(
             ctx,
             storer,
             "\t\rdda",
             0,
-            neure!({2,}),
+            regex!({2,}),
             Span { beg: 0, len: 2 }
         );
         test_t!(
@@ -919,16 +919,16 @@ mod test {
             storer,
             "\t\r\u{A0}dda",
             0,
-            neure!({2,}),
+            regex!({2,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "dda", 0, neure!());
+        test_t!(ctx, storer, "dda", 0, regex!());
         test_t!(
             ctx,
             storer,
             "\t\ndda",
             0,
-            neure!({2,3}),
+            regex!({2,3}),
             Span { beg: 0, len: 2 }
         );
         test_t!(
@@ -936,7 +936,7 @@ mod test {
             storer,
             "\t\r\u{A0}dda",
             0,
-            neure!({2,3}),
+            regex!({2,3}),
             Span { beg: 0, len: 4 }
         );
         test_t!(
@@ -944,10 +944,10 @@ mod test {
             storer,
             "\t\r \u{A0}dda",
             0,
-            neure!({2,3}),
+            regex!({2,3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, " dda", 0, neure!({2,3}));
+        test_t!(ctx, storer, " dda", 0, regex!({2,3}));
 
         Ok(())
     }

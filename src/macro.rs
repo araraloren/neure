@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! neure {
+macro_rules! regex {
     (@q * $($res:tt)*) => {
         $crate::regex::zero_more($($res)*)
     };
@@ -23,33 +23,33 @@ macro_rules! neure {
     };
 
     (@r ^ $($res:tt)*) => { // \S
-        neure!(@q $($res)* $crate::regex!(^))
+        regex!(@q $($res)* $crate::unit!(^))
     };
     (@r . $($res:tt)*) => { // .
-        neure!(@q $($res)* $crate::regex!(.))
+        regex!(@q $($res)* $crate::unit!(.))
     };
     (@r [ $($range:tt)+ ] $($res:tt)*) => {
-        neure!(@q $($res)* $crate::regex!([$($range)+]))
+        regex!(@q $($res)* $crate::unit!([$($range)+]))
     };
     (@r $ch:ident $($res:tt)*) => {
-        neure!(@q $($res)* $crate::unit::equal($crate::charize!($ch)))
+        regex!(@q $($res)* $crate::unit::equal($crate::charize!($ch)))
     };
     (@r $ch:literal $($res:tt)*) => {
-        neure!(@q $($res)* $crate::unit::equal($ch))
+        regex!(@q $($res)* $crate::unit::equal($ch))
     };
     (@r ($regex:expr) $($res:tt)*) => {
-        neure!(@q $($res)* $regex)
+        regex!(@q $($res)* $regex)
     };
     (@r $($res:tt)*) => {
-        neure!(@q $($res)* $crate::unit::whitespace())
+        regex!(@q $($res)* $crate::unit::whitespace())
     };
     ($($res:tt)*) => {
-        neure!(@r $($res)*)
+        regex!(@r $($res)*)
     };
 }
 
 #[macro_export]
-macro_rules! regex {
+macro_rules! unit {
     (^) => { // \S
         $crate::unit::whitespace().not()
     };
@@ -152,21 +152,5 @@ macro_rules! regex {
     };
     () => {
         $crate::unit::space()
-    };
-}
-
-#[macro_export]
-macro_rules! group {
-    ($regex:ident) => {
-        $regex
-    };
-    ($regex:expr) => {
-        $regex
-    };
-    ($regex:ident, $($res:tt)+) => {
-        $regex.or(group!($($res)+))
-    };
-    ($regex:expr, $($res:tt)+) => {
-        $regex.or(group!($($res)+))
     };
 }

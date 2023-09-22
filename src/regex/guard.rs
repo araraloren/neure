@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
+use crate::ctx::Context;
+use crate::ctx::Policy;
 use crate::err::Error;
-use crate::parser::Context;
-use crate::parser::Policy;
 use crate::regex::Regex;
 
 #[derive(Debug)]
