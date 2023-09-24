@@ -223,7 +223,7 @@ where
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
     {
-        self.invoke_with(pat, &mut |orig: &'a <Self as Context<'a>>::Orig| Ok(orig))
+        self.invoke_with(pat, &mut Ok)
     }
 
     pub fn map<H, A, O, P>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
@@ -248,7 +248,7 @@ where
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
-        (func)(self.map(pat, |orig: &'a <Self as Context<'a>>::Orig| Ok(orig))?)
+        (func)(self.map(pat, Ok)?)
     }
 
     pub fn map_span<O, P>(
@@ -260,6 +260,6 @@ where
         P: Regex<Self, Ret = Span>,
         Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
     {
-        (func)(self.map(pat, |span: Span| Ok(span))?)
+        (func)(self.map(pat, Ok)?)
     }
 }

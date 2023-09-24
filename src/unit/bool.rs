@@ -22,7 +22,7 @@ impl<T> Default for True<T> {
 
 impl<T> Clone for True<T> {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        *self
     }
 }
 
@@ -41,20 +41,19 @@ impl<T: LogOrNot> Unit<T> for True<T> {
     }
 }
 
-
 /// Always return true.
 ///
 /// # Example
 /// ```
-/// use neure::prelude::*;
-/// use neure::unit::*;
+/// # use neure::prelude::*;
+/// # use neure::unit::*;
+/// #
+/// # fn main() {
+///   let any = any();
+///   let mut ctx = CharsCtx::new("abc%$#&");
 ///
-/// fn main() {
-///    let any = any();
-///    let mut ctx = CharsCtx::new("abc%$#&");
-///
-///    assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
-/// }
+///   assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
+/// # }
 /// ```
 pub fn any<T: LogOrNot>() -> True<T> {
     True::default()
@@ -76,7 +75,7 @@ impl<T> Default for False<T> {
 
 impl<T> Clone for False<T> {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        *self
     }
 }
 
@@ -99,15 +98,15 @@ impl<T: LogOrNot> Unit<T> for False<T> {
 ///
 /// # Example
 /// ```
-/// use neure::prelude::*;
-/// use neure::unit::*;
+/// # use neure::prelude::*;
+/// # use neure::unit::*;
+/// #
+/// # fn main() {
+///   let none = none();
+///   let mut ctx = CharsCtx::new("abc%$#&");
 ///
-/// fn main() {
-///    let none = none();
-///    let mut ctx = CharsCtx::new("abc%$#&");
-///
-///    assert!(ctx.try_mat(&none.repeat(6)).is_err());
-/// }
+///   assert!(ctx.try_mat(&none.repeat(6)).is_err());
+/// # }
 /// ```
 pub fn none<T: LogOrNot>() -> False<T> {
     False::default()

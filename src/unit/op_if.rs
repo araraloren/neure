@@ -14,29 +14,67 @@ use crate::regex::Regex;
 use super::Unit;
 
 #[derive(Debug, Clone, Default, Copy)]
-pub struct RepeatIf<R, B, O, T, F>
+pub struct RepeatIf<U, B, O, T, F>
 where
-    R: Unit<T>,
+    U: Unit<T>,
     B: RangeBounds<usize>,
 {
     r#if: F,
-    regex: R,
+    unit: U,
     range: B,
     marker: PhantomData<(O, T)>,
 }
 
-impl<R, B, O, T, F> RepeatIf<R, B, O, T, F>
+impl<U, B, O, T, F> RepeatIf<U, B, O, T, F>
 where
-    R: Unit<T>,
+    U: Unit<T>,
     B: RangeBounds<usize>,
 {
-    pub fn new(regex: R, range: B, r#if: F) -> Self {
+    pub fn new(unit: U, range: B, r#if: F) -> Self {
         Self {
             r#if,
-            regex,
+            unit,
             range,
             marker: PhantomData,
         }
+    }
+
+    pub fn unit(&self) -> &U {
+        &self.unit
+    }
+
+    pub fn range(&self) -> &B {
+        &self.range
+    }
+
+    pub fn r#if(&self) -> &F {
+        &self.r#if
+    }
+
+    pub fn unit_mut(&mut self) -> &mut U {
+        &mut self.unit
+    }
+
+    pub fn range_mut(&mut self) -> &mut B {
+        &mut self.range
+    }
+
+    pub fn r#if_mut(&mut self) -> &mut F {
+        &mut self.r#if
+    }
+
+    pub fn set_unit(&mut self, unit: U) -> &mut Self {
+        self.unit = unit;
+        self
+    }
+
+    pub fn set_range(&mut self, range: B) -> &mut Self {
+        self.range = range;
+        self
+    }
+
+    pub fn with_if<H>(self, r#if: H) -> RepeatIf<U, B, O, T, H> {
+        RepeatIf::new(self.unit, self.range, r#if)
     }
 
     pub fn is_contain(&self, count: usize) -> bool
@@ -51,10 +89,10 @@ where
     }
 }
 
-impl<'a, R, B, C, M, F> Invoke<'a, C, M, M> for RepeatIf<R, B, Span, C::Item, F>
+impl<'a, U, B, C, M, F> Invoke<'a, C, M, M> for RepeatIf<U, B, Span, C::Item, F>
 where
     C: Context<'a> + 'a,
-    R: Unit<C::Item>,
+    U: Unit<C::Item>,
     B: RangeBounds<usize>,
     C: Context<'a> + Policy<C>,
     F: Fn(&C, &(usize, C::Item)) -> bool,
@@ -70,10 +108,10 @@ where
     }
 }
 
-impl<'a, R, B, C, F> Regex<C> for RepeatIf<R, B, Span, C::Item, F>
+impl<'a, U, B, C, F> Regex<C> for RepeatIf<U, B, Span, C::Item, F>
 where
     C: Context<'a> + 'a,
-    R: Unit<C::Item>,
+    U: Unit<C::Item>,
     B: RangeBounds<usize>,
     F: Fn(&C, &(usize, C::Item)) -> bool,
 {
@@ -88,7 +126,7 @@ where
         if let Ok(mut iter) = iter {
             while self.is_contain(cnt) {
                 if let Some(pair) = iter.next() {
-                    if self.regex.is_match(&pair.1) && (self.r#if)(ctx, &pair) {
+                    if self.unit.is_match(&pair.1) && (self.r#if)(ctx, &pair) {
                         cnt += 1;
                         if beg.is_none() {
                             beg = Some(pair.0);

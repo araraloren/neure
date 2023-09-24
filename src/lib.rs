@@ -47,8 +47,8 @@ pub mod prelude {
     pub use crate::regex::RegexOp;
     pub use crate::span::SimpleStorer;
     pub use crate::unit;
-    pub use crate::unit::UnitOp;
     pub use crate::unit::Unit;
+    pub use crate::unit::UnitOp;
 }
 
 #[cfg(test)]

@@ -9,8 +9,7 @@ repository = "https://github.com/araraloren/neure/"
 keywords = ["regex", "parser"]
 categories = ["parsing"]
 
-[profile.release-lto]
-inherits = "release"
+[profile.release]
 lto = true
 
 [dev-dependencies]

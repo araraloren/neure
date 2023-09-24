@@ -37,8 +37,14 @@ macro_rules! regex {
     (@r $ch:literal $($res:tt)*) => {
         regex!(@q $($res)* $crate::unit::equal($ch))
     };
-    (@r ($regex:expr) $($res:tt)*) => {
-        regex!(@q $($res)* $regex)
+    (@r ($($regex:expr),+) $($res:tt)*) => {
+        {
+            let re = $crate::unit::none();
+            $(
+                let re = re.or($regex);
+            )+
+            regex!(@q $($res)* re)
+        }
     };
     (@r $($res:tt)*) => {
         regex!(@q $($res)* $crate::unit::whitespace())
@@ -57,23 +63,23 @@ macro_rules! unit {
         $crate::unit::wild()
     };
     ([^$l:literal - $r:literal] ) => {
-        $crate::unit::CopyRange::from($l..=$r).not()
+        $crate::unit::range($l..=$r).not()
     };
     ([^$l:ident - $r:ident] ) => {
-        $crate::unit::CopyRange::from($crate::charize!($l)..=$crate::charize!($r)).not()
+        $crate::unit::range($crate::charize!($l)..=$crate::charize!($r)).not()
     };
     ([$l:literal - $r:literal] ) => {
-        $crate::unit::CopyRange::from($l..=$r)
+        $crate::unit::range($l..=$r)
     };
     ([$l:ident - $r:ident] ) => {
-        $crate::unit::CopyRange::from($crate::charize!($l)..=$crate::charize!($r))
+        $crate::unit::range($crate::charize!($l)..=$crate::charize!($r))
     };
 
     ([^$($l:literal - $r:literal)+] ) => {// [ ^ 'a'-'z' 'A'-'Z' ]
         {
             let re = $crate::unit::none();
             $(
-                let re = re.or($crate::unit::CopyRange::from($l..=$r));
+                let re = re.or($crate::unit::range($l..=$r));
             )+
             re.not()
         }
@@ -82,7 +88,7 @@ macro_rules! unit {
         {
             let re = $crate::unit::none();
             $(
-                let re = re.or($crate::unit::CopyRange::from($crate::charize!($l)..=$crate::charize!($r)));
+                let re = re.or($crate::unit::range($crate::charize!($l)..=$crate::charize!($r)));
             )+
             re.not()
         }
@@ -91,7 +97,7 @@ macro_rules! unit {
         {
             let re = $crate::unit::none();
             $(
-                let re = re.or($crate::unit::CopyRange::from($l..=$r));
+                let re = re.or($crate::unit::range($l..=$r));
             )+
             re
         }
@@ -100,7 +106,7 @@ macro_rules! unit {
         {
             let re = $crate::unit::none();
             $(
-                let re = re.or($crate::unit::CopyRange::from($crate::charize!($l)..=$crate::charize!($r)));
+                let re = re.or($crate::unit::range($crate::charize!($l)..=$crate::charize!($r)));
             )+
             re
         }

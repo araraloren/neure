@@ -51,19 +51,30 @@ pub use self::op_or::Or;
 pub use self::op_repeat::Repeat;
 pub use self::range::CopyRange;
 
-pub use self::char::alphanumeric;
-pub use self::char::alphabetic;
 pub use self::bool::any;
 pub use self::bool::none;
-pub use self::char::ascii_whitespace;
-pub use self::char::digit;
-pub use self::char::hex_digit;
-pub use self::char::whitespace;
-pub use self::char::wild;
-pub use self::equal::equal;
+pub use self::char::alphabetic;
+pub use self::char::alphanumeric;
 pub use self::char::ascii;
 pub use self::char::ascii_alphabetic;
 pub use self::char::ascii_alphanumeric;
+pub use self::char::ascii_control;
+pub use self::char::ascii_digit;
+pub use self::char::ascii_graphic;
+pub use self::char::ascii_hexdigit;
+pub use self::char::ascii_lowercase;
+pub use self::char::ascii_punctuation;
+pub use self::char::ascii_uppercase;
+pub use self::char::ascii_whitespace;
+pub use self::char::control;
+pub use self::char::digit;
+pub use self::char::lowercase;
+pub use self::char::numeric;
+pub use self::char::uppercase;
+pub use self::char::whitespace;
+pub use self::char::wild;
+pub use self::equal::equal;
+pub use self::range::range;
 
 pub trait Unit<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
@@ -108,27 +119,27 @@ impl<T> Unit<T> for Box<dyn Unit<T>> {
     }
 }
 
-impl<R, T> Unit<T> for RefCell<R>
+impl<U, T> Unit<T> for RefCell<U>
 where
-    R: Unit<T>,
+    U: Unit<T>,
 {
     fn is_match(&self, other: &T) -> bool {
         Unit::is_match(&*self.borrow(), other)
     }
 }
 
-impl<R, T> Unit<T> for Cell<R>
+impl<U, T> Unit<T> for Cell<U>
 where
-    R: Unit<T> + Copy,
+    U: Unit<T> + Copy,
 {
     fn is_match(&self, other: &T) -> bool {
         Unit::is_match(&self.get(), other)
     }
 }
 
-impl<R, T> Unit<T> for Mutex<R>
+impl<U, T> Unit<T> for Mutex<U>
 where
-    R: Unit<T> + Copy,
+    U: Unit<T> + Copy,
 {
     fn is_match(&self, other: &T) -> bool {
         let ret = self
@@ -139,9 +150,9 @@ where
     }
 }
 
-impl<R, T> Unit<T> for Arc<R>
+impl<U, T> Unit<T> for Arc<U>
 where
-    R: Unit<T>,
+    U: Unit<T>,
 {
     fn is_match(&self, other: &T) -> bool {
         Unit::is_match(self.as_ref(), other)
@@ -154,9 +165,9 @@ impl<T> Unit<T> for Arc<dyn Unit<T>> {
     }
 }
 
-impl<R, T> Unit<T> for Rc<R>
+impl<U, T> Unit<T> for Rc<U>
 where
-    R: Unit<T>,
+    U: Unit<T>,
 {
     fn is_match(&self, other: &T) -> bool {
         Unit::is_match(self.as_ref(), other)
@@ -175,16 +186,16 @@ impl<const N: usize, T: PartialEq + LogOrNot> Unit<T> for [T; N] {
     ///
     /// # Example
     /// ```
-    /// use neure::prelude::*;
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() {
+    ///   let arr = ['a', 'c', 'f', 'e'];
+    ///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
+    ///   let mut ctx2 = CharsCtx::new("acdde");
     ///
-    /// fn main() {
-    ///     let arr = ['a', 'c', 'f', 'e'];
-    ///     let mut ctx1 = CharsCtx::new("aaffeeeaccc");
-    ///     let mut ctx2 = CharsCtx::new("acdde");
-    ///
-    ///     assert_eq!(ctx1.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 5));
-    ///     assert_eq!(ctx2.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 2));
-    /// }
+    ///   assert_eq!(ctx1.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 5));
+    ///   assert_eq!(ctx2.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 2));
+    /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match array({:?}) with value ({:?})(in)", self, other);
@@ -198,17 +209,17 @@ impl<'a, T: PartialEq + LogOrNot> Unit<T> for &'a [T] {
     ///
     /// # Example
     /// ```
-    /// use neure::prelude::*;
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() {
+    ///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
+    ///   let arr = UnitOp::repeat(arr, 2..=5);
+    ///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
+    ///   let mut ctx2 = BytesCtx::new(b"acdde");
     ///
-    /// fn main() {
-    ///     let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-    ///     let arr = UnitOp::repeat(arr, 2..=5);
-    ///     let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
-    ///     let mut ctx2 = BytesCtx::new(b"acdde");
-    ///
-    ///     assert_eq!(ctx1.try_mat(&arr).unwrap(), Span::new(0, 5));
-    ///     assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
-    /// }
+    ///   assert_eq!(ctx1.try_mat(&arr).unwrap(), Span::new(0, 5));
+    ///   assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
+    /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match array({:?}) with value ({:?})(in)", self, other);
@@ -313,58 +324,58 @@ impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeToInclusive<T> {
     }
 }
 
-pub trait UnitOp<T> {
-    fn or<R>(self, regex: R) -> Or<Self, R, T>
+pub trait UnitOp<C> {
+    fn or<U>(self, regex: U) -> Or<Self, U, C>
     where
-        R: Unit<T>,
-        Self: Unit<T> + Sized;
+        U: Unit<C>,
+        Self: Unit<C> + Sized;
 
-    fn and<R>(self, regex: R) -> And<Self, R, T>
+    fn and<U>(self, regex: U) -> And<Self, U, C>
     where
-        R: Unit<T>,
-        Self: Unit<T> + Sized;
+        U: Unit<C>,
+        Self: Unit<C> + Sized;
 
-    fn not(self) -> Not<Self, T>
+    fn not(self) -> Not<Self, C>
     where
-        Self: Unit<T> + Sized;
+        Self: Unit<C> + Sized;
 
-    fn repeat<R>(self, range: R) -> Repeat<Self, CopyRange<usize>, Span, T>
+    fn repeat<U>(self, range: U) -> Repeat<Self, CopyRange<usize>, Span, C>
     where
-        Self: Unit<T> + Sized,
-        R: Into<CopyRange<usize>>;
+        Self: Unit<C> + Sized,
+        U: Into<CopyRange<usize>>;
 }
 
-impl<T, Re> UnitOp<T> for Re
+impl<C, T> UnitOp<C> for T
 where
-    Re: Unit<T>,
+    T: Unit<C>,
 {
-    fn or<R>(self, regex: R) -> Or<Self, R, T>
+    fn or<U>(self, unit: U) -> Or<Self, U, C>
     where
-        R: Unit<T>,
-        Self: Unit<T> + Sized,
+        U: Unit<C>,
+        Self: Unit<C> + Sized,
     {
-        Or::new(self, regex)
+        Or::new(self, unit)
     }
 
-    fn and<R>(self, regex: R) -> And<Self, R, T>
+    fn and<U>(self, unit: U) -> And<Self, U, C>
     where
-        R: Unit<T>,
-        Self: Unit<T> + Sized,
+        U: Unit<C>,
+        Self: Unit<C> + Sized,
     {
-        And::new(self, regex)
+        And::new(self, unit)
     }
 
-    fn not(self) -> Not<Self, T>
+    fn not(self) -> Not<Self, C>
     where
-        Self: Unit<T> + Sized,
+        Self: Unit<C> + Sized,
     {
         Not::new(self)
     }
 
-    fn repeat<R>(self, range: R) -> Repeat<Self, CopyRange<usize>, Span, T>
+    fn repeat<U>(self, range: U) -> Repeat<Self, CopyRange<usize>, Span, C>
     where
-        Self: Unit<T> + Sized,
-        R: Into<CopyRange<usize>>,
+        Self: Unit<C> + Sized,
+        U: Into<CopyRange<usize>>,
     {
         Repeat::new(self, range.into())
     }

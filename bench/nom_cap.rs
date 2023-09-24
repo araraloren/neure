@@ -1,5 +1,5 @@
 use criterion::{black_box, Criterion};
-use neure::{prelude::*, *};
+use neure::prelude::*;
 use nom::{
     bytes::complete::{tag, take_while_m_n},
     combinator::map_res,
@@ -74,8 +74,8 @@ mod color_neure {
     use super::*;
 
     fn parser(str: &str) -> Result<Color, Box<dyn std::error::Error>> {
-        let pound = neure!('#');
-        let hex = neure!(['0' - '9' 'A' - 'F']{2});
+        let pound = regex!('#');
+        let hex = regex!(['0' - '9' 'A' - 'F']{2});
         let from_str = |str: &str| Ok(u8::from_str_radix(str, 16));
         let hex = hex.map(from_str);
         let mut ctx = RegexCtx::new(str);

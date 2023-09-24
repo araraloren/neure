@@ -25,6 +25,32 @@ where
             marker: PhantomData,
         }
     }
+
+    pub fn left(&self) -> &L {
+        &self.left
+    }
+
+    pub fn right(&self) -> &R {
+        &self.right
+    }
+
+    pub fn left_mut(&mut self) -> &mut L {
+        &mut self.left
+    }
+
+    pub fn right_mut(&mut self) -> &mut R {
+        &mut self.right
+    }
+
+    pub fn set_left(&mut self, left: L) -> &mut Self {
+        self.left = left;
+        self
+    }
+
+    pub fn set_right(&mut self, right: R) -> &mut Self {
+        self.right = right;
+        self
+    }
 }
 
 impl<L, R, T> Unit<T> for And<L, R, T>

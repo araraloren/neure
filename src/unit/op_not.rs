@@ -3,31 +3,44 @@ use std::marker::PhantomData;
 use super::Unit;
 
 #[derive(Debug, Clone, Default, Copy)]
-pub struct Not<R, T>
+pub struct Not<U, T>
 where
-    R: Unit<T>,
+    U: Unit<T>,
 {
-    regex: R,
+    unit: U,
     marker: PhantomData<T>,
 }
 
-impl<R, T> Not<R, T>
+impl<U, T> Not<U, T>
 where
-    R: Unit<T>,
+    U: Unit<T>,
 {
-    pub fn new(regex: R) -> Self {
+    pub fn new(unit: U) -> Self {
         Self {
-            regex,
+            unit,
             marker: PhantomData,
         }
     }
+
+    pub fn unit(&self) -> &U {
+        &self.unit
+    }
+
+    pub fn unit_mut(&mut self) -> &mut U {
+        &mut self.unit
+    }
+
+    pub fn set_unit(&mut self, unit: U) -> &mut Self {
+        self.unit = unit;
+        self
+    }
 }
 
-impl<R, T> Unit<T> for Not<R, T>
+impl<U, T> Unit<T> for Not<U, T>
 where
-    R: Unit<T>,
+    U: Unit<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        !self.regex.is_match(other)
+        !self.unit.is_match(other)
     }
 }

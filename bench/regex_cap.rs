@@ -1,6 +1,6 @@
 use ::regex::Regex;
 use criterion::{black_box, Criterion};
-use neure::{prelude::*, *};
+use neure::prelude::*;
 
 fn bench_color(c: &mut Criterion) {
     let test_cases = [
@@ -69,17 +69,16 @@ mod email_neure {
     use super::*;
 
     fn parser(storer: &mut SimpleStorer, str: &str) -> Result<(), neure::err::Error> {
-        let letter = regex!(['a' - 'z']);
-        let number = regex!(['0' - '9']);
-        let us = regex!('_');
-        let dot = regex!('.');
-        let plus = regex!('+');
-        let minus = regex!('-');
-        let at = neure!('@');
-        let pre = neure!((group!(letter, number, us, dot, plus, minus))+);
-        let start = regex::start();
+        let letter = unit!(['a' - 'z']);
+        let number = unit!(['0' - '9']);
+        let us = unit!('_');
+        let dot = unit!('.');
+        let plus = unit!('+');
+        let minus = unit!('-');
+        let at = regex!('@');
+        let pre = regex!((letter, number, us, dot, plus, minus)+);
         let domain = regex::count_if::<0, { usize::MAX }, _, _>(
-            group!(letter, number, dot, minus),
+            letter.or(number.or(dot.or(minus))),
             |ctx: &RegexCtx<str>, &(length, ch)| {
                 if ch == '.' {
                     // don't match dot if we don't have more dot
@@ -90,8 +89,9 @@ mod email_neure {
                 true
             },
         );
-        let post = neure!((group!(letter, dot)){2,6});
-        let dot = neure!('.');
+        let post = regex!((letter, dot){2,6});
+        let dot = dot.repeat(1);
+        let start = regex::start();
         let end = regex::end();
         let mut ctx = RegexCtx::new(str);
 

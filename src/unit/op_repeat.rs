@@ -14,27 +14,53 @@ use crate::regex::Regex;
 use super::Unit;
 
 #[derive(Debug, Clone, Default, Copy)]
-pub struct Repeat<R, B, O, T>
+pub struct Repeat<U, B, O, T>
 where
-    R: Unit<T>,
+    U: Unit<T>,
     B: RangeBounds<usize>,
 {
-    regex: R,
+    unit: U,
     range: B,
     marker: PhantomData<(O, T)>,
 }
 
-impl<R, B, O, T> Repeat<R, B, O, T>
+impl<U, B, O, T> Repeat<U, B, O, T>
 where
-    R: Unit<T>,
+    U: Unit<T>,
     B: RangeBounds<usize>,
 {
-    pub fn new(regex: R, range: B) -> Self {
+    pub fn new(unit: U, range: B) -> Self {
         Self {
-            regex,
+            unit,
             range,
             marker: PhantomData,
         }
+    }
+
+    pub fn unit(&self) -> &U {
+        &self.unit
+    }
+
+    pub fn range(&self) -> &B {
+        &self.range
+    }
+
+    pub fn unit_mut(&mut self) -> &mut U {
+        &mut self.unit
+    }
+
+    pub fn range_mut(&mut self) -> &mut B {
+        &mut self.range
+    }
+
+    pub fn set_unit(&mut self, unit: U) -> &mut Self {
+        self.unit = unit;
+        self
+    }
+
+    pub fn set_range(&mut self, range: B) -> &mut Self {
+        self.range = range;
+        self
     }
 
     pub fn is_contain(&self, count: usize) -> bool
@@ -49,10 +75,10 @@ where
     }
 }
 
-impl<'a, R, B, C, M> Invoke<'a, C, M, M> for Repeat<R, B, Span, C::Item>
+impl<'a, U, B, C, M> Invoke<'a, C, M, M> for Repeat<U, B, Span, C::Item>
 where
     C: Context<'a> + 'a,
-    R: Unit<C::Item>,
+    U: Unit<C::Item>,
     B: RangeBounds<usize>,
     C: Context<'a> + Policy<C>,
 {
@@ -67,10 +93,10 @@ where
     }
 }
 
-impl<'a, R, B, C> Regex<C> for Repeat<R, B, Span, C::Item>
+impl<'a, U, B, C> Regex<C> for Repeat<U, B, Span, C::Item>
 where
     C: Context<'a> + 'a,
-    R: Unit<C::Item>,
+    U: Unit<C::Item>,
     B: RangeBounds<usize>,
 {
     type Ret = Span;
@@ -84,7 +110,7 @@ where
         if let Ok(mut iter) = iter {
             while self.is_contain(cnt) {
                 if let Some(pair) = iter.next() {
-                    if self.regex.is_match(&pair.1) {
+                    if self.unit.is_match(&pair.1) {
                         cnt += 1;
                         if beg.is_none() {
                             beg = Some(pair.0);

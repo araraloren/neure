@@ -119,3 +119,26 @@ impl<T> From<std::ops::RangeToInclusive<T>> for CopyRange<T> {
         Self::new(Bound::Unbounded, Bound::Included(value.end))
     }
 }
+
+///
+/// Match a character within given range.
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use unit::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let letter = range('a' ..= 'f');
+///     let letter = letter.repeat(3);
+///     let mut ctx = CharsCtx::new("adfwgh");
+///
+///     assert_eq!(ctx.try_mat(&letter)?, Span::new(0, 3));
+///     assert!(ctx.try_mat(&letter).is_err());
+///     Ok(())
+/// }
+/// ```
+pub fn range<T>(val: impl Into<CopyRange<T>>) -> CopyRange<T> {
+    val.into()
+}

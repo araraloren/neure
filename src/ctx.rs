@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod ctx;
 mod ret;
 mod span;
@@ -123,7 +124,7 @@ where
     }
 }
 
-impl<'a, 'b, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
+impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -134,7 +135,7 @@ where
     }
 }
 
-impl<'a, 'b, P, C> Regex<C> for RefCell<P>
+impl<'a, P, C> Regex<C> for RefCell<P>
 where
     P: Regex<C>,
     C: Context<'a> + Policy<C> + 'a,
@@ -146,7 +147,7 @@ where
     }
 }
 
-impl<'a, 'b, P, C> Regex<C> for Cell<P>
+impl<'a, P, C> Regex<C> for Cell<P>
 where
     P: Regex<C> + Copy,
     C: Context<'a> + Policy<C> + 'a,
@@ -158,7 +159,7 @@ where
     }
 }
 
-impl<'a, 'b, P, C> Regex<C> for Mutex<P>
+impl<'a, P, C> Regex<C> for Mutex<P>
 where
     P: Regex<C>,
     C: Context<'a> + Policy<C> + 'a,
@@ -171,7 +172,7 @@ where
     }
 }
 
-impl<'a, 'b, P, C> Regex<C> for Arc<P>
+impl<'a, P, C> Regex<C> for Arc<P>
 where
     P: Regex<C>,
     C: Context<'a> + Policy<C> + 'a,
@@ -183,7 +184,7 @@ where
     }
 }
 
-impl<'a, 'b, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
+impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -194,7 +195,7 @@ where
     }
 }
 
-impl<'a, 'b, P, C> Regex<C> for Rc<P>
+impl<'a, P, C> Regex<C> for Rc<P>
 where
     P: Regex<C>,
     C: Context<'a> + Policy<C> + 'a,
@@ -206,7 +207,7 @@ where
     }
 }
 
-impl<'a, 'b, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
+impl<'a, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
 where
     C: Context<'a> + Policy<C> + 'a,
 {
@@ -238,6 +239,5 @@ impl Ret for () {
     where
         C: Context<'a>,
     {
-        ()
     }
 }
