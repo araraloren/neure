@@ -81,7 +81,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ctx.map_span(&data, |span| Ok(span))?
                 );
 
-                let crc_data = ctx.orig_sub(crc_offset_beg, ctx.offset() - crc_offset_beg)?;
+                let crc_data = ctx.sub(crc_offset_beg, ctx.offset() - crc_offset_beg)?;
                 let crc_value = ctx.map_orig(&uint32, as_uint)?;
 
                 println!(

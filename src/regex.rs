@@ -3,6 +3,7 @@ mod extract;
 mod guard;
 mod invoke;
 mod op_collect;
+mod op_if;
 mod op_map;
 mod op_or;
 mod op_ormap;
@@ -18,6 +19,7 @@ pub use self::extract::*;
 pub use self::guard::CtxGuard;
 pub use self::invoke::*;
 pub use self::op_collect::Collect;
+pub use self::op_if::IfRegex;
 pub use self::op_map::Map;
 pub use self::op_or::Or;
 pub use self::op_ormap::OrMap;
@@ -67,12 +69,16 @@ where
     fn repeat(self, times: usize) -> Repeat<Self>;
 
     fn try_repeat(self, times: usize) -> TryRepeat<Self>;
+
+    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
+    where
+        I: Fn(&C) -> Result<bool, Error>;
 }
 
 impl<'a, C, T> RegexOp<'a, C> for T
 where
     T: Regex<C>,
-    C: Context<'a>,
+    C: Context<'a> + Policy<C>,
 {
     fn pattern(self) -> Pattern<Self> {
         Pattern::new(self)
@@ -108,6 +114,13 @@ where
 
     fn try_repeat(self, times: usize) -> TryRepeat<Self> {
         TryRepeat::new(self, times)
+    }
+
+    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
+    where
+        I: Fn(&C) -> Result<bool, Error>,
+    {
+        IfRegex::new(self, r#if, r#else)
     }
 }
 

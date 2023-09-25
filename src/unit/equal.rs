@@ -40,6 +40,6 @@ impl<T: PartialEq + LogOrNot> Unit<T> for Equal<T> {
 ///     Ok(())
 /// }
 /// ```
-pub fn equal<T: PartialEq + LogOrNot>(val: T) -> Equal<T> {
-    Equal::new(val)
+pub const fn equal<T: PartialEq + LogOrNot>(val: T) -> Equal<T> {
+    Equal { val }
 }

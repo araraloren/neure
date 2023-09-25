@@ -55,8 +55,8 @@ impl<T: LogOrNot> Unit<T> for True<T> {
 ///   assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
 /// # }
 /// ```
-pub fn any<T: LogOrNot>() -> True<T> {
-    True::default()
+pub const fn any<T: LogOrNot>() -> True<T> {
+    True(PhantomData)
 }
 
 pub struct False<T>(PhantomData<T>);
@@ -108,6 +108,6 @@ impl<T: LogOrNot> Unit<T> for False<T> {
 ///   assert!(ctx.try_mat(&none.repeat(6)).is_err());
 /// # }
 /// ```
-pub fn none<T: LogOrNot>() -> False<T> {
-    False::default()
+pub const fn none<T: LogOrNot>() -> False<T> {
+    False(PhantomData)
 }

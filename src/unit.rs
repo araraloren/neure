@@ -45,7 +45,7 @@ pub use self::char::WhiteSpace;
 pub use self::char::Wild;
 pub use self::equal::Equal;
 pub use self::op_and::And;
-pub use self::op_if::RepeatIf;
+pub use self::op_if::IfUnit;
 pub use self::op_not::Not;
 pub use self::op_or::Or;
 pub use self::op_repeat::Repeat;
@@ -343,6 +343,12 @@ pub trait UnitOp<C> {
     where
         Self: Unit<C> + Sized,
         U: Into<CopyRange<usize>>;
+
+    fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
+    where
+        Self: Unit<C> + Sized,
+        I: Unit<C>,
+        O: Unit<C>;
 }
 
 impl<C, T> UnitOp<C> for T
@@ -378,5 +384,14 @@ where
         U: Into<CopyRange<usize>>,
     {
         Repeat::new(self, range.into())
+    }
+
+    fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
+    where
+        Self: Unit<C> + Sized,
+        I: Unit<C>,
+        O: Unit<C>,
+    {
+        IfUnit::new(self, r#if, otherwise)
     }
 }

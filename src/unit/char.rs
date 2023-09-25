@@ -6,7 +6,7 @@ use crate::trace_log;
 pub struct Alphabetic;
 
 impl Alphabetic {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -37,7 +37,7 @@ impl Unit<char> for Alphabetic {
 ///     Ok(())
 /// }
 /// ```
-pub fn alphabetic() -> Alphabetic {
+pub const fn alphabetic() -> Alphabetic {
     Alphabetic
 }
 
@@ -45,7 +45,7 @@ pub fn alphabetic() -> Alphabetic {
 pub struct Alphanumeric;
 
 impl Alphanumeric {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -77,7 +77,7 @@ impl Unit<char> for Alphanumeric {
 ///     Ok(())
 /// }
 /// ```
-pub fn alphanumeric() -> Alphanumeric {
+pub const fn alphanumeric() -> Alphanumeric {
     Alphanumeric
 }
 
@@ -85,7 +85,7 @@ pub fn alphanumeric() -> Alphanumeric {
 pub struct Ascii;
 
 impl Ascii {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -116,7 +116,7 @@ impl Unit<char> for Ascii {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii() -> Ascii {
+pub const fn ascii() -> Ascii {
     Ascii
 }
 
@@ -124,7 +124,7 @@ pub fn ascii() -> Ascii {
 pub struct AsciiAlphabetic;
 
 impl AsciiAlphabetic {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -155,7 +155,7 @@ impl Unit<char> for AsciiAlphabetic {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_alphabetic() -> AsciiAlphabetic {
+pub const fn ascii_alphabetic() -> AsciiAlphabetic {
     AsciiAlphabetic
 }
 
@@ -163,7 +163,7 @@ pub fn ascii_alphabetic() -> AsciiAlphabetic {
 pub struct AsciiAlphanumeric;
 
 impl AsciiAlphanumeric {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -194,7 +194,7 @@ impl Unit<char> for AsciiAlphanumeric {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_alphanumeric() -> AsciiAlphanumeric {
+pub const fn ascii_alphanumeric() -> AsciiAlphanumeric {
     AsciiAlphanumeric
 }
 
@@ -202,7 +202,7 @@ pub fn ascii_alphanumeric() -> AsciiAlphanumeric {
 pub struct AsciiControl;
 
 impl AsciiControl {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -233,7 +233,7 @@ impl Unit<char> for AsciiControl {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_control() -> AsciiControl {
+pub const fn ascii_control() -> AsciiControl {
     AsciiControl
 }
 
@@ -241,7 +241,7 @@ pub fn ascii_control() -> AsciiControl {
 pub struct AsciiDigit;
 
 impl AsciiDigit {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -272,7 +272,7 @@ impl Unit<char> for AsciiDigit {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_digit() -> AsciiDigit {
+pub const fn ascii_digit() -> AsciiDigit {
     AsciiDigit
 }
 
@@ -280,7 +280,7 @@ pub fn ascii_digit() -> AsciiDigit {
 pub struct AsciiGraphic;
 
 impl AsciiGraphic {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -311,7 +311,7 @@ impl Unit<char> for AsciiGraphic {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_graphic() -> AsciiGraphic {
+pub const fn ascii_graphic() -> AsciiGraphic {
     AsciiGraphic
 }
 
@@ -319,7 +319,7 @@ pub fn ascii_graphic() -> AsciiGraphic {
 pub struct AsciiHexDigit;
 
 impl AsciiHexDigit {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -350,7 +350,7 @@ impl Unit<char> for AsciiHexDigit {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_hexdigit() -> AsciiHexDigit {
+pub const fn ascii_hexdigit() -> AsciiHexDigit {
     AsciiHexDigit
 }
 
@@ -358,7 +358,7 @@ pub fn ascii_hexdigit() -> AsciiHexDigit {
 pub struct AsciiLowercase;
 
 impl AsciiLowercase {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -389,7 +389,7 @@ impl Unit<char> for AsciiLowercase {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_lowercase() -> AsciiLowercase {
+pub const fn ascii_lowercase() -> AsciiLowercase {
     AsciiLowercase
 }
 
@@ -397,7 +397,7 @@ pub fn ascii_lowercase() -> AsciiLowercase {
 pub struct AsciiPunctuation;
 
 impl AsciiPunctuation {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -428,7 +428,7 @@ impl Unit<char> for AsciiPunctuation {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_punctuation() -> AsciiPunctuation {
+pub const fn ascii_punctuation() -> AsciiPunctuation {
     AsciiPunctuation
 }
 
@@ -436,7 +436,7 @@ pub fn ascii_punctuation() -> AsciiPunctuation {
 pub struct AsciiUppercase;
 
 impl AsciiUppercase {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -467,7 +467,7 @@ impl Unit<char> for AsciiUppercase {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_uppercase() -> AsciiUppercase {
+pub const fn ascii_uppercase() -> AsciiUppercase {
     AsciiUppercase
 }
 
@@ -475,7 +475,7 @@ pub fn ascii_uppercase() -> AsciiUppercase {
 pub struct AsciiWhiteSpace;
 
 impl AsciiWhiteSpace {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -508,7 +508,7 @@ impl Unit<char> for AsciiWhiteSpace {
 ///     Ok(())
 /// }
 /// ```
-pub fn ascii_whitespace() -> AsciiWhiteSpace {
+pub const fn ascii_whitespace() -> AsciiWhiteSpace {
     AsciiWhiteSpace
 }
 
@@ -516,7 +516,7 @@ pub fn ascii_whitespace() -> AsciiWhiteSpace {
 pub struct Control;
 
 impl Control {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -547,7 +547,7 @@ impl Unit<char> for Control {
 ///     Ok(())
 /// }
 /// ```
-pub fn control() -> Control {
+pub const fn control() -> Control {
     Control
 }
 
@@ -555,7 +555,7 @@ pub fn control() -> Control {
 pub struct Digit(u32);
 
 impl Digit {
-    pub fn new(radix: u32) -> Self {
+    pub const fn new(radix: u32) -> Self {
         Self(radix)
     }
 }
@@ -586,7 +586,7 @@ impl Unit<char> for Digit {
 ///     Ok(())
 /// }
 /// ```
-pub fn digit(radix: u32) -> Digit {
+pub const fn digit(radix: u32) -> Digit {
     Digit::new(radix)
 }
 
@@ -594,7 +594,7 @@ pub fn digit(radix: u32) -> Digit {
 pub struct Lowercase;
 
 impl Lowercase {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -625,7 +625,7 @@ impl Unit<char> for Lowercase {
 ///     Ok(())
 /// }
 /// ```
-pub fn lowercase() -> Lowercase {
+pub const fn lowercase() -> Lowercase {
     Lowercase
 }
 
@@ -633,7 +633,7 @@ pub fn lowercase() -> Lowercase {
 pub struct Numeric;
 
 impl Numeric {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -664,7 +664,7 @@ impl Unit<char> for Numeric {
 ///     Ok(())
 /// }
 /// ```
-pub fn numeric() -> Numeric {
+pub const fn numeric() -> Numeric {
     Numeric
 }
 
@@ -672,7 +672,7 @@ pub fn numeric() -> Numeric {
 pub struct Uppercase;
 
 impl Uppercase {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -703,7 +703,7 @@ impl Unit<char> for Uppercase {
 ///     Ok(())
 /// }
 /// ```
-pub fn uppercase() -> Uppercase {
+pub const fn uppercase() -> Uppercase {
     Uppercase
 }
 
@@ -711,7 +711,7 @@ pub fn uppercase() -> Uppercase {
 pub struct WhiteSpace;
 
 impl WhiteSpace {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -744,7 +744,7 @@ impl Unit<char> for WhiteSpace {
 ///     Ok(())
 /// }
 /// ```
-pub fn whitespace() -> WhiteSpace {
+pub const fn whitespace() -> WhiteSpace {
     WhiteSpace
 }
 
@@ -752,7 +752,7 @@ pub fn whitespace() -> WhiteSpace {
 pub struct Wild;
 
 impl Wild {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -783,6 +783,6 @@ impl Unit<char> for Wild {
 ///     Ok(())
 /// }
 /// ```
-pub fn wild() -> Wild {
+pub const fn wild() -> Wild {
     Wild
 }

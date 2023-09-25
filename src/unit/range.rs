@@ -15,7 +15,7 @@ pub struct CopyRange<T> {
 }
 
 impl<T> CopyRange<T> {
-    pub fn new(start: Bound<T>, end: Bound<T>) -> Self {
+    pub const fn new(start: Bound<T>, end: Bound<T>) -> Self {
         Self { start, end }
     }
 }
