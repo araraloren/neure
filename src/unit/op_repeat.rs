@@ -63,7 +63,7 @@ where
         self
     }
 
-    pub fn is_contain(&self, count: usize) -> bool
+    fn is_contain(&self, count: usize) -> bool
     where
         B: RangeBounds<usize>,
     {

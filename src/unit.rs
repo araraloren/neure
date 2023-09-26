@@ -49,7 +49,7 @@ pub use self::op_if::IfUnit;
 pub use self::op_not::Not;
 pub use self::op_or::Or;
 pub use self::op_repeat::Repeat;
-pub use self::range::CopyRange;
+pub use self::range::Range;
 
 pub use self::bool::any;
 pub use self::bool::none;
@@ -339,10 +339,10 @@ pub trait UnitOp<C> {
     where
         Self: Unit<C> + Sized;
 
-    fn repeat<U>(self, range: U) -> Repeat<Self, CopyRange<usize>, Span, C>
+    fn repeat<U>(self, range: U) -> Repeat<Self, Range<usize>, Span, C>
     where
         Self: Unit<C> + Sized,
-        U: Into<CopyRange<usize>>;
+        U: Into<Range<usize>>;
 
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
     where
@@ -378,10 +378,10 @@ where
         Not::new(self)
     }
 
-    fn repeat<U>(self, range: U) -> Repeat<Self, CopyRange<usize>, Span, C>
+    fn repeat<U>(self, range: U) -> Repeat<Self, Range<usize>, Span, C>
     where
         Self: Unit<C> + Sized,
-        U: Into<CopyRange<usize>>,
+        U: Into<Range<usize>>,
     {
         Repeat::new(self, range.into())
     }

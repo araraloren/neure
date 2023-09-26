@@ -35,6 +35,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::err::Error;
 use crate::trace_log;
+use crate::unit::Range;
 use crate::unit::Unit;
 
 pub trait Regex<C> {
@@ -50,7 +51,7 @@ pub trait Regex<C> {
 pub trait RegexOp<'a, C>
 where
     Self: Sized,
-    C: Context<'a>,
+    C: Context<'a> + Policy<C>,
 {
     fn pattern(self) -> Pattern<Self>;
 
@@ -66,9 +67,9 @@ where
 
     fn then<T>(self, then: T) -> Then<Self, T>;
 
-    fn repeat(self, times: usize) -> Repeat<Self>;
+    fn repeat<M, O>(self, range: impl Into<Range<usize>>) -> Repeat<'a, C, Self, M, O>;
 
-    fn try_repeat(self, times: usize) -> TryRepeat<Self>;
+    fn try_repeat<M, O>(self, range: impl Into<Range<usize>>) -> TryRepeat<'a, C, Self, M, O>;
 
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
     where
@@ -108,12 +109,12 @@ where
         Then::new(self, then)
     }
 
-    fn repeat(self, times: usize) -> Repeat<Self> {
-        Repeat::new(self, times)
+    fn repeat<M, O>(self, range: impl Into<Range<usize>>) -> Repeat<'a, C, Self, M, O> {
+        Repeat::new(self, range)
     }
 
-    fn try_repeat(self, times: usize) -> TryRepeat<Self> {
-        TryRepeat::new(self, times)
+    fn try_repeat<M, O>(self, range: impl Into<Range<usize>>) -> TryRepeat<'a, C, Self, M, O> {
+        TryRepeat::new(self, range)
     }
 
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
