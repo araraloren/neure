@@ -67,9 +67,9 @@ where
 
     fn then<T>(self, then: T) -> Then<Self, T>;
 
-    fn repeat<M, O>(self, range: impl Into<Range<usize>>) -> Repeat<'a, C, Self, M, O>;
+    fn repeat(self, range: impl Into<Range<usize>>) -> Repeat<Self>;
 
-    fn try_repeat<M, O>(self, range: impl Into<Range<usize>>) -> TryRepeat<'a, C, Self, M, O>;
+    fn try_repeat(self, range: impl Into<Range<usize>>) -> TryRepeat<Self>;
 
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
     where
@@ -109,11 +109,11 @@ where
         Then::new(self, then)
     }
 
-    fn repeat<M, O>(self, range: impl Into<Range<usize>>) -> Repeat<'a, C, Self, M, O> {
+    fn repeat(self, range: impl Into<Range<usize>>) -> Repeat<Self> {
         Repeat::new(self, range)
     }
 
-    fn try_repeat<M, O>(self, range: impl Into<Range<usize>>) -> TryRepeat<'a, C, Self, M, O> {
+    fn try_repeat(self, range: impl Into<Range<usize>>) -> TryRepeat<Self> {
         TryRepeat::new(self, range)
     }
 

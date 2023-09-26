@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -14,26 +12,18 @@ use crate::regex::Regex;
 use crate::unit::Range;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Repeat<'a, C, P, M, O>
-where
-    C: Context<'a> + Policy<C>,
-{
+pub struct Repeat<P> {
     pat: P,
     range: Range<usize>,
     capacity: usize,
-    marker: PhantomData<(&'a (), C, M, O)>,
 }
 
-impl<'a, C, P, M, O> Repeat<'a, C, P, M, O>
-where
-    C: Context<'a> + Policy<C>,
-{
+impl<P> Repeat<P> {
     pub fn new(pat: P, range: impl Into<Range<usize>>) -> Self {
         Self {
             pat,
             range: range.into(),
             capacity: 0,
-            marker: PhantomData,
         }
     }
 
@@ -92,7 +82,7 @@ where
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, O> for Repeat<'a, C, P, M, O>
+impl<'a, C, P, M, O> Invoke<'a, C, M, O> for Repeat<P>
 where
     O: FromIterator<M>,
     P: Invoke<'a, C, M, M>,
@@ -113,7 +103,7 @@ where
             res.push(g.process_ret(ret)?);
             cnt += 1;
         }
-        if self.is_contain(cnt) {
+        if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(O::from_iter(res.into_iter()))
         } else {
             Err(crate::err::Error::NeedMore)
@@ -121,7 +111,7 @@ where
     }
 }
 
-impl<'a, C, P, M, O> Regex<C> for Repeat<'a, C, P, M, O>
+impl<'a, C, P> Regex<C> for Repeat<P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -137,7 +127,7 @@ where
             ret.add_assign(g.try_mat(&self.pat)?);
             cnt += 1;
         }
-        if self.is_contain(cnt) {
+        if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(ret)
         } else {
             Err(crate::err::Error::NeedMore)
@@ -146,26 +136,18 @@ where
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct TryRepeat<'a, C, P, M, O>
-where
-    C: Context<'a> + Policy<C>,
-{
+pub struct TryRepeat<P> {
     pat: P,
     range: Range<usize>,
     capacity: usize,
-    marker: PhantomData<(&'a (), C, M, O)>,
 }
 
-impl<'a, C, P, M, O> TryRepeat<'a, C, P, M, O>
-where
-    C: Context<'a> + Policy<C>,
-{
+impl<P> TryRepeat<P> {
     pub fn new(pat: P, range: impl Into<Range<usize>>) -> Self {
         Self {
             pat,
             range: range.into(),
             capacity: 0,
-            marker: PhantomData,
         }
     }
 
@@ -224,7 +206,7 @@ where
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, O> for TryRepeat<'a, C, P, M, O>
+impl<'a, C, P, M, O> Invoke<'a, C, M, O> for TryRepeat<P>
 where
     O: FromIterator<M>,
     P: Invoke<'a, C, M, M>,
@@ -251,7 +233,7 @@ where
                 Err(_) => break,
             }
         }
-        if self.is_contain(cnt) {
+        if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(O::from_iter(res.into_iter()))
         } else {
             Err(crate::err::Error::NeedMore)
@@ -259,7 +241,7 @@ where
     }
 }
 
-impl<'a, C, P, M, O> Regex<C> for TryRepeat<'a, C, P, M, O>
+impl<'a, C, P> Regex<C> for TryRepeat<P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -282,7 +264,7 @@ where
                 }
             }
         }
-        if self.is_contain(cnt) {
+        if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(ret)
         } else {
             Err(crate::err::Error::NeedMore)
