@@ -12,15 +12,31 @@ use crate::err::Error;
 use crate::regex::Regex;
 use crate::trace_log;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct IfRegex<T, I, E, C> {
+#[derive(Debug, Default, Copy)]
+pub struct IfRegex<C, T, I, E> {
     regex: T,
     r#if: I,
     r#else: E,
     marker: PhantomData<C>,
 }
 
-impl<'a, C, T, I, E> IfRegex<T, I, E, C>
+impl<C, T, I, E> Clone for IfRegex<C, T, I, E>
+where
+    T: Clone,
+    I: Clone,
+    E: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            regex: self.regex.clone(),
+            r#if: self.r#if.clone(),
+            r#else: self.r#else.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<'a, C, T, I, E> IfRegex<C, T, I, E>
 where
     C: Context<'a> + Policy<C>,
     I: Fn(&C) -> Result<bool, Error>,
@@ -74,7 +90,7 @@ where
     }
 }
 
-impl<'a, C, T, I, E, M, O> Invoke<'a, C, M, O> for IfRegex<T, I, E, C>
+impl<'a, C, T, I, E, M, O> Invoke<'a, C, M, O> for IfRegex<C, T, I, E>
 where
     T: Invoke<'a, C, M, O>,
     E: Invoke<'a, C, M, O>,
@@ -97,7 +113,7 @@ where
     }
 }
 
-impl<'a, C, T, I, E> Regex<C> for IfRegex<T, I, E, C>
+impl<'a, C, T, I, E> Regex<C> for IfRegex<C, T, I, E>
 where
     T: Regex<C, Ret = Span>,
     E: Regex<C, Ret = Span>,

@@ -13,18 +13,32 @@ use crate::regex::Regex;
 
 use super::Unit;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Repeat<U, B, O, T>
+#[derive(Debug, Default, Copy)]
+pub struct UnitRepeat<C, U, B, T>
 where
     U: Unit<T>,
     B: RangeBounds<usize>,
 {
     unit: U,
     range: B,
-    marker: PhantomData<(O, T)>,
+    marker: PhantomData<(C, T)>,
 }
 
-impl<U, B, O, T> Repeat<U, B, O, T>
+impl<C, U, B, T> Clone for UnitRepeat<C, U, B, T>
+where
+    U: Unit<T> + Clone,
+    B: RangeBounds<usize> + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            unit: self.unit.clone(),
+            range: self.range.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, U, B, T> UnitRepeat<C, U, B, T>
 where
     U: Unit<T>,
     B: RangeBounds<usize>,
@@ -75,7 +89,7 @@ where
     }
 }
 
-impl<'a, U, B, C, M> Invoke<'a, C, M, M> for Repeat<U, B, Span, C::Item>
+impl<'a, U, B, C, M> Invoke<'a, C, M, M> for UnitRepeat<C, U, B, C::Item>
 where
     C: Context<'a> + 'a,
     U: Unit<C::Item>,
@@ -93,7 +107,7 @@ where
     }
 }
 
-impl<'a, U, B, C> Regex<C> for Repeat<U, B, Span, C::Item>
+impl<'a, U, B, C> Regex<C> for UnitRepeat<C, U, B, C::Item>
 where
     C: Context<'a> + 'a,
     U: Unit<C::Item>,

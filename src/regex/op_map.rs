@@ -10,14 +10,28 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Map<P, F, O> {
+#[derive(Debug, Default, Copy)]
+pub struct Map<C, P, F, O> {
     pat: P,
     func: F,
-    marker: PhantomData<O>,
+    marker: PhantomData<(C, O)>,
 }
 
-impl<P, F, O> Map<P, F, O> {
+impl<C, P, F, O> Clone for Map<C, P, F, O>
+where
+    P: Clone,
+    F: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            func: self.func.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P, F, O> Map<C, P, F, O> {
     pub fn new(pat: P, func: F) -> Self {
         Self {
             pat,
@@ -53,7 +67,7 @@ impl<P, F, O> Map<P, F, O> {
     }
 }
 
-impl<'a, C, M, O, V, P, F> Invoke<'a, C, M, V> for Map<P, F, O>
+impl<'a, C, M, O, V, P, F> Invoke<'a, C, M, V> for Map<C, P, F, O>
 where
     P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
@@ -68,7 +82,7 @@ where
     }
 }
 
-impl<'a, C, P, F, O> Regex<C> for Map<P, F, O>
+impl<'a, C, P, F, O> Regex<C> for Map<C, P, F, O>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use super::Unit;
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug, Default, Copy)]
 pub struct Or<L, R, T>
 where
     L: Unit<T>,
@@ -11,6 +11,20 @@ where
     left: L,
     right: R,
     marker: PhantomData<T>,
+}
+
+impl<L, R, T> Clone for Or<L, R, T>
+where
+    L: Unit<T> + Clone,
+    R: Unit<T> + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            left: self.left.clone(),
+            right: self.right.clone(),
+            marker: self.marker,
+        }
+    }
 }
 
 impl<L, R, T> Or<L, R, T>

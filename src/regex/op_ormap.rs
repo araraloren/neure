@@ -11,15 +11,31 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct OrMap<L, R, F, O> {
+#[derive(Debug, Default, Copy)]
+pub struct OrMap<C, L, R, F, O> {
     left: L,
     right: R,
     func: F,
-    marker: PhantomData<O>,
+    marker: PhantomData<(C, O)>,
 }
 
-impl<L, R, F, O> OrMap<L, R, F, O> {
+impl<C, L, R, F, O> Clone for OrMap<C, L, R, F, O>
+where
+    L: Clone,
+    R: Clone,
+    F: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            left: self.left.clone(),
+            right: self.right.clone(),
+            func: self.func.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, L, R, F, O> OrMap<C, L, R, F, O> {
     pub fn new(pat1: L, pat2: R, func: F) -> Self {
         Self {
             left: pat1,
@@ -69,7 +85,7 @@ impl<L, R, F, O> OrMap<L, R, F, O> {
     }
 }
 
-impl<'a, C, L, R, F, M, O, V> Invoke<'a, C, M, V> for OrMap<L, R, F, O>
+impl<'a, C, L, R, F, M, O, V> Invoke<'a, C, M, V> for OrMap<C, L, R, F, O>
 where
     L: Invoke<'a, C, M, V>,
     R: Invoke<'a, C, M, O>,
@@ -94,7 +110,7 @@ where
     }
 }
 
-impl<'a, C, L, R, F, O> Regex<C> for OrMap<L, R, F, O>
+impl<'a, C, L, R, F, O> Regex<C> for OrMap<C, L, R, F, O>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,

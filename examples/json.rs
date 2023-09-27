@@ -165,7 +165,8 @@ impl JsonParser {
         let sign = '+'.or('-').repeat(0..2);
         let digit = ('0'..='9').repeat(1..);
         let dot = '.'.repeat(1);
-        let number = space.then(sign).then(digit);
+        let r#if = |ctx: &BytesCtx<'_>| ctx.orig().and_then(|v| v.get(0) == Some(b'.'));
+        let number = space.then(sign).then(digit).r#if(r#if, dot.then(digit));
 
         ctx.try_mat(space)?;
         ctx.lazy()

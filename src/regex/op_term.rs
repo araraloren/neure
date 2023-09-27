@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::Collect;
 use super::CtxGuard;
 use super::Extract;
@@ -10,15 +12,34 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Terminated<P, S> {
+#[derive(Debug, Default, Copy)]
+pub struct Terminated<C, P, S> {
     pat: P,
     sep: S,
+    marker: PhantomData<C>,
 }
 
-impl<P, S> Terminated<P, S> {
+impl<C, P, S> Clone for Terminated<C, P, S>
+where
+    P: Clone,
+    S: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            sep: self.sep.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P, S> Terminated<C, P, S> {
     pub fn new(pat: P, sep: S) -> Self {
-        Self { pat, sep }
+        Self {
+            pat,
+            sep,
+            marker: PhantomData,
+        }
     }
 
     pub fn pat(&self) -> &P {
@@ -48,13 +69,13 @@ impl<P, S> Terminated<P, S> {
     }
 }
 
-impl<P, S> Terminated<P, S> {
-    pub fn collect<O>(self) -> Collect<Self, O> {
+impl<C, P, S> Terminated<C, P, S> {
+    pub fn collect<O>(self) -> Collect<C, Self, O> {
         Collect::new(self)
     }
 }
 
-impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<P, S>
+impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<C, P, S>
 where
     S: Regex<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
@@ -74,7 +95,7 @@ where
     }
 }
 
-impl<'a, C, S, P> Regex<C> for Terminated<P, S>
+impl<'a, C, S, P> Regex<C> for Terminated<C, P, S>
 where
     S: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,

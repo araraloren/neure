@@ -35,7 +35,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::err::Error;
 use crate::trace_log;
-use crate::unit::Range;
+use crate::unit::CRange;
 use crate::unit::Unit;
 
 pub trait Regex<C> {
@@ -53,25 +53,25 @@ where
     Self: Sized,
     C: Context<'a> + Policy<C>,
 {
-    fn pattern(self) -> Pattern<Self>;
+    fn pattern(self) -> Pattern<C, Self>;
 
-    fn map<F, O>(self, f: F) -> Map<Self, F, O>;
+    fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
-    fn quote<L, R>(self, left: L, right: R) -> Quote<Self, L, R>;
+    fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
 
-    fn terminated<S>(self, sep: S) -> Terminated<Self, S>;
+    fn terminated<S>(self, sep: S) -> Terminated<C, Self, S>;
 
-    fn or<P>(self, pat: P) -> Or<Self, P>;
+    fn or<P>(self, pat: P) -> Or<C, Self, P>;
 
-    fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<Self, P, F, O>;
+    fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<C, Self, P, F, O>;
 
-    fn then<T>(self, then: T) -> Then<Self, T>;
+    fn then<T>(self, then: T) -> Then<C, Self, T>;
 
-    fn repeat(self, range: impl Into<Range<usize>>) -> Repeat<Self>;
+    fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
-    fn try_repeat(self, range: impl Into<Range<usize>>) -> TryRepeat<Self>;
+    fn try_repeat(self, range: impl Into<CRange<usize>>) -> TryRepeat<C, Self>;
 
-    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
+    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>;
 }
@@ -81,43 +81,43 @@ where
     T: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    fn pattern(self) -> Pattern<Self> {
+    fn pattern(self) -> Pattern<C, Self> {
         Pattern::new(self)
     }
 
-    fn map<F, O>(self, func: F) -> Map<Self, F, O> {
+    fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)
     }
 
-    fn quote<L, R>(self, left: L, right: R) -> Quote<Self, L, R> {
+    fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R> {
         Quote::new(self, left, right)
     }
 
-    fn terminated<S>(self, sep: S) -> Terminated<Self, S> {
+    fn terminated<S>(self, sep: S) -> Terminated<C, Self, S> {
         Terminated::new(self, sep)
     }
 
-    fn or<P>(self, pat: P) -> Or<Self, P> {
+    fn or<P>(self, pat: P) -> Or<C, Self, P> {
         Or::new(self, pat)
     }
 
-    fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<Self, P, F, O> {
+    fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<C, Self, P, F, O> {
         OrMap::new(self, pat, func)
     }
 
-    fn then<P>(self, then: P) -> Then<Self, P> {
+    fn then<P>(self, then: P) -> Then<C, Self, P> {
         Then::new(self, then)
     }
 
-    fn repeat(self, range: impl Into<Range<usize>>) -> Repeat<Self> {
+    fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self> {
         Repeat::new(self, range)
     }
 
-    fn try_repeat(self, range: impl Into<Range<usize>>) -> TryRepeat<Self> {
+    fn try_repeat(self, range: impl Into<CRange<usize>>) -> TryRepeat<C, Self> {
         TryRepeat::new(self, range)
     }
 
-    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<Self, I, E, C>
+    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>,
     {

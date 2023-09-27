@@ -19,8 +19,6 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::ctx::Span;
-
 pub use self::bool::False;
 pub use self::bool::True;
 pub use self::char::Alphabetic;
@@ -48,8 +46,8 @@ pub use self::op_and::And;
 pub use self::op_if::IfUnit;
 pub use self::op_not::Not;
 pub use self::op_or::Or;
-pub use self::op_repeat::Repeat;
-pub use self::range::Range;
+pub use self::op_repeat::UnitRepeat;
+pub use self::range::CRange;
 
 pub use self::bool::any;
 pub use self::bool::none;
@@ -339,10 +337,10 @@ pub trait UnitOp<C> {
     where
         Self: Unit<C> + Sized;
 
-    fn repeat<U>(self, range: U) -> Repeat<Self, Range<usize>, Span, C>
+    fn repeat<Ctx, U>(self, range: U) -> UnitRepeat<Ctx, Self, CRange<usize>, C>
     where
         Self: Unit<C> + Sized,
-        U: Into<Range<usize>>;
+        U: Into<CRange<usize>>;
 
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
     where
@@ -378,12 +376,12 @@ where
         Not::new(self)
     }
 
-    fn repeat<U>(self, range: U) -> Repeat<Self, Range<usize>, Span, C>
+    fn repeat<Ctx, U>(self, range: U) -> UnitRepeat<Ctx, Self, CRange<usize>, C>
     where
         Self: Unit<C> + Sized,
-        U: Into<Range<usize>>,
+        U: Into<CRange<usize>>,
     {
-        Repeat::new(self, range.into())
+        UnitRepeat::new(self, range.into())
     }
 
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>

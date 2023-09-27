@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -9,21 +11,37 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::prelude::Ret;
 use crate::regex::Regex;
-use crate::unit::Range;
+use crate::unit::CRange;
 
-#[derive(Debug, Clone, Copy)]
-pub struct Repeat<P> {
+#[derive(Debug, Copy)]
+pub struct Repeat<C, P> {
     pat: P,
-    range: Range<usize>,
+    range: CRange<usize>,
     capacity: usize,
+    marker: PhantomData<C>,
 }
 
-impl<P> Repeat<P> {
-    pub fn new(pat: P, range: impl Into<Range<usize>>) -> Self {
+impl<C, P> Clone for Repeat<C, P>
+where
+    P: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            range: self.range,
+            capacity: self.capacity,
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P> Repeat<C, P> {
+    pub fn new(pat: P, range: impl Into<CRange<usize>>) -> Self {
         Self {
             pat,
             range: range.into(),
             capacity: 0,
+            marker: PhantomData,
         }
     }
 
@@ -31,7 +49,7 @@ impl<P> Repeat<P> {
         &self.pat
     }
 
-    pub fn range(&self) -> &Range<usize> {
+    pub fn range(&self) -> &CRange<usize> {
         &self.range
     }
 
@@ -48,7 +66,7 @@ impl<P> Repeat<P> {
         self
     }
 
-    pub fn set_range(&mut self, range: impl Into<Range<usize>>) -> &mut Self {
+    pub fn set_range(&mut self, range: impl Into<CRange<usize>>) -> &mut Self {
         self.range = range.into();
         self
     }
@@ -63,7 +81,7 @@ impl<P> Repeat<P> {
         self
     }
 
-    pub fn with_range(mut self, range: impl Into<Range<usize>>) -> Self {
+    pub fn with_range(mut self, range: impl Into<CRange<usize>>) -> Self {
         self.range = range.into();
         self
     }
@@ -82,7 +100,7 @@ impl<P> Repeat<P> {
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, O> for Repeat<P>
+impl<'a, C, P, M, O> Invoke<'a, C, M, O> for Repeat<C, P>
 where
     O: FromIterator<M>,
     P: Invoke<'a, C, M, M>,
@@ -104,14 +122,14 @@ where
             cnt += 1;
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(O::from_iter(res.into_iter()))
+            Ok(O::from_iter(res))
         } else {
             Err(crate::err::Error::NeedMore)
         }
     }
 }
 
-impl<'a, C, P> Regex<C> for Repeat<P>
+impl<'a, C, P> Regex<C> for Repeat<C, P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -135,19 +153,35 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct TryRepeat<P> {
+#[derive(Debug, Copy)]
+pub struct TryRepeat<C, P> {
     pat: P,
-    range: Range<usize>,
+    range: CRange<usize>,
     capacity: usize,
+    marker: PhantomData<C>,
 }
 
-impl<P> TryRepeat<P> {
-    pub fn new(pat: P, range: impl Into<Range<usize>>) -> Self {
+impl<C, P> Clone for TryRepeat<C, P>
+where
+    P: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            range: self.range,
+            capacity: self.capacity,
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P> TryRepeat<C, P> {
+    pub fn new(pat: P, range: impl Into<CRange<usize>>) -> Self {
         Self {
             pat,
             range: range.into(),
             capacity: 0,
+            marker: PhantomData,
         }
     }
 
@@ -155,7 +189,7 @@ impl<P> TryRepeat<P> {
         &self.pat
     }
 
-    pub fn range(&self) -> &Range<usize> {
+    pub fn range(&self) -> &CRange<usize> {
         &self.range
     }
 
@@ -172,7 +206,7 @@ impl<P> TryRepeat<P> {
         self
     }
 
-    pub fn set_range(&mut self, range: impl Into<Range<usize>>) -> &mut Self {
+    pub fn set_range(&mut self, range: impl Into<CRange<usize>>) -> &mut Self {
         self.range = range.into();
         self
     }
@@ -187,7 +221,7 @@ impl<P> TryRepeat<P> {
         self
     }
 
-    pub fn with_range(mut self, range: impl Into<Range<usize>>) -> Self {
+    pub fn with_range(mut self, range: impl Into<CRange<usize>>) -> Self {
         self.range = range.into();
         self
     }
@@ -206,7 +240,7 @@ impl<P> TryRepeat<P> {
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, O> for TryRepeat<P>
+impl<'a, C, P, M, O> Invoke<'a, C, M, O> for TryRepeat<C, P>
 where
     O: FromIterator<M>,
     P: Invoke<'a, C, M, M>,
@@ -234,14 +268,14 @@ where
             }
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(O::from_iter(res.into_iter()))
+            Ok(O::from_iter(res))
         } else {
             Err(crate::err::Error::NeedMore)
         }
     }
 }
 
-impl<'a, C, P> Regex<C> for TryRepeat<P>
+impl<'a, C, P> Regex<C> for TryRepeat<C, P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,

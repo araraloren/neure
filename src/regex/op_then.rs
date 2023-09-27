@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -5,19 +7,39 @@ use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Then<P, T> {
+#[derive(Debug, Default, Copy)]
+pub struct Then<C, P, T> {
     pat: P,
     then: T,
+    marker: PhantomData<C>,
 }
 
-impl<P, T> Then<P, T> {
-    pub fn new(pat1: P, then: T) -> Self {
-        Self { pat: pat1, then }
+impl<C, P, T> Clone for Then<C, P, T>
+where
+    P: Clone,
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            then: self.then.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P, T> Then<C, P, T> {
+    pub fn new(pat: P, then: T) -> Self {
+        Self {
+            pat,
+            then,
+            marker: PhantomData,
+        }
     }
 
     pub fn pat(&self) -> &P {
@@ -47,7 +69,7 @@ impl<P, T> Then<P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<P, T>
+impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<C, P, T>
 where
     P: Invoke<'a, C, M, O>,
     T: Invoke<'a, C, M, O>,
@@ -74,7 +96,7 @@ where
     }
 }
 
-impl<'a, C, P, T> Regex<C> for Then<P, T>
+impl<'a, C, P, T> Regex<C> for Then<C, P, T>
 where
     P: Regex<C, Ret = Span>,
     T: Regex<C, Ret = Span>,
@@ -84,8 +106,9 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let _ = g.try_mat(&self.pat);
+        let mut ret = g.try_mat(&self.pat)?;
 
-        g.try_mat(&self.then)
+        ret.add_assign(g.try_mat(&self.then)?);
+        Ok(ret)
     }
 }

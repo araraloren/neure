@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -9,16 +11,38 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Quote<P, L, R> {
+#[derive(Debug, Default, Copy)]
+pub struct Quote<C, P, L, R> {
     pat: P,
     left: L,
     right: R,
+    marker: PhantomData<C>,
 }
 
-impl<P, L, R> Quote<P, L, R> {
+impl<C, P, L, R> Clone for Quote<C, P, L, R>
+where
+    P: Clone,
+    L: Clone,
+    R: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            left: self.left.clone(),
+            right: self.right.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P, L, R> Quote<C, P, L, R> {
     pub fn new(pat: P, left: L, right: R) -> Self {
-        Self { pat, left, right }
+        Self {
+            pat,
+            left,
+            right,
+            marker: PhantomData,
+        }
     }
 
     pub fn pat(&self) -> &P {
@@ -61,7 +85,7 @@ impl<P, L, R> Quote<P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<P, L, R>
+impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<C, P, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
@@ -84,7 +108,7 @@ where
     }
 }
 
-impl<'a, C, L, R, P> Regex<C> for Quote<P, L, R>
+impl<'a, C, L, R, P> Regex<C> for Quote<C, P, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,

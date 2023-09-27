@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
@@ -10,17 +12,33 @@ use crate::err::Error;
 use crate::regex::Regex;
 use crate::trace_log;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Or<L, R> {
+#[derive(Debug, Default, Copy)]
+pub struct Or<C, L, R> {
     left: L,
     right: R,
+    marker: PhantomData<C>,
 }
 
-impl<L, R> Or<L, R> {
+impl<C, L, R> Clone for Or<C, L, R>
+where
+    L: Clone,
+    R: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            left: self.left.clone(),
+            right: self.right.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, L, R> Or<C, L, R> {
     pub fn new(pat1: L, pat2: R) -> Self {
         Self {
             left: pat1,
             right: pat2,
+            marker: PhantomData,
         }
     }
 
@@ -51,7 +69,7 @@ impl<L, R> Or<L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O> Invoke<'a, C, M, O> for Or<L, R>
+impl<'a, C, L, R, M, O> Invoke<'a, C, M, O> for Or<C, L, R>
 where
     L: Invoke<'a, C, M, O>,
     R: Invoke<'a, C, M, O>,
@@ -74,7 +92,7 @@ where
     }
 }
 
-impl<'a, C, L, R> Regex<C> for Or<L, R>
+impl<'a, C, L, R> Regex<C> for Or<C, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,

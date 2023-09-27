@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use super::Unit;
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug, Default, Copy)]
 pub struct IfUnit<U, I, O, T>
 where
     U: Unit<T>,
@@ -13,6 +13,22 @@ where
     unit: U,
     other: O,
     marker: PhantomData<T>,
+}
+
+impl<U, I, O, T> Clone for IfUnit<U, I, O, T>
+where
+    U: Unit<T> + Clone,
+    I: Unit<T> + Clone,
+    O: Unit<T> + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            r#if: self.r#if.clone(),
+            unit: self.unit.clone(),
+            other: self.other.clone(),
+            marker: self.marker,
+        }
+    }
 }
 
 impl<U, I, O, T> IfUnit<U, I, O, T>

@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::Extract;
 use super::Handler;
 use super::Invoke;
@@ -8,14 +10,30 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Pattern<P> {
+#[derive(Debug, Default, Copy)]
+pub struct Pattern<C, P> {
     pat: P,
+    marker: PhantomData<C>,
 }
 
-impl<P> Pattern<P> {
+impl<C, P> Clone for Pattern<C, P>
+where
+    P: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P> Pattern<C, P> {
     pub fn new(pat: P) -> Self {
-        Self { pat }
+        Self {
+            pat,
+            marker: PhantomData,
+        }
     }
 
     pub fn pat(&self) -> &P {
@@ -32,7 +50,7 @@ impl<P> Pattern<P> {
     }
 }
 
-impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<P>
+impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<C, P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -48,7 +66,7 @@ where
     }
 }
 
-impl<'a, C, P> Regex<C> for Pattern<P>
+impl<'a, C, P> Regex<C> for Pattern<C, P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,

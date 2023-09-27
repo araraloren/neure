@@ -12,13 +12,25 @@ use crate::err::Error;
 use crate::prelude::Ret;
 use crate::regex::Regex;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Collect<P, O> {
+#[derive(Debug, Default, Copy)]
+pub struct Collect<C, P, O> {
     pat: P,
-    marker: PhantomData<O>,
+    marker: PhantomData<(O, C)>,
 }
 
-impl<P, O> Collect<P, O> {
+impl<C, P, O> Clone for Collect<C, P, O>
+where
+    P: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            pat: self.pat.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, P, O> Collect<C, P, O> {
     pub fn new(pat: P) -> Self {
         Self {
             pat,
@@ -40,7 +52,7 @@ impl<P, O> Collect<P, O> {
     }
 }
 
-impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<P, O>
+impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<C, P, O>
 where
     V: FromIterator<O>,
     P: Invoke<'a, C, M, O>,
@@ -57,7 +69,7 @@ where
     }
 }
 
-impl<'a, C, P, O> Regex<C> for Collect<P, O>
+impl<'a, C, P, O> Regex<C> for Collect<C, P, O>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,

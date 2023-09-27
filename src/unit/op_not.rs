@@ -2,13 +2,25 @@ use std::marker::PhantomData;
 
 use super::Unit;
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug, Default, Copy)]
 pub struct Not<U, T>
 where
     U: Unit<T>,
 {
     unit: U,
     marker: PhantomData<T>,
+}
+
+impl<U, T> Clone for Not<U, T>
+where
+    U: Unit<T> + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            unit: self.unit.clone(),
+            marker: self.marker,
+        }
+    }
 }
 
 impl<U, T> Not<U, T>
