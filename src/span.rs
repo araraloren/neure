@@ -55,28 +55,18 @@ impl SimpleStorer {
         self
     }
 
-    pub fn span(&self, id: usize, index: usize) -> Result<&Span, Error> {
-        self.spans[id].get(index).ok_or(Error::SpanIndex)
+    pub fn span(&self, id: usize, index: usize) -> Option<&Span> {
+        self.spans.get(id).and_then(|v| v.get(index))
     }
 
-    pub fn spans(&self, id: usize) -> Result<&Vec<Span>, Error> {
-        let span = &self.spans[id];
-
-        if !span.is_empty() {
-            Ok(span)
-        } else {
-            Err(Error::SpanID)
-        }
+    pub fn spans(&self, id: usize) -> Option<&Vec<Span>> {
+        self.spans
+            .get(id)
+            .and_then(|v| if v.is_empty() { None } else { Some(v) })
     }
 
-    pub fn spans_iter(&self, id: usize) -> Result<SpanIterator<'_>, Error> {
-        let span = &self.spans[id];
-
-        if !span.is_empty() {
-            Ok(SpanIterator::new(span))
-        } else {
-            Err(Error::SpanID)
-        }
+    pub fn spans_iter(&self, id: usize) -> Option<SpanIterator<'_>> {
+        self.spans(id).map(|v| SpanIterator::new(v))
     }
 }
 
@@ -86,24 +76,20 @@ impl SimpleStorer {
         value: &'a T,
         id: usize,
         index: usize,
-    ) -> Result<&'a <T as IndexBySpan>::Output, Error>
+    ) -> Option<&'a <T as IndexBySpan>::Output>
     where
         T: IndexBySpan + ?Sized,
     {
         let span = self.span(id, index)?;
 
-        value.get_by_span(span).ok_or(Error::IndexBySpan)
+        value.get_by_span(span)
     }
 
-    pub fn slice_iter<'a, T>(
-        &self,
-        str: &'a T,
-        id: usize,
-    ) -> Result<IteratorBySpan<'a, '_, T>, Error>
+    pub fn slice_iter<'a, T>(&self, str: &'a T, id: usize) -> Option<IteratorBySpan<'a, '_, T>>
     where
         T: IndexBySpan + ?Sized,
     {
-        Ok(IteratorBySpan::new(str, self.spans(id)?))
+        Some(IteratorBySpan::new(str, self.spans(id)?))
     }
 }
 

@@ -30,6 +30,8 @@ pub use self::op_repeat::TryRepeat;
 pub use self::op_term::Terminated;
 pub use self::op_then::Then;
 
+pub use self::op_if::branch;
+
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
@@ -202,21 +204,19 @@ where
     C: Context<'a> + 'a,
 {
     move |ctx: &mut C| {
+        trace_log!("match data in one(1..=1)");
         let mut iter: C::Iter<'_> = ctx.peek()?;
 
         if let Some((offset, item)) = iter.next() {
             if re.is_match(&item) {
-                Ok(make_ret_and_inc(
+                return Ok(make_ret_and_inc(
                     ctx,
                     1,
                     length(offset, ctx, iter.next().map(|v| v.0)),
-                ))
-            } else {
-                Err(Error::Match)
+                ));
             }
-        } else {
-            Err(Error::NeedOne)
         }
+        Err(Error::One)
     }
 }
 
@@ -226,6 +226,7 @@ where
     C: Context<'a> + 'a,
 {
     move |ctx: &mut C| {
+        trace_log!("match data in zero_one(0..=1)");
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if re.is_match(&item) {
@@ -251,6 +252,7 @@ where
         let mut beg = None;
         let mut end = None;
 
+        trace_log!("match data in zero_more(0..)");
         if let Ok(mut iter) = ctx.peek() {
             for (offset, item) in iter.by_ref() {
                 if !re.is_match(&item) {
@@ -284,6 +286,8 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
+
+        trace_log!("match data in one_more(1..)");
         let mut iter = ctx.peek()?;
 
         for (offset, item) in iter.by_ref() {
@@ -303,7 +307,7 @@ where
                 length(start, ctx, end.map(|v| v.0)),
             ))
         } else {
-            Err(Error::NeedOneMore)
+            Err(Error::OneMore)
         }
     }
 }
@@ -326,13 +330,14 @@ where
     R: Ret,
     C: Context<'a> + 'a,
 {
-    debug_assert!(M <= N, "M must little than N");
+    debug_assert!(M <= N, "M must little equal than N");
     move |ctx: &mut C| {
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
         let iter = ctx.peek();
 
+        trace_log!("match data in count_if({}..={})", M, N);
         if let Ok(mut iter) = iter {
             while cnt < N {
                 if let Some(pair) = iter.next() {
@@ -358,7 +363,7 @@ where
                 ));
             }
         }
-        Err(Error::NeedMore)
+        Err(Error::CountIf)
     }
 }
 
@@ -372,7 +377,7 @@ where
             trace_log!("match start of context");
             Ok(R::from(ctx, (0, 0)))
         } else {
-            Err(Error::NotStart)
+            Err(Error::Start)
         }
     }
 }
@@ -384,7 +389,7 @@ where
 {
     |ctx: &mut C| {
         if ctx.len() != ctx.offset() {
-            Err(Error::NotEnd)
+            Err(Error::End)
         } else {
             trace_log!("match end of context");
             Ok(R::from(ctx, (0, 0)))

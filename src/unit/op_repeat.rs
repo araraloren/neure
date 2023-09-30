@@ -148,6 +148,6 @@ where
                 return Ok(ret);
             }
         }
-        Err(crate::err::Error::NeedMore)
+        Err(crate::err::Error::UnitRepeat)
     }
 }

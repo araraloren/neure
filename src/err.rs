@@ -4,27 +4,25 @@ use std::fmt::Display;
 pub enum Error {
     Null,
 
-    SpanID,
+    Other,
 
-    SpanIndex,
+    UnitRepeat,
 
-    NeedOne,
+    TryRepeat,
 
-    NeedOneMore,
+    Repeat,
 
-    NeedMore,
+    OutOfBound,
 
-    Chars,
+    One,
 
-    IndexBySpan,
+    OneMore,
 
-    Match,
+    CountIf,
 
-    NotStart,
+    Start,
 
-    ReachEnd,
-
-    NotEnd,
+    End,
 
     String,
 
@@ -32,9 +30,7 @@ pub enum Error {
 
     Consume,
 
-    Quote,
-
-    Convert,
+    SpanIndex,
 }
 
 impl std::error::Error for Error {}
@@ -43,22 +39,21 @@ impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Null => write!(f, "Error::Null"),
-            Error::Chars => write!(f, "Error::Chars"),
-            Error::NeedOne => write!(f, "Error::NeedOne"),
-            Error::NeedOneMore => write!(f, "Error::NeedOneMore"),
-            Error::NeedMore => write!(f, "Error::NeedMore"),
-            Error::IndexBySpan => write!(f, "Error::SubStr"),
-            Error::ReachEnd => write!(f, "Error::ReachEnd"),
-            Error::NotStart => write!(f, "Error::NotStart"),
-            Error::NotEnd => write!(f, "Error::NotEnd"),
-            Error::Match => write!(f, "Error::Match"),
-            Error::SpanID => write!(f, "Error::SpanID"),
-            Error::SpanIndex => write!(f, "Error::SpanIndex"),
-            Error::Consume => write!(f, "Error::Consume"),
-            Error::Quote => write!(f, "Error::Quote"),
-            Error::String => write!(f, "Error::String"),
-            Error::Bytes => write!(f, "Error::Bytes"),
-            Error::Convert => write!(f, "Error::Convert"),
+            Error::Other => write!(f, "Error::Other"),
+
+            Error::UnitRepeat => write!(f, "In (`UnitRepeat`): need more data"),
+            Error::TryRepeat => write!(f, "In (`TryRepeat`): need more data"),
+            Error::Repeat => write!(f, "In (`Repeat`): need more data"),
+            Error::OutOfBound => write!(f, "Got error: offset out of bound"),
+            Error::One => write!(f, "In (`one`): need more data"),
+            Error::OneMore => write!(f, "In (`one_more`): need more data"),
+            Error::CountIf => write!(f, "In (`count_if`): need more data"),
+            Error::Start => write!(f, "In (`start`): offset is not at the begining"),
+            Error::End => write!(f, "In (`end`): offset is not at the ending"),
+            Error::String => write!(f, "In (`string`): match failed"),
+            Error::Bytes => write!(f, "In (`bytes`): match failed"),
+            Error::Consume => write!(f, "In (`consume`): need more data"),
+            Error::SpanIndex => write!(f, "Got error: invalid span index"),
         }
     }
 }

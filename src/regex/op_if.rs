@@ -36,11 +36,7 @@ where
     }
 }
 
-impl<'a, C, T, I, E> IfRegex<C, T, I, E>
-where
-    C: Context<'a> + Policy<C>,
-    I: Fn(&C) -> Result<bool, Error>,
-{
+impl<'a, C, T, I, E> IfRegex<C, T, I, E> {
     pub fn new(regex: T, r#if: I, r#else: E) -> Self {
         Self {
             regex,
@@ -132,4 +128,15 @@ where
             ctx.try_mat(&self.r#else)
         }
     }
+}
+
+pub fn branch<'a, C>(
+    r#if: impl Fn(&C) -> Result<bool, Error>,
+    re: impl Regex<C, Ret = Span>,
+    r#else: impl Regex<C, Ret = Span>,
+) -> impl Regex<C, Ret = Span>
+where
+    C: Context<'a> + Policy<C>,
+{
+    IfRegex::new(re, r#if, r#else)
 }

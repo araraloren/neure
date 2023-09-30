@@ -124,7 +124,7 @@ where
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(O::from_iter(res))
         } else {
-            Err(crate::err::Error::NeedMore)
+            Err(Error::Repeat)
         }
     }
 }
@@ -148,7 +148,7 @@ where
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(ret)
         } else {
-            Err(crate::err::Error::NeedMore)
+            Err(Error::Repeat)
         }
     }
 }
@@ -270,7 +270,7 @@ where
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(O::from_iter(res))
         } else {
-            Err(crate::err::Error::NeedMore)
+            Err(Error::TryRepeat)
         }
     }
 }
@@ -301,7 +301,7 @@ where
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             Ok(ret)
         } else {
-            Err(crate::err::Error::NeedMore)
+            Err(Error::TryRepeat)
         }
     }
 }

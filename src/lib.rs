@@ -82,7 +82,7 @@ mod test {
             $ctx.reset_with($str);
             $storer.reset();
             $storer.try_cap($id, &mut $ctx, &space_parser)?;
-            assert_eq!($storer.spans_iter($id)?.collect::<Vec<_>>(), vec![$($span)*])
+            assert_eq!($storer.spans_iter($id).unwrap().collect::<Vec<_>>(), vec![$($span)*])
         };
     }
 
