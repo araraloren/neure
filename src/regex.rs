@@ -13,6 +13,12 @@ mod op_repeat;
 mod op_term;
 mod op_then;
 
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
+
 pub use self::dyna::IntoDynamic;
 pub use self::dyna::IntoNonDynamic;
 pub use self::extract::*;
@@ -35,6 +41,7 @@ pub use self::op_if::branch;
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
+use crate::ctx::Span;
 use crate::err::Error;
 use crate::trace_log;
 use crate::unit::CRange;
@@ -47,6 +54,136 @@ pub trait Regex<C> {
 
     fn parse(&self, ctx: &mut C) -> bool {
         self.try_parse(ctx).is_ok()
+    }
+}
+
+impl<C, F, R> Regex<C> for F
+where
+    F: Fn(&mut C) -> Result<R, Error>,
+{
+    type Ret = R;
+
+    #[inline]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        (self)(ctx)
+    }
+}
+
+impl<'a, 'b, C> Regex<C> for &'b str
+where
+    C: Context<'a, Orig = str> + Policy<C> + 'a,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::regex::string(self);
+        ctx.try_mat(&pattern)
+    }
+}
+
+impl<'a, 'b, C> Regex<C> for &'b [u8]
+where
+    C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::regex::bytes(self);
+        ctx.try_mat(&pattern)
+    }
+}
+
+impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, P, C> Regex<C> for RefCell<P>
+where
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(&*self.borrow())
+    }
+}
+
+impl<'a, P, C> Regex<C> for Cell<P>
+where
+    P: Regex<C> + Copy,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(&self.get())
+    }
+}
+
+impl<'a, P, C> Regex<C> for Mutex<P>
+where
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
+        ctx.try_mat(&*ret)
+    }
+}
+
+impl<'a, P, C> Regex<C> for Arc<P>
+where
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, P, C> Regex<C> for Rc<P>
+where
+    P: Regex<C>,
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
+    }
+}
+
+impl<'a, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C> + 'a,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        ctx.try_mat(self.as_ref())
     }
 }
 
@@ -312,19 +449,28 @@ where
     }
 }
 
-pub fn count<'a, const M: usize, const N: usize, C, R>(
-    re: impl Unit<C::Item> + 'a,
-) -> impl Fn(&mut C) -> Result<R, Error> + 'a
+// pub fn count<'a, const M: usize, const N: usize, C, R>(
+//     re: impl Unit<C::Item> + 'a,
+// ) -> impl Fn(&mut C) -> Result<R, Error> + 'a
+// where
+//     R: Ret + 'a,
+//     C: Context<'a> + 'a,
+// {
+//     count_if::<'a, M, N, C, R>(re, |_, _| true)
+// }
+
+pub fn count<'a, const M: usize, const N: usize, C, U: Unit<C::Item>>(
+    re: U,
+) -> crate::unit::Repeat<'a, M, N, C, U, crate::unit::NullCond>
 where
-    R: Ret + 'a,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
 {
-    count_if::<'a, M, N, C, R>(re, |_, _| true)
+    crate::unit::Unit2Regex::repeat::<M, N>(re)
 }
 
 pub fn count_if<'a, const M: usize, const N: usize, C, R>(
     re: impl Unit<C::Item>,
-    r#if: impl Fn(&C, &(usize, <C as Context<'a>>::Item)) -> bool,
+    r#if: impl crate::unit::UnitCond<'a, C>,
 ) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -341,7 +487,7 @@ where
         if let Ok(mut iter) = iter {
             while cnt < N {
                 if let Some(pair) = iter.next() {
-                    if re.is_match(&pair.1) && r#if(ctx, &pair) {
+                    if re.is_match(&pair.1) && r#if.check(ctx, &pair)? {
                         cnt += 1;
                         if beg.is_none() {
                             beg = Some(pair.0);

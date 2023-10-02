@@ -7,11 +7,20 @@ use super::Unit;
 use crate::trace_log;
 use crate::LogOrNot;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Copy)]
 pub struct CRange<T> {
     start: Bound<T>,
 
     end: Bound<T>,
+}
+
+impl<T: Clone> Clone for CRange<T> {
+    fn clone(&self) -> Self {
+        Self {
+            start: self.start.clone(),
+            end: self.end.clone(),
+        }
+    }
 }
 
 impl<T> CRange<T> {

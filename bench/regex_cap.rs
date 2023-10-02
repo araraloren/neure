@@ -77,20 +77,20 @@ mod email_neure {
         let minus = unit!('-');
         let at = regex!('@');
         let pre = regex!((letter, number, us, dot, plus, minus)+);
-        let domain = regex::count_if::<0, { usize::MAX }, _, _>(
-            letter.or(number.or(dot.or(minus))),
-            |ctx: &RegexCtx<str>, &(length, ch)| {
+        let domain = letter
+            .or(number.or(dot.or(minus)))
+            .repeat_range(0..)
+            .with_if(move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
                 if ch == '.' {
                     // don't match dot if we don't have more dot
                     if let Ok(str) = Context::orig_at(ctx, ctx.offset() + length + 1) {
-                        return str.find('.').is_some();
+                        return Ok(str.find('.').is_some());
                     }
                 }
-                true
-            },
-        );
+                Ok(true)
+            });
         let post = regex!((letter, dot){2,6});
-        let dot = dot.repeat(1);
+        let dot = regex!((dot){1});
         let start = regex::start();
         let end = regex::end();
         let mut ctx = RegexCtx::new(str);
@@ -113,7 +113,7 @@ mod email_neure {
         for (test, result) in tests.iter().zip(results.iter()) {
             let ret = parser(storer.reset(), test).is_ok();
 
-            assert_eq!(ret, result.is_some());
+            assert_eq!(ret, result.is_some(), "test = {}", test);
             if let Some(result) = result {
                 assert_eq!(storer.slice(test, 0, 0).unwrap(), result.0);
                 assert_eq!(storer.slice(test, 1, 0).unwrap(), result.1);

@@ -48,6 +48,8 @@ pub mod prelude {
     pub use crate::span::SimpleStorer;
     pub use crate::unit;
     pub use crate::unit::Unit;
+    pub use crate::unit::Unit2Regex;
+    pub use crate::unit::UnitCond;
     pub use crate::unit::UnitOp;
 }
 

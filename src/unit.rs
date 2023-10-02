@@ -4,10 +4,15 @@ mod equal;
 mod op_and;
 mod op_if;
 mod op_not;
+mod op_one;
 mod op_or;
 mod op_repeat;
+mod op_zero;
 mod range;
 
+use crate::ctx::Context;
+use crate::ctx::Ret;
+use crate::err::Error;
 use crate::trace_log;
 use crate::LogOrNot;
 
@@ -45,8 +50,13 @@ pub use self::equal::Equal;
 pub use self::op_and::And;
 pub use self::op_if::IfUnit;
 pub use self::op_not::Not;
+pub use self::op_one::UnitOne;
+pub use self::op_one::UnitOneMore;
 pub use self::op_or::Or;
-pub use self::op_repeat::UnitRepeat;
+pub use self::op_repeat::Repeat;
+pub use self::op_repeat::RepeatRange;
+pub use self::op_zero::UnitZeroMore;
+pub use self::op_zero::UnitZeroOne;
 pub use self::range::CRange;
 
 pub use self::bool::any;
@@ -83,6 +93,7 @@ where
     T: LogOrNot,
     F: Fn(&T) -> bool,
 {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match function with value ({:?})(in)", other);
         (self)(other)
@@ -337,11 +348,6 @@ pub trait UnitOp<C> {
     where
         Self: Unit<C> + Sized;
 
-    fn repeat<Ctx, U>(self, range: U) -> UnitRepeat<Ctx, Self, CRange<usize>, C>
-    where
-        Self: Unit<C> + Sized,
-        U: Into<CRange<usize>>;
-
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
     where
         Self: Unit<C> + Sized,
@@ -376,14 +382,6 @@ where
         Not::new(self)
     }
 
-    fn repeat<Ctx, U>(self, range: U) -> UnitRepeat<Ctx, Self, CRange<usize>, C>
-    where
-        Self: Unit<C> + Sized,
-        U: Into<CRange<usize>>,
-    {
-        UnitRepeat::new(self, range.into())
-    }
-
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
     where
         Self: Unit<C> + Sized,
@@ -391,5 +389,115 @@ where
         O: Unit<C>,
     {
         IfUnit::new(self, r#if, otherwise)
+    }
+}
+
+#[inline(always)]
+pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option<usize>) -> usize {
+    let next_offset = next.unwrap_or(ctx.len() - ctx.offset());
+    next_offset - offset
+}
+
+#[inline(always)]
+pub(crate) fn inc_and_ret<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
+    let ret = R::from(ctx, (count, len));
+
+    ctx.inc(len);
+    ret
+}
+
+pub trait UnitCond<'a, C>
+where
+    C: Context<'a>,
+{
+    fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error>;
+}
+
+impl<'a, C, F> UnitCond<'a, C> for F
+where
+    C: Context<'a>,
+    F: Fn(&C, &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error>,
+{
+    #[inline(always)]
+    fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error> {
+        (self)(ctx, item)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct NullCond;
+
+impl<'a, C> UnitCond<'a, C> for NullCond
+where
+    C: Context<'a>,
+{
+    fn check(&self, _: &C, _: &(usize, C::Item)) -> Result<bool, Error> {
+        Ok(true)
+    }
+}
+
+pub trait Unit2Regex<'a, C>
+where
+    C: Context<'a>,
+    Self: Sized + Unit<C::Item>,
+{
+    fn repeat<const M: usize, const N: usize>(self) -> Repeat<'a, M, N, C, Self, NullCond>;
+
+    fn repeat_from<const M: usize>(self) -> Repeat<'a, M, { usize::MAX }, C, Self, NullCond>;
+
+    fn repeat_to<const N: usize>(self) -> Repeat<'a, 0, N, C, Self, NullCond>;
+
+    fn repeat_full(self) -> Repeat<'a, 0, { usize::MAX }, C, Self, NullCond>;
+
+    fn repeat_one(self) -> UnitOne<C, Self, C::Item, NullCond>;
+
+    fn repeat_one_more(self) -> UnitOneMore<C, Self, C::Item, NullCond>;
+
+    fn repeat_zero_one(self) -> UnitZeroOne<C, Self, C::Item, NullCond>;
+
+    fn repeat_zero_more(self) -> UnitZeroMore<C, Self, C::Item, NullCond>;
+
+    fn repeat_range(self, range: impl Into<CRange<usize>>) -> RepeatRange<'a, C, Self, NullCond>;
+}
+
+impl<'a, C, U> Unit2Regex<'a, C> for U
+where
+    C: Context<'a>,
+    Self: Sized + Unit<C::Item>,
+{
+    fn repeat<const M: usize, const N: usize>(self) -> Repeat<'a, M, N, C, Self, NullCond> {
+        Repeat::new(self, NullCond)
+    }
+
+    fn repeat_from<const M: usize>(self) -> Repeat<'a, M, { usize::MAX }, C, Self, NullCond> {
+        Repeat::new(self, NullCond)
+    }
+
+    fn repeat_to<const N: usize>(self) -> Repeat<'a, 0, N, C, Self, NullCond> {
+        Repeat::new(self, NullCond)
+    }
+
+    fn repeat_full(self) -> Repeat<'a, 0, { usize::MAX }, C, Self, NullCond> {
+        Repeat::new(self, NullCond)
+    }
+
+    fn repeat_one(self) -> UnitOne<C, Self, C::Item, NullCond> {
+        UnitOne::new(self, NullCond)
+    }
+
+    fn repeat_one_more(self) -> UnitOneMore<C, Self, C::Item, NullCond> {
+        UnitOneMore::new(self, NullCond)
+    }
+
+    fn repeat_zero_one(self) -> UnitZeroOne<C, Self, C::Item, NullCond> {
+        UnitZeroOne::new(self, NullCond)
+    }
+
+    fn repeat_zero_more(self) -> UnitZeroMore<C, Self, C::Item, NullCond> {
+        UnitZeroMore::new(self, NullCond)
+    }
+
+    fn repeat_range(self, range: impl Into<CRange<usize>>) -> RepeatRange<'a, C, Self, NullCond> {
+        RepeatRange::new(self, range.into(), NullCond)
     }
 }

@@ -75,7 +75,7 @@ impl<'a, C, T, I, E> IfRegex<C, T, I, E> {
         self
     }
 
-    pub fn set_if(&mut self, r#if: I) -> &mut Self {
+    pub fn with_if(&mut self, r#if: I) -> &mut Self {
         self.r#if = r#if;
         self
     }

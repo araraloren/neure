@@ -162,25 +162,22 @@ impl JsonParser {
 
     pub fn parse_number<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
         let space = Self::SPACE.repeat(0..);
-        let sign = '+'.or('-').repeat(0..2);
-        let digit = ('0'..='9').repeat(1..);
-        let dot = '.'.repeat(1);
-        let r#if = |ctx: &BytesCtx<'_>| ctx.orig().and_then(|v| v.get(0) == Some(b'.'));
-        let number = space.then(sign).then(digit).r#if(r#if, dot.then(digit));
+        let sign = regex!(['+' '-']{0,1});
+        let digit = regex!(['0' - '9']{1,});
+        let dot = regex!('.');
+        let r#if = |ctx: &BytesCtx<'a>| ctx.orig().map(|v| v.get(0) == Some(&b'.'));
+        let f64_ = space.then(sign).then(digit).then(regex::branch(
+            r#if,
+            dot.then(digit),
+            regex::consume(0),
+        ));
 
-        ctx.try_mat(space)?;
-        ctx.lazy()
-            .pat(&sign)
-            .and(&digit)
-            .and_if(&dot, &digit)
-            .map(|str: &[u8]| {
-                Ok(JsonZero::Num(
-                    std::str::from_utf8(str)
-                        .map(|v| v.parse::<f64>())
-                        .unwrap()
-                        .unwrap(),
-                ))
-            })
+        ctx.map_orig(&f64_, |str| {
+            std::str::from_utf8(str)
+                .map(|v| v.parse::<f64>())
+                .unwrap()
+                .unwrap()
+        })
     }
 }
 
