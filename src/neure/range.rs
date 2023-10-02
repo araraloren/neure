@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::ops::Bound;
 use std::ops::RangeBounds;
 
-use super::Unit;
+use super::Neure;
 
 use crate::trace_log;
 use crate::LogOrNot;
@@ -57,7 +57,7 @@ impl<T> RangeBounds<T> for CRange<T> {
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for CRange<T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for CRange<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match ({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -66,7 +66,7 @@ impl<T: PartialOrd + LogOrNot> Unit<T> for CRange<T> {
 
 macro_rules! impl_copy_range {
     ($ty:ty) => {
-        impl From<$ty> for $crate::unit::CRange<usize> {
+        impl From<$ty> for $crate::neure::CRange<usize> {
             fn from(value: $ty) -> Self {
                 let value = value as usize;
                 Self::from(value..=value)

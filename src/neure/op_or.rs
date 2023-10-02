@@ -1,22 +1,22 @@
 use std::marker::PhantomData;
 
-use super::Unit;
+use super::Neure;
 
 #[derive(Debug, Default, Copy)]
-pub struct And<L, R, T>
+pub struct Or<L, R, T>
 where
-    L: Unit<T>,
-    R: Unit<T>,
+    L: Neure<T>,
+    R: Neure<T>,
 {
     left: L,
     right: R,
     marker: PhantomData<T>,
 }
 
-impl<L, R, T> Clone for And<L, R, T>
+impl<L, R, T> Clone for Or<L, R, T>
 where
-    L: Unit<T> + Clone,
-    R: Unit<T> + Clone,
+    L: Neure<T> + Clone,
+    R: Neure<T> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -27,10 +27,10 @@ where
     }
 }
 
-impl<L, R, T> And<L, R, T>
+impl<L, R, T> Or<L, R, T>
 where
-    L: Unit<T>,
-    R: Unit<T>,
+    L: Neure<T>,
+    R: Neure<T>,
 {
     pub fn new(left: L, right: R) -> Self {
         Self {
@@ -67,12 +67,12 @@ where
     }
 }
 
-impl<L, R, T> Unit<T> for And<L, R, T>
+impl<L, R, T> Neure<T> for Or<L, R, T>
 where
-    L: Unit<T>,
-    R: Unit<T>,
+    L: Neure<T>,
+    R: Neure<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        self.left.is_match(other) && self.right.is_match(other)
+        self.left.is_match(other) || self.right.is_match(other)
     }
 }

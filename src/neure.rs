@@ -50,13 +50,13 @@ pub use self::equal::Equal;
 pub use self::op_and::And;
 pub use self::op_if::IfUnit;
 pub use self::op_not::Not;
-pub use self::op_one::UnitOne;
-pub use self::op_one::UnitOneMore;
+pub use self::op_one::NeureOne;
+pub use self::op_one::NeureOneMore;
 pub use self::op_or::Or;
-pub use self::op_repeat::Repeat;
-pub use self::op_repeat::RepeatRange;
-pub use self::op_zero::UnitZeroMore;
-pub use self::op_zero::UnitZeroOne;
+pub use self::op_repeat::NeureRepeat;
+pub use self::op_repeat::NeureRepeatRange;
+pub use self::op_zero::NeureZeroMore;
+pub use self::op_zero::NeureZeroOne;
 pub use self::range::CRange;
 
 pub use self::bool::any;
@@ -84,11 +84,11 @@ pub use self::char::wild;
 pub use self::equal::equal;
 pub use self::range::range;
 
-pub trait Unit<T: ?Sized> {
+pub trait Neure<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
 }
 
-impl<T, F> Unit<T> for F
+impl<T, F> Neure<T> for F
 where
     T: LogOrNot,
     F: Fn(&T) -> bool,
@@ -100,7 +100,7 @@ where
     }
 }
 
-impl<T> Unit<T> for char
+impl<T> Neure<T> for char
 where
     T: LogOrNot,
     Self: PartialEq<T>,
@@ -111,7 +111,7 @@ where
     }
 }
 
-impl<T> Unit<T> for u8
+impl<T> Neure<T> for u8
 where
     T: LogOrNot,
     Self: PartialEq<T>,
@@ -122,74 +122,74 @@ where
     }
 }
 
-impl<T> Unit<T> for Box<dyn Unit<T>> {
+impl<T> Neure<T> for Box<dyn Neure<T>> {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(self.as_ref(), other)
+        Neure::is_match(self.as_ref(), other)
     }
 }
 
-impl<U, T> Unit<T> for RefCell<U>
+impl<U, T> Neure<T> for RefCell<U>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(&*self.borrow(), other)
+        Neure::is_match(&*self.borrow(), other)
     }
 }
 
-impl<U, T> Unit<T> for Cell<U>
+impl<U, T> Neure<T> for Cell<U>
 where
-    U: Unit<T> + Copy,
+    U: Neure<T> + Copy,
 {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(&self.get(), other)
+        Neure::is_match(&self.get(), other)
     }
 }
 
-impl<U, T> Unit<T> for Mutex<U>
+impl<U, T> Neure<T> for Mutex<U>
 where
-    U: Unit<T> + Copy,
+    U: Neure<T> + Copy,
 {
     fn is_match(&self, other: &T) -> bool {
         let ret = self
             .lock()
             .expect("Oops ?! Can not unwrap mutex for regex ...");
 
-        Unit::is_match(&*ret, other)
+        Neure::is_match(&*ret, other)
     }
 }
 
-impl<U, T> Unit<T> for Arc<U>
+impl<U, T> Neure<T> for Arc<U>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(self.as_ref(), other)
+        Neure::is_match(self.as_ref(), other)
     }
 }
 
-impl<T> Unit<T> for Arc<dyn Unit<T>> {
+impl<T> Neure<T> for Arc<dyn Neure<T>> {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(self.as_ref(), other)
+        Neure::is_match(self.as_ref(), other)
     }
 }
 
-impl<U, T> Unit<T> for Rc<U>
+impl<U, T> Neure<T> for Rc<U>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(self.as_ref(), other)
+        Neure::is_match(self.as_ref(), other)
     }
 }
 
-impl<T> Unit<T> for Rc<dyn Unit<T>> {
+impl<T> Neure<T> for Rc<dyn Neure<T>> {
     fn is_match(&self, other: &T) -> bool {
-        Unit::is_match(self.as_ref(), other)
+        Neure::is_match(self.as_ref(), other)
     }
 }
 
-impl<const N: usize, T: PartialEq + LogOrNot> Unit<T> for [T; N] {
+impl<const N: usize, T: PartialEq + LogOrNot> Neure<T> for [T; N] {
     ///
     /// Match any character in the array.
     ///
@@ -212,7 +212,7 @@ impl<const N: usize, T: PartialEq + LogOrNot> Unit<T> for [T; N] {
     }
 }
 
-impl<'a, T: PartialEq + LogOrNot> Unit<T> for &'a [T] {
+impl<'a, T: PartialEq + LogOrNot> Neure<T> for &'a [T] {
     ///
     /// Match any character in the array.
     ///
@@ -236,157 +236,157 @@ impl<'a, T: PartialEq + LogOrNot> Unit<T> for &'a [T] {
     }
 }
 
-impl<T: PartialEq + LogOrNot> Unit<T> for Vec<T> {
+impl<T: PartialEq + LogOrNot> Neure<T> for Vec<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match vector({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Unit<T> for (Bound<&'a T>, Bound<&'a T>) {
+impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Neure<T> for (Bound<&'a T>, Bound<&'a T>) {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for (Bound<T>, Bound<T>) {
+impl<T: PartialOrd + LogOrNot> Neure<T> for (Bound<T>, Bound<T>) {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::Range<&T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::Range<&T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::Range<T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::Range<T> {
     fn is_match(&self, other: &T) -> bool {
         self.contains(other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeFrom<&T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeFrom<&T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeFrom<T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeFrom<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<T: ?Sized + PartialOrd + LogOrNot> Unit<T> for std::ops::RangeFull {
+impl<T: ?Sized + PartialOrd + LogOrNot> Neure<T> for std::ops::RangeFull {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeInclusive<&T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeInclusive<&T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeInclusive<T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeInclusive<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeTo<&T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeTo<&T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeTo<T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeTo<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeToInclusive<&T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeToInclusive<&T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Unit<T> for std::ops::RangeToInclusive<T> {
+impl<T: PartialOrd + LogOrNot> Neure<T> for std::ops::RangeToInclusive<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
     }
 }
 
-pub trait UnitOp<C> {
+pub trait NeureOp<C> {
     fn or<U>(self, regex: U) -> Or<Self, U, C>
     where
-        U: Unit<C>,
-        Self: Unit<C> + Sized;
+        U: Neure<C>,
+        Self: Neure<C> + Sized;
 
     fn and<U>(self, regex: U) -> And<Self, U, C>
     where
-        U: Unit<C>,
-        Self: Unit<C> + Sized;
+        U: Neure<C>,
+        Self: Neure<C> + Sized;
 
     fn not(self) -> Not<Self, C>
     where
-        Self: Unit<C> + Sized;
+        Self: Neure<C> + Sized;
 
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
     where
-        Self: Unit<C> + Sized,
-        I: Unit<C>,
-        O: Unit<C>;
+        Self: Neure<C> + Sized,
+        I: Neure<C>,
+        O: Neure<C>;
 }
 
-impl<C, T> UnitOp<C> for T
+impl<C, T> NeureOp<C> for T
 where
-    T: Unit<C>,
+    T: Neure<C>,
 {
     fn or<U>(self, unit: U) -> Or<Self, U, C>
     where
-        U: Unit<C>,
-        Self: Unit<C> + Sized,
+        U: Neure<C>,
+        Self: Neure<C> + Sized,
     {
         Or::new(self, unit)
     }
 
     fn and<U>(self, unit: U) -> And<Self, U, C>
     where
-        U: Unit<C>,
-        Self: Unit<C> + Sized,
+        U: Neure<C>,
+        Self: Neure<C> + Sized,
     {
         And::new(self, unit)
     }
 
     fn not(self) -> Not<Self, C>
     where
-        Self: Unit<C> + Sized,
+        Self: Neure<C> + Sized,
     {
         Not::new(self)
     }
 
     fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
     where
-        Self: Unit<C> + Sized,
-        I: Unit<C>,
-        O: Unit<C>,
+        Self: Neure<C> + Sized,
+        I: Neure<C>,
+        O: Neure<C>,
     {
         IfUnit::new(self, r#if, otherwise)
     }
@@ -406,14 +406,14 @@ pub(crate) fn inc_and_ret<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize,
     ret
 }
 
-pub trait UnitCond<'a, C>
+pub trait NeureCond<'a, C>
 where
     C: Context<'a>,
 {
     fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error>;
 }
 
-impl<'a, C, F> UnitCond<'a, C> for F
+impl<'a, C, F> NeureCond<'a, C> for F
 where
     C: Context<'a>,
     F: Fn(&C, &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error>,
@@ -427,7 +427,7 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NullCond;
 
-impl<'a, C> UnitCond<'a, C> for NullCond
+impl<'a, C> NeureCond<'a, C> for NullCond
 where
     C: Context<'a>,
 {
@@ -436,68 +436,74 @@ where
     }
 }
 
-pub trait Unit2Regex<'a, C>
+pub trait Neure2Regex<'a, C>
 where
     C: Context<'a>,
-    Self: Sized + Unit<C::Item>,
+    Self: Sized + Neure<C::Item>,
 {
-    fn repeat<const M: usize, const N: usize>(self) -> Repeat<'a, M, N, C, Self, NullCond>;
+    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond>;
 
-    fn repeat_from<const M: usize>(self) -> Repeat<'a, M, { usize::MAX }, C, Self, NullCond>;
+    fn repeat_from<const M: usize>(self) -> NeureRepeat<'a, M, { usize::MAX }, C, Self, NullCond>;
 
-    fn repeat_to<const N: usize>(self) -> Repeat<'a, 0, N, C, Self, NullCond>;
+    fn repeat_to<const N: usize>(self) -> NeureRepeat<'a, 0, N, C, Self, NullCond>;
 
-    fn repeat_full(self) -> Repeat<'a, 0, { usize::MAX }, C, Self, NullCond>;
+    fn repeat_full(self) -> NeureRepeat<'a, 0, { usize::MAX }, C, Self, NullCond>;
 
-    fn repeat_one(self) -> UnitOne<C, Self, C::Item, NullCond>;
+    fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond>;
 
-    fn repeat_one_more(self) -> UnitOneMore<C, Self, C::Item, NullCond>;
+    fn repeat_one_more(self) -> NeureOneMore<C, Self, C::Item, NullCond>;
 
-    fn repeat_zero_one(self) -> UnitZeroOne<C, Self, C::Item, NullCond>;
+    fn repeat_zero_one(self) -> NeureZeroOne<C, Self, C::Item, NullCond>;
 
-    fn repeat_zero_more(self) -> UnitZeroMore<C, Self, C::Item, NullCond>;
+    fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond>;
 
-    fn repeat_range(self, range: impl Into<CRange<usize>>) -> RepeatRange<'a, C, Self, NullCond>;
+    fn repeat_range(
+        self,
+        range: impl Into<CRange<usize>>,
+    ) -> NeureRepeatRange<'a, C, Self, NullCond>;
 }
 
-impl<'a, C, U> Unit2Regex<'a, C> for U
+impl<'a, C, U> Neure2Regex<'a, C> for U
 where
     C: Context<'a>,
-    Self: Sized + Unit<C::Item>,
+    Self: Sized + Neure<C::Item>,
 {
-    fn repeat<const M: usize, const N: usize>(self) -> Repeat<'a, M, N, C, Self, NullCond> {
-        Repeat::new(self, NullCond)
+    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond> {
+        NeureRepeat::new(self, NullCond)
     }
 
-    fn repeat_from<const M: usize>(self) -> Repeat<'a, M, { usize::MAX }, C, Self, NullCond> {
-        Repeat::new(self, NullCond)
+    fn repeat_from<const M: usize>(self) -> NeureRepeat<'a, M, { usize::MAX }, C, Self, NullCond> {
+        NeureRepeat::new(self, NullCond)
     }
 
-    fn repeat_to<const N: usize>(self) -> Repeat<'a, 0, N, C, Self, NullCond> {
-        Repeat::new(self, NullCond)
+    fn repeat_to<const N: usize>(self) -> NeureRepeat<'a, 0, N, C, Self, NullCond> {
+        NeureRepeat::new(self, NullCond)
     }
 
-    fn repeat_full(self) -> Repeat<'a, 0, { usize::MAX }, C, Self, NullCond> {
-        Repeat::new(self, NullCond)
+    fn repeat_full(self) -> NeureRepeat<'a, 0, { usize::MAX }, C, Self, NullCond> {
+        NeureRepeat::new(self, NullCond)
     }
 
-    fn repeat_one(self) -> UnitOne<C, Self, C::Item, NullCond> {
-        UnitOne::new(self, NullCond)
+    fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond> {
+        NeureOne::new(self, NullCond)
     }
 
-    fn repeat_one_more(self) -> UnitOneMore<C, Self, C::Item, NullCond> {
-        UnitOneMore::new(self, NullCond)
+    fn repeat_one_more(self) -> NeureOneMore<C, Self, C::Item, NullCond> {
+        NeureOneMore::new(self, NullCond)
     }
 
-    fn repeat_zero_one(self) -> UnitZeroOne<C, Self, C::Item, NullCond> {
-        UnitZeroOne::new(self, NullCond)
+    fn repeat_zero_one(self) -> NeureZeroOne<C, Self, C::Item, NullCond> {
+        NeureZeroOne::new(self, NullCond)
     }
 
-    fn repeat_zero_more(self) -> UnitZeroMore<C, Self, C::Item, NullCond> {
-        UnitZeroMore::new(self, NullCond)
+    fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond> {
+        NeureZeroMore::new(self, NullCond)
     }
 
-    fn repeat_range(self, range: impl Into<CRange<usize>>) -> RepeatRange<'a, C, Self, NullCond> {
-        RepeatRange::new(self, range.into(), NullCond)
+    fn repeat_range(
+        self,
+        range: impl Into<CRange<usize>>,
+    ) -> NeureRepeatRange<'a, C, Self, NullCond> {
+        NeureRepeatRange::new(self, range.into(), NullCond)
     }
 }

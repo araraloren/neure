@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
-use super::Unit;
+use super::Neure;
 
 #[derive(Debug, Default, Copy)]
 pub struct Not<U, T>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     unit: U,
     marker: PhantomData<T>,
@@ -13,7 +13,7 @@ where
 
 impl<U, T> Clone for Not<U, T>
 where
-    U: Unit<T> + Clone,
+    U: Neure<T> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -25,7 +25,7 @@ where
 
 impl<U, T> Not<U, T>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     pub fn new(unit: U) -> Self {
         Self {
@@ -48,9 +48,9 @@ where
     }
 }
 
-impl<U, T> Unit<T> for Not<U, T>
+impl<U, T> Neure<T> for Not<U, T>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     fn is_match(&self, other: &T) -> bool {
         !self.unit.is_match(other)

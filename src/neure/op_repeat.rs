@@ -13,27 +13,27 @@ use crate::regex::Regex;
 use super::inc_and_ret;
 use super::length_of;
 use super::CRange;
-use super::Unit;
-use super::UnitCond;
+use super::Neure;
+use super::NeureCond;
 
 #[derive(Debug, Copy)]
-pub struct Repeat<'a, const M: usize, const N: usize, C, U, I>
+pub struct NeureRepeat<'a, const M: usize, const N: usize, C, U, I>
 where
     C: Context<'a>,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
     unit: U,
     cond: I,
     marker: PhantomData<(&'a (), C)>,
 }
 
-impl<'a, const M: usize, const N: usize, C, U, I> Clone for Repeat<'a, M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, C, U, I> Clone for NeureRepeat<'a, M, N, C, U, I>
 where
     I: Clone,
     C: Context<'a>,
-    I: UnitCond<'a, C>,
-    U: Unit<C::Item> + Clone,
+    I: NeureCond<'a, C>,
+    U: Neure<C::Item> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -44,11 +44,11 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, C, U, I> Repeat<'a, M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, C, U, I> NeureRepeat<'a, M, N, C, U, I>
 where
     C: Context<'a>,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
     pub fn new(unit: U, r#if: I) -> Self {
         Self {
@@ -72,25 +72,25 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, C, U, I> Repeat<'a, M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, C, U, I> NeureRepeat<'a, M, N, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
-    pub fn with_if<F>(self, r#if: F) -> Repeat<'a, M, N, C, U, F>
+    pub fn with_if<F>(self, r#if: F) -> NeureRepeat<'a, M, N, C, U, F>
     where
-        F: UnitCond<'a, C>,
+        F: NeureCond<'a, C>,
     {
-        Repeat::<M, N, C, U, F>::new(self.unit, r#if)
+        NeureRepeat::<M, N, C, U, F>::new(self.unit, r#if)
     }
 }
 
 impl<'a, const M: usize, const N: usize, U, C, O, I> Invoke<'a, C, O, O>
-    for Repeat<'a, M, N, C, U, I>
+    for NeureRepeat<'a, M, N, C, U, I>
 where
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
     C: Context<'a> + Policy<C> + 'a,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -104,10 +104,10 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, I> Regex<C> for Repeat<'a, M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, U, C, I> Regex<C> for NeureRepeat<'a, M, N, C, U, I>
 where
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
     C: Context<'a> + 'a,
 {
     type Ret = Span;
@@ -149,11 +149,11 @@ where
 }
 
 #[derive(Debug, Copy)]
-pub struct RepeatRange<'a, C, U, I>
+pub struct NeureRepeatRange<'a, C, U, I>
 where
-    U: Unit<C::Item>,
+    U: Neure<C::Item>,
     C: Context<'a>,
-    I: UnitCond<'a, C>,
+    I: NeureCond<'a, C>,
 {
     unit: U,
     cond: I,
@@ -161,11 +161,11 @@ where
     marker: PhantomData<(&'a (), C)>,
 }
 
-impl<'a, C, U, I> Clone for RepeatRange<'a, C, U, I>
+impl<'a, C, U, I> Clone for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a>,
-    U: Unit<C::Item> + Clone,
-    I: UnitCond<'a, C> + Clone,
+    U: Neure<C::Item> + Clone,
+    I: NeureCond<'a, C> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -177,11 +177,11 @@ where
     }
 }
 
-impl<'a, C, U, I> RepeatRange<'a, C, U, I>
+impl<'a, C, U, I> NeureRepeatRange<'a, C, U, I>
 where
-    U: Unit<C::Item>,
+    U: Neure<C::Item>,
     C: Context<'a>,
-    I: UnitCond<'a, C>,
+    I: NeureCond<'a, C>,
 {
     pub fn new(unit: U, range: CRange<usize>, cond: I) -> Self {
         Self {
@@ -219,25 +219,25 @@ where
     }
 }
 
-impl<'a, C, U, I> RepeatRange<'a, C, U, I>
+impl<'a, C, U, I> NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
-    pub fn with_if<F>(self, r#if: F) -> RepeatRange<'a, C, U, F>
+    pub fn with_if<F>(self, r#if: F) -> NeureRepeatRange<'a, C, U, F>
     where
-        F: UnitCond<'a, C>,
+        F: NeureCond<'a, C>,
     {
-        RepeatRange::<C, U, F>::new(self.unit, self.range, r#if)
+        NeureRepeatRange::<C, U, F>::new(self.unit, self.range, r#if)
     }
 }
 
-impl<'a, U, C, M, I> Invoke<'a, C, M, M> for RepeatRange<'a, C, U, I>
+impl<'a, U, C, M, I> Invoke<'a, C, M, M> for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
@@ -251,11 +251,11 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for RepeatRange<'a, C, U, I>
+impl<'a, U, C, I> Regex<C> for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
     type Ret = Span;
 

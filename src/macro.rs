@@ -23,23 +23,23 @@ macro_rules! regex {
     };
 
     (@r ^ $($res:tt)*) => { // \S
-        regex!(@q $($res)* $crate::unit!(^))
+        regex!(@q $($res)* $crate::neure!(^))
     };
     (@r . $($res:tt)*) => { // .
-        regex!(@q $($res)* $crate::unit!(.))
+        regex!(@q $($res)* $crate::neure!(.))
     };
     (@r [ $($range:tt)+ ] $($res:tt)*) => {
-        regex!(@q $($res)* $crate::unit!([$($range)+]))
+        regex!(@q $($res)* $crate::neure!([$($range)+]))
     };
     (@r $ch:ident $($res:tt)*) => {
-        regex!(@q $($res)* $crate::unit::equal($crate::charize!($ch)))
+        regex!(@q $($res)* $crate::neure::equal($crate::charize!($ch)))
     };
     (@r $ch:literal $($res:tt)*) => {
-        regex!(@q $($res)* $crate::unit::equal($ch))
+        regex!(@q $($res)* $crate::neure::equal($ch))
     };
     (@r ($($regex:expr),+) $($res:tt)*) => {
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
                 let re = re.or($regex);
             )+
@@ -47,7 +47,7 @@ macro_rules! regex {
         }
     };
     (@r $($res:tt)*) => {
-        regex!(@q $($res)* $crate::unit::whitespace())
+        regex!(@q $($res)* $crate::neure::whitespace())
     };
     ($($res:tt)*) => {
         regex!(@r $($res)*)
@@ -55,58 +55,58 @@ macro_rules! regex {
 }
 
 #[macro_export]
-macro_rules! unit {
+macro_rules! neure {
     (^) => { // \S
-        $crate::unit::whitespace().not()
+        $crate::neure::whitespace().not()
     };
     (.) => { // .
-        $crate::unit::wild()
+        $crate::neure::wild()
     };
     ([^$l:literal - $r:literal] ) => {
-        $crate::unit::range($l..=$r).not()
+        $crate::neure::range($l..=$r).not()
     };
     ([^$l:ident - $r:ident] ) => {
-        $crate::unit::range($crate::charize!($l)..=$crate::charize!($r)).not()
+        $crate::neure::range($crate::charize!($l)..=$crate::charize!($r)).not()
     };
     ([$l:literal - $r:literal] ) => {
-        $crate::unit::range($l..=$r)
+        $crate::neure::range($l..=$r)
     };
     ([$l:ident - $r:ident] ) => {
-        $crate::unit::range($crate::charize!($l)..=$crate::charize!($r))
+        $crate::neure::range($crate::charize!($l)..=$crate::charize!($r))
     };
 
     ([^$($l:literal - $r:literal)+] ) => {// [ ^ 'a'-'z' 'A'-'Z' ]
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::range($l..=$r));
+                let re = re.or($crate::neure::range($l..=$r));
             )+
             re.not()
         }
     };
     ([^$($l:ident - $r:ident)+] ) => { // [ ^ a-z A-Z ]
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::range($crate::charize!($l)..=$crate::charize!($r)));
+                let re = re.or($crate::neure::range($crate::charize!($l)..=$crate::charize!($r)));
             )+
             re.not()
         }
     };
     ([$($l:literal - $r:literal)+] ) => { // [ 'a'-'Z' 'A'-'Z' ]
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::range($l..=$r));
+                let re = re.or($crate::neure::range($l..=$r));
             )+
             re
         }
     };
     ([$($l:ident - $r:ident)+] ) => { // [ a-Z A-Z ]
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::range($crate::charize!($l)..=$crate::charize!($r)));
+                let re = re.or($crate::neure::range($crate::charize!($l)..=$crate::charize!($r)));
             )+
             re
         }
@@ -115,48 +115,48 @@ macro_rules! unit {
 
     ([ ^ $($ch:literal)+ ] ) => { // [ ^ 'a' 'b' 'c']
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::equal($ch));
+                let re = re.or($crate::neure::equal($ch));
             )+
             re.not()
         }
     };
     ([ ^ $($ch:ident)+ ] ) => { // [^ a b c]
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::equal($crate::charize!($ch)));
+                let re = re.or($crate::neure::equal($crate::charize!($ch)));
             )+
             re.not()
         }
     };
     ([ $($ch:literal)+ ] ) => { // ['a' 'b' 'c']
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::equal($ch));
+                let re = re.or($crate::neure::equal($ch));
             )+
             re
         }
     };
     ([ $($ch:ident)+ ] ) => { // [a b c]
         {
-            let re = $crate::unit::none();
+            let re = $crate::neure::none();
             $(
-                let re = re.or($crate::unit::equal($crate::charize!($ch)));
+                let re = re.or($crate::neure::equal($crate::charize!($ch)));
             )+
             re
         }
     };
 
     ($ch:ident ) => {
-        $crate::unit::equal($crate::charize!($ch))
+        $crate::neure::equal($crate::charize!($ch))
     };
     ($ch:literal ) => {
-        $crate::unit::equal($ch)
+        $crate::neure::equal($ch)
     };
     () => {
-        $crate::unit::space()
+        $crate::neure::space()
     };
 }

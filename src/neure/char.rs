@@ -1,4 +1,4 @@
-use super::Unit;
+use super::Neure;
 
 use crate::trace_log;
 
@@ -11,7 +11,7 @@ impl Alphabetic {
     }
 }
 
-impl Unit<char> for Alphabetic {
+impl Neure<char> for Alphabetic {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match alphabetic with value ({})(in)", other);
         other.is_alphabetic()
@@ -50,7 +50,7 @@ impl Alphanumeric {
     }
 }
 
-impl Unit<char> for Alphanumeric {
+impl Neure<char> for Alphanumeric {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match alphanumeric with value ({})(in)", other);
         other.is_alphanumeric()
@@ -90,7 +90,7 @@ impl Ascii {
     }
 }
 
-impl Unit<char> for Ascii {
+impl Neure<char> for Ascii {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii with value ({})(in)", other);
         other.is_ascii()
@@ -129,7 +129,7 @@ impl AsciiAlphabetic {
     }
 }
 
-impl Unit<char> for AsciiAlphabetic {
+impl Neure<char> for AsciiAlphabetic {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii alphabetic with value ({})(in)", other);
         other.is_ascii_alphabetic()
@@ -168,7 +168,7 @@ impl AsciiAlphanumeric {
     }
 }
 
-impl Unit<char> for AsciiAlphanumeric {
+impl Neure<char> for AsciiAlphanumeric {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii alphanumeric with value ({})(in)", other);
         other.is_ascii_alphanumeric()
@@ -207,7 +207,7 @@ impl AsciiControl {
     }
 }
 
-impl Unit<char> for AsciiControl {
+impl Neure<char> for AsciiControl {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii control with value ({})(in)", other);
         other.is_ascii_control()
@@ -246,7 +246,7 @@ impl AsciiDigit {
     }
 }
 
-impl Unit<char> for AsciiDigit {
+impl Neure<char> for AsciiDigit {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii digit with value ({})(in)", other);
         other.is_ascii_digit()
@@ -285,7 +285,7 @@ impl AsciiGraphic {
     }
 }
 
-impl Unit<char> for AsciiGraphic {
+impl Neure<char> for AsciiGraphic {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii graphics with value ({})(in)", other);
         other.is_ascii_graphic()
@@ -324,7 +324,7 @@ impl AsciiHexDigit {
     }
 }
 
-impl Unit<char> for AsciiHexDigit {
+impl Neure<char> for AsciiHexDigit {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii hex digit with value ({})(in)", other);
         other.is_ascii_hexdigit()
@@ -363,7 +363,7 @@ impl AsciiLowercase {
     }
 }
 
-impl Unit<char> for AsciiLowercase {
+impl Neure<char> for AsciiLowercase {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii lowercase with value ({})(in)", other);
         other.is_ascii_lowercase()
@@ -402,7 +402,7 @@ impl AsciiPunctuation {
     }
 }
 
-impl Unit<char> for AsciiPunctuation {
+impl Neure<char> for AsciiPunctuation {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii punctuation with value ({})(in)", other);
         other.is_ascii_punctuation()
@@ -441,7 +441,7 @@ impl AsciiUppercase {
     }
 }
 
-impl Unit<char> for AsciiUppercase {
+impl Neure<char> for AsciiUppercase {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii uppercase with value ({})(in)", other);
         other.is_ascii_uppercase()
@@ -480,7 +480,7 @@ impl AsciiWhiteSpace {
     }
 }
 
-impl Unit<char> for AsciiWhiteSpace {
+impl Neure<char> for AsciiWhiteSpace {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match ascii white space with value ({})(in)", other);
         other.is_ascii_whitespace()
@@ -521,7 +521,7 @@ impl Control {
     }
 }
 
-impl Unit<char> for Control {
+impl Neure<char> for Control {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match control with value ({})(in)", other);
         other.is_control()
@@ -560,7 +560,7 @@ impl Digit {
     }
 }
 
-impl Unit<char> for Digit {
+impl Neure<char> for Digit {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match digit(radix = {}) with value ({})(in)", self.0, other);
         other.is_digit(self.0)
@@ -599,7 +599,7 @@ impl Lowercase {
     }
 }
 
-impl Unit<char> for Lowercase {
+impl Neure<char> for Lowercase {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match lowercase with value ({})(in)", other);
         other.is_lowercase()
@@ -638,7 +638,7 @@ impl Numeric {
     }
 }
 
-impl Unit<char> for Numeric {
+impl Neure<char> for Numeric {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match numeric with value ({})(in)", other);
         other.is_numeric()
@@ -677,7 +677,7 @@ impl Uppercase {
     }
 }
 
-impl Unit<char> for Uppercase {
+impl Neure<char> for Uppercase {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match uppercase with value ({})(in)", other);
         other.is_uppercase()
@@ -716,7 +716,7 @@ impl WhiteSpace {
     }
 }
 
-impl Unit<char> for WhiteSpace {
+impl Neure<char> for WhiteSpace {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match space with value ({})(in)", other);
         other.is_whitespace()
@@ -757,7 +757,7 @@ impl Wild {
     }
 }
 
-impl Unit<char> for Wild {
+impl Neure<char> for Wild {
     fn is_match(&self, other: &char) -> bool {
         trace_log!("match wild(.) with value ({})(in)", other);
         other != &'\n'

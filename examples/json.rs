@@ -18,7 +18,7 @@ use neure::*;
 pub struct JsonParser;
 
 impl JsonParser {
-    const SPACE: neure::unit::WhiteSpace = unit::whitespace();
+    const SPACE: neure::neure::WhiteSpace = neure::whitespace();
 
     pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
         let mut ctx = BytesCtx::new(pat);

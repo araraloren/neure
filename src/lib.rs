@@ -3,9 +3,9 @@ pub mod ctx;
 pub mod err;
 pub mod iter;
 pub mod r#macro;
+pub mod neure;
 pub mod regex;
 pub mod span;
-pub mod unit;
 
 #[cfg(feature = "log")]
 pub(crate) use tracing::trace as trace_log;
@@ -40,17 +40,17 @@ pub mod prelude {
     pub use crate::ctx::Ret;
     pub use crate::ctx::Return;
     pub use crate::ctx::Span;
+    pub use crate::neure;
+    pub use crate::neure::Neure;
+    pub use crate::neure::Neure2Regex;
+    pub use crate::neure::NeureCond;
+    pub use crate::neure::NeureOp;
     pub use crate::regex;
     pub use crate::regex::IntoDynamic;
     pub use crate::regex::IntoNonDynamic;
     pub use crate::regex::Regex;
     pub use crate::regex::RegexOp;
     pub use crate::span::SimpleStorer;
-    pub use crate::unit;
-    pub use crate::unit::Unit;
-    pub use crate::unit::Unit2Regex;
-    pub use crate::unit::UnitCond;
-    pub use crate::unit::UnitOp;
 }
 
 #[cfg(test)]

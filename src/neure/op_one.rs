@@ -2,7 +2,6 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Extract;
@@ -13,23 +12,23 @@ use crate::trace_log;
 
 use super::inc_and_ret;
 use super::length_of;
-use super::Unit;
-use super::UnitCond;
+use super::Neure;
+use super::NeureCond;
 
 #[derive(Debug, Copy)]
-pub struct UnitZeroOne<C, U, T, I>
+pub struct NeureOne<C, U, T, I>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     unit: U,
     cond: I,
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> Clone for UnitZeroOne<C, U, T, I>
+impl<C, U, T, I> Clone for NeureOne<C, U, T, I>
 where
     I: Clone,
-    U: Unit<T> + Clone,
+    U: Neure<T> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -40,9 +39,9 @@ where
     }
 }
 
-impl<C, U, T, I> UnitZeroOne<C, U, T, I>
+impl<C, U, T, I> NeureOne<C, U, T, I>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     pub fn new(unit: U, r#if: I) -> Self {
         Self {
@@ -66,24 +65,24 @@ where
     }
 }
 
-impl<'a, C, U, T, I> UnitZeroOne<C, U, T, I>
+impl<'a, C, U, T, I> NeureOne<C, U, T, I>
 where
-    U: Unit<T>,
+    U: Neure<T>,
     C: Context<'a>,
 {
-    pub fn with_if<F>(self, r#if: F) -> UnitZeroOne<C, U, T, F>
+    pub fn with_if<F>(self, r#if: F) -> NeureOne<C, U, T, F>
     where
-        F: UnitCond<'a, C>,
+        F: NeureCond<'a, C>,
     {
-        UnitZeroOne::new(self.unit, r#if)
+        NeureOne::new(self.unit, r#if)
     }
 }
 
-impl<'a, U, C, O, I> Invoke<'a, C, O, O> for UnitZeroOne<C, U, C::Item, I>
+impl<'a, U, C, O, I> Invoke<'a, C, O, O> for NeureOne<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -97,45 +96,44 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for UnitZeroOne<C, U, C::Item, I>
+impl<'a, U, C, I> Regex<C> for NeureOne<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
-        trace_log!("match data in zero_one(0..=1)");
-        if let Ok(mut iter) = ctx.peek() {
-            if let Some((offset, item)) = iter.next() {
-                if self.unit.is_match(&item) && self.cond.check(ctx, &(offset, item))? {
-                    return Ok(inc_and_ret(
-                        ctx,
-                        1,
-                        length_of(offset, ctx, iter.next().map(|v| v.0)),
-                    ));
-                }
+        let mut iter = ctx.peek()?;
+
+        if let Some((offset, item)) = iter.next() {
+            if self.unit.is_match(&item) && self.cond.check(ctx, &(offset, item))? {
+                return Ok(inc_and_ret(
+                    ctx,
+                    1,
+                    length_of(offset, ctx, iter.next().map(|v| v.0)),
+                ));
             }
         }
-        Ok(<Self::Ret as Ret>::from(ctx, (0, 0)))
+        Err(Error::One)
     }
 }
 
 #[derive(Debug, Copy)]
-pub struct UnitZeroMore<C, U, T, I>
+pub struct NeureOneMore<C, U, T, I>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     unit: U,
     cond: I,
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> Clone for UnitZeroMore<C, U, T, I>
+impl<C, U, T, I> Clone for NeureOneMore<C, U, T, I>
 where
     I: Clone,
-    U: Unit<T> + Clone,
+    U: Neure<T> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -146,9 +144,9 @@ where
     }
 }
 
-impl<C, U, T, I> UnitZeroMore<C, U, T, I>
+impl<C, U, T, I> NeureOneMore<C, U, T, I>
 where
-    U: Unit<T>,
+    U: Neure<T>,
 {
     pub fn new(unit: U, r#if: I) -> Self {
         Self {
@@ -172,24 +170,24 @@ where
     }
 }
 
-impl<'a, C, U, T, I> UnitZeroMore<C, U, T, I>
+impl<'a, C, U, T, I> NeureOneMore<C, U, T, I>
 where
-    U: Unit<T>,
+    U: Neure<T>,
     C: Context<'a>,
 {
-    pub fn with_if<F>(self, r#if: F) -> UnitZeroMore<C, U, T, F>
+    pub fn with_if<F>(self, r#if: F) -> NeureOneMore<C, U, T, F>
     where
-        F: UnitCond<'a, C>,
+        F: NeureCond<'a, C>,
     {
-        UnitZeroMore::new(self.unit, r#if)
+        NeureOneMore::new(self.unit, r#if)
     }
 }
 
-impl<'a, U, C, O, I> Invoke<'a, C, O, O> for UnitZeroMore<C, U, C::Item, I>
+impl<'a, U, C, O, I> Invoke<'a, C, O, O> for NeureOneMore<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -203,11 +201,11 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for UnitZeroMore<C, U, C::Item, I>
+impl<'a, U, C, I> Regex<C> for NeureOneMore<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
-    U: Unit<C::Item>,
-    I: UnitCond<'a, C>,
+    U: Neure<C::Item>,
+    I: NeureCond<'a, C>,
 {
     type Ret = Span;
 
@@ -216,17 +214,17 @@ where
         let mut beg = None;
         let mut end = None;
 
-        trace_log!("match data in zero_more(0..)");
-        if let Ok(mut iter) = ctx.peek() {
-            for pair in iter.by_ref() {
-                if !self.unit.is_match(&pair.1) && self.cond.check(ctx, &pair)? {
-                    end = Some(pair);
-                    break;
-                }
-                cnt += 1;
-                if beg.is_none() {
-                    beg = Some(pair.0);
-                }
+        trace_log!("match data in one_more(1..)");
+        let mut iter = ctx.peek()?;
+
+        for pair in iter.by_ref() {
+            if !self.unit.is_match(&pair.1) && self.cond.check(ctx, &pair)? {
+                end = Some(pair);
+                break;
+            }
+            cnt += 1;
+            if beg.is_none() {
+                beg = Some(pair.0);
             }
         }
         if let Some(start) = beg {
@@ -236,7 +234,7 @@ where
                 length_of(start, ctx, end.map(|v| v.0)),
             ))
         } else {
-            Ok(<Self::Ret as Ret>::from(ctx, (0, 0)))
+            Err(Error::OneMore)
         }
     }
 }

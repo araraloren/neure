@@ -1,4 +1,4 @@
-use super::Unit;
+use super::Neure;
 
 use crate::trace_log;
 use crate::LogOrNot;
@@ -14,7 +14,7 @@ impl<T> Equal<T> {
     }
 }
 
-impl<T: PartialEq + LogOrNot> Unit<T> for Equal<T> {
+impl<T: PartialEq + LogOrNot> Neure<T> for Equal<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match ({:?}) with value ({:?})(in)", self.val, other);
         &self.val == other
