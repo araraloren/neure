@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 
-use super::CtxGuard;
 use super::Extract;
 use super::Handler;
 use super::Invoke;
@@ -9,16 +8,15 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::prelude::Ret;
-use crate::regex::Regex;
+use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
-pub struct Collect<C, P, O> {
+pub struct Pattern<C, P> {
     pat: P,
-    marker: PhantomData<(O, C)>,
+    marker: PhantomData<C>,
 }
 
-impl<C, P, O> Clone for Collect<C, P, O>
+impl<C, P> Clone for Pattern<C, P>
 where
     P: Clone,
 {
@@ -30,7 +28,7 @@ where
     }
 }
 
-impl<C, P, O> Collect<C, P, O> {
+impl<C, P> Pattern<C, P> {
     pub fn new(pat: P) -> Self {
         Self {
             pat,
@@ -52,24 +50,23 @@ impl<C, P, O> Collect<C, P, O> {
     }
 }
 
-impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<C, P, O>
+impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<C, P>
 where
-    V: FromIterator<O>,
-    P: Invoke<'a, C, M, O>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Ok(V::from_iter(std::iter::from_fn(|| {
-            self.pat.invoke(ctx, func).ok()
-        })))
+        let ret = ctx.try_mat(&self.pat)?;
+
+        func.invoke(A::extract(ctx, &ret)?)
     }
 }
 
-impl<'a, C, P, O> Regex<C> for Collect<C, P, O>
+impl<'a, C, P> Regex<C> for Pattern<C, P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -77,12 +74,6 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let mut span = g.try_mat(&self.pat)?;
-
-        while let Ok(ret) = g.try_mat(&self.pat) {
-            span.add_assign(ret);
-        }
-        Ok(span)
+        ctx.try_mat(&self.pat)
     }
 }

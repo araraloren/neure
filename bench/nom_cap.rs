@@ -1,5 +1,5 @@
 use criterion::{black_box, Criterion};
-use neure::prelude::*;
+use neu::prelude::*;
 use nom::{
     bytes::complete::{tag, take_while_m_n},
     combinator::map_res,

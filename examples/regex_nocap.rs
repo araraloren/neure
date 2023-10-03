@@ -1,5 +1,5 @@
 use ::regex::Regex;
-use neure::prelude::*;
+use neu::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let test_cases = [
@@ -14,7 +14,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "firstname.lastname@example.com",
         "email@subdomain.example.com",
     ];
-    let parser = |str| -> Result<(), neure::err::Error> {
+    let parser = |str| -> Result<(), neu::err::Error> {
         let mut ctx = RegexCtx::new(str);
         let letter = unit!(['a' - 'z']);
         let number = unit!(['0' - '9']);
@@ -38,8 +38,8 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         let post = regex!((letter, dot){2,6});
         let dot = regex!('.');
-        let start = neure::regex::start();
-        let end = neure::regex::end();
+        let start = neu::regex::start();
+        let end = neu::regex::end();
 
         ctx.try_mat(&start)?;
         ctx.try_mat(&pre)?;

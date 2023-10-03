@@ -43,8 +43,8 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::neure::CRange;
-use crate::neure::Neure;
+use crate::neu::CRange;
+use crate::neu::Neu;
 use crate::trace_log;
 
 pub trait Regex<C> {
@@ -76,7 +76,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::regex::string(self);
+        let pattern = crate::re::string(self);
         ctx.try_mat(&pattern)
     }
 }
@@ -88,7 +88,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::regex::bytes(self);
+        let pattern = crate::re::bytes(self);
         ctx.try_mat(&pattern)
     }
 }
@@ -335,7 +335,7 @@ fn make_ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: 
     ret
 }
 
-pub fn one<'a, C, R>(re: impl Neure<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -357,7 +357,7 @@ where
     }
 }
 
-pub fn zero_one<'a, C, R>(re: impl Neure<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn zero_one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -379,7 +379,7 @@ where
     }
 }
 
-pub fn zero_more<'a, C, R>(re: impl Neure<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn zero_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -414,7 +414,7 @@ where
     }
 }
 
-pub fn one_more<'a, C, R>(re: impl Neure<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn one_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
     C: Context<'a> + 'a,
@@ -459,18 +459,18 @@ where
 //     count_if::<'a, M, N, C, R>(re, |_, _| true)
 // }
 
-pub fn count<'a, const M: usize, const N: usize, C, U: Neure<C::Item>>(
+pub fn count<'a, const M: usize, const N: usize, C, U: Neu<C::Item>>(
     re: U,
-) -> crate::neure::NeureRepeat<'a, M, N, C, U, crate::neure::NullCond>
+) -> crate::neu::NeureRepeat<'a, M, N, C, U, crate::neu::NullCond>
 where
     C: Context<'a>,
 {
-    crate::neure::Neure2Regex::repeat::<M, N>(re)
+    crate::neu::Neu2Re::repeat::<M, N>(re)
 }
 
 pub fn count_if<'a, const M: usize, const N: usize, C, R>(
-    re: impl Neure<C::Item>,
-    r#if: impl crate::neure::NeureCond<'a, C>,
+    re: impl Neu<C::Item>,
+    r#if: impl crate::neu::NeuCond<'a, C>,
 ) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,

@@ -10,15 +10,15 @@ pub enum JsonZero<'a> {
 
 static JSON: &'static [u8] = include_bytes!("samples/sample.json");
 
-use neure::err::Error;
-use neure::prelude::*;
-use neure::*;
+use neu::err::Error;
+use neu::prelude::*;
+use neu::*;
 
 #[derive(Debug, Default)]
 pub struct JsonParser;
 
 impl JsonParser {
-    const SPACE: neure::neure::WhiteSpace = neure::whitespace();
+    const SPACE: neu::neure::WhiteSpace = neu::whitespace();
 
     pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
         let mut ctx = BytesCtx::new(pat);

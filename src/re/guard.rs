@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::err::Error;
-use crate::regex::Regex;
+use crate::re::Regex;
 
 #[derive(Debug)]
 pub struct CtxGuard<'a, 'b, C>

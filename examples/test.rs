@@ -2,10 +2,10 @@ use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
-use neure::err::Error;
-use neure::prelude::*;
-use neure::regex::*;
-use neure::*;
+use neu::err::Error;
+use neu::prelude::*;
+use neu::regex::*;
+use neu::*;
 
 //  pub struct Terminated<S, P, C> {
 //     sep: S,

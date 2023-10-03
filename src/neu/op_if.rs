@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 
-use super::Neure;
+use super::Neu;
 
 #[derive(Debug, Default, Copy)]
 pub struct IfUnit<U, I, O, T>
 where
-    U: Neure<T>,
-    I: Neure<T>,
-    O: Neure<T>,
+    U: Neu<T>,
+    I: Neu<T>,
+    O: Neu<T>,
 {
     r#if: I,
     unit: U,
@@ -17,9 +17,9 @@ where
 
 impl<U, I, O, T> Clone for IfUnit<U, I, O, T>
 where
-    U: Neure<T> + Clone,
-    I: Neure<T> + Clone,
-    O: Neure<T> + Clone,
+    U: Neu<T> + Clone,
+    I: Neu<T> + Clone,
+    O: Neu<T> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -33,9 +33,9 @@ where
 
 impl<U, I, O, T> IfUnit<U, I, O, T>
 where
-    U: Neure<T>,
-    I: Neure<T>,
-    O: Neure<T>,
+    U: Neu<T>,
+    I: Neu<T>,
+    O: Neu<T>,
 {
     pub fn new(unit: U, r#if: I, other: O) -> Self {
         Self {
@@ -86,11 +86,11 @@ where
     }
 }
 
-impl<U, I, O, T> Neure<T> for IfUnit<U, I, O, T>
+impl<U, I, O, T> Neu<T> for IfUnit<U, I, O, T>
 where
-    U: Neure<T>,
-    I: Neure<T>,
-    O: Neure<T>,
+    U: Neu<T>,
+    I: Neu<T>,
+    O: Neu<T>,
 {
     fn is_match(&self, other: &T) -> bool {
         if self.r#if.is_match(other) {

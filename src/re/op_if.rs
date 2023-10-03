@@ -9,7 +9,7 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::Regex;
+use crate::re::Regex;
 use crate::trace_log;
 
 #[derive(Debug, Default, Copy)]

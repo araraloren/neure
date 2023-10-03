@@ -7,40 +7,37 @@ use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::Regex;
+use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
-pub struct Quote<C, P, L, R> {
+pub struct Then<C, P, T> {
     pat: P,
-    left: L,
-    right: R,
+    then: T,
     marker: PhantomData<C>,
 }
 
-impl<C, P, L, R> Clone for Quote<C, P, L, R>
+impl<C, P, T> Clone for Then<C, P, T>
 where
     P: Clone,
-    L: Clone,
-    R: Clone,
+    T: Clone,
 {
     fn clone(&self) -> Self {
         Self {
             pat: self.pat.clone(),
-            left: self.left.clone(),
-            right: self.right.clone(),
+            then: self.then.clone(),
             marker: self.marker,
         }
     }
 }
 
-impl<C, P, L, R> Quote<C, P, L, R> {
-    pub fn new(pat: P, left: L, right: R) -> Self {
+impl<C, P, T> Then<C, P, T> {
+    pub fn new(pat: P, then: T) -> Self {
         Self {
             pat,
-            left,
-            right,
+            then,
             marker: PhantomData,
         }
     }
@@ -53,20 +50,12 @@ impl<C, P, L, R> Quote<C, P, L, R> {
         &mut self.pat
     }
 
-    pub fn left(&self) -> &L {
-        &self.left
+    pub fn then(&self) -> &T {
+        &self.then
     }
 
-    pub fn left_mut(&mut self) -> &mut L {
-        &mut self.left
-    }
-
-    pub fn right(&self) -> &R {
-        &self.right
-    }
-
-    pub fn right_mut(&mut self) -> &mut R {
-        &mut self.right
+    pub fn then_mut(&mut self) -> &mut T {
+        &mut self.then
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -74,22 +63,16 @@ impl<C, P, L, R> Quote<C, P, L, R> {
         self
     }
 
-    pub fn set_left(&mut self, left: L) -> &mut Self {
-        self.left = left;
-        self
-    }
-
-    pub fn set_right(&mut self, right: R) -> &mut Self {
-        self.right = right;
+    pub fn set_then(&mut self, then: T) -> &mut Self {
+        self.then = then;
         self
     }
 }
 
-impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<C, P, L, R>
+impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<C, P, T>
 where
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
+    T: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -99,31 +82,33 @@ where
     {
         let mut g = CtxGuard::new(ctx);
 
-        g.try_mat(&self.left)?;
-        let ret = self.pat.invoke(g.ctx(), func);
-        let ret = g.process_ret(ret)?;
+        match self.pat.invoke(g.ctx(), func) {
+            Ok(_) => {
+                let ret = self.then.invoke(g.ctx(), func);
 
-        g.try_mat(&self.right)?;
-        Ok(ret)
+                g.process_ret(ret)
+            }
+            Err(e) => {
+                g.reset();
+                Err(e)
+            }
+        }
     }
 }
 
-impl<'a, C, L, R, P> Regex<C> for Quote<C, P, L, R>
+impl<'a, C, P, T> Regex<C> for Then<C, P, T>
 where
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,
+    T: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let mut ret = g.try_mat(&self.pat)?;
 
-        g.try_mat(&self.left)?;
-        let ret = g.try_mat(&self.pat)?;
-
-        g.try_mat(&self.right)?;
+        ret.add_assign(g.try_mat(&self.then)?);
         Ok(ret)
     }
 }

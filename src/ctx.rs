@@ -4,7 +4,7 @@ mod ret;
 mod span;
 
 use crate::err::Error;
-use crate::regex::Regex;
+use crate::re::Regex;
 
 pub use self::ctx::RegexCtx;
 pub use self::ret::Return;

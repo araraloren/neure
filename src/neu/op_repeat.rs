@@ -5,23 +5,23 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::Extract;
-use crate::regex::Handler;
-use crate::regex::Invoke;
-use crate::regex::Regex;
+use crate::re::Extract;
+use crate::re::Handler;
+use crate::re::Invoke;
+use crate::re::Regex;
 
 use super::inc_and_ret;
 use super::length_of;
 use super::CRange;
-use super::Neure;
-use super::NeureCond;
+use super::Neu;
+use super::NeuCond;
 
 #[derive(Debug, Copy)]
 pub struct NeureRepeat<'a, const M: usize, const N: usize, C, U, I>
 where
     C: Context<'a>,
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
 {
     unit: U,
     cond: I,
@@ -32,8 +32,8 @@ impl<'a, const M: usize, const N: usize, C, U, I> Clone for NeureRepeat<'a, M, N
 where
     I: Clone,
     C: Context<'a>,
-    I: NeureCond<'a, C>,
-    U: Neure<C::Item> + Clone,
+    I: NeuCond<'a, C>,
+    U: Neu<C::Item> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -47,8 +47,8 @@ where
 impl<'a, const M: usize, const N: usize, C, U, I> NeureRepeat<'a, M, N, C, U, I>
 where
     C: Context<'a>,
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
 {
     pub fn new(unit: U, r#if: I) -> Self {
         Self {
@@ -75,12 +75,12 @@ where
 impl<'a, const M: usize, const N: usize, C, U, I> NeureRepeat<'a, M, N, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
 {
     pub fn with_if<F>(self, r#if: F) -> NeureRepeat<'a, M, N, C, U, F>
     where
-        F: NeureCond<'a, C>,
+        F: NeuCond<'a, C>,
     {
         NeureRepeat::<M, N, C, U, F>::new(self.unit, r#if)
     }
@@ -89,8 +89,8 @@ where
 impl<'a, const M: usize, const N: usize, U, C, O, I> Invoke<'a, C, O, O>
     for NeureRepeat<'a, M, N, C, U, I>
 where
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C> + 'a,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -106,8 +106,8 @@ where
 
 impl<'a, const M: usize, const N: usize, U, C, I> Regex<C> for NeureRepeat<'a, M, N, C, U, I>
 where
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
     C: Context<'a> + 'a,
 {
     type Ret = Span;
@@ -151,9 +151,9 @@ where
 #[derive(Debug, Copy)]
 pub struct NeureRepeatRange<'a, C, U, I>
 where
-    U: Neure<C::Item>,
+    U: Neu<C::Item>,
     C: Context<'a>,
-    I: NeureCond<'a, C>,
+    I: NeuCond<'a, C>,
 {
     unit: U,
     cond: I,
@@ -164,8 +164,8 @@ where
 impl<'a, C, U, I> Clone for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a>,
-    U: Neure<C::Item> + Clone,
-    I: NeureCond<'a, C> + Clone,
+    U: Neu<C::Item> + Clone,
+    I: NeuCond<'a, C> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -179,9 +179,9 @@ where
 
 impl<'a, C, U, I> NeureRepeatRange<'a, C, U, I>
 where
-    U: Neure<C::Item>,
+    U: Neu<C::Item>,
     C: Context<'a>,
-    I: NeureCond<'a, C>,
+    I: NeuCond<'a, C>,
 {
     pub fn new(unit: U, range: CRange<usize>, cond: I) -> Self {
         Self {
@@ -222,12 +222,12 @@ where
 impl<'a, C, U, I> NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
 {
     pub fn with_if<F>(self, r#if: F) -> NeureRepeatRange<'a, C, U, F>
     where
-        F: NeureCond<'a, C>,
+        F: NeuCond<'a, C>,
     {
         NeureRepeatRange::<C, U, F>::new(self.unit, self.range, r#if)
     }
@@ -236,8 +236,8 @@ where
 impl<'a, U, C, M, I> Invoke<'a, C, M, M> for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
@@ -254,8 +254,8 @@ where
 impl<'a, U, C, I> Regex<C> for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
-    U: Neure<C::Item>,
-    I: NeureCond<'a, C>,
+    U: Neu<C::Item>,
+    I: NeuCond<'a, C>,
 {
     type Ret = Span;
 

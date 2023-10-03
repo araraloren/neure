@@ -1,4 +1,4 @@
-use crate::regex::Regex;
+use crate::re::Regex;
 
 use std::cell::Cell;
 use std::cell::RefCell;

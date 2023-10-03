@@ -2,7 +2,7 @@ use super::Ret;
 
 use crate::ctx::Context;
 use crate::err::Error;
-use crate::regex::Extract;
+use crate::re::Extract;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Span {

@@ -7,9 +7,9 @@ use super::Span;
 use crate::ctx::Policy;
 use crate::err::Error;
 use crate::iter::BytesIndices;
-use crate::regex::Extract;
-use crate::regex::Handler;
-use crate::regex::Invoke;
+use crate::re::Extract;
+use crate::re::Handler;
+use crate::re::Invoke;
 use crate::span::SimpleStorer;
 use crate::trace_log;
 

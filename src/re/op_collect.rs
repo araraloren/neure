@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use super::CtxGuard;
 use super::Extract;
 use super::Handler;
 use super::Invoke;
@@ -8,15 +9,16 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::Regex;
+use crate::prelude::Ret;
+use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
-pub struct Pattern<C, P> {
+pub struct Collect<C, P, O> {
     pat: P,
-    marker: PhantomData<C>,
+    marker: PhantomData<(O, C)>,
 }
 
-impl<C, P> Clone for Pattern<C, P>
+impl<C, P, O> Clone for Collect<C, P, O>
 where
     P: Clone,
 {
@@ -28,7 +30,7 @@ where
     }
 }
 
-impl<C, P> Pattern<C, P> {
+impl<C, P, O> Collect<C, P, O> {
     pub fn new(pat: P) -> Self {
         Self {
             pat,
@@ -50,23 +52,24 @@ impl<C, P> Pattern<C, P> {
     }
 }
 
-impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<C, P>
+impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<C, P, O>
 where
-    P: Regex<C, Ret = Span>,
+    V: FromIterator<O>,
+    P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = ctx.try_mat(&self.pat)?;
-
-        func.invoke(A::extract(ctx, &ret)?)
+        Ok(V::from_iter(std::iter::from_fn(|| {
+            self.pat.invoke(ctx, func).ok()
+        })))
     }
 }
 
-impl<'a, C, P> Regex<C> for Pattern<C, P>
+impl<'a, C, P, O> Regex<C> for Collect<C, P, O>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
@@ -74,6 +77,12 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(&self.pat)
+        let mut g = CtxGuard::new(ctx);
+        let mut span = g.try_mat(&self.pat)?;
+
+        while let Ok(ret) = g.try_mat(&self.pat) {
+            span.add_assign(ret);
+        }
+        Ok(span)
     }
 }

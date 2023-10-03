@@ -1,6 +1,6 @@
 use ::regex::Regex;
 use criterion::{black_box, Criterion};
-use neure::prelude::*;
+use neu::prelude::*;
 
 fn bench_color(c: &mut Criterion) {
     let test_cases = [
@@ -68,7 +68,7 @@ criterion::criterion_main!(benches);
 mod email_neure {
     use super::*;
 
-    fn parser(storer: &mut SimpleStorer, str: &str) -> Result<(), neure::err::Error> {
+    fn parser(storer: &mut SimpleStorer, str: &str) -> Result<(), neu::err::Error> {
         let letter = unit!(['a' - 'z']);
         let number = unit!(['0' - '9']);
         let us = unit!('_');

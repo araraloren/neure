@@ -1,6 +1,6 @@
 use crate::ctx::Context;
 use crate::err::Error;
-use crate::regex::Extract;
+use crate::re::Extract;
 
 use super::Ret;
 

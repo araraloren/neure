@@ -1,5 +1,5 @@
-use neure::err::Error;
-use neure::prelude::*;
+use neu::err::Error;
+use neu::prelude::*;
 use nom::AsBytes;
 use std::{cell::RefCell, process::exit};
 
