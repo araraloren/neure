@@ -106,7 +106,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
-        trace_log!("match data in zero_one(0..=1)");
+        trace_log!("match data in zero_one(0..2)");
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if self.unit.is_match(&item) && self.cond.check(ctx, &(offset, item))? {

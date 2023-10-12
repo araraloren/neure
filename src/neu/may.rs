@@ -1,47 +1,47 @@
-use std::marker::PhantomData;
+use std::{cell::Cell, marker::PhantomData};
 
 use super::Neu;
 
-#[derive(Debug, Default, Copy)]
-pub struct IfUnit<U, I, O, T>
+#[derive(Debug, Default)]
+pub struct MayUnit<U, I, T>
 where
     U: Neu<T>,
     I: Neu<T>,
-    O: Neu<T>,
 {
     r#if: I,
     unit: U,
-    other: O,
+    count: Cell<usize>,
+    value: Cell<bool>,
     marker: PhantomData<T>,
 }
 
-impl<U, I, O, T> Clone for IfUnit<U, I, O, T>
+impl<U, I, T> Clone for MayUnit<U, I, T>
 where
     U: Neu<T> + Clone,
     I: Neu<T> + Clone,
-    O: Neu<T> + Clone,
 {
     fn clone(&self) -> Self {
         Self {
             r#if: self.r#if.clone(),
             unit: self.unit.clone(),
-            other: self.other.clone(),
+            value: self.value.clone(),
+            count: self.count.clone(),
             marker: self.marker,
         }
     }
 }
 
-impl<U, I, O, T> IfUnit<U, I, O, T>
+impl<U, I, T> MayUnit<U, I, T>
 where
     U: Neu<T>,
     I: Neu<T>,
-    O: Neu<T>,
 {
-    pub fn new(unit: U, r#if: I, other: O) -> Self {
+    pub fn new(r#if: I, count: usize, unit: U) -> Self {
         Self {
             r#if,
             unit,
-            other,
+            count: Cell::new(count),
+            value: Cell::new(true),
             marker: PhantomData,
         }
     }
@@ -54,20 +54,12 @@ where
         &self.r#if
     }
 
-    pub fn other(&self) -> &O {
-        &self.other
-    }
-
     pub fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 
     pub fn r#if_mut(&mut self) -> &mut I {
         &mut self.r#if
-    }
-
-    pub fn other_mut(&mut self) -> &mut O {
-        &mut self.other
     }
 
     pub fn set_unit(&mut self, unit: U) -> &mut Self {
@@ -79,24 +71,25 @@ where
         self.r#if = r#if;
         self
     }
-
-    pub fn set_other(&mut self, other: O) -> &mut Self {
-        self.other = other;
-        self
-    }
 }
 
-impl<U, I, O, T> Neu<T> for IfUnit<U, I, O, T>
+impl<U, I, T> Neu<T> for MayUnit<U, I, T>
 where
     U: Neu<T>,
     I: Neu<T>,
-    O: Neu<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        if self.r#if.is_match(other) {
-            self.unit.is_match(other)
+        let count = self.count.get();
+        let value = self.value.get();
+
+        if count == 0 {
+            value && self.unit.is_match(other)
         } else {
-            self.other.is_match(other)
+            let ret = self.r#if.is_match(other);
+
+            self.value.set(value && ret);
+            self.count.set(count - 1);
+            ret
         }
     }
 }

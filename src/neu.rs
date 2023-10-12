@@ -1,8 +1,8 @@
 mod bool;
 mod char;
 mod equal;
+mod may;
 mod op_and;
-mod op_if;
 mod op_not;
 mod op_one;
 mod op_or;
@@ -47,8 +47,8 @@ pub use self::char::Uppercase;
 pub use self::char::WhiteSpace;
 pub use self::char::Wild;
 pub use self::equal::Equal;
+pub use self::may::MayUnit;
 pub use self::op_and::And;
-pub use self::op_if::IfUnit;
 pub use self::op_not::Not;
 pub use self::op_one::NeureOne;
 pub use self::op_one::NeureOneMore;
@@ -202,8 +202,8 @@ impl<const N: usize, T: PartialEq + LogOrNot> Neu<T> for [T; N] {
     ///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
     ///   let mut ctx2 = CharsCtx::new("acdde");
     ///
-    ///   assert_eq!(ctx1.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 5));
-    ///   assert_eq!(ctx2.try_mat(&arr.repeat(2..=5)).unwrap(), Span::new(0, 2));
+    ///   assert_eq!(ctx1.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 5));
+    ///   assert_eq!(ctx2.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 2));
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
@@ -222,7 +222,7 @@ impl<'a, T: PartialEq + LogOrNot> Neu<T> for &'a [T] {
     /// #
     /// # fn main() {
     ///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-    ///   let arr = UnitOp::repeat(arr, 2..=5);
+    ///   let arr = UnitOp::repeat(arr, 2..6);
     ///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
     ///   let mut ctx2 = BytesCtx::new(b"acdde");
     ///
@@ -347,18 +347,31 @@ pub trait NeuOp<C> {
     fn not(self) -> Not<Self, C>
     where
         Self: Neu<C> + Sized;
-
-    fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
-    where
-        Self: Neu<C> + Sized,
-        I: Neu<C>,
-        O: Neu<C>;
 }
 
 impl<C, T> NeuOp<C> for T
 where
     T: Neu<C>,
 {
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let aorb = 'a'.or('b').repeat::<1, 2>();
+    ///     let mut ctx = CharsCtx::new("abc");
+    ///
+    ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
+    ///
+    ///     let aorb = re!(['a' 'b']{1,2});
+    ///     let mut ctx = CharsCtx::new("abc");
+    ///
+    ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn or<U>(self, unit: U) -> Or<Self, U, C>
     where
         U: Neu<C>,
@@ -367,6 +380,26 @@ where
         Or::new(self, unit)
     }
 
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let large_than = |c: &char| *c > '7';
+    ///     let digit = neu::digit(10).and(large_than).repeat::<1, 3>();
+    ///     let mut ctx = CharsCtx::new("899");
+    ///
+    ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
+    ///
+    ///     let digit = re!((neu::digit(10).and(large_than)){1,3});
+    ///     let mut ctx = CharsCtx::new("99c");
+    ///
+    ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 2));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn and<U>(self, unit: U) -> And<Self, U, C>
     where
         U: Neu<C>,
@@ -375,20 +408,30 @@ where
         And::new(self, unit)
     }
 
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let not_digit = neu::digit(10).not().repeat::<1, 3>();
+    ///     let mut ctx = CharsCtx::new("cc9");
+    ///
+    ///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 2));
+    ///
+    ///     let not_digit = re!((neu::digit(10).not()){1,3});
+    ///     let mut ctx = CharsCtx::new("c99");
+    ///
+    ///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 1));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn not(self) -> Not<Self, C>
     where
         Self: Neu<C> + Sized,
     {
         Not::new(self)
-    }
-
-    fn r#if<I, O>(self, r#if: I, otherwise: O) -> IfUnit<Self, I, O, C>
-    where
-        Self: Neu<C> + Sized,
-        I: Neu<C>,
-        O: Neu<C>,
-    {
-        IfUnit::new(self, r#if, otherwise)
     }
 }
 
@@ -506,4 +549,54 @@ where
     ) -> NeureRepeatRange<'a, C, Self, NullCond> {
         NeureRepeatRange::new(self, range.into(), NullCond)
     }
+}
+
+/// Match `if` and remember the result, then match `unit`
+/// 
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let digit = neu::digit(10);
+///     let hex = neu::digit(16);
+///
+///     let tests = [
+///         ("99EF", Some(Span::new(0, 2))),
+///         ("0x99EF", Some(Span::new(0, 6))),
+///         ("099EF", Some(Span::new(0, 3))),
+///         ("9899", Some(Span::new(0, 4))),
+///         ("x99EF", None),
+///     ];
+///
+///     for test in tests {
+///         // `may` is not reuseable
+///         let num = neu::may('0', neu::may('x', hex).or(neu::none())).or(digit);
+///         let num = re!((num){1,6});
+///         let mut ctx = CharsCtx::new(test.0);
+///
+///         if let Some(span) = test.1 {
+///             assert_eq!(ctx.try_mat(&num)?, span, "at {}", test.0);
+///         } else {
+///             assert!(ctx.try_mat(&num).is_err());
+///         }
+///     }
+///
+///     Ok(())
+/// # }
+/// ```
+pub fn may<T, I, U>(r#if: I, unit: U) -> MayUnit<U, I, T>
+where
+    U: Neu<T>,
+    I: Neu<T>,
+{
+    MayUnit::new(r#if, 1, unit)
+}
+
+pub fn may_count<T, I, U>(r#if: I, count: usize, unit: U) -> MayUnit<U, I, T>
+where
+    U: Neu<T>,
+    I: Neu<T>,
+{
+    MayUnit::new(r#if, count, unit)
 }

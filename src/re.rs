@@ -341,7 +341,7 @@ where
     C: Context<'a> + 'a,
 {
     move |ctx: &mut C| {
-        trace_log!("match data in one(1..=1)");
+        trace_log!("match data in one(1..2)");
         let mut iter: C::Iter<'_> = ctx.peek()?;
 
         if let Some((offset, item)) = iter.next() {
@@ -363,7 +363,7 @@ where
     C: Context<'a> + 'a,
 {
     move |ctx: &mut C| {
-        trace_log!("match data in zero_one(0..=1)");
+        trace_log!("match data in zero_one(0..2)");
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if re.is_match(&item) {
