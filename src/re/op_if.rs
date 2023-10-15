@@ -36,7 +36,7 @@ where
     }
 }
 
-impl<'a, C, T, I, E> IfRegex<C, T, I, E> {
+impl<C, T, I, E> IfRegex<C, T, I, E> {
     pub fn new(regex: T, r#if: I, r#else: E) -> Self {
         Self {
             regex,

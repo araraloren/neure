@@ -66,7 +66,7 @@ impl SimpleStorer {
     }
 
     pub fn spans_iter(&self, id: usize) -> Option<SpanIterator<'_>> {
-        self.spans(id).map(|v| SpanIterator::new(v))
+        self.spans(id).map(SpanIterator::new)
     }
 }
 

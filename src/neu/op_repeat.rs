@@ -171,7 +171,7 @@ where
         Self {
             unit: self.unit.clone(),
             cond: self.cond.clone(),
-            range: self.range.clone(),
+            range: self.range,
             marker: self.marker,
         }
     }

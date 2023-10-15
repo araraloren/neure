@@ -191,7 +191,7 @@ impl<T> Neu<T> for Rc<dyn Neu<T>> {
 
 impl<const N: usize, T: PartialEq + LogOrNot> Neu<T> for [T; N] {
     ///
-    /// Match any character in the array.
+    /// Match any value in the array.
     ///
     /// # Example
     /// ```
@@ -214,7 +214,7 @@ impl<const N: usize, T: PartialEq + LogOrNot> Neu<T> for [T; N] {
 
 impl<'a, T: PartialEq + LogOrNot> Neu<T> for &'a [T] {
     ///
-    /// Match any character in the array.
+    /// Match any value in the array.
     ///
     /// # Example
     /// ```
@@ -237,6 +237,28 @@ impl<'a, T: PartialEq + LogOrNot> Neu<T> for &'a [T] {
 }
 
 impl<T: PartialEq + LogOrNot> Neu<T> for Vec<T> {
+    ///
+    /// Match any value in the vector.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     let mut ctx = CharsCtx::new("0xbbb");
+    ///
+    ///     assert!(ctx.try_mat(&hex).is_err());
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
+    ///
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match vector({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -244,6 +266,25 @@ impl<T: PartialEq + LogOrNot> Neu<T> for Vec<T> {
 }
 
 impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use std::ops::Bound;
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = (Bound::Included(&'a'), Bound::Excluded(&'g'));
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -251,6 +292,24 @@ impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Neu<T> for (Bound<&'a T>, Bound
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for (Bound<T>, Bound<T>) {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use std::ops::Bound;
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -258,6 +317,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for (Bound<T>, Bound<T>) {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<&T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = &'a' .. &'g';
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
@@ -265,12 +341,46 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<&T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a' .. 'g';
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         self.contains(other)
     }
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<&T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let from = &'a' ..;
+    ///     let from = re!((from){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 8));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
@@ -278,6 +388,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<&T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let from = 'a' ..;
+    ///     let from = re!((from){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 8));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -285,6 +412,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<T> {
 }
 
 impl<T: ?Sized + PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFull {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let full = ..;
+    ///     let full = re!((full){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&full)?, Span::new(0, 8));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -292,6 +436,23 @@ impl<T: ?Sized + PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFull {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<&T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = &'a' ..= &'f';
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
@@ -299,6 +460,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<&T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a' ..= 'f';
+    ///     let hex = re!((hex){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -306,6 +484,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<&T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let to = .. &'g';
+    ///     let to = re!((to){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
@@ -313,6 +508,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<&T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let to = .. 'g';
+    ///     let to = re!((to){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -320,6 +532,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<&T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let to = ..= &'f';
+    ///     let to = re!((to){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(&other)
@@ -327,6 +556,23 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<&T> {
 }
 
 impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<T> {
+    ///
+    /// Match value in the range.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let to = ..= 'f';
+    ///     let to = re!((to){1,6});
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match range({:?}) with value ({:?})(in)", self, other);
         self.contains(other)
@@ -353,6 +599,9 @@ impl<C, T> NeuOp<C> for T
 where
     T: Neu<C>,
 {
+    ///
+    /// Return true if the value matched any `Neu`.
+    ///  
     /// # Example
     ///
     /// ```
@@ -380,6 +629,9 @@ where
         Or::new(self, unit)
     }
 
+    ///
+    /// Return true if the value matched all `Neu`.
+    ///
     /// # Example
     ///
     /// ```
@@ -408,6 +660,9 @@ where
         And::new(self, unit)
     }
 
+    ///
+    /// Return true if the value not matched.
+    ///
     /// # Example
     ///
     /// ```
@@ -511,38 +766,200 @@ where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
 {
+    ///
+    /// Repeat the match M ..= N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat::<1, 6>();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match minimum M times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_from::<1>();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_from<const M: usize>(self) -> NeureRepeat<'a, M, { usize::MAX }, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_to::<6>();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_to<const N: usize>(self) -> NeureRepeat<'a, 0, N, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_full();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_full(self) -> NeureRepeat<'a, 0, { usize::MAX }, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_one();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond> {
         NeureOne::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_one_more();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_one_more(self) -> NeureOneMore<C, Self, C::Item, NullCond> {
         NeureOneMore::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_zero_one();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_zero_one(self) -> NeureZeroOne<C, Self, C::Item, NullCond> {
         NeureZeroOne::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_zero_more();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond> {
         NeureZeroMore::new(self, NullCond)
     }
 
+    ///
+    /// Repeat the match maxinmum N times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_range(1..7);
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat_range(
         self,
         range: impl Into<CRange<usize>>,
@@ -552,7 +969,7 @@ where
 }
 
 /// Match `if` and remember the result, then match `unit`
-/// 
+///
 /// # Example
 /// ```
 /// # use neure::prelude::*;
