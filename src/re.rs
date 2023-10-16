@@ -100,7 +100,7 @@ where
     type Ret = Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(self.as_ref())
+        ctx.try_mat_t(self.as_ref())
     }
 }
 
@@ -112,7 +112,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(&*self.borrow())
+        ctx.try_mat_t(&*self.borrow())
     }
 }
 
@@ -124,7 +124,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(&self.get())
+        ctx.try_mat_t(&self.get())
     }
 }
 
@@ -136,8 +136,9 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
-        ctx.try_mat(&*ret)
+        let ret: std::sync::MutexGuard<'_, P> =
+            self.lock().expect("Oops ?! Can not unwrap mutex ...");
+        ctx.try_mat_t(&*ret)
     }
 }
 
@@ -149,7 +150,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(self.as_ref())
+        ctx.try_mat_t(self.as_ref())
     }
 }
 
@@ -160,7 +161,7 @@ where
     type Ret = Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(self.as_ref())
+        ctx.try_mat_t(self.as_ref())
     }
 }
 
@@ -172,7 +173,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(self.as_ref())
+        ctx.try_mat_t(self.as_ref())
     }
 }
 
@@ -183,7 +184,7 @@ where
     type Ret = Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat(self.as_ref())
+        ctx.try_mat_t(self.as_ref())
     }
 }
 
@@ -583,6 +584,23 @@ where
     }
 }
 
+///
+/// Consume given length items.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let null = re::consume(6);
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&null)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn consume<'a, C, R>(length: usize) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -606,6 +624,23 @@ where
     }
 }
 
+///
+/// Match nothing, simple return `R::from(_, (0, 0))`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let null = re::null();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&null)?, Span::new(0, 0));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn null<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,

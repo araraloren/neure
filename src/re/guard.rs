@@ -55,7 +55,7 @@ where
     }
 
     pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
-        self.ctx.try_mat(pattern).map(|r| {
+        self.ctx.try_mat_t(pattern).map(|r| {
             self.reset = false;
             r
         })

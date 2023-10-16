@@ -70,10 +70,17 @@ where
 
 pub trait Policy<C> {
     fn is_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
-        self.try_mat(pat).is_ok()
+        self.try_mat_t(pat).is_ok()
     }
 
-    fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+    fn try_mat_t<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+
+    fn try_mat<Pat: Regex<C, Ret = Span> + ?Sized>(
+        &mut self,
+        pat: &Pat,
+    ) -> Result<Pat::Ret, Error> {
+        self.try_mat_t(pat)
+    }
 
     fn try_mat_policy<Pat: Regex<C> + ?Sized>(
         &mut self,

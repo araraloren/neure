@@ -173,7 +173,7 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    fn try_mat<Pat: Regex<RegexCtx<'a, T>> + ?Sized>(
+    fn try_mat_t<Pat: Regex<RegexCtx<'a, T>> + ?Sized>(
         &mut self,
         pat: &Pat,
     ) -> Result<Pat::Ret, Error> {
