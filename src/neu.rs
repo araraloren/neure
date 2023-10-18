@@ -697,7 +697,7 @@ pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option
 }
 
 #[inline(always)]
-pub(crate) fn inc_and_ret<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
+pub(crate) fn ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
     let ret = R::from(ctx, (count, len));
 
     ctx.inc(len);
@@ -740,6 +740,8 @@ where
     Self: Sized + Neu<C::Item>,
 {
     fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond>;
+
+    fn repeat_times<const M: usize>(self) -> NeureRepeat<'a, M, M, C, Self, NullCond>;
 
     fn repeat_from<const M: usize>(self) -> NeureRepeat<'a, M, { usize::MAX }, C, Self, NullCond>;
 
@@ -785,6 +787,28 @@ where
     /// # }
     /// ```
     fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond> {
+        NeureRepeat::new(self, NullCond)
+    }
+
+    ///
+    /// Repeat the match M times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     let hex = 'a'..'g';
+    ///     let hex = hex.repeat_times::<6>();
+    ///     let mut ctx = CharsCtx::new("aabbccgg");
+    ///
+    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn repeat_times<const M: usize>(self) -> NeureRepeat<'a, M, M, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 

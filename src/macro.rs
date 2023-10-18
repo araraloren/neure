@@ -66,13 +66,13 @@ macro_rules! neu {
         $crate::neu::range($l..=$r).not()
     };
     ([^$l:ident - $r:ident] ) => {
-        $crate::neu::range($crate::charize!($l)..=$crate::charize!($r)).not()
+        $crate::neu::range($crate::charize!($l)..(char::from_u32($crate::charize!($r) as u32 + 1).unwrap())).not()
     };
     ([$l:literal - $r:literal] ) => {
         $crate::neu::range($l..=$r)
     };
     ([$l:ident - $r:ident] ) => {
-        $crate::neu::range($crate::charize!($l)..=$crate::charize!($r))
+        $crate::neu::range($crate::charize!($l)..(char::from_u32($crate::charize!($r) as u32 + 1).unwrap()))
     };
 
     ([^$($l:literal - $r:literal)+] ) => {// [ ^ 'a'-'z' 'A'-'Z' ]

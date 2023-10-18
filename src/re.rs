@@ -45,6 +45,8 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
 use crate::neu::Neu;
+use crate::neu::length_of;
+use crate::neu::ret_and_inc;
 use crate::trace_log;
 
 pub trait Regex<C> {
@@ -324,18 +326,6 @@ where
     }
 }
 
-fn length<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option<usize>) -> usize {
-    let next_offset = next.unwrap_or(ctx.len() - ctx.offset());
-    next_offset - offset
-}
-
-fn make_ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
-    let ret = R::from(ctx, (count, len));
-
-    ctx.inc(len);
-    ret
-}
-
 pub fn one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -347,10 +337,10 @@ where
 
         if let Some((offset, item)) = iter.next() {
             if re.is_match(&item) {
-                return Ok(make_ret_and_inc(
+                return Ok(ret_and_inc(
                     ctx,
                     1,
-                    length(offset, ctx, iter.next().map(|v| v.0)),
+                    length_of(offset, ctx, iter.next().map(|v| v.0)),
                 ));
             }
         }
@@ -368,10 +358,10 @@ where
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if re.is_match(&item) {
-                    return Ok(make_ret_and_inc(
+                    return Ok(ret_and_inc(
                         ctx,
                         1,
-                        length(offset, ctx, iter.next().map(|v| v.0)),
+                        length_of(offset, ctx, iter.next().map(|v| v.0)),
                     ));
                 }
             }
@@ -404,10 +394,10 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(make_ret_and_inc(
+            Ok(ret_and_inc(
                 ctx,
                 cnt,
-                length(start, ctx, end.map(|v| v.0)),
+                length_of(start, ctx, end.map(|v| v.0)),
             ))
         } else {
             Ok(R::from(ctx, (0, 0)))
@@ -439,10 +429,10 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(make_ret_and_inc(
+            Ok(ret_and_inc(
                 ctx,
                 cnt,
-                length(start, ctx, end.map(|v| v.0)),
+                length_of(start, ctx, end.map(|v| v.0)),
             ))
         } else {
             Err(Error::OneMore)
@@ -469,51 +459,38 @@ where
     crate::neu::Neu2Re::repeat::<M, N>(re)
 }
 
-pub fn count_if<'a, const M: usize, const N: usize, C, R>(
-    re: impl Neu<C::Item>,
-    r#if: impl crate::neu::NeuCond<'a, C>,
-) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn count_if<'a, const M: usize, const N: usize, C, U: Neu<C::Item>, F>(
+    re: U,
+    r#if: F,
+) -> crate::neu::NeureRepeat<'a, M, N, C, U, F>
 where
-    R: Ret,
     C: Context<'a> + 'a,
+    F: crate::neu::NeuCond<'a, C>,
 {
-    debug_assert!(M <= N, "M must little equal than N");
-    move |ctx: &mut C| {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
-        let iter = ctx.peek();
-
-        trace_log!("match data in count_if({}..={})", M, N);
-        if let Ok(mut iter) = iter {
-            while cnt < N {
-                if let Some(pair) = iter.next() {
-                    if re.is_match(&pair.1) && r#if.check(ctx, &pair)? {
-                        cnt += 1;
-                        if beg.is_none() {
-                            beg = Some(pair.0);
-                        }
-                        continue;
-                    } else {
-                        end = Some(pair);
-                    }
-                }
-                break;
-            }
-            if cnt >= M {
-                let end = end.or_else(|| iter.next()).map(|v| v.0);
-
-                return Ok(make_ret_and_inc(
-                    ctx,
-                    cnt,
-                    beg.map(|v| length(v, ctx, end)).unwrap_or(0),
-                ));
-            }
-        }
-        Err(Error::CountIf)
-    }
+    crate::neu::NeureRepeat::new(re, r#if)
 }
 
+///
+/// Match the start position of data.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let pos = re::start();
+///     let rust = re::string("rust");
+///     let year = neu::digit(10).repeat_times::<4>();
+///     let mut ctx = CharsCtx::new("rust2023");
+///
+///     assert_eq!(ctx.try_mat(&pos)?, Span::new(0, 0));
+///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
+///     assert_eq!(ctx.try_mat(&year)?, Span::new(4, 4));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn start<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -529,6 +506,27 @@ where
     }
 }
 
+///
+/// Match the end position of data.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let rust = re::string("rust");
+///     let year = neu::digit(10).repeat_times::<4>();
+///     let end = re::end();
+///     let mut ctx = CharsCtx::new("rust2023");
+///
+///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
+///     assert_eq!(ctx.try_mat(&year)?, Span::new(4, 4));
+///     assert_eq!(ctx.try_mat(&end)?, Span::new(8, 0));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn end<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -544,6 +542,23 @@ where
     }
 }
 
+///
+/// Match given string.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let rust = re::string("rust");
+///     let mut ctx = CharsCtx::new("rust2023");
+///
+///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn string<'a, 'b, C, R>(lit: &'b str) -> impl Fn(&mut C) -> Result<R, Error> + 'b
 where
     R: Ret,
@@ -564,6 +579,23 @@ where
     }
 }
 
+///
+/// Match given data.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     let head = re::bytes(&[0xff, 0xff]);
+///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
+///
+///     assert_eq!(ctx.try_mat(&head)?, Span::new(0, 2));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn bytes<'a, 'b, C, R>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<R, Error> + 'b
 where
     R: Ret,

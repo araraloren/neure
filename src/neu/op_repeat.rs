@@ -10,7 +10,7 @@ use crate::re::Handler;
 use crate::re::Invoke;
 use crate::re::Regex;
 
-use super::inc_and_ret;
+use super::ret_and_inc;
 use super::length_of;
 use super::CRange;
 use super::Neu;
@@ -93,6 +93,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C> + 'a,
 {
+    #[inline(always)]
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
@@ -112,6 +113,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut cnt = 0;
         let mut beg = None;
@@ -137,7 +139,7 @@ where
             if cnt >= M {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
 
-                return Ok(inc_and_ret(
+                return Ok(ret_and_inc(
                     ctx,
                     cnt,
                     beg.map(|v| length_of(v, ctx, end)).unwrap_or(0),
@@ -240,6 +242,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
@@ -293,7 +296,7 @@ where
             if self.range.contains(&cnt) {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
 
-                return Ok(inc_and_ret(
+                return Ok(ret_and_inc(
                     ctx,
                     cnt,
                     beg.map(|v| length_of(v, ctx, end)).unwrap_or(0),

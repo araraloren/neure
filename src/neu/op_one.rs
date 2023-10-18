@@ -10,7 +10,7 @@ use crate::re::Invoke;
 use crate::re::Regex;
 use crate::trace_log;
 
-use super::inc_and_ret;
+use super::ret_and_inc;
 use super::length_of;
 use super::Neu;
 use super::NeuCond;
@@ -109,7 +109,7 @@ where
 
         if let Some((offset, item)) = iter.next() {
             if self.unit.is_match(&item) && self.cond.check(ctx, &(offset, item))? {
-                return Ok(inc_and_ret(
+                return Ok(ret_and_inc(
                     ctx,
                     1,
                     length_of(offset, ctx, iter.next().map(|v| v.0)),
@@ -218,7 +218,7 @@ where
         let mut iter = ctx.peek()?;
 
         for pair in iter.by_ref() {
-            if !self.unit.is_match(&pair.1) && self.cond.check(ctx, &pair)? {
+            if !self.unit.is_match(&pair.1) && !self.cond.check(ctx, &pair)? {
                 end = Some(pair);
                 break;
             }
@@ -228,7 +228,7 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(inc_and_ret(
+            Ok(ret_and_inc(
                 ctx,
                 cnt,
                 length_of(start, ctx, end.map(|v| v.0)),
