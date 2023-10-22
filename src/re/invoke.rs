@@ -6,6 +6,7 @@ use std::sync::Mutex;
 
 use super::Extract;
 use super::Handler;
+use super::Regex;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -26,6 +27,38 @@ impl<'a, C, O, F> Invoke<'a, C, O, O> for F
 where
     C: Context<'a> + Policy<C>,
     F: Fn(&mut C) -> Result<Span, Error>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, 'b, C, O> Invoke<'a, C, O, O> for &'b str
+where
+    Self: Regex<C, Ret = Span>,
+    C: Context<'a> + Policy<C>,
+{
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, 'b, C, O> Invoke<'a, C, O, O> for &'b [u8]
+where
+    Self: Regex<C, Ret = Span>,
+    C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where

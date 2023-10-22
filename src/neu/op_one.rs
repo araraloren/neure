@@ -10,8 +10,8 @@ use crate::re::Invoke;
 use crate::re::Regex;
 use crate::trace_log;
 
-use super::ret_and_inc;
 use super::length_of;
+use super::ret_and_inc;
 use super::Neu;
 use super::NeuCond;
 

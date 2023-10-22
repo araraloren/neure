@@ -10,7 +10,6 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
-use crate::prelude::Ret;
 use crate::re::Regex;
 
 #[derive(Debug, Copy)]
@@ -134,15 +133,15 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = P::Ret;
+    type Ret = Vec<P::Ret>;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut cnt = 0;
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Span::new(0, 0);
+        let mut ret = Vec::with_capacity(self.capacity);
 
         while self.is_contain(cnt) {
-            ret.add_assign(g.try_mat(&self.pat)?);
+            ret.push(g.try_mat(&self.pat)?);
             cnt += 1;
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
@@ -280,17 +279,17 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = P::Ret;
+    type Ret = Vec<P::Ret>;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut cnt = 0;
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Span::new(0, 0);
+        let mut ret = Vec::with_capacity(self.capacity);
 
         while self.is_contain(cnt) {
             match g.try_mat(&self.pat) {
                 Ok(span) => {
-                    ret.add_assign(span);
+                    ret.push(span);
                     cnt += 1;
                 }
                 Err(_) => {

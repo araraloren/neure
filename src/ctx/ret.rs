@@ -40,6 +40,6 @@ impl<'a, C: Context<'a>> Extract<'a, C, Return> for Return {
     type Error = Error;
 
     fn extract(_: &C, ret: &Return) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(Clone::clone(ret))
+        Ok(*ret)
     }
 }

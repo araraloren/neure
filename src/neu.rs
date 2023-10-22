@@ -245,6 +245,7 @@ impl<T: PartialEq + LogOrNot> Neu<T> for Vec<T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -276,6 +277,7 @@ impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Neu<T> for (Bound<&'a T>, Bound
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = (Bound::Included(&'a'), Bound::Excluded(&'g'));
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -301,6 +303,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for (Bound<T>, Bound<T>) {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -325,6 +328,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<&T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = &'a' .. &'g';
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -349,6 +353,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a' .. 'g';
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -372,6 +377,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<&T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let from = &'a' ..;
     ///     let from = re!((from){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -396,6 +402,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let from = 'a' ..;
     ///     let from = re!((from){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -420,6 +427,7 @@ impl<T: ?Sized + PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFull {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let full = ..;
     ///     let full = re!((full){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -444,6 +452,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<&T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = &'a' ..= &'f';
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -468,6 +477,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a' ..= 'f';
     ///     let hex = re!((hex){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -492,6 +502,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<&T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let to = .. &'g';
     ///     let to = re!((to){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -516,6 +527,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let to = .. 'g';
     ///     let to = re!((to){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -540,6 +552,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<&T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let to = ..= &'f';
     ///     let to = re!((to){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -564,6 +577,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<T> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let to = ..= 'f';
     ///     let to = re!((to){1,6});
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -608,6 +622,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let aorb = 'a'.or('b').repeat::<1, 2>();
     ///     let mut ctx = CharsCtx::new("abc");
     ///
@@ -638,6 +653,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let large_than = |c: &char| *c > '7';
     ///     let digit = neu::digit(10).and(large_than).repeat::<1, 3>();
     ///     let mut ctx = CharsCtx::new("899");
@@ -669,6 +685,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let not_digit = neu::digit(10).not().repeat::<1, 3>();
     ///     let mut ctx = CharsCtx::new("cc9");
     ///
@@ -777,6 +794,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat::<1, 6>();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -799,6 +817,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_times::<6>();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -821,6 +840,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_from::<1>();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -843,6 +863,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_to::<6>();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -865,6 +886,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_full();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -887,6 +909,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_one();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -909,6 +932,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_one_more();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -931,6 +955,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_zero_one();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -953,6 +978,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_zero_more();
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -975,6 +1001,7 @@ where
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
     ///     let hex = 'a'..'g';
     ///     let hex = hex.repeat_range(1..7);
     ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -999,6 +1026,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let digit = neu::digit(10);
 ///     let hex = neu::digit(16);
 ///

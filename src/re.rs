@@ -43,10 +43,10 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::neu::CRange;
-use crate::neu::Neu;
 use crate::neu::length_of;
 use crate::neu::ret_and_inc;
+use crate::neu::CRange;
+use crate::neu::Neu;
 use crate::trace_log;
 
 pub trait Regex<C> {
@@ -73,7 +73,7 @@ where
 
 impl<'a, 'b, C> Regex<C> for &'b str
 where
-    C: Context<'a, Orig = str> + Policy<C> + 'a,
+    C: Context<'a, Orig = str> + Policy<C>,
 {
     type Ret = Span;
 
@@ -85,7 +85,7 @@ where
 
 impl<'a, 'b, C> Regex<C> for &'b [u8]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C> + 'a,
+    C: Context<'a, Orig = [u8]> + Policy<C>,
 {
     type Ret = Span;
 
@@ -97,7 +97,7 @@ where
 
 impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
 where
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = Ret;
 
@@ -109,7 +109,7 @@ where
 impl<'a, P, C> Regex<C> for RefCell<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
 
@@ -121,7 +121,7 @@ where
 impl<'a, P, C> Regex<C> for Cell<P>
 where
     P: Regex<C> + Copy,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
 
@@ -133,7 +133,7 @@ where
 impl<'a, P, C> Regex<C> for Mutex<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
 
@@ -147,7 +147,7 @@ where
 impl<'a, P, C> Regex<C> for Arc<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
 
@@ -158,7 +158,7 @@ where
 
 impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
 where
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = Ret;
 
@@ -170,7 +170,7 @@ where
 impl<'a, P, C> Regex<C> for Rc<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = P::Ret;
 
@@ -181,7 +181,7 @@ where
 
 impl<'a, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
 where
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Policy<C>,
 {
     type Ret = Ret;
 
@@ -223,10 +223,47 @@ where
     T: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let pat = "rust".pattern();
+    ///     let mut ctx = CharsCtx::new("rust");
+    ///
+    ///     assert_eq!(ctx.try_mat(&pat)?, Span::new(0, 4));
+    ///     Ok(())
+    /// # }
+    /// ```
+    ///
     fn pattern(self) -> Pattern<C, Self> {
         Pattern::new(self)
     }
 
+    ///
+    /// Set a function map the result to other type.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::{err::Error, prelude::*};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let map = |v: &str| v.parse::<i64>().map_err(|_| Error::Other);
+    ///     let pat = "42".map(map); // set map here
+    ///     let mut ctx = CharsCtx::new("42");
+    ///
+    ///     assert_eq!(ctx.invoke(&pat)?, 42i64);
+    ///     let mut ctx = CharsCtx::new("42");
+    ///
+    ///     assert_eq!(ctx.map(&"42", map)?, 42i64); // map str to i64
+    ///     Ok(())
+    /// # }
+    /// ```
     fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)
     }
@@ -267,7 +304,27 @@ where
     }
 }
 
-pub fn and<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
+///
+/// Match `P1` then `P2`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let ip = re::string("127.0.0.1");
+///     let colon = ':'.repeat_one();
+///     let port = neu::digit(10).repeat_one_more();
+///     let local = ip.then(colon).then(port);
+///     let mut ctx = CharsCtx::new("127.0.0.1:8080");
+///
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
+///     Ok(())
+/// # }
+/// ```
+pub fn then<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
 where
     O: Ret,
     P1: Regex<C, Ret = O>,
@@ -283,6 +340,29 @@ where
     }
 }
 
+///
+/// Match `P1` or `P2`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let name = re::string("localhost");
+///     let ip = re::string("127.0.0.1");
+///     let local = name.or(ip);
+///     let local = local.then(":8080");
+///     let mut ctx = CharsCtx::new("127.0.0.1:8080");
+///
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
+///     let mut ctx = CharsCtx::new("localhost:8080");
+///
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
+///     Ok(())
+/// # }
+/// ```
 pub fn or<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
 where
     O: Ret,
@@ -293,11 +373,34 @@ where
     move |ctx: &mut C| p1.try_parse(ctx).or_else(|_| p2.try_parse(ctx))
 }
 
-pub fn quote<'a, C, L, R, P, O>(l: L, r: R, p: P) -> impl Fn(&mut C) -> Result<O, Error>
+///
+/// Match the `P` enclosed by `L` and `R`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let comma = re::zero_one(',');
+///     let digit = re::one_more('0'..='9');
+///     let digit = re::terminated(comma, digit);
+///     let array = re::quote(re::one('['), re::one(']'), digit.repeat(3..4));
+///     let mut ctx = CharsCtx::new("[123,456,789]");
+///
+///     assert_eq!(
+///         ctx.try_mat_t(&array)?,
+///         vec![Span::new(1, 3), Span::new(5, 3), Span::new(9, 3)]
+///     );
+///     Ok(())
+/// # }
+/// ```
+pub fn quote<'a, C, L, R, P>(l: L, r: R, p: P) -> impl Fn(&mut C) -> Result<P::Ret, Error>
 where
-    L: Regex<C>,
-    R: Regex<C>,
-    P: Regex<C, Ret = O>,
+    P: Regex<C>,
+    L: Regex<C, Ret = Span>,
+    R: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     move |ctx: &mut C| {
@@ -311,10 +414,31 @@ where
     }
 }
 
-pub fn terminated<'a, C, S, P, O>(sep: S, p: P) -> impl Fn(&mut C) -> Result<O, Error>
+///
+/// Match the `P` terminated by `S`, return the return value of `P`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let comma = re::zero_one(',');
+///     let digit = re::one_more('0'..='9');
+///     let digit = re::terminated(comma, digit);
+///     let mut ctx = CharsCtx::new("123,456,789");
+///
+///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
+///     assert_eq!(ctx.try_mat(&digit)?, Span::new(4, 3));
+///     assert_eq!(ctx.try_mat(&digit)?, Span::new(8, 3));
+///     Ok(())
+/// # }
+/// ```
+pub fn terminated<'a, C, S, P>(sep: S, p: P) -> impl Fn(&mut C) -> Result<P::Ret, Error>
 where
-    S: Regex<C>,
-    P: Regex<C, Ret = O>,
+    P: Regex<C>,
+    S: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     move |ctx: &mut C| {
@@ -326,6 +450,29 @@ where
     }
 }
 
+///
+/// Match one item.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let sign = re::one('+');
+///     let num = re::one_more('0'..='9');
+///     let mut ctx = CharsCtx::new("+2077");
+///
+///     assert_eq!(ctx.try_mat(&sign)?, Span::new(0, 1));
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(1, 4));
+///
+///     let mut ctx = CharsCtx::new("2077");
+///
+///     assert!(ctx.try_mat(&sign).is_err());
+///     Ok(())
+/// # }
+/// ```
 pub fn one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -348,6 +495,30 @@ where
     }
 }
 
+///
+/// Match zero or one item.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let sign = re::zero_one('+');
+///     let num = re::one_more('0'..='9');
+///     let mut ctx = CharsCtx::new("+2077");
+///
+///     assert_eq!(ctx.try_mat(&sign)?, Span::new(0, 1));
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(1, 4));
+///
+///     let mut ctx = CharsCtx::new("2077");
+///
+///     assert_eq!(ctx.try_mat(&sign)?, Span::new(0, 0));
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
+///     Ok(())
+/// # }
+/// ```
 pub fn zero_one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -370,6 +541,28 @@ where
     }
 }
 
+///
+/// Match at least zero item.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let num = re::zero_more('0'..='9');
+///     let mut ctx = CharsCtx::new("2048mb");
+///
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
+///
+///     let mut ctx = CharsCtx::new("rust2021");
+///
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 0));
+///     Ok(())
+/// # }
+/// ```
+///
 pub fn zero_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -405,6 +598,27 @@ where
     }
 }
 
+///
+/// Match at least one item.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let num = re::one_more('0'..='9');
+///     let mut ctx = CharsCtx::new("2048mb");
+///
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
+///
+///     let mut ctx = CharsCtx::new("rust2021");
+///
+///     assert!(ctx.try_mat(&num).is_err());
+///     Ok(())
+/// # }
+/// ```
 pub fn one_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,
@@ -440,16 +654,25 @@ where
     }
 }
 
-// pub fn count<'a, const M: usize, const N: usize, C, R>(
-//     re: impl Unit<C::Item> + 'a,
-// ) -> impl Fn(&mut C) -> Result<R, Error> + 'a
-// where
-//     R: Ret + 'a,
-//     C: Context<'a> + 'a,
-// {
-//     count_if::<'a, M, N, C, R>(re, |_, _| true)
-// }
-
+///
+/// Match the given `Neu` M ..= N times.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let website = re::count::<0, { usize::MAX }, _, _>(('a'..'{'));
+///     let mut ctx = CharsCtx::new("example.com");
+///
+///     assert_eq!(ctx.try_mat(&website)?, Span::new(0, 7));
+///     assert_eq!(ctx.orig_sub(0, 7)?, "example");
+///     Ok(())
+/// }
+/// ```
+///
 pub fn count<'a, const M: usize, const N: usize, C, U: Neu<C::Item>>(
     re: U,
 ) -> crate::neu::NeureRepeat<'a, M, N, C, U, crate::neu::NullCond>
@@ -459,6 +682,35 @@ where
     crate::neu::Neu2Re::repeat::<M, N>(re)
 }
 
+///
+/// Match the given `Neu` M ..= N times.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let website = re::count_if::<0, { usize::MAX }, _, _, _>(
+///         ('a'..'{').or('.'),
+///         |ctx: &CharsCtx, pair: &(usize, char)| {
+///             Ok(pair.1 != '.'
+///                 || ctx
+///                     .orig()?
+///                     .get((pair.0 + 1)..)
+///                     .map(|v| v.find('.').is_some())
+///                     .unwrap_or(false))
+///         },
+///     );
+///     let mut ctx = CharsCtx::new("domain.example.com");
+///
+///     assert_eq!(ctx.try_mat(&website)?, Span::new(0, 14));
+///     assert_eq!(ctx.orig_sub(0, 14)?, "domain.example");
+///     Ok(())
+/// }
+/// ```
+///
 pub fn count_if<'a, const M: usize, const N: usize, C, U: Neu<C::Item>, F>(
     re: U,
     r#if: F,
@@ -479,6 +731,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let pos = re::start();
 ///     let rust = re::string("rust");
 ///     let year = neu::digit(10).repeat_times::<4>();
@@ -515,6 +768,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let rust = re::string("rust");
 ///     let year = neu::digit(10).repeat_times::<4>();
 ///     let end = re::end();
@@ -551,6 +805,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let rust = re::string("rust");
 ///     let mut ctx = CharsCtx::new("rust2023");
 ///
@@ -588,6 +843,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let head = re::bytes(&[0xff, 0xff]);
 ///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
 ///
@@ -625,6 +881,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let null = re::consume(6);
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
@@ -665,6 +922,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
 ///     let null = re::null();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
