@@ -27,6 +27,8 @@ pub use self::invoke::*;
 pub use self::op_collect::Collect;
 pub use self::op_if::IfRegex;
 pub use self::op_map::Map;
+pub use self::op_map::MapSingle;
+pub use self::op_map::Single;
 pub use self::op_or::Or;
 pub use self::op_ormap::OrMap;
 pub use self::op_pat::Pattern;
@@ -195,9 +197,9 @@ where
     Self: Sized,
     C: Context<'a> + Policy<C>,
 {
-    fn pattern(self) -> Pattern<C, Self>;
-
     fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
+
+    fn pattern(self) -> Pattern<C, Self>;
 
     fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
 
@@ -223,6 +225,10 @@ where
     T: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
+    fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
+        Map::new(self, func)
+    }
+
     ///
     /// # Example
     ///
@@ -231,43 +237,55 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///     let pat = "rust".pattern();
+    ///     let pat = "rust".pattern().map(|v: &str| Ok(v.to_string()));
     ///     let mut ctx = CharsCtx::new("rust");
     ///
-    ///     assert_eq!(ctx.try_mat(&pat)?, Span::new(0, 4));
+    ///     assert_eq!(ctx.invoke(&pat)?, String::from("rust"));
     ///     Ok(())
     /// # }
     /// ```
-    ///
     fn pattern(self) -> Pattern<C, Self> {
         Pattern::new(self)
     }
 
     ///
-    /// Set a function map the result to other type.
-    ///
     /// # Example
     ///
     /// ```
-    /// # use neure::{err::Error, prelude::*};
+    /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///     let map = |v: &str| v.parse::<i64>().map_err(|_| Error::Other);
-    ///     let pat = "42".map(map); // set map here
-    ///     let mut ctx = CharsCtx::new("42");
     ///
-    ///     assert_eq!(ctx.invoke(&pat)?, 42i64);
-    ///     let mut ctx = CharsCtx::new("42");
+    ///     #[derive(Debug, PartialEq, Eq)]
+    ///     enum Tag {
+    ///         Normal(String),
+    ///         Empty(String),
+    ///     }
     ///
-    ///     assert_eq!(ctx.map(&"42", map)?, 42i64); // map str to i64
+    ///     let alpha = neu::alphabetic().repeat_full();
+    ///     let start = alpha.quote("<", ">");
+    ///     let end = alpha.quote("</", ">");
+    ///     let tag = start
+    ///         .then(end)
+    ///         .select_eq()
+    ///         .map(|v: (&str, &str)| Ok(Tag::Normal(v.0.to_owned())));
+    ///     let empty = alpha
+    ///         .quote("<", "/>")
+    ///         .map(|v| Ok(Tag::Empty(String::from(v))));
+    ///     let tag = tag.or(empty).repeat(1..3);
+    ///     let mut ctx = CharsCtx::new("<rust></rust><linux/>");
+    ///
+    ///     assert_eq!(
+    ///         ctx.invoke(&tag)?,
+    ///         vec![
+    ///             Tag::Normal(String::from("rust")),
+    ///             Tag::Empty(String::from("linux"))
+    ///         ]
+    ///     );
     ///     Ok(())
     /// # }
     /// ```
-    fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
-        Map::new(self, func)
-    }
-
     fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R> {
         Quote::new(self, left, right)
     }

@@ -6,6 +6,8 @@ pub enum Error {
 
     Other,
 
+    SelectEq,
+
     UnitRepeat,
 
     TryRepeat,
@@ -41,6 +43,7 @@ impl Display for Error {
             Error::Null => write!(f, "Error::Null"),
             Error::Other => write!(f, "Error::Other"),
 
+            Error::SelectEq => write!(f, "In (`Map`): not equal"),
             Error::UnitRepeat => write!(f, "In (`UnitRepeat`): need more data"),
             Error::TryRepeat => write!(f, "In (`TryRepeat`): need more data"),
             Error::Repeat => write!(f, "In (`Repeat`): need more data"),

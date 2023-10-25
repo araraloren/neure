@@ -1,9 +1,13 @@
 use std::marker::PhantomData;
 
+use super::op_map::Select0;
+use super::op_map::Select1;
+use super::op_map::SelectEq;
 use super::CtxGuard;
 use super::Extract;
 use super::Handler;
 use super::Invoke;
+use super::Map;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -67,15 +71,27 @@ impl<C, P, T> Then<C, P, T> {
         self.then = then;
         self
     }
+
+    pub fn select0<O>(self) -> Map<C, Self, Select0, O> {
+        Map::new(self, Select0)
+    }
+
+    pub fn select1<O>(self) -> Map<C, Self, Select1, O> {
+        Map::new(self, Select1)
+    }
+
+    pub fn select_eq<I1, I2>(self) -> Map<C, Self, SelectEq, (I1, I2)> {
+        Map::new(self, SelectEq)
+    }
 }
 
-impl<'a, C, P, T, M, O> Invoke<'a, C, M, O> for Then<C, P, T>
+impl<'a, C, P, T, M, O1, O2> Invoke<'a, C, M, (O1, O2)> for Then<C, P, T>
 where
-    P: Invoke<'a, C, M, O>,
-    T: Invoke<'a, C, M, O>,
+    P: Invoke<'a, C, M, O1>,
+    T: Invoke<'a, C, M, O2>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -83,10 +99,11 @@ where
         let mut g = CtxGuard::new(ctx);
 
         match self.pat.invoke(g.ctx(), func) {
-            Ok(_) => {
+            Ok(ret1) => {
                 let ret = self.then.invoke(g.ctx(), func);
+                let ret2 = g.process_ret(ret)?;
 
-                g.process_ret(ret)
+                Ok((ret1, ret2))
             }
             Err(e) => {
                 g.reset();

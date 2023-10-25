@@ -99,13 +99,12 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, O> for Repeat<C, P>
+impl<'a, C, P, M, O> Invoke<'a, C, M, Vec<O>> for Repeat<C, P>
 where
-    O: FromIterator<M>,
-    P: Invoke<'a, C, M, M>,
+    P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -121,7 +120,7 @@ where
             cnt += 1;
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(O::from_iter(res))
+            Ok(res)
         } else {
             Err(Error::Repeat)
         }
@@ -239,13 +238,12 @@ impl<C, P> TryRepeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, O> for TryRepeat<C, P>
+impl<'a, C, P, M, O> Invoke<'a, C, M, Vec<O>> for TryRepeat<C, P>
 where
-    O: FromIterator<M>,
-    P: Invoke<'a, C, M, M>,
+    P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -256,18 +254,19 @@ where
 
         while self.is_contain(cnt) {
             let ret = self.pat.invoke(g.ctx(), handler);
-            let ret = g.process_ret(ret);
 
             match ret {
                 Ok(ret) => {
                     res.push(ret);
                     cnt += 1;
                 }
-                Err(_) => break,
+                Err(_) => {
+                    break;
+                }
             }
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(O::from_iter(res))
+            Ok(res)
         } else {
             Err(Error::TryRepeat)
         }
