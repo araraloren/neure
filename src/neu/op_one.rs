@@ -218,7 +218,7 @@ where
         let mut iter = ctx.peek()?;
 
         for pair in iter.by_ref() {
-            if !self.unit.is_match(&pair.1) && !self.cond.check(ctx, &pair)? {
+            if !self.unit.is_match(&pair.1) || !self.cond.check(ctx, &pair)? {
                 end = Some(pair);
                 break;
             }

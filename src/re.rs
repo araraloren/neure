@@ -12,6 +12,7 @@ mod op_quote;
 mod op_repeat;
 mod op_term;
 mod op_then;
+mod op_ws;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -37,6 +38,7 @@ pub use self::op_repeat::Repeat;
 pub use self::op_repeat::TryRepeat;
 pub use self::op_term::Terminated;
 pub use self::op_then::Then;
+pub use self::op_ws::PaddingWS;
 
 pub use self::op_if::branch;
 
@@ -47,8 +49,12 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::length_of;
 use crate::neu::ret_and_inc;
+use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
 use crate::neu::Neu;
+use crate::neu::NeureOneMore;
+use crate::neu::NullCond;
+use crate::neu::WhiteSpace;
 use crate::trace_log;
 
 pub trait Regex<C> {
@@ -192,6 +198,26 @@ where
     }
 }
 
+// #[derive(Debug, Clone, Copy)]
+// pub struct PaddingWS<C>(NeureZeroMore<C, WhiteSpace, char, NullCond>);
+
+// impl<C> Default for PaddingWS<C> {
+//     fn default() -> Self {
+//         Self(NeureZeroMore::new(WhiteSpace, NullCond))
+//     }
+// }
+
+// impl<'a, C> Regex<C> for PaddingWS<C>
+// where
+//     C: Context<'a, Item = char> + Policy<C> + 'a,
+// {
+//     type Ret = Span;
+
+//     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+//         ctx.try_mat_t(&self.0)
+//     }
+// }
+
 pub trait RegexOp<'a, C>
 where
     Self: Sized,
@@ -218,6 +244,10 @@ where
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>;
+
+    fn ws(self) -> PaddingWS<C, Self, NeureOneMore<C, AsciiWhiteSpace, char, NullCond>>;
+
+    fn ws_u(self) -> PaddingWS<C, Self, NeureOneMore<C, WhiteSpace, char, NullCond>>;
 }
 
 impl<'a, C, T> RegexOp<'a, C> for T
@@ -319,6 +349,14 @@ where
         I: Fn(&C) -> Result<bool, Error>,
     {
         IfRegex::new(self, r#if, r#else)
+    }
+
+    fn ws(self) -> PaddingWS<C, Self, NeureOneMore<C, AsciiWhiteSpace, char, NullCond>> {
+        PaddingWS::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
+    }
+
+    fn ws_u(self) -> PaddingWS<C, Self, NeureOneMore<C, WhiteSpace, char, NullCond>> {
+        PaddingWS::new(self, NeureOneMore::new(WhiteSpace, NullCond))
     }
 }
 

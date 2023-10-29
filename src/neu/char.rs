@@ -494,13 +494,14 @@ impl Neu<char> for AsciiWhiteSpace {
 ///
 /// ```
 /// use neure::prelude::*;
-/// use unit::*;
+/// use neu::*;
+/// use re::*;
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let space = ascii_whitespace();
 ///     let space1 = space.repeat(1);
 ///     let space3 = space.repeat(3);
-///     let mut ctx = CharsCtx::new("    \u{A0}abcd");
+///     let mut ctx = CharsCtx::new("    w\u{A0}abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&space1)?, Span::new(0, 1));
 ///     assert_eq!(ctx.try_mat(&space3)?, Span::new(1, 3));
