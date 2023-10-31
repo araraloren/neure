@@ -23,10 +23,9 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>;
 }
 
-impl<'a, C, O, F> Invoke<'a, C, O, O> for F
+impl<'a, C, O> Invoke<'a, C, O, O> for Box<dyn Regex<C, Ret = Span>>
 where
     C: Context<'a> + Policy<C>,
-    F: Fn(&mut C) -> Result<Span, Error>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where

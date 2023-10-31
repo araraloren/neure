@@ -84,7 +84,7 @@ where
 
         match self.pat.invoke(g.ctx(), func) {
             Ok(ret1) => {
-                let ret = g.try_mat(&self.ws);
+                let _ = g.try_mat(&self.ws);
                 Ok(ret1)
             }
             Err(e) => {

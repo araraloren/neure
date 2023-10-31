@@ -9,7 +9,7 @@ use std::sync::Mutex;
 pub trait IntoNonDynamic {
     fn into_box<C>(self) -> Box<Self>
     where
-        Self: Regex<C> + 'static;
+        Self: Regex<C>;
 
     fn into_arc<C>(self) -> Arc<Self>
     where
@@ -17,7 +17,7 @@ pub trait IntoNonDynamic {
 
     fn into_rc<C>(self) -> Rc<Self>
     where
-        Self: Regex<C> + 'static;
+        Self: Regex<C>;
 
     fn into_cell<C>(self) -> Cell<Self>
     where
@@ -25,7 +25,7 @@ pub trait IntoNonDynamic {
 
     fn into_refcell<C>(self) -> RefCell<Self>
     where
-        Self: Regex<C> + 'static;
+        Self: Regex<C>;
 
     fn into_mutex<C>(self) -> Mutex<Self>
     where
@@ -35,7 +35,7 @@ pub trait IntoNonDynamic {
 impl<P> IntoNonDynamic for P {
     fn into_box<C>(self) -> Box<Self>
     where
-        Self: Regex<C> + 'static,
+        Self: Regex<C>,
     {
         Box::new(self)
     }
@@ -49,7 +49,7 @@ impl<P> IntoNonDynamic for P {
 
     fn into_rc<C>(self) -> Rc<Self>
     where
-        Self: Regex<C> + 'static,
+        Self: Regex<C>,
     {
         Rc::new(self)
     }
@@ -63,7 +63,7 @@ impl<P> IntoNonDynamic for P {
 
     fn into_refcell<C>(self) -> RefCell<Self>
     where
-        Self: Regex<C> + 'static,
+        Self: Regex<C>,
     {
         RefCell::new(self)
     }
@@ -77,23 +77,23 @@ impl<P> IntoNonDynamic for P {
 }
 
 pub trait IntoDynamic {
-    fn into_dyn_box<C>(self) -> Box<dyn Regex<C, Ret = <Self as Regex<C>>::Ret>>
+    fn into_dyn_box<'a, C>(self) -> Box<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'a>
     where
-        Self: Regex<C> + 'static;
+        Self: Regex<C> + 'a;
 
     fn into_dyn_arc<C>(self) -> Arc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret>>
     where
         Self: Regex<C> + 'static;
 
-    fn into_dyn_rc<C>(self) -> Rc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret>>
+    fn into_dyn_rc<'a, C>(self) -> Rc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'a>
     where
-        Self: Regex<C> + 'static;
+        Self: Regex<C> + 'a;
 }
 
 impl<P> IntoDynamic for P {
-    fn into_dyn_box<C>(self) -> Box<dyn Regex<C, Ret = <Self as Regex<C>>::Ret>>
+    fn into_dyn_box<'a, C>(self) -> Box<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'a>
     where
-        Self: Regex<C> + 'static,
+        Self: Regex<C> + 'a,
     {
         Box::new(self)
     }
@@ -105,10 +105,10 @@ impl<P> IntoDynamic for P {
         Arc::new(self)
     }
 
-    fn into_dyn_rc<C>(self) -> Rc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret>>
+    fn into_dyn_rc<'a, C>(self) -> Rc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'a>
     where
-        Self: Regex<C> + 'static,
+        Self: Regex<C> + 'a,
     {
-        todo!()
+        Rc::new(self)
     }
 }
