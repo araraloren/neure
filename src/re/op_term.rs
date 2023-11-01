@@ -1,7 +1,5 @@
 use std::marker::PhantomData;
 
-use super::Collect;
-use super::CtxGuard;
 use super::Extract;
 use super::Handler;
 use super::Invoke;
@@ -16,6 +14,8 @@ use crate::re::Regex;
 pub struct Terminated<C, P, S> {
     pat: P,
     sep: S,
+    skip: bool,
+    capacity: usize,
     marker: PhantomData<C>,
 }
 
@@ -28,6 +28,8 @@ where
         Self {
             pat: self.pat.clone(),
             sep: self.sep.clone(),
+            skip: self.skip,
+            capacity: self.capacity,
             marker: self.marker,
         }
     }
@@ -38,6 +40,8 @@ impl<C, P, S> Terminated<C, P, S> {
         Self {
             pat,
             sep,
+            skip: true,
+            capacity: 0,
             marker: PhantomData,
         }
     }
@@ -58,6 +62,14 @@ impl<C, P, S> Terminated<C, P, S> {
         &mut self.sep
     }
 
+    pub fn skip(&self) -> bool {
+        self.skip
+    }
+
+    pub fn capacity(&self) -> usize {
+        self.capacity
+    }
+
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
         self.pat = pat;
         self
@@ -67,31 +79,60 @@ impl<C, P, S> Terminated<C, P, S> {
         self.sep = sep;
         self
     }
-}
 
-impl<C, P, S> Terminated<C, P, S> {
-    pub fn collect<O>(self) -> Collect<C, Self, O> {
-        Collect::new(self)
+    pub fn set_skip(&mut self, skip: bool) -> &mut Self {
+        self.skip = skip;
+        self
+    }
+
+    pub fn set_capacity(&mut self, capacity: usize) -> &mut Self {
+        self.capacity = capacity;
+        self
+    }
+
+    pub fn with_skip(mut self, skip: bool) -> Self {
+        self.skip = skip;
+        self
+    }
+
+    pub fn with_capacity(mut self, capacity: usize) -> Self {
+        self.capacity = capacity;
+        self
     }
 }
 
-impl<'a, C, S, P, M, O> Invoke<'a, C, M, O> for Terminated<C, P, S>
+impl<'a, C, S, P, M, O> Invoke<'a, C, M, Vec<O>> for Terminated<C, P, S>
 where
     S: Regex<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let mut g = CtxGuard::new(ctx);
-        let ret = self.pat.invoke(g.ctx(), func);
-        let ret = g.process_ret(ret)?;
+        let mut res = Vec::with_capacity(self.capacity);
 
-        g.try_mat(&self.sep)?;
-        Ok(ret)
+        loop {
+            let ret = self.pat.invoke(ctx, func);
+
+            match ret {
+                Ok(ret) => {
+                    res.push(ret);
+
+                    if let Err(e) = ctx.try_mat(&self.sep) {
+                        if !self.skip {
+                            return Err(e);
+                        }
+                    }
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
+        Ok(res)
     }
 }
 
@@ -101,13 +142,28 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = P::Ret;
+    type Ret = Vec<P::Ret>;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(&self.pat)?;
+        let mut res = Vec::with_capacity(self.capacity);
 
-        g.try_mat(&self.sep)?;
-        Ok(ret)
+        loop {
+            let ret = ctx.try_mat(&self.pat);
+
+            match ret {
+                Ok(ret) => {
+                    res.push(ret);
+                    if let Err(e) = ctx.try_mat(&self.sep) {
+                        if !self.skip {
+                            return Err(e);
+                        }
+                    }
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
+        Ok(res)
     }
 }

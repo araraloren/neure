@@ -6,6 +6,8 @@ pub enum Error {
 
     Other,
 
+    FromStr,
+
     SelectEq,
 
     UnitRepeat,
@@ -43,6 +45,7 @@ impl Display for Error {
             Error::Null => write!(f, "Error::Null"),
             Error::Other => write!(f, "Error::Other"),
 
+            Error::FromStr => write!(f, "In (`Map`): can not map str value to type"),
             Error::SelectEq => write!(f, "In (`Map`): not equal"),
             Error::UnitRepeat => write!(f, "In (`UnitRepeat`): need more data"),
             Error::TryRepeat => write!(f, "In (`TryRepeat`): need more data"),

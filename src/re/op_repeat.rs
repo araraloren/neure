@@ -250,10 +250,9 @@ where
     {
         let mut cnt = 0;
         let mut res = Vec::with_capacity(self.capacity);
-        let mut g = CtxGuard::new(ctx);
 
         while self.is_contain(cnt) {
-            let ret = self.pat.invoke(g.ctx(), handler);
+            let ret = self.pat.invoke(ctx, handler);
 
             match ret {
                 Ok(ret) => {
@@ -282,11 +281,10 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut cnt = 0;
-        let mut g = CtxGuard::new(ctx);
         let mut ret = Vec::with_capacity(self.capacity);
 
         while self.is_contain(cnt) {
-            match g.try_mat(&self.pat) {
+            match ctx.try_mat(&self.pat) {
                 Ok(span) => {
                     ret.push(span);
                     cnt += 1;

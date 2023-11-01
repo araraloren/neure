@@ -27,6 +27,7 @@ pub use self::guard::CtxGuard;
 pub use self::invoke::*;
 pub use self::op_collect::Collect;
 pub use self::op_if::IfRegex;
+pub use self::op_map::FromStr;
 pub use self::op_map::Map;
 pub use self::op_map::MapSingle;
 pub use self::op_map::Single;
@@ -250,6 +251,85 @@ where
     fn ws_u(self) -> PaddingWS<C, Self, NeureOneMore<C, WhiteSpace, char, NullCond>>;
 }
 
+///
+/// # Example
+///
+/// ```
+/// # use neure::{err::Error, prelude::*};
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     #[derive(Debug, PartialEq, Eq)]
+///     enum Tag {
+///         Start(String),
+///         End(String),
+///         Empty(String),
+///     }
+///
+///     #[derive(Debug, PartialEq, Eq)]
+///     enum Xml {
+///         Element { name: String, child: Vec<Xml> },
+///         Enclosed(String),
+///     }
+///
+///     fn xml_parser(ctx: &mut CharsCtx) -> Result<Vec<Xml>, Error> {
+///         let alpha = neu::alphabetic().repeat_full();
+///         let start = alpha
+///             .quote("<", ">")
+///             .map(|v: &str| Ok(Tag::Start(v.to_string())));
+///         let end = alpha
+///             .quote("</", ">")
+///             .map(|v: &str| Ok(Tag::End(v.to_string())));
+///         let empty = alpha
+///             .quote("<", "/>")
+///             .map(|v: &str| Ok(Tag::Empty(v.to_string())));
+///         let mut ret = vec![];
+///
+///         while let Ok(tag) = ctx.invoke(&start.or(empty)) {
+///             match tag {
+///                 Tag::Start(name) => {
+///                     let child = xml_parser(ctx)?;
+///                     let end = ctx.invoke(&end)?;
+///
+///                     if let Tag::End(end_name) = &end {
+///                         debug_assert_eq!(&name, end_name);
+///                         ret.push(Xml::Element { name, child });
+///                         continue;
+///                     }
+///                     unreachable!("Can not find end tag of {:?}", name);
+///                 }
+///                 Tag::Empty(name) => {
+///                     ret.push(Xml::Enclosed(name));
+///                 }
+///                 _ => {}
+///             }
+///         }
+///         Ok(ret)
+///     }
+///
+///     let ret = xml_parser(&mut CharsCtx::new(
+///         "<language><rust><linux/></rust><cpp><windows/></cpp></language>",
+///     ))?;
+///     let chk = vec![Xml::Element {
+///         name: "language".to_owned(),
+///         child: vec![
+///             Xml::Element {
+///                 name: "rust".to_owned(),
+///                 child: vec![Xml::Enclosed("linux".to_owned())],
+///             },
+///             Xml::Element {
+///                 name: "cpp".to_owned(),
+///                 child: vec![Xml::Enclosed("windows".to_owned())],
+///             },
+///         ],
+///     }];
+///
+///     assert_eq!(ret, chk);
+///
+///     Ok(())
+/// # }
+/// ```
 impl<'a, C, T> RegexOp<'a, C> for T
 where
     T: Regex<C>,
@@ -282,78 +362,17 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::{err::Error, prelude::*};
+    /// # use neure::prelude::*;
+    /// # use re::FromStr;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
-    ///     #[derive(Debug, PartialEq, Eq)]
-    ///     enum Tag {
-    ///         Start(String),
-    ///         End(String),
-    ///         Empty(String),
-    ///     }
+    ///     let num = neu::digit(10).repeat_full();
+    ///     let num = num.quote("(", ")").map(FromStr::<i64>::new());
+    ///     let mut ctx = CharsCtx::new(r#"(42)"#);
     ///
-    ///     #[derive(Debug, PartialEq, Eq)]
-    ///     enum Xml {
-    ///         Element { name: String, child: Vec<Xml> },
-    ///         Enclosed(String),
-    ///     }
-    ///
-    ///     fn xml_parser(ctx: &mut CharsCtx) -> Result<Vec<Xml>, Error> {
-    ///         let alpha = neu::alphabetic().repeat_full();
-    ///         let start = alpha
-    ///             .quote("<", ">")
-    ///             .map(|v: &str| Ok(Tag::Start(v.to_string())));
-    ///         let end = alpha
-    ///             .quote("</", ">")
-    ///             .map(|v: &str| Ok(Tag::End(v.to_string())));
-    ///         let empty = alpha
-    ///             .quote("<", "/>")
-    ///             .map(|v: &str| Ok(Tag::Empty(v.to_string())));
-    ///         let mut ret = vec![];
-    ///
-    ///         while let Ok(tag) = ctx.invoke(&start.or(empty)) {
-    ///             match tag {
-    ///                 Tag::Start(name) => {
-    ///                     let child = xml_parser(ctx)?;
-    ///                     let end = ctx.invoke(&end)?;
-    ///
-    ///                     if let Tag::End(end_name) = &end {
-    ///                         debug_assert_eq!(&name, end_name);
-    ///                         ret.push(Xml::Element { name, child });
-    ///                         continue;
-    ///                     }
-    ///                     unreachable!("Can not find end tag of {:?}", name);
-    ///                 }
-    ///                 Tag::Empty(name) => {
-    ///                     ret.push(Xml::Enclosed(name));
-    ///                 }
-    ///                 _ => {}
-    ///             }
-    ///         }
-    ///         Ok(ret)
-    ///     }
-    ///
-    ///     let ret = xml_parser(&mut CharsCtx::new(
-    ///         "<language><rust><linux/></rust><cpp><windows/></cpp></language>",
-    ///     ))?;
-    ///     let chk = vec![Xml::Element {
-    ///         name: "language".to_owned(),
-    ///         child: vec![
-    ///             Xml::Element {
-    ///                 name: "rust".to_owned(),
-    ///                 child: vec![Xml::Enclosed("linux".to_owned())],
-    ///             },
-    ///             Xml::Element {
-    ///                 name: "cpp".to_owned(),
-    ///                 child: vec![Xml::Enclosed("windows".to_owned())],
-    ///             },
-    ///         ],
-    ///     }];
-    ///
-    ///     assert_eq!(ret, chk);
-    ///
+    ///     assert_eq!(ctx.invoke(&num)?, 42);
     ///     Ok(())
     /// # }
     /// ```
@@ -388,7 +407,7 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::{err::Error, prelude::*};
+    /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
@@ -396,12 +415,13 @@ where
     ///     let str = '"'.not().repeat_full();
     ///     let str = str.quote("\"", "\"");
     ///     let num = neu::digit(10).repeat_full();
-    ///     let ele = str.or(num).terminated(','.repeat_zero_one()).ws();
-    ///     let tuple = ele.then(ele.map(|v: &str| v.parse::<i32>().map_err(|_| Error::Other)));
-    ///     let tuple = tuple.quote("(", ")");
-    ///     let mut ctx = CharsCtx::new(r#"("c", 42)"#);
+    ///     let ele = str.or(num);
+    ///     let mut ctx = CharsCtx::new(r#"42"#);
     ///
-    ///     assert_eq!(ctx.invoke(&tuple)?, ("c", 42));
+    ///     assert_eq!(ctx.invoke(&ele)?, "42");
+    ///     let mut ctx = CharsCtx::new(r#""rust""#);
+    ///
+    ///     assert_eq!(ctx.invoke(&ele)?, "rust");
     ///     Ok(())
     /// # }
     /// ```
@@ -413,10 +433,49 @@ where
         OrMap::new(self, pat, func)
     }
 
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::{prelude::*, re::FromStr};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     let str = '"'.not().repeat_full();
+    ///     let str = str.quote("\"", "\"");
+    ///     let num = neu::digit(10).repeat_full();
+    ///     let ele = str.or(num).terminated(','.repeat_zero_one()).ws();
+    ///     let tuple = ele.then(ele.map(FromStr::<i32>::new()));
+    ///     let mut ctx = CharsCtx::new(r#""c", 42"#);
+    ///
+    ///     assert_eq!(ctx.invoke(&tuple)?, ("c", 42));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn then<P>(self, then: P) -> Then<C, Self, P> {
         Then::new(self, then)
     }
 
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::{prelude::*, re::FromStr};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     let num = neu::digit(10).repeat_full().map(FromStr::<i32>::new());
+    ///     let num = num.then(','.repeat_zero_one().ws()).select0();
+    ///     let array = num.repeat(1..4);
+    ///     let mut ctx = CharsCtx::new(r#"6, 8, 10"#);
+    ///
+    ///     assert_eq!(ctx.invoke(&array)?, vec![6, 8, 10]);
+    ///     Ok(())
+    /// # }
+    /// ```
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self> {
         Repeat::new(self, range)
     }
