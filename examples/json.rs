@@ -10,16 +10,13 @@ pub enum JsonZero<'a> {
 
 static JSON: &'static [u8] = include_bytes!("samples/sample.json");
 
-use neu::err::Error;
-use neu::prelude::*;
-use neu::*;
+use neure::err::Error;
+use neure::prelude::*;
 
 #[derive(Debug, Default)]
 pub struct JsonParser;
 
 impl JsonParser {
-    const SPACE: neu::neure::WhiteSpace = neu::whitespace();
-
     pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
         let mut ctx = BytesCtx::new(pat);
         let ret = Self::parse_object(&mut ctx);
@@ -32,10 +29,10 @@ impl JsonParser {
     }
 
     pub fn parse_object<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
-        let hash_beg = neure!(b'{');
-        let hash_end = neure!(b'}');
-        let sep = neure!(b':');
-        let comma = neure!(b',');
+        let hash_beg = re!(b'{');
+        let hash_end = re!(b'}');
+        let sep = re!(b':');
+        let comma = re!(b',');
 
         if Self::try_mat(ctx, &hash_beg).is_ok() {
             let mut objs = Vec::default();
@@ -161,23 +158,28 @@ impl JsonParser {
     }
 
     pub fn parse_number<'a>(ctx: &mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> {
-        let space = Self::SPACE.repeat(0..);
-        let sign = regex!(['+' '-']{0,1});
-        let digit = regex!(['0' - '9']{1,});
-        let dot = regex!('.');
-        let r#if = |ctx: &BytesCtx<'a>| ctx.orig().map(|v| v.get(0) == Some(&b'.'));
-        let f64_ = space.then(sign).then(digit).then(regex::branch(
-            r#if,
-            dot.then(digit),
-            regex::consume(0),
-        ));
+        let ws = Self::ws();
+        let sign = re!([b'+' b'-']{0,1});
+        let digit = re!([b'0' - b'9']{1,});
+        let frac = re!(b'.').then(digit).pattern();
+        let f64_ = ws
+            .then(sign)
+            .then(digit)
+            .then(frac.or(re::null()))
+            .pattern();
+        let mut ctx = BytesCtx::new(b"-123");
+        let from_str = |val| {
+            std::str::from_utf8(val)
+                .map_err(|_| Error::Other)?
+                .parse::<f64>()
+                .map_err(|_| Error::Other)
+        };
 
-        ctx.map_orig(&f64_, |str| {
-            std::str::from_utf8(str)
-                .map(|v| v.parse::<f64>())
-                .unwrap()
-                .unwrap()
-        })
+        Ok(JsonZero::Num(ctx.map_orig(&f64_, from_str)?))
+    }
+
+    pub fn ws<C, R>() -> impl Regex<C, Ret = R> {
+        re::zero_more(|byte: &u8| char::from_u32(*byte as u32).unwrap().is_whitespace())
     }
 }
 

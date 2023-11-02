@@ -10,34 +10,40 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::Neu;
+use crate::neu::NeureOneMore;
+use crate::neu::NullCond;
 use crate::re::Regex;
 
-#[derive(Debug, Default, Copy)]
-pub struct PaddingWS<C, P, S> {
+#[derive(Debug, Copy)]
+pub struct PaddingUnit<C, P, U: Neu<T>, T> {
     pat: P,
-    ws: S,
+    unit: NeureOneMore<C, U, T, NullCond>,
     marker: PhantomData<C>,
 }
 
-impl<C, P, S> Clone for PaddingWS<C, P, S>
+impl<C, P, U, T> Clone for PaddingUnit<C, P, U, T>
 where
     P: Clone,
-    S: Clone,
+    U: Clone + Neu<T>,
 {
     fn clone(&self) -> Self {
         Self {
             pat: self.pat.clone(),
-            ws: self.ws.clone(),
+            unit: self.unit.clone(),
             marker: self.marker,
         }
     }
 }
 
-impl<C, P, S> PaddingWS<C, P, S> {
-    pub fn new(pat: P, ws: S) -> Self {
+impl<C, P, U, T> PaddingUnit<C, P, U, T>
+where
+    U: Neu<T>,
+{
+    pub fn new(pat: P, unit: NeureOneMore<C, U, T, NullCond>) -> Self {
         Self {
             pat,
-            ws,
+            unit,
             marker: PhantomData,
         }
     }
@@ -50,12 +56,12 @@ impl<C, P, S> PaddingWS<C, P, S> {
         &mut self.pat
     }
 
-    pub fn ws(&self) -> &S {
-        &self.ws
+    pub fn unit(&self) -> &NeureOneMore<C, U, T, NullCond> {
+        &self.unit
     }
 
-    pub fn ws_mut(&mut self) -> &mut S {
-        &mut self.ws
+    pub fn unit_mut(&mut self) -> &mut NeureOneMore<C, U, T, NullCond> {
+        &mut self.unit
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -63,17 +69,17 @@ impl<C, P, S> PaddingWS<C, P, S> {
         self
     }
 
-    pub fn set_ws(&mut self, ws: S) -> &mut Self {
-        self.ws = ws;
+    pub fn set_unit(&mut self, unit: NeureOneMore<C, U, T, NullCond>) -> &mut Self {
+        self.unit = unit;
         self
     }
 }
 
-impl<'a, C, P, S, M, O> Invoke<'a, C, M, O> for PaddingWS<C, P, S>
+impl<'a, C, P, U, T, M, O> Invoke<'a, C, M, O> for PaddingUnit<C, P, U, T>
 where
+    U: Neu<T>,
     P: Invoke<'a, C, M, O>,
-    S: Regex<C, Ret = Span>,
-    C: Context<'a, Item = char> + Policy<C>,
+    C: Context<'a, Item = T> + Policy<C> + 'a,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
@@ -84,7 +90,7 @@ where
 
         match self.pat.invoke(g.ctx(), func) {
             Ok(ret1) => {
-                let _ = g.try_mat(&self.ws);
+                let _ = g.try_mat(&self.unit);
                 Ok(ret1)
             }
             Err(e) => {
@@ -95,11 +101,11 @@ where
     }
 }
 
-impl<'a, C, P, S> Regex<C> for PaddingWS<C, P, S>
+impl<'a, C, P, U, T> Regex<C> for PaddingUnit<C, P, U, T>
 where
+    U: Neu<T>,
     P: Regex<C, Ret = Span>,
-    S: Regex<C, Ret = Span>,
-    C: Context<'a, Item = char> + Policy<C>,
+    C: Context<'a, Item = T> + Policy<C> + 'a,
 {
     type Ret = P::Ret;
 
@@ -107,7 +113,7 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut ret = g.try_mat(&self.pat)?;
 
-        if let Ok(ws_ret) = g.try_mat(&self.ws) {
+        if let Ok(ws_ret) = g.try_mat(&self.unit) {
             ret.add_assign(ws_ret);
         }
         Ok(ret)

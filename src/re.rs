@@ -36,10 +36,9 @@ pub use self::op_ormap::OrMap;
 pub use self::op_pat::Pattern;
 pub use self::op_quote::Quote;
 pub use self::op_repeat::Repeat;
-pub use self::op_repeat::TryRepeat;
 pub use self::op_term::Terminated;
 pub use self::op_then::Then;
-pub use self::op_ws::PaddingWS;
+pub use self::op_ws::PaddingUnit;
 
 pub use self::op_if::branch;
 
@@ -240,15 +239,15 @@ where
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
-    fn try_repeat(self, range: impl Into<CRange<usize>>) -> TryRepeat<C, Self>;
-
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>;
 
-    fn ws(self) -> PaddingWS<C, Self, NeureOneMore<C, AsciiWhiteSpace, char, NullCond>>;
+    fn pad<N: Neu<U>, U>(self, unit: N) -> PaddingUnit<C, Self, N, U>;
 
-    fn ws_u(self) -> PaddingWS<C, Self, NeureOneMore<C, WhiteSpace, char, NullCond>>;
+    fn ws(self) -> PaddingUnit<C, Self, AsciiWhiteSpace, char>;
+
+    fn ws_u(self) -> PaddingUnit<C, Self, WhiteSpace, char>;
 }
 
 ///
@@ -480,10 +479,6 @@ where
         Repeat::new(self, range)
     }
 
-    fn try_repeat(self, range: impl Into<CRange<usize>>) -> TryRepeat<C, Self> {
-        TryRepeat::new(self, range)
-    }
-
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>,
@@ -491,12 +486,16 @@ where
         IfRegex::new(self, r#if, r#else)
     }
 
-    fn ws(self) -> PaddingWS<C, Self, NeureOneMore<C, AsciiWhiteSpace, char, NullCond>> {
-        PaddingWS::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
+    fn pad<N: Neu<U>, U>(self, unit: N) -> PaddingUnit<C, Self, N, U> {
+        PaddingUnit::new(self, NeureOneMore::new(unit, NullCond))
     }
 
-    fn ws_u(self) -> PaddingWS<C, Self, NeureOneMore<C, WhiteSpace, char, NullCond>> {
-        PaddingWS::new(self, NeureOneMore::new(WhiteSpace, NullCond))
+    fn ws(self) -> PaddingUnit<C, Self, AsciiWhiteSpace, char> {
+        PaddingUnit::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
+    }
+
+    fn ws_u(self) -> PaddingUnit<C, Self, WhiteSpace, char> {
+        PaddingUnit::new(self, NeureOneMore::new(WhiteSpace, NullCond))
     }
 }
 
@@ -1132,5 +1131,5 @@ where
     R: Ret,
     C: Context<'a>,
 {
-    move |ctx: &mut C| Ok(R::from(ctx, (0, 0)))
+    move |ctx: &mut C| Ok(<R as Ret>::from(ctx, (0, 0)))
 }
