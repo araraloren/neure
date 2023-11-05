@@ -316,7 +316,7 @@ where
     }
 }
 
-pub fn dynamic_regex<'a, 'b, C, R>(
+pub fn into_dyn_regex<'a, 'b, C, R>(
     invoke: impl Fn(&mut C) -> Result<R, Error> + 'b,
 ) -> DynamicRegex<'b, C, R>
 where

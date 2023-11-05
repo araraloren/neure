@@ -6,6 +6,8 @@ pub enum Error {
 
     Other,
 
+    RegexOption,
+
     FromStr,
 
     SelectEq,
@@ -45,6 +47,7 @@ impl Display for Error {
             Error::Null => write!(f, "Error::Null"),
             Error::Other => write!(f, "Error::Other"),
 
+            Error::RegexOption => write!(f, "In (`Option<I>`): need option value in ctor or regex"),
             Error::FromStr => write!(f, "In (`Map`): can not map str value to type"),
             Error::SelectEq => write!(f, "In (`Map`): not equal"),
             Error::UnitRepeat => write!(f, "In (`UnitRepeat`): need more data"),

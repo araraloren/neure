@@ -6,9 +6,9 @@ use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Copy)]
@@ -98,12 +98,12 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O> Invoke<'a, C, M, Vec<O>> for Repeat<C, P>
+impl<'a, C, P, M, O> Ctor<'a, C, M, Vec<O>> for Repeat<C, P>
 where
-    P: Invoke<'a, C, M, O>,
+    P: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -112,7 +112,7 @@ where
         let mut res = Vec::with_capacity(self.capacity);
 
         while self.is_contain(cnt) {
-            let ret = self.pat.invoke(ctx, handler);
+            let ret = self.pat.constrct(ctx, handler);
 
             match ret {
                 Ok(ret) => {

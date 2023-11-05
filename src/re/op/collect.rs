@@ -5,10 +5,10 @@ use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::prelude::Ret;
+use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
@@ -51,19 +51,19 @@ impl<C, P, O> Collect<C, P, O> {
     }
 }
 
-impl<'a, C, P, M, O, V> Invoke<'a, C, M, V> for Collect<C, P, O>
+impl<'a, C, P, M, O, V> Ctor<'a, C, M, V> for Collect<C, P, O>
 where
     V: FromIterator<O>,
-    P: Invoke<'a, C, M, O>,
+    P: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         Ok(V::from_iter(std::iter::from_fn(|| {
-            self.pat.invoke(ctx, func).ok()
+            self.pat.constrct(ctx, func).ok()
         })))
     }
 }

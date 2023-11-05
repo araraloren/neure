@@ -4,9 +4,9 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
@@ -49,14 +49,14 @@ impl<C, P> Pattern<C, P> {
     }
 }
 
-impl<'a, C, M, P> Invoke<'a, C, M, M> for Pattern<C, P>
+impl<'a, C, O, P> Ctor<'a, C, O, O> for Pattern<C, P>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
-        H: Handler<A, Out = M, Error = Error>,
+        H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let ret = ctx.try_mat(&self.pat)?;

@@ -4,10 +4,10 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 use crate::trace_log;
 
@@ -68,22 +68,22 @@ impl<C, L, R> Or<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O> Invoke<'a, C, M, O> for Or<C, L, R>
+impl<'a, C, L, R, M, O> Ctor<'a, C, M, O> for Or<C, L, R>
 where
-    L: Invoke<'a, C, M, O>,
-    R: Invoke<'a, C, M, O>,
+    L: Ctor<'a, C, M, O>,
+    R: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        match self.left.invoke(g.ctx(), func) {
+        match self.left.constrct(g.ctx(), func) {
             Ok(ret) => Ok(ret),
             Err(_) => {
-                let ret = self.right.invoke(g.reset().ctx(), func);
+                let ret = self.right.constrct(g.reset().ctx(), func);
 
                 g.process_ret(ret)
             }

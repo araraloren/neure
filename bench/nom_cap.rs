@@ -85,9 +85,9 @@ mod color_neure {
         ctx.try_mat(&pound)?;
 
         Ok(Color {
-            red: ctx.invoke(&hex)??,
-            green: ctx.invoke(&hex)??,
-            blue: ctx.invoke(&hex)??,
+            red: ctx.ctor(&hex)??,
+            green: ctx.ctor(&hex)??,
+            blue: ctx.ctor(&hex)??,
         })
     }
 

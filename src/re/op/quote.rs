@@ -5,10 +5,10 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
@@ -85,14 +85,14 @@ impl<C, P, L, R> Quote<C, P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<C, P, L, R>
+impl<'a, C, L, R, P, M, O> Ctor<'a, C, M, O> for Quote<C, P, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
-    P: Invoke<'a, C, M, O>,
+    P: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -100,7 +100,7 @@ where
         let mut g = CtxGuard::new(ctx);
 
         g.try_mat(&self.left)?;
-        let ret = self.pat.invoke(g.ctx(), func);
+        let ret = self.pat.constrct(g.ctx(), func);
         let ret = g.process_ret(ret)?;
 
         g.try_mat(&self.right)?;

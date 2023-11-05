@@ -1,7 +1,7 @@
+mod ctor;
 mod extract;
 mod guard;
 mod into;
-mod invoke;
 mod op;
 
 use std::cell::Cell;
@@ -10,10 +10,10 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+pub use self::ctor::*;
 pub use self::extract::*;
 pub use self::guard::CtxGuard;
 pub use self::into::*;
-pub use self::invoke::*;
 pub use self::op::*;
 
 use crate::ctx::Context;
@@ -81,6 +81,18 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::bytes(self.as_slice());
         pattern.try_parse(ctx)
+    }
+}
+
+impl<'a, P, C> Regex<C> for Option<P>
+where
+    P: Regex<C>,
+    C: Context<'a> + Policy<C>,
+{
+    type Ret = P::Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        self.as_ref().ok_or(Error::RegexOption)?.try_parse(ctx)
     }
 }
 

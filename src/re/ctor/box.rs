@@ -4,19 +4,19 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 // into_box
 #[derive(Debug, Clone)]
-pub struct BoxedInvoke<C, T> {
+pub struct BoxedCtor<C, T> {
     inner: Box<T>,
     marker: PhantomData<C>,
 }
 
-impl<C, T> BoxedInvoke<C, T> {
+impl<C, T> BoxedCtor<C, T> {
     pub fn new(inner: Box<T>) -> Self {
         Self {
             inner,
@@ -29,7 +29,7 @@ impl<C, T> BoxedInvoke<C, T> {
         self
     }
 
-    pub fn inner(&self) -> &Box<T> {
+    pub fn inner(&self) -> &T {
         &self.inner
     }
 
@@ -43,7 +43,7 @@ impl<C, T> BoxedInvoke<C, T> {
     }
 }
 
-impl<'a, C, T> Regex<C> for BoxedInvoke<C, T>
+impl<C, T> Regex<C> for BoxedCtor<C, T>
 where
     T: Regex<C>,
 {
@@ -54,16 +54,16 @@ where
     }
 }
 
-impl<'a, C, M, O, T> Invoke<'a, C, M, O> for BoxedInvoke<C, T>
+impl<'a, C, M, O, T> Ctor<'a, C, M, O> for BoxedCtor<C, T>
 where
-    T: Invoke<'a, C, M, O>,
+    T: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        self.inner.invoke(ctx, handler)
+        self.inner.constrct(ctx, handler)
     }
 }

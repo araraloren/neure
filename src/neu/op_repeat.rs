@@ -5,9 +5,9 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 use super::length_of;
@@ -86,7 +86,7 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, O, I> Invoke<'a, C, O, O>
+impl<'a, const M: usize, const N: usize, U, C, O, I> Ctor<'a, C, O, O>
     for NeureRepeat<'a, M, N, C, U, I>
 where
     U: Neu<C::Item>,
@@ -94,7 +94,7 @@ where
     C: Context<'a> + Policy<C> + 'a,
 {
     #[inline(always)]
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -235,7 +235,7 @@ where
     }
 }
 
-impl<'a, U, C, M, I> Invoke<'a, C, M, M> for NeureRepeatRange<'a, C, U, I>
+impl<'a, U, C, M, I> Ctor<'a, C, M, M> for NeureRepeatRange<'a, C, U, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
@@ -243,7 +243,7 @@ where
     C: Context<'a> + Policy<C>,
 {
     #[inline(always)]
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,

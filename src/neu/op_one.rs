@@ -4,9 +4,9 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 use crate::trace_log;
 
@@ -78,14 +78,14 @@ where
     }
 }
 
-impl<'a, U, C, O, I> Invoke<'a, C, O, O> for NeureOne<C, U, C::Item, I>
+impl<'a, U, C, O, I> Ctor<'a, C, O, O> for NeureOne<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -183,14 +183,14 @@ where
     }
 }
 
-impl<'a, U, C, O, I> Invoke<'a, C, O, O> for NeureOneMore<C, U, C::Item, I>
+impl<'a, U, C, O, I> Ctor<'a, C, O, O> for NeureOneMore<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,

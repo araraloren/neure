@@ -9,10 +9,10 @@ use crate::re::op::Map;
 use crate::re::op::Select0;
 use crate::re::op::Select1;
 use crate::re::op::SelectEq;
+use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
@@ -84,22 +84,22 @@ impl<C, P, T> Then<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O1, O2> Invoke<'a, C, M, (O1, O2)> for Then<C, P, T>
+impl<'a, C, P, T, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for Then<C, P, T>
 where
-    P: Invoke<'a, C, M, O1>,
-    T: Invoke<'a, C, M, O2>,
+    P: Ctor<'a, C, M, O1>,
+    T: Ctor<'a, C, M, O2>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
 
-        match self.pat.invoke(g.ctx(), func) {
+        match self.pat.constrct(g.ctx(), func) {
             Ok(ret1) => {
-                let ret = self.then.invoke(g.ctx(), func);
+                let ret = self.then.constrct(g.ctx(), func);
                 let ret2 = g.process_ret(ret)?;
 
                 Ok((ret1, ret2))

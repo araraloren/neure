@@ -2,9 +2,9 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 use std::cell::Cell;
@@ -116,7 +116,7 @@ impl<C, T> BoxedRegex<C, T> {
         self
     }
 
-    pub fn inner(&self) -> &Box<T> {
+    pub fn inner(&self) -> &T {
         &self.inner
     }
 
@@ -130,7 +130,7 @@ impl<C, T> BoxedRegex<C, T> {
     }
 }
 
-impl<'a, C, T> Regex<C> for BoxedRegex<C, T>
+impl<C, T> Regex<C> for BoxedRegex<C, T>
 where
     T: Regex<C>,
 {
@@ -141,12 +141,12 @@ where
     }
 }
 
-impl<'a, C, O, T> Invoke<'a, C, O, O> for BoxedRegex<C, T>
+impl<'a, C, O, T> Ctor<'a, C, O, O> for BoxedRegex<C, T>
 where
     T: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,

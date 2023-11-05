@@ -2,9 +2,9 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 pub type DynamicRegexHandler<'a, C, R> = Box<dyn Fn(&mut C) -> Result<R, Error> + 'a>;
@@ -45,11 +45,11 @@ impl<'a, C, R> Regex<C> for DynamicRegex<'a, C, R> {
     }
 }
 
-impl<'a, 'b, C, O> Invoke<'a, C, O, O> for DynamicRegex<'b, C, Span>
+impl<'a, 'b, C, O> Ctor<'a, C, O, O> for DynamicRegex<'b, C, Span>
 where
     C: Context<'a> + Policy<C>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,

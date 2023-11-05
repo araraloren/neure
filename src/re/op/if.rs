@@ -4,10 +4,10 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 use crate::trace_log;
 
@@ -85,23 +85,23 @@ impl<C, T, I, E> IfRegex<C, T, I, E> {
     }
 }
 
-impl<'a, C, T, I, E, M, O> Invoke<'a, C, M, O> for IfRegex<C, T, I, E>
+impl<'a, C, T, I, E, M, O> Ctor<'a, C, M, O> for IfRegex<C, T, I, E>
 where
-    T: Invoke<'a, C, M, O>,
-    E: Invoke<'a, C, M, O>,
+    T: Ctor<'a, C, M, O>,
+    E: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
     I: Fn(&C) -> Result<bool, Error>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
         let ret = if (self.r#if)(g.ctx())? {
-            self.regex.invoke(g.ctx(), func)
+            self.regex.constrct(g.ctx(), func)
         } else {
-            self.r#else.invoke(g.reset().ctx(), func)
+            self.r#else.constrct(g.reset().ctx(), func)
         };
 
         g.process_ret(ret)

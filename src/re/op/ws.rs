@@ -8,10 +8,10 @@ use crate::err::Error;
 use crate::neu::Neu;
 use crate::neu::NeureOneMore;
 use crate::neu::NullCond;
+use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Copy)]
@@ -74,20 +74,20 @@ where
     }
 }
 
-impl<'a, C, P, U, T, M, O> Invoke<'a, C, M, O> for PaddingUnit<C, P, U, T>
+impl<'a, C, P, U, T, M, O> Ctor<'a, C, M, O> for PaddingUnit<C, P, U, T>
 where
     U: Neu<T>,
-    P: Invoke<'a, C, M, O>,
+    P: Ctor<'a, C, M, O>,
     C: Context<'a, Item = T> + Policy<C> + 'a,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
 
-        match self.pat.invoke(g.ctx(), func) {
+        match self.pat.constrct(g.ctx(), func) {
             Ok(ret1) => {
                 let _ = g.try_mat(&self.unit);
                 Ok(ret1)

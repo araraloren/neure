@@ -4,9 +4,9 @@ use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::re::Regex;
 
 pub trait MapSingle<I, O> {
@@ -81,18 +81,18 @@ impl<C, P, F, O> Map<C, P, F, O> {
     }
 }
 
-impl<'a, C, M, O, V, P, F> Invoke<'a, C, M, V> for Map<C, P, F, O>
+impl<'a, C, M, O, V, P, F> Ctor<'a, C, M, V> for Map<C, P, F, O>
 where
-    P: Invoke<'a, C, M, O>,
+    P: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
     F: MapSingle<O, V>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        self.mapper.map_to(self.pat.invoke(ctx, func)?)
+        self.mapper.map_to(self.pat.constrct(ctx, func)?)
     }
 }
 

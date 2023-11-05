@@ -7,9 +7,9 @@ use super::Span;
 use crate::ctx::Policy;
 use crate::err::Error;
 use crate::iter::BytesIndices;
+use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Invoke;
 use crate::span::SimpleStorer;
 use crate::trace_log;
 
@@ -212,22 +212,22 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    pub fn invoke_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
+    pub fn ctor_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
     where
-        P: Invoke<'a, Self, M, O>,
+        P: Ctor<'a, Self, M, O>,
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
     {
-        pat.invoke(self, handler)
+        pat.constrct(self, handler)
     }
 
-    pub fn invoke<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    pub fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Invoke<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
+        P: Ctor<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
     {
-        self.invoke_with(pat, &mut Ok)
+        self.ctor_with(pat, &mut Ok)
     }
 
     pub fn map<H, A, O, P>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
