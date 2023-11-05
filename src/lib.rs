@@ -46,9 +46,8 @@ pub mod prelude {
     pub use crate::neu::NeuCond;
     pub use crate::neu::NeuOp;
     pub use crate::re;
-    pub use crate::re::IntoDynamic;
-    pub use crate::re::IntoNonDynamic;
     pub use crate::re::Regex;
+    pub use crate::re::RegexIntoOp;
     pub use crate::re::RegexOp;
     pub use crate::span::SimpleStorer;
 }

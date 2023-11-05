@@ -1,56 +1,56 @@
 use std::marker::PhantomData;
 
-use super::CtxGuard;
-use super::Extract;
-use super::Handler;
-use super::Invoke;
-
 use crate::ctx::Context;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::CtxGuard;
+use crate::re::Extract;
+use crate::re::Handler;
+use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
-pub struct OrMap<C, L, R, F, O> {
+pub struct Quote<C, P, L, R> {
+    pat: P,
     left: L,
     right: R,
-    func: F,
-    marker: PhantomData<(C, O)>,
+    marker: PhantomData<C>,
 }
 
-impl<C, L, R, F, O> Clone for OrMap<C, L, R, F, O>
+impl<C, P, L, R> Clone for Quote<C, P, L, R>
 where
+    P: Clone,
     L: Clone,
     R: Clone,
-    F: Clone,
 {
     fn clone(&self) -> Self {
         Self {
+            pat: self.pat.clone(),
             left: self.left.clone(),
             right: self.right.clone(),
-            func: self.func.clone(),
             marker: self.marker,
         }
     }
 }
 
-impl<C, L, R, F, O> OrMap<C, L, R, F, O> {
-    pub fn new(pat1: L, pat2: R, func: F) -> Self {
+impl<C, P, L, R> Quote<C, P, L, R> {
+    pub fn new(pat: P, left: L, right: R) -> Self {
         Self {
-            left: pat1,
-            right: pat2,
-            func,
+            pat,
+            left,
+            right,
             marker: PhantomData,
         }
     }
 
-    pub fn func(&self) -> &F {
-        &self.func
+    pub fn pat(&self) -> &P {
+        &self.pat
     }
 
-    pub fn func_mut(&mut self) -> &mut F {
-        &mut self.func
+    pub fn pat_mut(&mut self) -> &mut P {
+        &mut self.pat
     }
 
     pub fn left(&self) -> &L {
@@ -69,6 +69,11 @@ impl<C, L, R, F, O> OrMap<C, L, R, F, O> {
         &mut self.right
     }
 
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
+        self.pat = pat;
+        self
+    }
+
     pub fn set_left(&mut self, left: L) -> &mut Self {
         self.left = left;
         self
@@ -78,50 +83,46 @@ impl<C, L, R, F, O> OrMap<C, L, R, F, O> {
         self.right = right;
         self
     }
-
-    pub fn set_func(&mut self, func: F) -> &mut Self {
-        self.func = func;
-        self
-    }
 }
 
-impl<'a, C, L, R, F, M, O, V> Invoke<'a, C, M, V> for OrMap<C, L, R, F, O>
+impl<'a, C, L, R, P, M, O> Invoke<'a, C, M, O> for Quote<C, P, L, R>
 where
-    L: Invoke<'a, C, M, V>,
-    R: Invoke<'a, C, M, O>,
+    L: Regex<C, Ret = Span>,
+    R: Regex<C, Ret = Span>,
+    P: Invoke<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
-    F: Fn(O) -> Result<V, Error>,
 {
-    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
 
-        match self.left.invoke(g.ctx(), func) {
-            Ok(ret) => Ok(ret),
-            Err(_) => {
-                let ret = self.right.invoke(g.reset().ctx(), func);
+        g.try_mat(&self.left)?;
+        let ret = self.pat.invoke(g.ctx(), func);
+        let ret = g.process_ret(ret)?;
 
-                (self.func)(g.process_ret(ret)?)
-            }
-        }
+        g.try_mat(&self.right)?;
+        Ok(ret)
     }
 }
 
-impl<'a, C, L, R, F, O> Regex<C> for OrMap<C, L, R, F, O>
+impl<'a, C, L, R, P> Regex<C> for Quote<C, P, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = L::Ret;
+    type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let mut ret = g.try_mat(&self.left)?;
 
-        g.try_mat(&self.left)
-            .or_else(|_| g.reset().try_mat(&self.right))
+        ret.add_assign(g.try_mat(&self.pat)?);
+        ret.add_assign(g.try_mat(&self.right)?);
+        Ok(ret)
     }
 }

@@ -1,19 +1,18 @@
 use std::marker::PhantomData;
 
-use super::op_map::Select0;
-use super::op_map::Select1;
-use super::op_map::SelectEq;
-use super::CtxGuard;
-use super::Extract;
-use super::Handler;
-use super::Invoke;
-use super::Map;
-
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::op::Map;
+use crate::re::op::Select0;
+use crate::re::op::Select1;
+use crate::re::op::SelectEq;
+use crate::re::CtxGuard;
+use crate::re::Extract;
+use crate::re::Handler;
+use crate::re::Invoke;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]

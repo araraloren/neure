@@ -1,17 +1,23 @@
+mod r#box;
+mod r#dyn;
+
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use super::Extract;
-use super::Handler;
-use super::Regex;
+pub use self::r#box::BoxedInvoke;
+pub use self::r#dyn::DynamicInvoke;
+pub use self::r#dyn::DynamicInvokeHandler;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::Extract;
+use crate::re::Handler;
+use crate::re::Regex;
 
 pub trait Invoke<'a, C, M, O>
 where
@@ -169,4 +175,21 @@ where
     {
         Invoke::invoke(self.as_ref(), ctx, handler)
     }
+}
+
+pub fn dynamic_invoke<'a, 'b, C, O>(
+    invoke: impl Fn(&mut C) -> Result<O, Error> + 'b,
+) -> DynamicInvoke<'b, C, O>
+where
+    C: Context<'a>,
+{
+    DynamicInvoke::new(Box::new(invoke))
+}
+
+pub fn boxed_invoke<'a, C, M, O, I>(invoke: I) -> BoxedInvoke<C, I>
+where
+    I: Invoke<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    BoxedInvoke::new(Box::new(invoke))
 }

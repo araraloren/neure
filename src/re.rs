@@ -1,18 +1,8 @@
-mod dyna;
 mod extract;
 mod guard;
+mod into;
 mod invoke;
-mod op_collect;
-mod op_if;
-mod op_map;
-mod op_or;
-mod op_ormap;
-mod op_pat;
-mod op_quote;
-mod op_repeat;
-mod op_term;
-mod op_then;
-mod op_ws;
+mod op;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -20,27 +10,11 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::dyna::IntoDynamic;
-pub use self::dyna::IntoNonDynamic;
 pub use self::extract::*;
 pub use self::guard::CtxGuard;
+pub use self::into::*;
 pub use self::invoke::*;
-pub use self::op_collect::Collect;
-pub use self::op_if::IfRegex;
-pub use self::op_map::FromStr;
-pub use self::op_map::Map;
-pub use self::op_map::MapSingle;
-pub use self::op_map::Single;
-pub use self::op_or::Or;
-pub use self::op_ormap::OrMap;
-pub use self::op_pat::Pattern;
-pub use self::op_quote::Quote;
-pub use self::op_repeat::Repeat;
-pub use self::op_term::Terminated;
-pub use self::op_then::Then;
-pub use self::op_ws::PaddingUnit;
-
-pub use self::op_if::branch;
+pub use self::op::*;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -49,12 +23,7 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::length_of;
 use crate::neu::ret_and_inc;
-use crate::neu::AsciiWhiteSpace;
-use crate::neu::CRange;
 use crate::neu::Neu;
-use crate::neu::NeureOneMore;
-use crate::neu::NullCond;
-use crate::neu::WhiteSpace;
 use crate::trace_log;
 
 pub trait Regex<C> {
@@ -87,7 +56,7 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::string(self);
-        ctx.try_mat(&pattern)
+        pattern.try_parse(ctx)
     }
 }
 
@@ -99,7 +68,7 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::bytes(self);
-        ctx.try_mat(&pattern)
+        pattern.try_parse(ctx)
     }
 }
 
@@ -111,18 +80,7 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::bytes(self.as_slice());
-        ctx.try_mat(&pattern)
-    }
-}
-
-impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
-where
-    C: Context<'a> + Policy<C>,
-{
-    type Ret = Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(self.as_ref())
+        pattern.try_parse(ctx)
     }
 }
 
@@ -134,7 +92,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(&*self.borrow())
+        (*self.borrow()).try_parse(ctx)
     }
 }
 
@@ -146,7 +104,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(&self.get())
+        self.get().try_parse(ctx)
     }
 }
 
@@ -160,7 +118,7 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let ret: std::sync::MutexGuard<'_, P> =
             self.lock().expect("Oops ?! Can not unwrap mutex ...");
-        ctx.try_mat_t(&*ret)
+        (*ret).try_parse(ctx)
     }
 }
 
@@ -172,18 +130,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(self.as_ref())
-    }
-}
-
-impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
-where
-    C: Context<'a> + Policy<C>,
-{
-    type Ret = Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(self.as_ref())
+        self.as_ref().try_parse(ctx)
     }
 }
 
@@ -195,7 +142,29 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(self.as_ref())
+        self.as_ref().try_parse(ctx)
+    }
+}
+
+impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C>,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        self.as_ref().try_parse(ctx)
+    }
+}
+
+impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
+where
+    C: Context<'a> + Policy<C>,
+{
+    type Ret = Ret;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        self.as_ref().try_parse(ctx)
     }
 }
 
@@ -206,308 +175,7 @@ where
     type Ret = Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        ctx.try_mat_t(self.as_ref())
-    }
-}
-
-// #[derive(Debug, Clone, Copy)]
-// pub struct PaddingWS<C>(NeureZeroMore<C, WhiteSpace, char, NullCond>);
-
-// impl<C> Default for PaddingWS<C> {
-//     fn default() -> Self {
-//         Self(NeureZeroMore::new(WhiteSpace, NullCond))
-//     }
-// }
-
-// impl<'a, C> Regex<C> for PaddingWS<C>
-// where
-//     C: Context<'a, Item = char> + Policy<C> + 'a,
-// {
-//     type Ret = Span;
-
-//     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-//         ctx.try_mat_t(&self.0)
-//     }
-// }
-
-pub trait RegexOp<'a, C>
-where
-    Self: Sized,
-    C: Context<'a> + Policy<C>,
-{
-    fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
-
-    fn pattern(self) -> Pattern<C, Self>;
-
-    fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
-
-    fn terminated<S>(self, sep: S) -> Terminated<C, Self, S>;
-
-    fn or<P>(self, pat: P) -> Or<C, Self, P>;
-
-    fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<C, Self, P, F, O>;
-
-    fn then<T>(self, then: T) -> Then<C, Self, T>;
-
-    fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
-
-    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
-    where
-        I: Fn(&C) -> Result<bool, Error>;
-
-    fn pad<N: Neu<U>, U>(self, unit: N) -> PaddingUnit<C, Self, N, U>;
-
-    fn ws(self) -> PaddingUnit<C, Self, AsciiWhiteSpace, char>;
-
-    fn ws_u(self) -> PaddingUnit<C, Self, WhiteSpace, char>;
-}
-
-///
-/// # Example
-///
-/// ```
-/// # use neure::{err::Error, prelude::*};
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///
-///     #[derive(Debug, PartialEq, Eq)]
-///     enum Tag {
-///         Start(String),
-///         End(String),
-///         Empty(String),
-///     }
-///
-///     #[derive(Debug, PartialEq, Eq)]
-///     enum Xml {
-///         Element { name: String, child: Vec<Xml> },
-///         Enclosed(String),
-///     }
-///
-///     fn xml_parser(ctx: &mut CharsCtx) -> Result<Vec<Xml>, Error> {
-///         let alpha = neu::alphabetic().repeat_full();
-///         let start = alpha
-///             .quote("<", ">")
-///             .map(|v: &str| Ok(Tag::Start(v.to_string())));
-///         let end = alpha
-///             .quote("</", ">")
-///             .map(|v: &str| Ok(Tag::End(v.to_string())));
-///         let empty = alpha
-///             .quote("<", "/>")
-///             .map(|v: &str| Ok(Tag::Empty(v.to_string())));
-///         let mut ret = vec![];
-///
-///         while let Ok(tag) = ctx.invoke(&start.or(empty)) {
-///             match tag {
-///                 Tag::Start(name) => {
-///                     let child = xml_parser(ctx)?;
-///                     let end = ctx.invoke(&end)?;
-///
-///                     if let Tag::End(end_name) = &end {
-///                         debug_assert_eq!(&name, end_name);
-///                         ret.push(Xml::Element { name, child });
-///                         continue;
-///                     }
-///                     unreachable!("Can not find end tag of {:?}", name);
-///                 }
-///                 Tag::Empty(name) => {
-///                     ret.push(Xml::Enclosed(name));
-///                 }
-///                 _ => {}
-///             }
-///         }
-///         Ok(ret)
-///     }
-///
-///     let ret = xml_parser(&mut CharsCtx::new(
-///         "<language><rust><linux/></rust><cpp><windows/></cpp></language>",
-///     ))?;
-///     let chk = vec![Xml::Element {
-///         name: "language".to_owned(),
-///         child: vec![
-///             Xml::Element {
-///                 name: "rust".to_owned(),
-///                 child: vec![Xml::Enclosed("linux".to_owned())],
-///             },
-///             Xml::Element {
-///                 name: "cpp".to_owned(),
-///                 child: vec![Xml::Enclosed("windows".to_owned())],
-///             },
-///         ],
-///     }];
-///
-///     assert_eq!(ret, chk);
-///
-///     Ok(())
-/// # }
-/// ```
-impl<'a, C, T> RegexOp<'a, C> for T
-where
-    T: Regex<C>,
-    C: Context<'a> + Policy<C>,
-{
-    fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
-        Map::new(self, func)
-    }
-
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let pat = "rust".pattern().map(|v: &str| Ok(v.to_string()));
-    ///     let mut ctx = CharsCtx::new("rust");
-    ///
-    ///     assert_eq!(ctx.invoke(&pat)?, String::from("rust"));
-    ///     Ok(())
-    /// # }
-    /// ```
-    fn pattern(self) -> Pattern<C, Self> {
-        Pattern::new(self)
-    }
-
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// # use re::FromStr;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///
-    ///     let num = neu::digit(10).repeat_full();
-    ///     let num = num.quote("(", ")").map(FromStr::<i64>::new());
-    ///     let mut ctx = CharsCtx::new(r#"(42)"#);
-    ///
-    ///     assert_eq!(ctx.invoke(&num)?, 42);
-    ///     Ok(())
-    /// # }
-    /// ```
-    fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R> {
-        Quote::new(self, left, right)
-    }
-
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///
-    ///     let str = '"'.not().repeat_full();
-    ///     let str = str.quote("\"", "\"");
-    ///     let arr = str.terminated(','.repeat_zero_one()).ws().try_repeat(1..);
-    ///     let arr = arr.quote("[", "]");
-    ///     let mut ctx = CharsCtx::new(r#"["c", "rust", "java", "c++"]"#);
-    ///
-    ///     assert_eq!(ctx.invoke(&arr)?, vec!["c", "rust", "java", "c++"]);
-    ///     Ok(())
-    /// # }
-    /// ```
-    fn terminated<S>(self, sep: S) -> Terminated<C, Self, S> {
-        Terminated::new(self, sep)
-    }
-
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///
-    ///     let str = '"'.not().repeat_full();
-    ///     let str = str.quote("\"", "\"");
-    ///     let num = neu::digit(10).repeat_full();
-    ///     let ele = str.or(num);
-    ///     let mut ctx = CharsCtx::new(r#"42"#);
-    ///
-    ///     assert_eq!(ctx.invoke(&ele)?, "42");
-    ///     let mut ctx = CharsCtx::new(r#""rust""#);
-    ///
-    ///     assert_eq!(ctx.invoke(&ele)?, "rust");
-    ///     Ok(())
-    /// # }
-    /// ```
-    fn or<P>(self, pat: P) -> Or<C, Self, P> {
-        Or::new(self, pat)
-    }
-
-    fn or_map<P, F, O>(self, pat: P, func: F) -> OrMap<C, Self, P, F, O> {
-        OrMap::new(self, pat, func)
-    }
-
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::{prelude::*, re::FromStr};
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///
-    ///     let str = '"'.not().repeat_full();
-    ///     let str = str.quote("\"", "\"");
-    ///     let num = neu::digit(10).repeat_full();
-    ///     let ele = str.or(num).terminated(','.repeat_zero_one()).ws();
-    ///     let tuple = ele.then(ele.map(FromStr::<i32>::new()));
-    ///     let mut ctx = CharsCtx::new(r#""c", 42"#);
-    ///
-    ///     assert_eq!(ctx.invoke(&tuple)?, ("c", 42));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
-    fn then<P>(self, then: P) -> Then<C, Self, P> {
-        Then::new(self, then)
-    }
-
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::{prelude::*, re::FromStr};
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///
-    ///     let num = neu::digit(10).repeat_full().map(FromStr::<i32>::new());
-    ///     let num = num.then(','.repeat_zero_one().ws()).select0();
-    ///     let array = num.repeat(1..4);
-    ///     let mut ctx = CharsCtx::new(r#"6, 8, 10"#);
-    ///
-    ///     assert_eq!(ctx.invoke(&array)?, vec![6, 8, 10]);
-    ///     Ok(())
-    /// # }
-    /// ```
-    fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self> {
-        Repeat::new(self, range)
-    }
-
-    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
-    where
-        I: Fn(&C) -> Result<bool, Error>,
-    {
-        IfRegex::new(self, r#if, r#else)
-    }
-
-    fn pad<N: Neu<U>, U>(self, unit: N) -> PaddingUnit<C, Self, N, U> {
-        PaddingUnit::new(self, NeureOneMore::new(unit, NullCond))
-    }
-
-    fn ws(self) -> PaddingUnit<C, Self, AsciiWhiteSpace, char> {
-        PaddingUnit::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
-    }
-
-    fn ws_u(self) -> PaddingUnit<C, Self, WhiteSpace, char> {
-        PaddingUnit::new(self, NeureOneMore::new(WhiteSpace, NullCond))
+        self.as_ref().try_parse(ctx)
     }
 }
 
