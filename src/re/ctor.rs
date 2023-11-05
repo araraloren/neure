@@ -208,36 +208,36 @@ where
     BoxedCtor::new(Box::new(invoke))
 }
 
-pub type RecursiveRegex<'a, C, O> = Rc<RefCell<Option<DynamicCtor<'a, C, O>>>>;
+pub type RecursiveCtor<'a, C, O> = Rc<RefCell<Option<DynamicCtor<'a, C, O>>>>;
 
-pub type RecursiveRegexSync<'a, C, O> = Arc<Mutex<Option<DynamicCtor<'a, C, O>>>>;
+pub type RecursiveCtorSync<'a, C, O> = Arc<Mutex<Option<DynamicCtor<'a, C, O>>>>;
 
 pub fn rec_parser<'a, 'b, C, O, I>(
-    handler: impl Fn(RecursiveRegex<'b, C, O>) -> I,
-) -> RecursiveRegex<'b, C, O>
+    handler: impl Fn(RecursiveCtor<'b, C, O>) -> I,
+) -> RecursiveCtor<'b, C, O>
 where
     C: Context<'a>,
     I: Fn(&mut C) -> Result<O, Error> + 'b,
 {
-    let r_regex: RecursiveRegex<'b, C, O> = Rc::new(RefCell::new(None));
-    let r_regex_clone = r_regex.clone();
-    let regex = handler(r_regex_clone);
+    let r_ctor: RecursiveCtor<'b, C, O> = Rc::new(RefCell::new(None));
+    let r_ctor_clone = r_ctor.clone();
+    let ctor = handler(r_ctor_clone);
 
-    *r_regex.borrow_mut() = Some(into_dyn_ctor(regex));
-    r_regex
+    *r_ctor.borrow_mut() = Some(into_dyn_ctor(ctor));
+    r_ctor
 }
 
 pub fn rec_parser_sync<'a, 'b, C, O, I>(
-    handler: impl Fn(RecursiveRegexSync<'b, C, O>) -> I,
-) -> RecursiveRegexSync<'b, C, O>
+    handler: impl Fn(RecursiveCtorSync<'b, C, O>) -> I,
+) -> RecursiveCtorSync<'b, C, O>
 where
     C: Context<'a>,
     I: Fn(&mut C) -> Result<O, Error> + 'b,
 {
-    let r_regex: RecursiveRegexSync<'b, C, O> = Arc::new(Mutex::new(None));
-    let r_regex_clone = r_regex.clone();
-    let regex = handler(r_regex_clone);
+    let r_ctor: RecursiveCtorSync<'b, C, O> = Arc::new(Mutex::new(None));
+    let r_ctor_clone = r_ctor.clone();
+    let ctor = handler(r_ctor_clone);
 
-    *r_regex.lock().unwrap() = Some(into_dyn_ctor(regex));
-    r_regex
+    *r_ctor.lock().unwrap() = Some(into_dyn_ctor(ctor));
+    r_ctor
 }
