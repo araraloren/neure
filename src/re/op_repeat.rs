@@ -6,6 +6,7 @@ use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
@@ -137,16 +138,16 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = Vec<P::Ret>;
+    type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut cnt = 0;
-        let mut ret = Vec::with_capacity(self.capacity);
+        let mut span = Span::default();
 
         while self.is_contain(cnt) {
             match ctx.try_mat(&self.pat) {
-                Ok(span) => {
-                    ret.push(span);
+                Ok(ret) => {
+                    span.add_assign(ret);
                     cnt += 1;
                 }
                 Err(_) => {
@@ -155,7 +156,7 @@ where
             }
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(ret)
+            Ok(span)
         } else {
             Err(Error::TryRepeat)
         }

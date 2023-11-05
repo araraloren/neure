@@ -7,6 +7,7 @@ use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Regex;
@@ -119,11 +120,10 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-
-        g.try_mat(&self.left)?;
-        let ret = g.try_mat(&self.pat)?;
-
-        g.try_mat(&self.right)?;
+        let mut ret = g.try_mat(&self.left)?;
+        
+        ret.add_assign(g.try_mat(&self.pat)?);
+        ret.add_assign(g.try_mat(&self.right)?);
         Ok(ret)
     }
 }

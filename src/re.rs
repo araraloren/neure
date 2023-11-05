@@ -79,7 +79,7 @@ where
     }
 }
 
-impl<'a, 'b, C> Regex<C> for &'b str
+impl<'a, C> Regex<C> for &str
 where
     C: Context<'a, Orig = str> + Policy<C>,
 {
@@ -91,7 +91,7 @@ where
     }
 }
 
-impl<'a, 'b, C> Regex<C> for &'b [u8]
+impl<'a, C> Regex<C> for &[u8]
 where
     C: Context<'a, Orig = [u8]> + Policy<C>,
 {
@@ -99,6 +99,18 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::bytes(self);
+        ctx.try_mat(&pattern)
+    }
+}
+
+impl<'a, const N: usize, C> Regex<C> for &[u8; N]
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::re::bytes(self.as_slice());
         ctx.try_mat(&pattern)
     }
 }

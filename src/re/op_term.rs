@@ -6,6 +6,7 @@ use super::Invoke;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Regex;
@@ -103,8 +104,8 @@ impl<C, P, S> Terminated<C, P, S> {
 
 impl<'a, C, S, P, M, O> Invoke<'a, C, M, Vec<O>> for Terminated<C, P, S>
 where
-    S: Regex<C, Ret = Span>,
     P: Invoke<'a, C, M, O>,
+    S: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
     fn invoke<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error>
@@ -142,20 +143,25 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = Vec<P::Ret>;
+    type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let mut res = Vec::with_capacity(self.capacity);
+        let mut span = Span::default();
 
         loop {
             let ret = ctx.try_mat(&self.pat);
 
             match ret {
                 Ok(ret) => {
-                    res.push(ret);
-                    if let Err(e) = ctx.try_mat(&self.sep) {
-                        if !self.skip {
-                            return Err(e);
+                    span.add_assign(ret);
+                    match ctx.try_mat(&self.sep) {
+                        Ok(ret) => {
+                            span.add_assign(ret);
+                        }
+                        Err(e) => {
+                            if !self.skip {
+                                return Err(e);
+                            }
                         }
                     }
                 }
@@ -164,6 +170,6 @@ where
                 }
             }
         }
-        Ok(res)
+        Ok(span)
     }
 }
