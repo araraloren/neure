@@ -84,8 +84,8 @@ impl<C, P, F, O> Map<C, P, F, O> {
 impl<'a, C, M, O, V, P, F> Ctor<'a, C, M, V> for Map<C, P, F, O>
 where
     P: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
     F: MapSingle<O, V>,
+    C: Context<'a> + Policy<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where

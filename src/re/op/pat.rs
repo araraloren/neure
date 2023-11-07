@@ -9,6 +9,30 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Ignore the interal struct of regex `P`, convert it to a single pattern.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let abc = "abc";
+///     let com = "com";
+///     let website = abc.separate(".", com);
+///     let mut ctx = CharsCtx::new("abc.com");
+///
+///     assert_eq!(ctx.ctor(&website)?, ("abc", "com"));
+///     let pat = website.pattern();
+///
+///     assert_eq!(ctx.reset().ctor(&pat)?, "abc.com");
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct Pattern<C, P> {
     pat: P,

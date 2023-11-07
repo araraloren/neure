@@ -3,12 +3,13 @@ mod r#dyn;
 mod r#if;
 mod map;
 mod or;
+mod pad;
 mod pat;
 mod quote;
 mod repeat;
+mod sep;
 mod term;
 mod then;
-mod ws;
 
 pub use self::collect::Collect;
 pub use self::map::FromStr;
@@ -19,6 +20,8 @@ pub use self::map::Select1;
 pub use self::map::SelectEq;
 pub use self::map::Single;
 pub use self::or::Or;
+pub use self::pad::PadUnit;
+pub use self::pad::PaddedUnit;
 pub use self::pat::Pattern;
 pub use self::quote::Quote;
 pub use self::r#dyn::DynamicRegex;
@@ -26,19 +29,17 @@ pub use self::r#dyn::DynamicRegexHandler;
 pub use self::r#if::branch;
 pub use self::r#if::IfRegex;
 pub use self::repeat::Repeat;
+pub use self::sep::Separate;
 pub use self::term::Terminated;
 pub use self::then::Then;
-pub use self::ws::PaddingUnit;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::err::Error;
-use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
 use crate::neu::Neu;
 use crate::neu::NeureOneMore;
 use crate::neu::NullCond;
-use crate::neu::WhiteSpace;
 use crate::re::Regex;
 
 pub trait RegexOp<'a, C>
@@ -64,11 +65,11 @@ where
     where
         I: Fn(&C) -> Result<bool, Error>;
 
-    fn pad<N: Neu<U>, U>(self, unit: N) -> PaddingUnit<C, Self, N, U>;
+    fn pad<N: Neu<U>, U>(self, unit: N) -> PadUnit<C, Self, N, U>;
 
-    fn ws(self) -> PaddingUnit<C, Self, AsciiWhiteSpace, char>;
+    fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U>;
 
-    fn ws_u(self) -> PaddingUnit<C, Self, WhiteSpace, char>;
+    fn separate<S, R>(self, sep: S, right: R) -> Separate<C, Self, S, R>;
 }
 
 ///
@@ -167,10 +168,17 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///     let pat = "rust".pattern().map(|v: &str| Ok(v.to_string()));
-    ///     let mut ctx = CharsCtx::new("rust");
     ///
-    ///     assert_eq!(ctx.invoke(&pat)?, String::from("rust"));
+    ///     let digit = re!(['0' - '9']+);
+    ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
+    ///     let comma = ",".pad(' ');
+    ///     let digits = digit.terminated(comma);
+    ///     let array = digits.quote("[", "]");
+    ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
+    ///
+    ///     assert_eq!(ctx.ctor(&array)?, vec![2, 4, 8, 16, 42]);
+    ///     assert_eq!(ctx.reset().ctor(&array.pattern())?, "[2, 4, 8, 16, 42]");
+    ///
     ///     Ok(())
     /// # }
     /// ```
@@ -303,16 +311,16 @@ where
         IfRegex::new(self, r#if, r#else)
     }
 
-    fn pad<N: Neu<U>, U>(self, unit: N) -> PaddingUnit<C, Self, N, U> {
-        PaddingUnit::new(self, NeureOneMore::new(unit, NullCond))
+    fn pad<N: Neu<U>, U>(self, unit: N) -> PadUnit<C, Self, N, U> {
+        PadUnit::new(self, NeureOneMore::new(unit, NullCond))
     }
 
-    fn ws(self) -> PaddingUnit<C, Self, AsciiWhiteSpace, char> {
-        PaddingUnit::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
+    fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U> {
+        PaddedUnit::new(self, NeureOneMore::new(unit, NullCond))
     }
 
-    fn ws_u(self) -> PaddingUnit<C, Self, WhiteSpace, char> {
-        PaddingUnit::new(self, NeureOneMore::new(WhiteSpace, NullCond))
+    fn separate<S, R>(self, sep: S, right: R) -> Separate<C, Self, S, R> {
+        Separate::new(self, sep, right)
     }
 }
 
