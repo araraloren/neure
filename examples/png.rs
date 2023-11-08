@@ -1,6 +1,5 @@
-use neu::err::Error;
-use neu::prelude::*;
-use nom::AsBytes;
+use neure::err::Error;
+use neure::prelude::*;
 use std::{cell::RefCell, process::exit};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -12,31 +11,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(file) = std::env::args().skip(1).next() {
         let head: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
         let bytes = std::fs::read(file)?;
-        let uint32 = regex::consume(4);
-        let uint8 = regex::consume(1);
-        let as_uint = |dat: &[u8]| {
+        let as_u32 = |dat: &[u8]| {
             assert_eq!(dat.len(), 4);
             Ok(u32::from_be_bytes([dat[0], dat[1], dat[2], dat[3]]))
         };
-        let as_char = |dat: &[u8]| {
+        let as_u8 = |dat: &[u8]| {
             assert_eq!(dat.len(), 1);
-            char::from_u32(u8::from_be_bytes([dat[0]]) as u32).ok_or(Error::Convert)
+            char::from_u32(u8::from_be_bytes([dat[0]]) as u32).ok_or(Error::Other)
         };
-        let mut ctx = RegexCtx::new(bytes.as_bytes());
+        let uint32 = re::consume(4).map(as_u32);
+        let uint8 = re::consume(1).map(as_u8);
+        let mut ctx = RegexCtx::new(bytes.as_slice());
 
-        if let Ok::<Span, _>(_) = ctx.try_mat(&head) {
+        if let Ok(_) = ctx.ctor(&head) {
             println!("Matching the head, the file seems like a png file");
         } else {
             println!("Not a png file");
             exit(1)
         }
         for idx in 0.. {
-            if let Ok(length) = ctx.map_orig(&uint32, &as_uint) {
-                let crc_offset_beg = ctx.offset();
-                let ancillary = ctx.map_orig(&uint8, as_char)?;
-                let private = ctx.map_orig(&uint8, as_char)?;
-                let reserved = ctx.map_orig(&uint8, as_char)?;
-                let safe_copy = ctx.map_orig(&uint8, as_char)?;
+            if let Ok(length) = ctx.ctor(&uint32) {
+                let crc_beg = ctx.offset();
+                let ancillary = ctx.ctor(&uint8)?;
+                let private = ctx.ctor(&uint8)?;
+                let reserved = ctx.ctor(&uint8)?;
+                let safe_copy = ctx.ctor(&uint8)?;
 
                 println!(
                     "In trunk {idx}: ancillary = `{}`, bit 5 = {}: {}",
@@ -73,16 +72,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "safe to copy"
                     }
                 );
-                let data = regex::consume(length as usize);
+                let data = re::consume(length as usize);
 
                 println!("In trunk {idx}: data length = {length}");
-                println!(
-                    "skip data data = {:?}",
-                    ctx.map_span(&data, |span| Ok(span))?
-                );
+                println!("skip data length = {}", ctx.ctor(&data)?.len());
 
-                let crc_data = ctx.sub(crc_offset_beg, ctx.offset() - crc_offset_beg)?;
-                let crc_value = ctx.map_orig(&uint32, as_uint)?;
+                let crc_data = ctx.orig_sub(crc_beg, ctx.offset() - crc_beg)?;
+                let crc_value = ctx.ctor(&uint32)?;
 
                 println!(
                     "Checking the crc value = {}",
