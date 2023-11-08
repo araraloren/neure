@@ -161,12 +161,8 @@ impl JsonParser {
         let ws = Self::ws();
         let sign = re!([b'+' b'-']{0,1});
         let digit = re!([b'0' - b'9']{1,});
-        let frac = re!(b'.').then(digit).pattern();
-        let f64_ = ws
-            .then(sign)
-            .then(digit)
-            .then(frac.or(re::null()))
-            .pattern();
+        let frac = re!(b'.').then(digit).pat();
+        let f64_ = ws.then(sign).then(digit).then(frac.or(re::null())).pat();
         let mut ctx = BytesCtx::new(b"-123");
         let from_str = |val| {
             std::str::from_utf8(val)

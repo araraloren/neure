@@ -26,7 +26,7 @@ use crate::re::Regex;
 ///     let mut ctx = CharsCtx::new("abc.com");
 ///
 ///     assert_eq!(ctx.ctor(&website)?, ("abc", "com"));
-///     let pat = website.pattern();
+///     let pat = website.pat();
 ///
 ///     assert_eq!(ctx.reset().ctor(&pat)?, "abc.com");
 ///

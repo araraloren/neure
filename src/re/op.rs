@@ -8,7 +8,6 @@ mod pat;
 mod quote;
 mod repeat;
 mod sep;
-mod term;
 mod then;
 
 pub use self::collect::Collect;
@@ -30,7 +29,7 @@ pub use self::r#if::branch;
 pub use self::r#if::IfRegex;
 pub use self::repeat::Repeat;
 pub use self::sep::Separate;
-pub use self::term::Terminated;
+pub use self::sep::SeparateOnce;
 pub use self::then::Then;
 
 use crate::ctx::Context;
@@ -49,11 +48,13 @@ where
 {
     fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
-    fn pattern(self) -> Pattern<C, Self>;
+    fn pat(self) -> Pattern<C, Self>;
 
     fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
 
-    fn terminated<S>(self, sep: S) -> Terminated<C, Self, S>;
+    fn sep<S>(self, sep: S) -> Separate<C, Self, S>;
+
+    fn sep_once<S, R>(self, sep: S, right: R) -> SeparateOnce<C, Self, S, R>;
 
     fn or<P>(self, pat: P) -> Or<C, Self, P>;
 
@@ -68,8 +69,6 @@ where
     fn pad<N: Neu<U>, U>(self, unit: N) -> PadUnit<C, Self, N, U>;
 
     fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U>;
-
-    fn separate<S, R>(self, sep: S, right: R) -> Separate<C, Self, S, R>;
 }
 
 ///
@@ -177,12 +176,12 @@ where
     ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
     ///
     ///     assert_eq!(ctx.ctor(&array)?, vec![2, 4, 8, 16, 42]);
-    ///     assert_eq!(ctx.reset().ctor(&array.pattern())?, "[2, 4, 8, 16, 42]");
+    ///     assert_eq!(ctx.reset().ctor(&array.pat())?, "[2, 4, 8, 16, 42]");
     ///
     ///     Ok(())
     /// # }
     /// ```
-    fn pattern(self) -> Pattern<C, Self> {
+    fn pat(self) -> Pattern<C, Self> {
         Pattern::new(self)
     }
 
@@ -191,16 +190,18 @@ where
     ///
     /// ```
     /// # use neure::prelude::*;
-    /// # use re::FromStr;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
-    ///     let num = neu::digit(10).repeat_full();
-    ///     let num = num.quote("(", ")").map(FromStr::<i64>::new());
-    ///     let mut ctx = CharsCtx::new(r#"(42)"#);
+    ///     let ascii = neu::ascii().repeat_one();
+    ///     let lit = ascii.quote("'", "'");
+    ///     let ele = lit.sep(",".pad(' '));
+    ///     let arr = ele.quote("[", "]");
+    ///     let mut ctx = CharsCtx::new("['a', 'c', 'd', 'f']");
     ///
-    ///     assert_eq!(ctx.invoke(&num)?, 42);
+    ///     assert_eq!(ctx.ctor(&arr)?, ["a", "c", "d", "f"]);
+    ///
     ///     Ok(())
     /// # }
     /// ```
@@ -217,18 +218,23 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
-    ///     let str = '"'.not().repeat_full();
-    ///     let str = str.quote("\"", "\"");
-    ///     let arr = str.terminated(','.repeat_zero_one()).ws().try_repeat(1..);
+    ///     let name = re!([^ ',' ']' '[']+);
+    ///     let sep = ','.repeat_one().pad(neu::whitespace());
+    ///     let arr = name.sep(sep);
     ///     let arr = arr.quote("[", "]");
-    ///     let mut ctx = CharsCtx::new(r#"["c", "rust", "java", "c++"]"#);
+    ///     let mut ctx = CharsCtx::new(r#"[c, rust, java, c++]"#);
     ///
-    ///     assert_eq!(ctx.invoke(&arr)?, vec!["c", "rust", "java", "c++"]);
+    ///     assert_eq!(ctx.ctor(&arr)?, vec!["c", "rust", "java", "c++"]);
     ///     Ok(())
     /// # }
     /// ```
-    fn terminated<S>(self, sep: S) -> Terminated<C, Self, S> {
-        Terminated::new(self, sep)
+    fn sep<S>(self, sep: S) -> Separate<C, Self, S> {
+        Separate::new(self, sep)
+    }
+
+    // TODO
+    fn sep_once<S, R>(self, sep: S, right: R) -> SeparateOnce<C, Self, S, R> {
+        SeparateOnce::new(self, sep, right)
     }
 
     ///
@@ -317,10 +323,6 @@ where
 
     fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U> {
         PaddedUnit::new(self, NeureOneMore::new(unit, NullCond))
-    }
-
-    fn separate<S, R>(self, sep: S, right: R) -> Separate<C, Self, S, R> {
-        Separate::new(self, sep, right)
     }
 }
 

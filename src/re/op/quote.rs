@@ -11,6 +11,31 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Match regex `P` quoted by `L` and `R`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let digit = neu::digit(10).repeat_full();
+///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
+///     let str = re!([^ '"']+).quote("\"", "\"");
+///     let tuple = digit.then(",").select0().then(str);
+///     let tuple = tuple.quote("(", ")");
+///
+///     let mut ctx = CharsCtx::new("(42,\"rust\")");
+///
+///     assert_eq!(ctx.ctor(&tuple)?, (42, "rust"));
+///
+///     Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Default, Copy)]
 pub struct Quote<C, P, L, R> {
     pat: P,
