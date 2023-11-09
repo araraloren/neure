@@ -13,7 +13,9 @@ mod then;
 pub use self::collect::Collect;
 pub use self::map::FromStr;
 pub use self::map::Map;
+pub use self::map::MapInto;
 pub use self::map::MapSingle;
+pub use self::map::MapTryInto;
 pub use self::map::Select0;
 pub use self::map::Select1;
 pub use self::map::SelectEq;
@@ -29,12 +31,14 @@ pub use self::r#if::branch;
 pub use self::r#if::IfRegex;
 pub use self::repeat::Repeat;
 pub use self::sep::Separate;
+pub use self::sep::SeparateCollect;
 pub use self::sep::SeparateOnce;
 pub use self::then::Then;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::err::Error;
+use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
 use crate::neu::Neu;
 use crate::neu::NeureOneMore;
@@ -48,6 +52,10 @@ where
 {
     fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
+    fn into<O>(self) -> Map<C, Self, MapInto<O>, O>;
+
+    fn try_into<O>(self) -> Map<C, Self, MapTryInto<O>, O>;
+
     fn pat(self) -> Pattern<C, Self>;
 
     fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
@@ -55,6 +63,8 @@ where
     fn sep<S>(self, sep: S) -> Separate<C, Self, S>;
 
     fn sep_once<S, R>(self, sep: S, right: R) -> SeparateOnce<C, Self, S, R>;
+
+    fn sep_collect<S, O, T>(self, sep: S) -> SeparateCollect<C, Self, S, O, T>;
 
     fn or<P>(self, pat: P) -> Or<C, Self, P>;
 
@@ -69,6 +79,8 @@ where
     fn pad<N: Neu<U>, U>(self, unit: N) -> PadUnit<C, Self, N, U>;
 
     fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U>;
+
+    fn ws(self) -> PadUnit<C, Self, AsciiWhiteSpace, char>;
 }
 
 ///
@@ -159,6 +171,14 @@ where
         Map::new(self, func)
     }
 
+    fn into<O>(self) -> Map<C, Self, MapInto<O>, O> {
+        Map::new(self, MapInto::new())
+    }
+
+    fn try_into<O>(self) -> Map<C, Self, MapTryInto<O>, O> {
+        Map::new(self, MapTryInto::new())
+    }
+
     ///
     /// # Example
     ///
@@ -232,9 +252,73 @@ where
         Separate::new(self, sep)
     }
 
-    // TODO
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     let key = neu::alphabetic().repeat_one_more().ws();
+    ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
+    ///     let sep = "=>".ws();
+    ///     let ele = key.sep_once(sep, val);
+    ///     let hash = ele.sep(",".ws()).quote("{".ws(), "}");
+    ///     let mut ctx = CharsCtx::new(
+    ///         r#"{
+    ///         c => c11,
+    ///         cpp => c++23,
+    ///         rust => 2021,
+    ///     }"#,
+    ///     );
+    ///
+    ///     assert_eq!(
+    ///         ctx.ctor(&hash)?,
+    ///         [("c", "c11"), ("cpp", "c++23"), ("rust", "2021")]
+    ///     );
+    ///     Ok(())
+    /// # }
+    /// ```
     fn sep_once<S, R>(self, sep: S, right: R) -> SeparateOnce<C, Self, S, R> {
         SeparateOnce::new(self, sep, right)
+    }
+
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use std::collections::HashMap;
+    /// #
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     let key = neu::alphabetic().repeat_one_more().ws();
+    ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
+    ///     let sep = "=>".ws();
+    ///     let ele = key.sep_once(sep, val);
+    ///     let hash = ele.sep_collect(",".ws()).quote("{".ws(), "}");
+    ///     let mut ctx = CharsCtx::new(
+    ///         r#"{
+    ///         c => c11,
+    ///         cpp => c++23,
+    ///         rust => 2021,
+    ///     }"#,
+    ///     );
+    ///
+    ///     let hash: HashMap<&str, &str> = ctx.ctor(&hash)?;
+    ///
+    ///     assert_eq!(hash.get("c"), Some(&"c11"));
+    ///     assert_eq!(hash.get("cpp"), Some(&"c++23"));
+    ///     assert_eq!(hash.get("rust"), Some(&"2021"));
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn sep_collect<S, O, V>(self, sep: S) -> SeparateCollect<C, Self, S, O, V> {
+        SeparateCollect::new(self, sep)
     }
 
     ///
@@ -323,6 +407,10 @@ where
 
     fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U> {
         PaddedUnit::new(self, NeureOneMore::new(unit, NullCond))
+    }
+
+    fn ws(self) -> PadUnit<C, Self, AsciiWhiteSpace, char> {
+        PadUnit::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
     }
 }
 

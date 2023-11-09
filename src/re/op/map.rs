@@ -180,3 +180,41 @@ where
         val.parse::<O>().map_err(|_| Error::FromStr)
     }
 }
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct MapInto<T>(PhantomData<T>);
+
+impl<T> MapInto<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<I, O> MapSingle<I, O> for MapInto<O>
+where
+    O: From<I>,
+    I: AsRef<str>,
+{
+    fn map_to(&self, val: I) -> Result<O, Error> {
+        Ok(val.into())
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct MapTryInto<T>(PhantomData<T>);
+
+impl<T> MapTryInto<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<I, O> MapSingle<I, O> for MapTryInto<O>
+where
+    O: TryFrom<I>,
+    I: AsRef<str>,
+{
+    fn map_to(&self, val: I) -> Result<O, Error> {
+        val.try_into().map_err(|_| Error::TryInto)
+    }
+}
