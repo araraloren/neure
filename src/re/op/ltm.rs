@@ -11,49 +11,14 @@ use crate::re::Handler;
 use crate::re::Regex;
 use crate::trace_log;
 
-///
-/// Match `L` or `R`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::{prelude::*, re::map::from_str_radix};
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///
-///     macro_rules! num {
-///         ($s:literal) => {
-///             neu::digit($s).repeat_one_more().map(from_str_radix($s))
-///         };
-///     }
-///
-///     let (bin, oct, dec, hex) = (num!(2), num!(8), num!(10), num!(16));
-///     let num = dec.ltm(hex);
-///     let dec = "0d".then(dec)._1();
-///     let oct = "0o".then(oct)._1();
-///     let hex = "0x".then(hex)._1();
-///     let bin = "0b".then(bin)._1();
-///     let pos = "+".map(|_| Ok(1));
-///     let neg = "-".map(|_| Ok(-1));
-///     let sign = pos.or(neg.or(re::null().map(|_| Ok(1))));
-///     let num = bin.or(oct.or(dec.or(hex))).or(num);
-///     let num = sign.then(num).map(|(s, v): (_, i64)| Ok(s * v));
-///     let val = num.sep(",".ws()).quote("[", "]");
-///     let mut ctx = CharsCtx::new(r#"[0d18, 0o17, 0x18, 0b1010, 18, 1E]"#);
-///
-///     assert_eq!(ctx.ctor(&val)?, [18, 15, 24, 10, 18, 30]);
-///     Ok(())
-/// # }
-/// ```
 #[derive(Debug, Default, Copy)]
-pub struct Or<C, L, R> {
+pub struct LongestTokenMatch<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl<C, L, R> Clone for Or<C, L, R>
+impl<C, L, R> Clone for LongestTokenMatch<C, L, R>
 where
     L: Clone,
     R: Clone,
@@ -67,7 +32,7 @@ where
     }
 }
 
-impl<C, L, R> Or<C, L, R> {
+impl<C, L, R> LongestTokenMatch<C, L, R> {
     pub fn new(pat1: L, pat2: R) -> Self {
         Self {
             left: pat1,
@@ -103,7 +68,7 @@ impl<C, L, R> Or<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O> Ctor<'a, C, M, O> for Or<C, L, R>
+impl<'a, C, L, R, M, O> Ctor<'a, C, M, O> for LongestTokenMatch<C, L, R>
 where
     L: Ctor<'a, C, M, O>,
     R: Ctor<'a, C, M, O>,
@@ -115,18 +80,22 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        match self.left.constrct(g.ctx(), func) {
-            Ok(ret) => Ok(ret),
-            Err(_) => {
-                let ret = self.right.constrct(g.reset().ctx(), func);
+        let ret1 = self.left.constrct(g.ctx(), func);
+        let off1 = g.ctx().offset();
+        let ret2 = self.right.constrct(g.reset().ctx(), func);
+        let off2 = g.ctx().offset();
+        let (off, ret) = if off1 >= off2 {
+            (off1, ret1)
+        } else {
+            (off2, ret2)
+        };
 
-                g.process_ret(ret)
-            }
-        }
+        g.ctx().set_offset(off);
+        ret
     }
 }
 
-impl<'a, C, L, R> Regex<C> for Or<C, L, R>
+impl<'a, C, L, R> Regex<C> for LongestTokenMatch<C, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
@@ -136,10 +105,18 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let ret1 = g.try_mat(&self.left);
+        let off1 = g.ctx().offset();
+        let ret2 = g.reset().try_mat(&self.right);
+        let off2 = g.ctx().offset();
+        let (off, ret) = if off1 >= off2 {
+            (off1, ret1)
+        } else {
+            (off2, ret2)
+        };
 
-        g.try_mat(&self.left).or_else(|_| {
-            trace_log!("or ... offset = {}", g.ctx().offset());
-            g.reset().try_mat(&self.right)
-        })
+        trace_log!("LTM (left = {} <> right = {})", off1, off2);
+        g.ctx().set_offset(off);
+        ret
     }
 }

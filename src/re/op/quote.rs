@@ -25,7 +25,7 @@ use crate::re::Regex;
 ///     let digit = neu::digit(10).repeat_full();
 ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
 ///     let str = re!([^ '"']+).quote("\"", "\"");
-///     let tuple = digit.then(",").select0().then(str);
+///     let tuple = digit.then(",")._0().then(str);
 ///     let tuple = tuple.quote("(", ")");
 ///
 ///     let mut ctx = CharsCtx::new("(42,\"rust\")");

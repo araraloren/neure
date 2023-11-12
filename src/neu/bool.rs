@@ -63,7 +63,7 @@ pub struct False<T>(PhantomData<T>);
 
 impl<T> Debug for False<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("True").field(&self.0).finish()
+        f.debug_tuple("False").field(&self.0).finish()
     }
 }
 

@@ -5,10 +5,10 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::map::Select0;
+use crate::re::map::Select1;
+use crate::re::map::SelectEq;
 use crate::re::op::Map;
-use crate::re::op::Select0;
-use crate::re::op::Select1;
-use crate::re::op::SelectEq;
 use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
@@ -71,15 +71,15 @@ impl<C, P, T> Then<C, P, T> {
         self
     }
 
-    pub fn select0<O>(self) -> Map<C, Self, Select0, O> {
+    pub fn _0<O>(self) -> Map<C, Self, Select0, O> {
         Map::new(self, Select0)
     }
 
-    pub fn select1<O>(self) -> Map<C, Self, Select1, O> {
+    pub fn _1<O>(self) -> Map<C, Self, Select1, O> {
         Map::new(self, Select1)
     }
 
-    pub fn select_eq<I1, I2>(self) -> Map<C, Self, SelectEq, (I1, I2)> {
+    pub fn _eq<I1, I2>(self) -> Map<C, Self, SelectEq, (I1, I2)> {
         Map::new(self, SelectEq)
     }
 }

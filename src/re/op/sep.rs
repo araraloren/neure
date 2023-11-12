@@ -11,7 +11,27 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
-// TODO
+///
+/// Match `L` and `R` separated by `S`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let ele = neu::digit(10).repeat_times::<2>();
+///     let sep = ":";
+///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
+///     let time = time.map(|((h, m), s)| Ok((h, m, s)));
+///     let mut ctx = CharsCtx::new("20:31:42");
+///
+///     assert_eq!(ctx.ctor(&time)?, ("20", "31", "42"));
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct SeparateOnce<C, L, S, R> {
     left: L,
@@ -307,22 +327,18 @@ where
 /// # Example
 ///
 /// ```
-/// # use neure::prelude::*;
+/// # use neure::{prelude::*, re::FromStr};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
 ///
-///     #[derive(Debug, PartialEq, PartialOrd)]
-///     pub struct Tp<'a>(&'a str);
+///     let digit = neu::digit(10).repeat_one_more();
+///     let val = digit.map(FromStr::<i64>::new());
+///     let vals = val.sep_collect::<_, _, Vec<i64>>(",".ws());
+///     let array = vals.quote("[", "]");
+///     let mut ctx = CharsCtx::new("[18, 24, 42, 58, 69]");
 ///
-///     let ascii = neu::alphabetic().repeat_one_more();
-///     let ty = ascii.map(|v| Ok(Tp(v)));
-///     let ele = ty.sep(",".pad(' '));
-///     let arr = ele.quote("<", ">");
-///     let mut ctx = CharsCtx::new("<A, B, Len, Size>");
-///
-///     assert_eq!(ctx.ctor(&arr)?, [Tp("A"), Tp("B"), Tp("Len"), Tp("Size")]);
-///
+///     assert_eq!(ctx.ctor(&array)?, [18, 24, 42, 58, 69]);
 ///     Ok(())
 /// # }
 /// ```

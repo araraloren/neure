@@ -1,6 +1,7 @@
 mod collect;
 mod r#dyn;
 mod r#if;
+mod ltm;
 mod map;
 mod or;
 mod pad;
@@ -11,15 +12,8 @@ mod sep;
 mod then;
 
 pub use self::collect::Collect;
-pub use self::map::FromStr;
+pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
-pub use self::map::MapInto;
-pub use self::map::MapSingle;
-pub use self::map::MapTryInto;
-pub use self::map::Select0;
-pub use self::map::Select1;
-pub use self::map::SelectEq;
-pub use self::map::Single;
 pub use self::or::Or;
 pub use self::pad::PadUnit;
 pub use self::pad::PaddedUnit;
@@ -52,10 +46,6 @@ where
 {
     fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
-    fn into<O>(self) -> Map<C, Self, MapInto<O>, O>;
-
-    fn try_into<O>(self) -> Map<C, Self, MapTryInto<O>, O>;
-
     fn pat(self) -> Pattern<C, Self>;
 
     fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
@@ -67,6 +57,8 @@ where
     fn sep_collect<S, O, T>(self, sep: S) -> SeparateCollect<C, Self, S, O, T>;
 
     fn or<P>(self, pat: P) -> Or<C, Self, P>;
+
+    fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P>;
 
     fn then<T>(self, then: T) -> Then<C, Self, T>;
 
@@ -169,14 +161,6 @@ where
 {
     fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)
-    }
-
-    fn into<O>(self) -> Map<C, Self, MapInto<O>, O> {
-        Map::new(self, MapInto::new())
-    }
-
-    fn try_into<O>(self) -> Map<C, Self, MapTryInto<O>, O> {
-        Map::new(self, MapTryInto::new())
     }
 
     ///
@@ -325,26 +309,43 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::prelude::*;
+    /// # use neure::{prelude::*, re::FromStr};
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
-    ///     let str = '"'.not().repeat_full();
-    ///     let str = str.quote("\"", "\"");
-    ///     let num = neu::digit(10).repeat_full();
-    ///     let ele = str.or(num);
-    ///     let mut ctx = CharsCtx::new(r#"42"#);
+    ///     #[derive(Debug, PartialEq, Eq)]
+    ///     pub enum Val<'a> {
+    ///         Int(i64),
+    ///         Str(&'a str),
+    ///     }
     ///
-    ///     assert_eq!(ctx.invoke(&ele)?, "42");
-    ///     let mut ctx = CharsCtx::new(r#""rust""#);
+    ///     let digit = neu::digit(10).repeat_one_more();
+    ///     let int = digit.map(FromStr::<i64>::new());
+    ///     let int = int.map(|v| Ok(Val::Int(v)));
+    ///     let str = re!([^ '"']+).quote("\"", "\"");
+    ///     let str = str.map(|v| Ok(Val::Str(v)));
+    ///     let vals = int.or(str).sep(",".ws());
+    ///     let mut ctx = CharsCtx::new(r#"18, "lily", 60, "female""#);
     ///
-    ///     assert_eq!(ctx.invoke(&ele)?, "rust");
+    ///     assert_eq!(
+    ///         ctx.ctor(&vals)?,
+    ///         vec![
+    ///             Val::Int(18),
+    ///             Val::Str("lily"),
+    ///             Val::Int(60),
+    ///             Val::Str("female")
+    ///         ]
+    ///     );
     ///     Ok(())
     /// # }
     /// ```
     fn or<P>(self, pat: P) -> Or<C, Self, P> {
         Or::new(self, pat)
+    }
+
+    fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P> {
+        LongestTokenMatch::new(self, pat)
     }
 
     ///
@@ -382,7 +383,7 @@ where
     ///     color_eyre::install()?;
     ///
     ///     let num = neu::digit(10).repeat_full().map(FromStr::<i32>::new());
-    ///     let num = num.then(','.repeat_zero_one().ws()).select0();
+    ///     let num = num.then(','.repeat_zero_one().ws())._0();
     ///     let array = num.repeat(1..4);
     ///     let mut ctx = CharsCtx::new(r#"6, 8, 10"#);
     ///

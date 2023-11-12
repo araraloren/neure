@@ -2,6 +2,8 @@ mod ctor;
 mod extract;
 mod guard;
 mod into;
+pub mod map;
+mod null;
 mod op;
 
 use std::cell::Cell;
@@ -10,10 +12,27 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::ctor::*;
-pub use self::extract::*;
+pub use self::ctor::into_box_ctor;
+pub use self::ctor::into_dyn_ctor;
+pub use self::ctor::rec_parser;
+pub use self::ctor::rec_parser_sync;
+pub use self::ctor::BoxedCtor;
+pub use self::ctor::Ctor;
+pub use self::ctor::DynamicCtor;
+pub use self::ctor::DynamicCtorHandler;
+pub use self::ctor::RecursiveCtor;
+pub use self::ctor::RecursiveCtorSync;
+pub use self::extract::Extract;
+pub use self::extract::Handler;
+pub use self::extract::HandlerV;
 pub use self::guard::CtxGuard;
-pub use self::into::*;
+pub use self::into::BoxedRegex;
+pub use self::into::RegexIntoOp;
+pub use self::null::NullRegex;
+pub use self::op::Collect;
+pub use self::op::DynamicRegex;
+pub use self::op::DynamicRegexHandler;
+pub use self::op::IfRegex;
 pub use self::op::*;
 
 use crate::ctx::Context;
@@ -818,10 +837,18 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn null<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+pub fn null<R>() -> NullRegex<R>
 where
     R: Ret,
-    C: Context<'a>,
 {
-    move |ctx: &mut C| Ok(<R as Ret>::from(ctx, (0, 0)))
+    NullRegex::new()
+}
+
+pub fn nullable<'a, T, C, R>(val: T) -> Or<C, T, NullRegex<R>>
+where
+    R: Ret,
+    T: Regex<C, Ret = R>,
+    C: Context<'a> + Policy<C>,
+{
+    val.or(null())
 }
