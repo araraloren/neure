@@ -11,6 +11,9 @@ use crate::re::Handler;
 use crate::re::Regex;
 use crate::trace_log;
 
+///
+/// Match `L` and `R`, return the longest match result.
+///
 #[derive(Debug, Default, Copy)]
 pub struct LongestTokenMatch<C, L, R> {
     left: L,

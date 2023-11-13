@@ -309,33 +309,28 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::{prelude::*, re::FromStr};
+    /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
     ///     #[derive(Debug, PartialEq, Eq)]
-    ///     pub enum Val<'a> {
-    ///         Int(i64),
-    ///         Str(&'a str),
+    ///     pub enum V<'a> {
+    ///         I(i64),
+    ///         S(&'a str),
     ///     }
     ///
     ///     let digit = neu::digit(10).repeat_one_more();
-    ///     let int = digit.map(FromStr::<i64>::new());
-    ///     let int = int.map(|v| Ok(Val::Int(v)));
+    ///     let int = digit.map(re::map::from_str::<i64>());
+    ///     let int = int.map(|v| Ok(V::I(v)));
     ///     let str = re!([^ '"']+).quote("\"", "\"");
-    ///     let str = str.map(|v| Ok(Val::Str(v)));
+    ///     let str = str.map(|v| Ok(V::S(v)));
     ///     let vals = int.or(str).sep(",".ws());
-    ///     let mut ctx = CharsCtx::new(r#"18, "lily", 60, "female""#);
+    ///     let mut ctx = CharsCtx::new(r#"18, "lily", 21, "lilei""#);
     ///
     ///     assert_eq!(
     ///         ctx.ctor(&vals)?,
-    ///         vec![
-    ///             Val::Int(18),
-    ///             Val::Str("lily"),
-    ///             Val::Int(60),
-    ///             Val::Str("female")
-    ///         ]
+    ///         vec![V::I(18), V::S("lily"), V::I(21), V::S("lilei")]
     ///     );
     ///     Ok(())
     /// # }
