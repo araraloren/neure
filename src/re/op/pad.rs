@@ -210,7 +210,7 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut ret = match g.try_mat(&self.unit) {
             Ok(ret) => ret,
-            Err(_) => Span::default(),
+            Err(_) => <Span as Ret>::from(g.ctx(), (0, 0)),
         };
 
         ret.add_assign(g.try_mat(&self.pat)?);

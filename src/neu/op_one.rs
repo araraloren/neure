@@ -70,7 +70,7 @@ where
     U: Neu<T>,
     C: Context<'a>,
 {
-    pub fn with_if<F>(self, r#if: F) -> NeureOne<C, U, T, F>
+    pub fn and_if<F>(self, r#if: F) -> NeureOne<C, U, T, F>
     where
         F: NeuCond<'a, C>,
     {
@@ -175,7 +175,7 @@ where
     U: Neu<T>,
     C: Context<'a>,
 {
-    pub fn with_if<F>(self, r#if: F) -> NeureOneMore<C, U, T, F>
+    pub fn and_if<F>(self, r#if: F) -> NeureOneMore<C, U, T, F>
     where
         F: NeuCond<'a, C>,
     {

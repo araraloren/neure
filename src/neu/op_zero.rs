@@ -71,7 +71,7 @@ where
     U: Neu<T>,
     C: Context<'a>,
 {
-    pub fn with_if<F>(self, r#if: F) -> NeureZeroOne<C, U, T, F>
+    pub fn and_if<F>(self, r#if: F) -> NeureZeroOne<C, U, T, F>
     where
         F: NeuCond<'a, C>,
     {
@@ -177,7 +177,7 @@ where
     U: Neu<T>,
     C: Context<'a>,
 {
-    pub fn with_if<F>(self, r#if: F) -> NeureZeroMore<C, U, T, F>
+    pub fn and_if<F>(self, r#if: F) -> NeureZeroMore<C, U, T, F>
     where
         F: NeuCond<'a, C>,
     {

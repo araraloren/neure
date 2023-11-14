@@ -141,7 +141,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let mut span = Span::default();
+        let mut span = <Span as Ret>::from(ctx, (0, 0));
         let mut g = CtxGuard::new(ctx);
 
         span.add_assign(g.try_mat(&self.left)?);
@@ -303,7 +303,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let mut span = Span::default();
+        let mut span = <Span as Ret>::from(ctx, (0, 0));
 
         while let Ok(ret) = ctx.try_mat(&self.pat) {
             let sep_ret = ctx.try_mat(&self.sep);
@@ -451,7 +451,7 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let mut span = Span::default();
+        let mut span = <Span as Ret>::from(ctx, (0, 0));
 
         while let Ok(ret) = ctx.try_mat(&self.pat) {
             let sep_ret = ctx.try_mat(&self.sep);

@@ -141,7 +141,7 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut cnt = 0;
-        let mut span = Span::default();
+        let mut span = <Span as Ret>::from(ctx, (0, 0));
 
         while self.is_contain(cnt) {
             match ctx.try_mat(&self.pat) {
