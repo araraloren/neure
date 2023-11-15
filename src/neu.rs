@@ -1,5 +1,6 @@
 mod bool;
 mod char;
+mod cond;
 mod equal;
 mod may;
 mod op_and;
@@ -12,7 +13,6 @@ mod range;
 
 use crate::ctx::Context;
 use crate::ctx::Ret;
-use crate::err::Error;
 use crate::trace_log;
 use crate::LogOrNot;
 
@@ -24,43 +24,10 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::bool::False;
-pub use self::bool::True;
-pub use self::char::Alphabetic;
-pub use self::char::Alphanumeric;
-pub use self::char::Ascii;
-pub use self::char::AsciiAlphabetic;
-pub use self::char::AsciiAlphanumeric;
-pub use self::char::AsciiControl;
-pub use self::char::AsciiDigit;
-pub use self::char::AsciiGraphic;
-pub use self::char::AsciiHexDigit;
-pub use self::char::AsciiLowercase;
-pub use self::char::AsciiPunctuation;
-pub use self::char::AsciiUppercase;
-pub use self::char::AsciiWhiteSpace;
-pub use self::char::Control;
-pub use self::char::Digit;
-pub use self::char::Lowercase;
-pub use self::char::Numeric;
-pub use self::char::Uppercase;
-pub use self::char::WhiteSpace;
-pub use self::char::Wild;
-pub use self::equal::Equal;
-pub use self::may::MayUnit;
-pub use self::op_and::And;
-pub use self::op_not::Not;
-pub use self::op_one::NeureOne;
-pub use self::op_one::NeureOneMore;
-pub use self::op_or::Or;
-pub use self::op_repeat::NeureRepeat;
-pub use self::op_repeat::NeureRepeatRange;
-pub use self::op_zero::NeureZeroMore;
-pub use self::op_zero::NeureZeroOne;
-pub use self::range::CRange;
-
 pub use self::bool::any;
 pub use self::bool::none;
+pub use self::bool::False;
+pub use self::bool::True;
 pub use self::char::alphabetic;
 pub use self::char::alphanumeric;
 pub use self::char::ascii;
@@ -81,8 +48,44 @@ pub use self::char::numeric;
 pub use self::char::uppercase;
 pub use self::char::whitespace;
 pub use self::char::wild;
+pub use self::char::Alphabetic;
+pub use self::char::Alphanumeric;
+pub use self::char::Ascii;
+pub use self::char::AsciiAlphabetic;
+pub use self::char::AsciiAlphanumeric;
+pub use self::char::AsciiControl;
+pub use self::char::AsciiDigit;
+pub use self::char::AsciiGraphic;
+pub use self::char::AsciiHexDigit;
+pub use self::char::AsciiLowercase;
+pub use self::char::AsciiPunctuation;
+pub use self::char::AsciiUppercase;
+pub use self::char::AsciiWhiteSpace;
+pub use self::char::Control;
+pub use self::char::Digit;
+pub use self::char::Lowercase;
+pub use self::char::Numeric;
+pub use self::char::Uppercase;
+pub use self::char::WhiteSpace;
+pub use self::char::Wild;
+pub use self::cond::re_cond;
+pub use self::cond::NeuCond;
+pub use self::cond::NullCond;
+pub use self::cond::ReCond;
 pub use self::equal::equal;
+pub use self::equal::Equal;
+pub use self::may::MayUnit;
+pub use self::op_and::And;
+pub use self::op_not::Not;
+pub use self::op_one::NeureOne;
+pub use self::op_one::NeureOneMore;
+pub use self::op_or::Or;
+pub use self::op_repeat::NeureRepeat;
+pub use self::op_repeat::NeureRepeatRange;
+pub use self::op_zero::NeureZeroMore;
+pub use self::op_zero::NeureZeroOne;
 pub use self::range::range;
+pub use self::range::CRange;
 
 pub trait Neu<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
@@ -719,36 +722,6 @@ pub(crate) fn ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize,
 
     ctx.inc(len);
     ret
-}
-
-pub trait NeuCond<'a, C>
-where
-    C: Context<'a>,
-{
-    fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error>;
-}
-
-impl<'a, C, F> NeuCond<'a, C> for F
-where
-    C: Context<'a>,
-    F: Fn(&C, &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error>,
-{
-    #[inline(always)]
-    fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error> {
-        (self)(ctx, item)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct NullCond;
-
-impl<'a, C> NeuCond<'a, C> for NullCond
-where
-    C: Context<'a>,
-{
-    fn check(&self, _: &C, _: &(usize, C::Item)) -> Result<bool, Error> {
-        Ok(true)
-    }
 }
 
 pub trait Neu2Re<'a, C>

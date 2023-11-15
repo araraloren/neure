@@ -316,21 +316,20 @@ where
     ///
     ///     #[derive(Debug, PartialEq, Eq)]
     ///     pub enum V<'a> {
-    ///         I(i64),
     ///         S(&'a str),
     ///     }
     ///
-    ///     let digit = neu::digit(10).repeat_one_more();
-    ///     let int = digit.map(re::map::from_str::<i64>());
-    ///     let int = int.map(|v| Ok(V::I(v)));
-    ///     let str = re!([^ '"']+).quote("\"", "\"");
+    ///     let cond = neu::re_cond(re::not("\\\""));
+    ///     let str = re!([^ '"' ]+).set_cond(cond).or("\\\"").repeat(1..).pat();
+    ///     let str = str.quote("\"", "\"");
     ///     let str = str.map(|v| Ok(V::S(v)));
-    ///     let vals = int.or(str).sep(",".ws());
-    ///     let mut ctx = CharsCtx::new(r#"18, "lily", 21, "lilei""#);
+    ///     let vals = str.sep(",".ws());
+    ///     let text = r#""lily\"", "lilei", "lucy""#;
+    ///     let mut ctx = CharsCtx::new(text);
     ///
     ///     assert_eq!(
     ///         ctx.ctor(&vals)?,
-    ///         vec![V::I(18), V::S("lily"), V::I(21), V::S("lilei")]
+    ///         [V::S("lily\\\""), V::S("lilei"), V::S("lucy")]
     ///     );
     ///     Ok(())
     /// # }

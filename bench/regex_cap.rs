@@ -80,7 +80,7 @@ mod email_neure {
         let domain = letter
             .or(number.or(dot.or(minus)))
             .repeat_range(0..)
-            .and_if(move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
+            .set_cond(move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
                 if ch == '.' {
                     // don't match dot if we don't have more dot
                     if let Ok(str) = Context::orig_at(ctx, ctx.offset() + length + 1) {

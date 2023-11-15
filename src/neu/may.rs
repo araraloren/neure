@@ -67,7 +67,7 @@ where
         self
     }
 
-    pub fn and_if(&mut self, r#if: I) -> &mut Self {
+    pub fn and(&mut self, r#if: I) -> &mut Self {
         self.r#if = r#if;
         self
     }

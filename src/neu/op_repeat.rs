@@ -78,7 +78,7 @@ where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
-    pub fn and_if<F>(self, r#if: F) -> NeureRepeat<'a, M, N, C, U, F>
+    pub fn set_cond<F>(self, r#if: F) -> NeureRepeat<'a, M, N, C, U, F>
     where
         F: NeuCond<'a, C>,
     {
@@ -227,7 +227,7 @@ where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
-    pub fn and_if<F>(self, r#if: F) -> NeureRepeatRange<'a, C, U, F>
+    pub fn set_cond<F>(self, r#if: F) -> NeureRepeatRange<'a, C, U, F>
     where
         F: NeuCond<'a, C>,
     {

@@ -43,6 +43,9 @@ use crate::err::Error;
 use crate::neu::length_of;
 use crate::neu::ret_and_inc;
 use crate::neu::Neu;
+use crate::neu::Neu2Re;
+use crate::neu::NeureOneMore;
+use crate::neu::NullCond;
 use crate::trace_log;
 
 pub trait Regex<C> {
@@ -525,40 +528,48 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn one_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn one_more<'a, C, N>(re: N) -> NeureOneMore<C, N, C::Item, NullCond>
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    N: Neu<C::Item>,
+    C: Context<'a>,
 {
-    move |ctx: &mut C| {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
-
-        trace_log!("match data in one_more(1..)");
-        let mut iter = ctx.peek()?;
-
-        for (offset, item) in iter.by_ref() {
-            if !re.is_match(&item) {
-                end = Some((offset, item));
-                break;
-            }
-            cnt += 1;
-            if beg.is_none() {
-                beg = Some(offset);
-            }
-        }
-        if let Some(start) = beg {
-            Ok(ret_and_inc(
-                ctx,
-                cnt,
-                length_of(start, ctx, end.map(|v| v.0)),
-            ))
-        } else {
-            Err(Error::OneMore)
-        }
-    }
+    re.repeat_one_more()
 }
+
+// pub fn one_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+// where
+//     R: Ret,
+//     C: Context<'a> + 'a,
+// {
+//     move |ctx: &mut C| {
+//         let mut cnt = 0;
+//         let mut beg = None;
+//         let mut end = None;
+
+//         trace_log!("match data in one_more(1..)");
+//         let mut iter = ctx.peek()?;
+
+//         for (offset, item) in iter.by_ref() {
+//             if !re.is_match(&item) {
+//                 end = Some((offset, item));
+//                 break;
+//             }
+//             cnt += 1;
+//             if beg.is_none() {
+//                 beg = Some(offset);
+//             }
+//         }
+//         if let Some(start) = beg {
+//             Ok(ret_and_inc(
+//                 ctx,
+//                 cnt,
+//                 length_of(start, ctx, end.map(|v| v.0)),
+//             ))
+//         } else {
+//             Err(Error::OneMore)
+//         }
+//     }
+// }
 
 ///
 /// Match the given `Neu` M ..= N times.
@@ -851,4 +862,23 @@ where
     C: Context<'a> + Policy<C>,
 {
     val.or(null())
+}
+
+///
+pub fn not<'a, C, R>(re: impl Regex<C, Ret = R>) -> impl Fn(&mut C) -> Result<R, Error>
+where
+    R: Ret,
+    C: Context<'a> + Policy<C>,
+{
+    move |ctx: &mut C| {
+        let mut g = CtxGuard::new(ctx);
+        let ret = g.try_mat(&re);
+
+        if ret.is_err() {
+            Ok(R::from(g.ctx(), (0, 0)))
+        } else {
+            g.reset();
+            Err(Error::Other)
+        }
+    }
 }
