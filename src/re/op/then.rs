@@ -15,6 +15,34 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Match `P` and then match `T`.
+///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return a tuple of results of `L` and `R`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let str = neu::ascii_alphabetic().repeat_one_more();
+///     let str = str.quote("\"", "\"").map(Ok);
+///     let int = neu::digit(10).repeat_one_more();
+///     let int = int.map(re::map::from_str_radix::<i32>(10));
+///     let tuple = str.ws().then(",".ws())._0().then(int.ws());
+///     let tuple = tuple.quote("(", ")");
+///     let mut ctx = CharsCtx::new(r#"("Galaxy", 42)"#);
+///
+///     assert_eq!(ctx.ctor(&tuple)?, ("Galaxy", 42));
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct Then<C, P, T> {
     pat: P,

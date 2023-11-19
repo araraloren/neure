@@ -14,6 +14,11 @@ use crate::trace_log;
 ///
 /// Match `L` or `R`.
 ///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return result of either `L` or `R`.
+///
 /// # Example
 ///
 /// ```

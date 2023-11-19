@@ -12,6 +12,11 @@ use crate::re::Regex;
 ///
 /// Ignore the interal struct of regex `P`, convert it to a single pattern.
 ///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return [`Orig`](crate::ctx::Context::Orig) if matched.
+///
 /// # Example
 ///
 /// ```

@@ -34,8 +34,7 @@ use crate::ctx::Policy;
 use crate::err::Error;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
-use crate::neu::Neu;
-use crate::neu::NeureOneMore;
+use crate::neu::NeureZeroMore;
 use crate::neu::NullCond;
 use crate::re::Regex;
 
@@ -68,11 +67,13 @@ where
     where
         I: Fn(&C) -> Result<bool, Error>;
 
-    fn pad<N: Neu<U>, U>(self, unit: N) -> PadUnit<C, Self, N, U>;
+    fn pad<T>(self, tail: T) -> PadUnit<C, Self, T>;
 
-    fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U>;
+    fn padded<T>(self, tail: T) -> PaddedUnit<C, Self, T>;
 
-    fn ws(self) -> PadUnit<C, Self, AsciiWhiteSpace, char>;
+    fn ws(self) -> PadUnit<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    where
+        C: Context<'a, Item = char>;
 }
 
 ///
@@ -338,6 +339,28 @@ where
         Or::new(self, pat)
     }
 
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     #[derive(Debug, PartialEq, Eq)]
+    ///     pub struct Val<'a>(&'a str);
+    ///
+    ///     let val = "v".ltm("val".ltm("value"));
+    ///     let val = val.map(|v| Ok(Val(v)));
+    ///     let val = val.sep(",".ws());
+    ///     let val = val.quote("{", "}");
+    ///     let mut ctx = CharsCtx::new(r#"{val, v, value}"#);
+    ///
+    ///     assert_eq!(ctx.ctor(&val)?, [Val("val"), Val("v"), Val("value")]);
+    ///     Ok(())
+    /// # }
+    /// ```
     fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P> {
         LongestTokenMatch::new(self, pat)
     }
@@ -346,20 +369,20 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::{prelude::*, re::FromStr};
+    /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
-    ///     let str = '"'.not().repeat_full();
-    ///     let str = str.quote("\"", "\"");
-    ///     let num = neu::digit(10).repeat_full();
-    ///     let ele = str.or(num).terminated(','.repeat_zero_one()).ws();
-    ///     let tuple = ele.then(ele.map(FromStr::<i32>::new()));
-    ///     let mut ctx = CharsCtx::new(r#""c", 42"#);
+    ///     let ws = neu::whitespace().repeat_full();
+    ///     let id = neu::ascii_alphabetic().repeat_one_more();
+    ///     let st = "struct".ws().then(id)._1();
+    ///     let en = "enum".ws().then(id)._1();
+    ///     let ty = st.or(en);
+    ///     let ty = ty.ws().then(ws.quote("{", "}"))._0();
+    ///     let mut ctx = CharsCtx::new(r#"struct widget { }"#);
     ///
-    ///     assert_eq!(ctx.invoke(&tuple)?, ("c", 42));
-    ///
+    ///     assert_eq!(ctx.ctor(&ty)?, "widget");
     ///     Ok(())
     /// # }
     /// ```
@@ -371,17 +394,17 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::{prelude::*, re::FromStr};
+    /// # use neure::prelude::*;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///
-    ///     let num = neu::digit(10).repeat_full().map(FromStr::<i32>::new());
-    ///     let num = num.then(','.repeat_zero_one().ws())._0();
-    ///     let array = num.repeat(1..4);
-    ///     let mut ctx = CharsCtx::new(r#"6, 8, 10"#);
+    ///     let int = neu::digit(10).repeat_one_more();
+    ///     let int = int.map(re::map::from_str_radix::<i32>(10));
+    ///     let num = int.ws().repeat(3..5);
+    ///     let mut ctx = CharsCtx::new(r#"1 2 3 4"#);
     ///
-    ///     assert_eq!(ctx.invoke(&array)?, vec![6, 8, 10]);
+    ///     assert_eq!(ctx.ctor(&num)?, [1, 2, 3, 4]);
     ///     Ok(())
     /// # }
     /// ```
@@ -396,16 +419,74 @@ where
         IfRegex::new(self, r#if, r#else)
     }
 
-    fn pad<N: Neu<U>, U>(self, unit: N) -> PadUnit<C, Self, N, U> {
-        PadUnit::new(self, NeureOneMore::new(unit, NullCond))
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     let sep = neu!(['，' ';']);
+    ///     let end = neu!(['。' '？' '！']);
+    ///     let word = sep.or(end).not().repeat_one_more();
+    ///     let sent = word.sep(sep.repeat_one().ws()).pad(end.repeat_one());
+    ///     let sent = sent.repeat(1..);
+    ///     let mut ctx = CharsCtx::new(
+    ///         r#"暖日晴风初破冻。柳眼眉腮，已觉春心动。酒意诗情谁与共。泪融残粉花钿重。乍试夹衫金缕缝。山枕斜敧，枕损钗头凤。独抱浓愁无好梦。夜阑犹剪灯花弄。"#,
+    ///     );
+    ///
+    ///     assert_eq!(ctx.ctor(&sent)?.len(), 8);
+    ///     Ok(())
+    /// # }
+    /// ```
+    ///
+    fn pad<P>(self, pat: P) -> PadUnit<C, Self, P> {
+        PadUnit::new(self, pat)
     }
 
-    fn padded<N: Neu<U>, U>(self, unit: N) -> PaddedUnit<C, Self, N, U> {
-        PaddedUnit::new(self, NeureOneMore::new(unit, NullCond))
+    ///  
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///
+    ///     let num = neu::digit(10).repeat_times::<2>();
+    ///     let time = num.sep_once(":", num);
+    ///     let time = time.quote("[", "]").ws();
+    ///     let star = '*'.repeat_times::<3>().ws();
+    ///     let name = neu::whitespace().not().repeat_one_more().ws();
+    ///     let status = "left".or("joined").ws();
+    ///     let record = name.padded(star).then(status);
+    ///     let record = time.then(record).repeat(1..);
+    ///     let mut ctx = CharsCtx::new(
+    ///         r#"[20:59] *** jpn left
+    ///         [21:00] *** jpn joined
+    ///         [21:06] *** guifa left
+    ///         [21:07] *** guifa joined"#,
+    ///     );
+    ///     let records = ctx.ctor(&record)?;
+    ///
+    ///     assert_eq!(records[0], (("20", "59"), ("jpn", "left")));
+    ///     assert_eq!(records[1], (("21", "00"), ("jpn", "joined")));
+    ///     assert_eq!(records[2], (("21", "06"), ("guifa", "left")));
+    ///     assert_eq!(records[3], (("21", "07"), ("guifa", "joined")));
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn padded<P>(self, pat: P) -> PaddedUnit<C, Self, P> {
+        PaddedUnit::new(self, pat)
     }
 
-    fn ws(self) -> PadUnit<C, Self, AsciiWhiteSpace, char> {
-        PadUnit::new(self, NeureOneMore::new(AsciiWhiteSpace, NullCond))
+    fn ws(self) -> PadUnit<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    where
+        C: Context<'a, Item = char>,
+    {
+        PadUnit::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
     }
 }
 

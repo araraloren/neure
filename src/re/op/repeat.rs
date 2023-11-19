@@ -11,6 +11,30 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Match `P` repeatedly.
+///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return a collection of `P`'s match results.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let char = neu::any().repeat_one();
+///     let num = char.ws().repeat(1..);
+///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);
+///
+///     assert_eq!(ctx.ctor(&num)?, ["你", "好", "，", "世", "界", "？"]);
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct Repeat<C, P> {
     pat: P,

@@ -5,14 +5,24 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::map::Select0;
+use crate::re::map::Select1;
+use crate::re::map::SelectEq;
 use crate::re::Ctor;
 use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+use super::Map;
+
 ///
 /// Match `L` and `R` separated by `S`.
+///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return a tuple of results of `L` and `R`.
 ///
 /// # Example
 ///
@@ -104,6 +114,18 @@ impl<C, L, S, R> SeparateOnce<C, L, S, R> {
         self.sep = sep;
         self
     }
+
+    pub fn _0<O>(self) -> Map<C, Self, Select0, O> {
+        Map::new(self, Select0)
+    }
+
+    pub fn _1<O>(self) -> Map<C, Self, Select1, O> {
+        Map::new(self, Select1)
+    }
+
+    pub fn _eq<I1, I2>(self) -> Map<C, Self, SelectEq, (I1, I2)> {
+        Map::new(self, SelectEq)
+    }
 }
 
 impl<'a, C, L, S, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for SeparateOnce<C, L, S, R>
@@ -155,6 +177,11 @@ where
 ///
 /// Match regex `P` as many times as possible, with S as the delimiter.
 ///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return a collection of `P`'s match results.
+///
 /// # Example
 ///
 /// ```
@@ -183,6 +210,7 @@ pub struct Separate<C, P, S> {
     sep: S,
     skip: bool,
     capacity: usize,
+    allow_empty: bool,
     marker: PhantomData<C>,
 }
 
@@ -197,6 +225,7 @@ where
             sep: self.sep.clone(),
             skip: self.skip,
             capacity: self.capacity,
+            allow_empty: self.allow_empty,
             marker: self.marker,
         }
     }
@@ -209,6 +238,7 @@ impl<C, P, S> Separate<C, P, S> {
             sep,
             skip: true,
             capacity: 0,
+            allow_empty: false,
             marker: PhantomData,
         }
     }
@@ -266,6 +296,11 @@ impl<C, P, S> Separate<C, P, S> {
         self.capacity = capacity;
         self
     }
+
+    pub fn allow_empty(mut self) -> Self {
+        self.allow_empty = true;
+        self
+    }
 }
 
 impl<'a, C, S, P, M, O> Ctor<'a, C, M, Vec<O>> for Separate<C, P, S>
@@ -290,7 +325,11 @@ where
                 break;
             }
         }
-        Ok(res)
+        if !res.is_empty() || self.allow_empty {
+            Ok(res)
+        } else {
+            Err(Error::Separate)
+        }
     }
 }
 
@@ -317,12 +356,22 @@ where
                 break;
             }
         }
-        Ok(span)
+        if !span.is_zero() || self.allow_empty {
+            Ok(span)
+        } else {
+            Err(Error::Separate)
+        }
     }
 }
 
 ///
 /// Match regex `P` as many times as possible, with S as the delimiter.
+///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return a collection that can constructed from `P`'s match results
+/// using [`from_iter`](std::iter::FromIterator::from_iter).
 ///
 /// # Example
 ///

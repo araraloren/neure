@@ -14,6 +14,11 @@ use crate::re::Regex;
 ///
 /// Match regex `P` quoted by `L` and `R`.
 ///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return result of `P` if matched.
+///
 /// # Example
 ///
 /// ```

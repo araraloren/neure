@@ -14,6 +14,31 @@ use crate::trace_log;
 ///
 /// Match `L` and `R`, return the longest match result.
 ///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return the result of the longest match of either `L` or `R`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let dec = neu::digit(10).repeat_one_more();
+///     let hex = neu::digit(16).repeat_one_more();
+///     let dec = dec.map(re::map::from_str_radix::<i32>(10));
+///     let hex = hex.map(re::map::from_str_radix(16));
+///     let num = dec.ltm(hex);
+///     let val = num.sep(",".ws()).quote("{", "}");
+///     let mut ctx = CharsCtx::new(r#"{12, E1, A8, 88}"#);
+///
+///     assert_eq!(ctx.ctor(&val)?, [12, 0xe1, 0xa8, 88]);
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct LongestTokenMatch<C, L, R> {
     left: L,
