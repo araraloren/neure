@@ -6,6 +6,10 @@ pub enum Error {
 
     Other,
 
+    Collect,
+
+    SeparateCollect,
+
     Separate,
 
     TryInto,
@@ -51,7 +55,9 @@ impl Display for Error {
             Error::Null => write!(f, "Error::Null"),
             Error::Other => write!(f, "Error::Other"),
 
-            Error::Separate => write!(f, "In (`Separate`): found empty data"),
+            Error::Collect => write!(f, "In (`Collect`): need more data"),
+            Error::SeparateCollect => write!(f, "In (`SeparateCollect`): need more data"),
+            Error::Separate => write!(f, "In (`Separate`): need more data"),
             Error::TryInto => write!(f, "In (`Map`): got error in `try_into`"),
             Error::RegexOption => write!(f, "In (`Option<I>`): need option value in ctor or regex"),
             Error::FromStr => write!(f, "In (`Map`): can not map str value to type"),

@@ -11,6 +11,33 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Match `P` and `T` which padded by `P`.
+///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return result of `P`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let protocol = "https".or("http".or("ftp"));
+///     let protocol = protocol.pad("://");
+///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = domain.sep(".").at_least(2);
+///     let url = domain.padded(protocol);
+///     let mut ctx = CharsCtx::new(r#"https://www.mozilla.org"#);
+///
+///     assert_eq!(ctx.ctor(&url)?, ["www", "mozilla", "org"]);
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct PadUnit<C, P, T> {
     pat: P,
@@ -111,6 +138,33 @@ where
     }
 }
 
+///
+/// Match `P` which padded by `T`.
+///
+/// # Ctor
+///
+/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
+/// it will return result of `P`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let protocol = "https".or("http".or("ftp"));
+///     let protocol = protocol.pad("://");
+///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = domain.sep(".").at_least(2);
+///     let url = domain.padded(protocol);
+///     let mut ctx = CharsCtx::new(r#"https://www.mozilla.org"#);
+///
+///     assert_eq!(ctx.ctor(&url)?, ["www", "mozilla", "org"]);
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct PaddedUnit<C, P, T> {
     pat: P,

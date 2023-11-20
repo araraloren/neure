@@ -210,7 +210,7 @@ pub struct Separate<C, P, S> {
     sep: S,
     skip: bool,
     capacity: usize,
-    allow_empty: bool,
+    mini_size: usize,
     marker: PhantomData<C>,
 }
 
@@ -225,7 +225,7 @@ where
             sep: self.sep.clone(),
             skip: self.skip,
             capacity: self.capacity,
-            allow_empty: self.allow_empty,
+            mini_size: self.mini_size,
             marker: self.marker,
         }
     }
@@ -238,7 +238,7 @@ impl<C, P, S> Separate<C, P, S> {
             sep,
             skip: true,
             capacity: 0,
-            allow_empty: false,
+            mini_size: 1,
             marker: PhantomData,
         }
     }
@@ -261,6 +261,10 @@ impl<C, P, S> Separate<C, P, S> {
 
     pub fn skip(&self) -> bool {
         self.skip
+    }
+
+    pub fn mini_size(&self) -> usize {
+        self.mini_size
     }
 
     pub fn capacity(&self) -> usize {
@@ -287,6 +291,11 @@ impl<C, P, S> Separate<C, P, S> {
         self
     }
 
+    pub fn set_mini_size(&mut self, mini_size: usize) -> &mut Self {
+        self.mini_size = mini_size;
+        self
+    }
+
     pub fn with_skip(mut self, skip: bool) -> Self {
         self.skip = skip;
         self
@@ -297,8 +306,8 @@ impl<C, P, S> Separate<C, P, S> {
         self
     }
 
-    pub fn allow_empty(mut self) -> Self {
-        self.allow_empty = true;
+    pub fn at_least(mut self, mini_size: usize) -> Self {
+        self.mini_size = mini_size;
         self
     }
 }
@@ -325,7 +334,7 @@ where
                 break;
             }
         }
-        if !res.is_empty() || self.allow_empty {
+        if res.len() >= self.mini_size {
             Ok(res)
         } else {
             Err(Error::Separate)
@@ -356,7 +365,7 @@ where
                 break;
             }
         }
-        if !span.is_zero() || self.allow_empty {
+        if span.len >= self.mini_size {
             Ok(span)
         } else {
             Err(Error::Separate)
@@ -396,6 +405,7 @@ pub struct SeparateCollect<C, P, S, O, T> {
     pat: P,
     sep: S,
     skip: bool,
+    mini_size: usize,
     marker: PhantomData<(C, O, T)>,
 }
 
@@ -409,6 +419,7 @@ where
             pat: self.pat.clone(),
             sep: self.sep.clone(),
             skip: self.skip,
+            mini_size: self.mini_size,
             marker: self.marker,
         }
     }
@@ -420,6 +431,7 @@ impl<C, P, S, O, T> SeparateCollect<C, P, S, O, T> {
             pat,
             sep,
             skip: true,
+            mini_size: 1,
             marker: PhantomData,
         }
     }
@@ -444,6 +456,10 @@ impl<C, P, S, O, T> SeparateCollect<C, P, S, O, T> {
         self.skip
     }
 
+    pub fn mini_size(&self) -> usize {
+        self.mini_size
+    }
+
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
         self.pat = pat;
         self
@@ -459,8 +475,18 @@ impl<C, P, S, O, T> SeparateCollect<C, P, S, O, T> {
         self
     }
 
+    pub fn set_mini_size(&mut self, mini_size: usize) -> &mut Self {
+        self.mini_size = mini_size;
+        self
+    }
+
     pub fn with_skip(mut self, skip: bool) -> Self {
         self.skip = skip;
+        self
+    }
+
+    pub fn at_least(mut self, mini_size: usize) -> Self {
+        self.mini_size = mini_size;
         self
     }
 }
@@ -477,17 +503,25 @@ where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Ok(T::from_iter(std::iter::from_fn(|| {
+        let mut length = 0;
+        let ret = T::from_iter(std::iter::from_fn(|| {
             self.pat.constrct(ctx, func).ok().and_then(|ret| {
                 let sep_ret = ctx.try_mat(&self.sep);
 
                 if sep_ret.is_ok() || self.skip {
+                    length += 1;
                     Some(ret)
                 } else {
                     None
                 }
             })
-        })))
+        }));
+
+        if length >= self.mini_size {
+            Ok(ret)
+        } else {
+            Err(Error::SeparateCollect)
+        }
     }
 }
 
@@ -514,6 +548,10 @@ where
                 break;
             }
         }
-        Ok(span)
+        if span.len >= self.mini_size {
+            Ok(span)
+        } else {
+            Err(Error::SeparateCollect)
+        }
     }
 }
