@@ -1,5 +1,6 @@
-mod r#box;
-mod r#dyn;
+mod boxed;
+mod dthen;
+mod dynamic;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -7,9 +8,15 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::r#box::BoxedCtor;
-pub use self::r#dyn::DynamicCtor;
-pub use self::r#dyn::DynamicCtorHandler;
+pub use self::boxed::into_boxed_ctor;
+pub use self::boxed::BoxedCtor;
+pub use self::boxed::BoxedCtorHelper;
+pub use self::dthen::DynamicCreateCtorThen;
+pub use self::dthen::DynamicCreateCtorThenHelper;
+pub use self::dynamic::into_dyn_ctor;
+pub use self::dynamic::DynamicCtor;
+pub use self::dynamic::DynamicCtorHandler;
+pub use self::dynamic::DynamicCtorHelper;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -189,23 +196,6 @@ where
     {
         Ctor::constrct(self.as_ref(), ctx, handler)
     }
-}
-
-pub fn into_dyn_ctor<'a, 'b, C, O>(
-    invoke: impl Fn(&mut C) -> Result<O, Error> + 'b,
-) -> DynamicCtor<'b, C, O>
-where
-    C: Context<'a>,
-{
-    DynamicCtor::new(Box::new(invoke))
-}
-
-pub fn into_box_ctor<'a, C, M, O, I>(invoke: I) -> BoxedCtor<C, I>
-where
-    I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
-{
-    BoxedCtor::new(Box::new(invoke))
 }
 
 pub type RecursiveCtor<'a, C, O> = Rc<RefCell<Option<DynamicCtor<'a, C, O>>>>;

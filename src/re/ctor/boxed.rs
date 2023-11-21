@@ -67,3 +67,33 @@ where
         self.inner.constrct(ctx, handler)
     }
 }
+
+pub fn into_boxed_ctor<'a, C, M, O, I>(invoke: I) -> BoxedCtor<C, I>
+where
+    I: Ctor<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    BoxedCtor::new(Box::new(invoke))
+}
+
+pub trait BoxedCtorHelper<'a, C, M, O>
+where
+    C: Context<'a> + Policy<C>,
+{
+    fn into_boxed_ctor(self) -> BoxedCtor<C, Self>
+    where
+        Self: Sized;
+}
+
+impl<'a, C, M, O, I> BoxedCtorHelper<'a, C, M, O> for I
+where
+    I: Ctor<'a, C, M, O>,
+    C: Context<'a> + Policy<C>,
+{
+    fn into_boxed_ctor(self) -> BoxedCtor<C, Self>
+    where
+        Self: Sized,
+    {
+        BoxedCtor::new(Box::new(self))
+    }
+}

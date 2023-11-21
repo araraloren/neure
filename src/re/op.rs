@@ -1,5 +1,4 @@
 mod collect;
-mod r#dyn;
 mod r#if;
 mod ltm;
 mod map;
@@ -19,8 +18,6 @@ pub use self::pad::PadUnit;
 pub use self::pad::PaddedUnit;
 pub use self::pat::Pattern;
 pub use self::quote::Quote;
-pub use self::r#dyn::DynamicRegex;
-pub use self::r#dyn::DynamicRegexHandler;
 pub use self::r#if::branch;
 pub use self::r#if::IfRegex;
 pub use self::repeat::Repeat;
@@ -488,13 +485,4 @@ where
     {
         PadUnit::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
     }
-}
-
-pub fn into_dyn_regex<'a, 'b, C, R>(
-    invoke: impl Fn(&mut C) -> Result<R, Error> + 'b,
-) -> DynamicRegex<'b, C, R>
-where
-    C: Context<'a>,
-{
-    DynamicRegex::new(Box::new(invoke))
 }

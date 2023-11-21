@@ -59,3 +59,34 @@ where
         handler.invoke(A::extract(ctx, &ret)?)
     }
 }
+
+pub fn into_dyn_regex<'a, 'b, C, R>(
+    invoke: impl Fn(&mut C) -> Result<R, Error> + 'b,
+) -> DynamicRegex<'b, C, R>
+where
+    C: Context<'a>,
+{
+    DynamicRegex::new(Box::new(invoke))
+}
+
+pub trait DynamicRegexHelper<'a, 'b, C, R>
+where
+    C: Context<'a>,
+{
+    fn into_dyn_regex(self) -> DynamicRegex<'b, C, R>
+    where
+        Self: Sized;
+}
+
+impl<'a, 'b, C, R, T> DynamicRegexHelper<'a, 'b, C, R> for T
+where
+    C: Context<'a> + Policy<C>,
+    T: Fn(&mut C) -> Result<R, Error> + 'b,
+{
+    fn into_dyn_regex(self) -> DynamicRegex<'b, C, R>
+    where
+        Self: Sized,
+    {
+        DynamicRegex::new(Box::new(self))
+    }
+}

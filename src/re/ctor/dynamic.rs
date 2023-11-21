@@ -57,3 +57,29 @@ where
         (self.inner)(ctx)
     }
 }
+
+pub fn into_dyn_ctor<'a, 'b, C, O>(
+    invoke: impl Fn(&mut C) -> Result<O, Error> + 'b,
+) -> DynamicCtor<'b, C, O>
+where
+    C: Context<'a>,
+{
+    DynamicCtor::new(Box::new(invoke))
+}
+
+pub trait DynamicCtorHelper<'a, 'b, C, O>
+where
+    C: Context<'a>,
+{
+    fn into_dyn_ctor(self) -> DynamicCtor<'b, C, O>;
+}
+
+impl<'a, 'b, C, O, T> DynamicCtorHelper<'a, 'b, C, O> for T
+where
+    C: Context<'a>,
+    T: Fn(&mut C) -> Result<O, Error> + 'b,
+{
+    fn into_dyn_ctor(self) -> DynamicCtor<'b, C, O> {
+        DynamicCtor::new(Box::new(self))
+    }
+}
