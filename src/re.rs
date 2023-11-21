@@ -22,6 +22,7 @@ pub use self::ctor::BoxedCtor;
 pub use self::ctor::BoxedCtorHelper;
 pub use self::ctor::Ctor;
 pub use self::ctor::DynamicCreateCtorThen;
+pub use self::ctor::DynamicCreateCtorThenHelper;
 pub use self::ctor::DynamicCtor;
 pub use self::ctor::DynamicCtorHandler;
 pub use self::ctor::DynamicCtorHelper;
