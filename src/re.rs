@@ -41,18 +41,19 @@ pub use self::regex::sep_once;
 pub use self::regex::then;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
+use self::regex::RegexOr;
 
-use self::ctor::Or;
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::neu::length_of;
-use crate::neu::ret_and_inc;
 use crate::neu::Neu;
 use crate::neu::Neu2Re;
+use crate::neu::NeureOne;
 use crate::neu::NeureOneMore;
+use crate::neu::NeureZeroMore;
+use crate::neu::NeureZeroOne;
 use crate::neu::NullCond;
 use crate::trace_log;
 
@@ -243,26 +244,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn one<'a, C, U>(unit: U) -> NeureOne<C, U, C::Item, NullCond>
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
+    U: Neu<C::Item>,
 {
-    move |ctx: &mut C| {
-        trace_log!("match data in one(1..2)");
-        let mut iter: C::Iter<'_> = ctx.peek()?;
-
-        if let Some((offset, item)) = iter.next() {
-            if re.is_match(&item) {
-                return Ok(ret_and_inc(
-                    ctx,
-                    1,
-                    length_of(offset, ctx, iter.next().map(|v| v.0)),
-                ));
-            }
-        }
-        Err(Error::One)
-    }
+    unit.repeat_one()
 }
 
 ///
@@ -289,26 +276,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn zero_one<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn zero_one<'a, C, U>(unit: U) -> NeureZeroOne<C, U, C::Item, NullCond>
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
+    U: Neu<C::Item>,
 {
-    move |ctx: &mut C| {
-        trace_log!("match data in zero_one(0..2)");
-        if let Ok(mut iter) = ctx.peek() {
-            if let Some((offset, item)) = iter.next() {
-                if re.is_match(&item) {
-                    return Ok(ret_and_inc(
-                        ctx,
-                        1,
-                        length_of(offset, ctx, iter.next().map(|v| v.0)),
-                    ));
-                }
-            }
-        }
-        Ok(R::from(ctx, (0, 0)))
-    }
+    unit.repeat_zero_one()
 }
 
 ///
@@ -333,39 +306,12 @@ where
 /// # }
 /// ```
 ///
-pub fn zero_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn zero_more<'a, C, U>(unit: U) -> NeureZeroMore<C, U, C::Item, NullCond>
 where
-    R: Ret,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
+    U: Neu<C::Item>,
 {
-    move |ctx: &mut C| {
-        let mut cnt = 0;
-        let mut beg = None;
-        let mut end = None;
-
-        trace_log!("match data in zero_more(0..)");
-        if let Ok(mut iter) = ctx.peek() {
-            for (offset, item) in iter.by_ref() {
-                if !re.is_match(&item) {
-                    end = Some((offset, item));
-                    break;
-                }
-                cnt += 1;
-                if beg.is_none() {
-                    beg = Some(offset);
-                }
-            }
-        }
-        if let Some(start) = beg {
-            Ok(ret_and_inc(
-                ctx,
-                cnt,
-                length_of(start, ctx, end.map(|v| v.0)),
-            ))
-        } else {
-            Ok(R::from(ctx, (0, 0)))
-        }
-    }
+    unit.repeat_zero_more()
 }
 
 ///
@@ -397,41 +343,6 @@ where
     re.repeat_one_more()
 }
 
-// pub fn one_more<'a, C, R>(re: impl Neu<C::Item>) -> impl Fn(&mut C) -> Result<R, Error>
-// where
-//     R: Ret,
-//     C: Context<'a> + 'a,
-// {
-//     move |ctx: &mut C| {
-//         let mut cnt = 0;
-//         let mut beg = None;
-//         let mut end = None;
-
-//         trace_log!("match data in one_more(1..)");
-//         let mut iter = ctx.peek()?;
-
-//         for (offset, item) in iter.by_ref() {
-//             if !re.is_match(&item) {
-//                 end = Some((offset, item));
-//                 break;
-//             }
-//             cnt += 1;
-//             if beg.is_none() {
-//                 beg = Some(offset);
-//             }
-//         }
-//         if let Some(start) = beg {
-//             Ok(ret_and_inc(
-//                 ctx,
-//                 cnt,
-//                 length_of(start, ctx, end.map(|v| v.0)),
-//             ))
-//         } else {
-//             Err(Error::OneMore)
-//         }
-//     }
-// }
-
 ///
 /// Match the given `Neu` M ..= N times.
 ///
@@ -451,13 +362,14 @@ where
 /// }
 /// ```
 ///
-pub fn count<'a, const M: usize, const N: usize, C, U: Neu<C::Item>>(
-    re: U,
-) -> crate::neu::NeureRepeat<'a, M, N, C, U, crate::neu::NullCond>
+pub fn count<'a, const M: usize, const N: usize, C, U>(
+    unit: U,
+) -> crate::neu::NeureRepeat<'a, M, N, C, U, NullCond>
 where
     C: Context<'a>,
+    U: Neu<C::Item>,
 {
-    crate::neu::Neu2Re::repeat::<M, N>(re)
+    unit.repeat::<M, N>()
 }
 
 ///
@@ -489,15 +401,16 @@ where
 /// }
 /// ```
 ///
-pub fn count_if<'a, const M: usize, const N: usize, C, U: Neu<C::Item>, F>(
+pub fn count_if<'a, const M: usize, const N: usize, C, U, F>(
     re: U,
     r#if: F,
 ) -> crate::neu::NeureRepeat<'a, M, N, C, U, F>
 where
     C: Context<'a> + 'a,
+    U: Neu<C::Item>,
     F: crate::neu::NeuCond<'a, C>,
 {
-    crate::neu::NeureRepeat::new(re, r#if)
+    re.repeat::<M, N>().set_cond(r#if)
 }
 
 ///
@@ -522,15 +435,14 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn start<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+pub fn start<'a, C>() -> impl Fn(&mut C) -> Result<Span, Error>
 where
-    R: Ret,
     C: Context<'a>,
 {
     |ctx: &mut C| {
         if ctx.offset() == 0 {
             trace_log!("match start of context");
-            Ok(R::from(ctx, (0, 0)))
+            Ok(<Span as Ret>::from(ctx, (0, 0)))
         } else {
             Err(Error::Start)
         }
@@ -559,9 +471,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn end<'a, C, R>() -> impl Fn(&mut C) -> Result<R, Error>
+pub fn end<'a, C>() -> impl Fn(&mut C) -> Result<Span, Error>
 where
-    R: Ret,
     C: Context<'a>,
 {
     |ctx: &mut C| {
@@ -569,7 +480,7 @@ where
             Err(Error::End)
         } else {
             trace_log!("match end of context");
-            Ok(R::from(ctx, (0, 0)))
+            Ok(<Span as Ret>::from(ctx, (0, 0)))
         }
     }
 }
@@ -592,9 +503,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn string<'a, 'b, C, R>(lit: &'b str) -> impl Fn(&mut C) -> Result<R, Error> + 'b
+pub fn string<'a, 'b, C>(lit: &'b str) -> impl Fn(&mut C) -> Result<Span, Error> + 'b
 where
-    R: Ret,
     C: Context<'a, Orig = str>,
 {
     move |ctx: &mut C| {
@@ -609,7 +519,7 @@ where
         if !ctx.orig()?.starts_with(lit) {
             Err(Error::String)
         } else {
-            let ret = R::from(ctx, (1, len));
+            let ret = <Span as Ret>::from(ctx, (1, len));
 
             ctx.inc(len);
             Ok(ret)
@@ -635,9 +545,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn bytes<'a, 'b, C, R>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<R, Error> + 'b
+pub fn bytes<'a, 'b, C>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<Span, Error> + 'b
 where
-    R: Ret,
     C: Context<'a, Orig = [u8]>,
 {
     move |ctx: &mut C| {
@@ -652,7 +561,7 @@ where
         if !ctx.orig()?.starts_with(lit) {
             Err(Error::Bytes)
         } else {
-            let ret = R::from(ctx, (1, len));
+            let ret = <Span as Ret>::from(ctx, (1, len));
 
             ctx.inc(len);
             Ok(ret)
@@ -678,9 +587,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn consume<'a, C, R>(length: usize) -> impl Fn(&mut C) -> Result<R, Error>
+pub fn consume<'a, C>(length: usize) -> impl Fn(&mut C) -> Result<Span, Error>
 where
-    R: Ret,
     C: Context<'a>,
 {
     move |ctx: &mut C| {
@@ -691,7 +599,7 @@ where
             ctx.len()
         );
         if ctx.len() - ctx.offset() >= length {
-            let ret = R::from(ctx, (1, length));
+            let ret = <Span as Ret>::from(ctx, (1, length));
 
             ctx.inc(length);
             Ok(ret)
@@ -719,20 +627,17 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn null<R>() -> NullRegex<R>
-where
-    R: Ret,
-{
+pub fn null<R>() -> NullRegex<R> {
     NullRegex::new()
 }
 
-pub fn nullable<'a, T, C, R>(val: T) -> Or<C, T, NullRegex<R>>
+pub fn nullable<'a, P, C>(regex: P) -> RegexOr<C, P, NullRegex<P::Ret>>
 where
-    R: Ret,
-    T: Regex<C, Ret = R>,
+    P::Ret: Ret,
+    P: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    val.or(null())
+    or(regex, null())
 }
 
 ///
@@ -744,12 +649,12 @@ where
     move |ctx: &mut C| {
         let mut g = CtxGuard::new(ctx);
         let ret = g.try_mat(&re);
-
-        if ret.is_err() {
+        let ret = if ret.is_err() {
             Ok(R::from(g.ctx(), (0, 0)))
         } else {
-            g.reset();
             Err(Error::Other)
-        }
+        };
+
+        g.process_ret(ret)
     }
 }
