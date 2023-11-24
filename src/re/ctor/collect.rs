@@ -108,13 +108,15 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let mut cnt = 0;
         let mut span = <Span as Ret>::from(g.ctx(), (0, 0));
 
         // don't use g.try_mat
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
+            cnt += 1;
             span.add_assign(ret);
         }
-        g.process_ret(if span.len >= self.min {
+        g.process_ret(if cnt >= self.min {
             Ok(span)
         } else {
             Err(Error::Collect)

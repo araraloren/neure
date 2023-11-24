@@ -18,6 +18,8 @@ pub use self::ctor::into_boxed_ctor;
 pub use self::ctor::into_dyn_ctor;
 pub use self::ctor::rec_parser;
 pub use self::ctor::rec_parser_sync;
+pub use self::ctor::RecursiveCtor;
+pub use self::ctor::RecursiveCtorSync;
 pub use self::ctor::BoxedCtorHelper;
 pub use self::ctor::ConstructOp;
 pub use self::ctor::Ctor;

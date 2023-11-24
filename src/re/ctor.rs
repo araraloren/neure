@@ -287,6 +287,8 @@ where
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
+    fn collect<O>(self) -> Collect<C, Self, O>;
+
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>;
@@ -634,6 +636,10 @@ where
     /// ```
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self> {
         Repeat::new(self, range)
+    }
+
+    fn collect<O>(self) -> Collect<C, Self, O> {
+        Collect::new(self)
     }
 
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>

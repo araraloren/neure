@@ -1,13 +1,11 @@
 #[allow(clippy::module_inception)]
 mod ctx;
-mod ret;
 mod span;
 
 use crate::err::Error;
 use crate::re::Regex;
 
 pub use self::ctx::RegexCtx;
-pub use self::ret::Return;
 pub use self::span::Span;
 
 pub type BytesCtx<'a> = RegexCtx<'a, [u8]>;

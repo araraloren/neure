@@ -38,7 +38,6 @@ pub mod prelude {
     pub use crate::ctx::Policy;
     pub use crate::ctx::RegexCtx;
     pub use crate::ctx::Ret;
-    pub use crate::ctx::Return;
     pub use crate::ctx::Span;
     pub use crate::neu;
     pub use crate::neu::Neu;

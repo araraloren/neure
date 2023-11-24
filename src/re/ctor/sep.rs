@@ -353,12 +353,14 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let mut cnt = 0;
         let mut span = <Span as Ret>::from(g.ctx(), (0, 0));
 
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
             if sep_ret.is_ok() || self.skip {
+                cnt += 1;
                 span.add_assign(ret);
                 if let Ok(sep_ret) = sep_ret {
                     span.add_assign(sep_ret);
@@ -367,7 +369,7 @@ where
                 break;
             }
         }
-        g.process_ret(if span.len >= self.min {
+        g.process_ret(if cnt >= self.min {
             Ok(span)
         } else {
             Err(Error::Separate)
@@ -538,12 +540,14 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let mut cnt = 0;
         let mut span = <Span as Ret>::from(g.ctx(), (0, 0));
 
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
             if sep_ret.is_ok() || self.skip {
+                cnt += 1;
                 span.add_assign(ret);
                 if let Ok(sep_ret) = sep_ret {
                     span.add_assign(sep_ret);
@@ -552,7 +556,7 @@ where
                 break;
             }
         }
-        g.process_ret(if span.len >= self.min {
+        g.process_ret(if cnt >= self.min {
             Ok(span)
         } else {
             Err(Error::SeparateCollect)
