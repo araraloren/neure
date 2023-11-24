@@ -1,15 +1,16 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::neu_trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::trace_log;
 
 use super::length_of;
 use super::ret_and_inc;
@@ -91,9 +92,14 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = ctx.try_mat(self)?;
+        let mut g = CtxGuard::new(ctx);
+        let ret = {
+            neu_trace!("neure_zero_one", g);
+            g.try_mat(self)
+        };
 
-        func.invoke(A::extract(ctx, &ret)?)
+        neu_trace!("neure_zero_one", g -> ret);
+        func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
 
@@ -106,19 +112,21 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
-        trace_log!("match data in zero_one(0..2)");
-        if let Ok(mut iter) = ctx.peek() {
+        let mut g = CtxGuard::new(ctx);
+        let mut ret = Ok(<Self::Ret as Ret>::from(g.ctx(), (0, 0)));
+
+        neu_trace!("neure_zero_one", g);
+        if let Ok(mut iter) = g.ctx().peek() {
             if let Some((offset, item)) = iter.next() {
-                if self.unit.is_match(&item) && self.cond.check(ctx, &(offset, item))? {
-                    return Ok(ret_and_inc(
-                        ctx,
-                        1,
-                        length_of(offset, ctx, iter.next().map(|v| v.0)),
-                    ));
+                if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
+                    let len = length_of(offset, g.ctx(), iter.next().map(|v| v.0));
+
+                    ret = Ok(ret_and_inc(g.ctx(), 1, len));
                 }
             }
         }
-        Ok(<Self::Ret as Ret>::from(ctx, (0, 0)))
+        neu_trace!("neure_zero_one", g => ret);
+        ret
     }
 }
 
@@ -197,9 +205,14 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = ctx.try_mat(self)?;
+        let mut g = CtxGuard::new(ctx);
+        let ret = {
+            neu_trace!("neure_zero_more", g);
+            g.try_mat(self)
+        };
 
-        func.invoke(A::extract(ctx, &ret)?)
+        neu_trace!("neure_zero_more", g -> ret);
+        func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
 
@@ -212,14 +225,16 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+        let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
+        let mut ret = Ok(<Self::Ret as Ret>::from(g.ctx(), (0, 0)));
 
-        trace_log!("match data in zero_more(0..)");
-        if let Ok(mut iter) = ctx.peek() {
+        neu_trace!("neure_zero_more", g);
+        if let Ok(mut iter) = g.ctx().peek() {
             for pair in iter.by_ref() {
-                if !self.unit.is_match(&pair.1) || !self.cond.check(ctx, &pair)? {
+                if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
                     end = Some(pair);
                     break;
                 }
@@ -230,13 +245,10 @@ where
             }
         }
         if let Some(start) = beg {
-            Ok(ret_and_inc(
-                ctx,
-                cnt,
-                length_of(start, ctx, end.map(|v| v.0)),
-            ))
-        } else {
-            Ok(<Self::Ret as Ret>::from(ctx, (0, 0)))
+            let len = length_of(start, g.ctx(), end.map(|v| v.0));
+            ret = Ok(ret_and_inc(g.ctx(), cnt, len));
         }
+        neu_trace!("neure_zero_more", g => ret);
+        ret
     }
 }

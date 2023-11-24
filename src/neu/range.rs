@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::fmt::Display;
 use std::ops::Bound;
 use std::ops::RangeBounds;
 
@@ -19,6 +20,33 @@ impl<T: Clone> Clone for CRange<T> {
         Self {
             start: self.start.clone(),
             end: self.end.clone(),
+        }
+    }
+}
+
+impl<T: Display> Display for CRange<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.start {
+            Bound::Included(start) => {
+                write!(f, "{} ..", start)?;
+            }
+            Bound::Excluded(start) => {
+                write!(f, "{} ..", start)?;
+            }
+            Bound::Unbounded => {
+                write!(f, " ..",)?;
+            }
+        }
+        match &self.end {
+            Bound::Included(end) => {
+                write!(f, "= {}", end)
+            }
+            Bound::Excluded(end) => {
+                write!(f, " {}", end)
+            }
+            Bound::Unbounded => {
+                write!(f, " ",)
+            }
         }
     }
 }

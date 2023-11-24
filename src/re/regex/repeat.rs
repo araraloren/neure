@@ -2,10 +2,10 @@ use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
 use crate::neu::CRange;
-use crate::re::CtxGuard;
 use crate::re::Regex;
 
 ///

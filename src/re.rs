@@ -1,5 +1,4 @@
 mod extract;
-mod guard;
 mod into;
 mod null;
 
@@ -28,7 +27,6 @@ pub use self::ctor::RecursiveCtorSync;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
 pub use self::extract::HandlerV;
-pub use self::guard::CtxGuard;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
@@ -46,6 +44,7 @@ pub use self::regex::DynamicRegexHelper;
 use self::regex::RegexOr;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
@@ -642,7 +641,6 @@ where
     or(regex, null())
 }
 
-///
 pub fn not<'a, C, R>(re: impl Regex<C, Ret = R>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,

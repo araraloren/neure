@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
-use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
@@ -143,7 +143,7 @@ where
         let mut g = CtxGuard::new(ctx);
 
         g.try_mat(&self.left).or_else(|_| {
-            trace_log!("or ... offset = {}", g.offset());
+            trace_log!("or ... offset = {}", g.beg());
             g.reset().try_mat(&self.right)
         })
     }

@@ -1,9 +1,9 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
-use crate::re::CtxGuard;
 use crate::re::Regex;
 use crate::trace_log;
 
@@ -103,10 +103,10 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
 
-        trace_log!("(`then`: @{}) => try match left", g.offset());
+        trace_log!("(`then`: @{}) => try match left", g.beg());
         let ret1 = g.try_mat(&self.pat)?;
 
-        trace_log!("(`then`: @{}) => try match left", g.offset());
+        trace_log!("(`then`: @{}) => try match left", g.beg());
         let ret2 = g.try_mat(&self.then)?;
 
         Ok((ret1, ret2))

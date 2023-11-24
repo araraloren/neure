@@ -1042,3 +1042,17 @@ where
 {
     MayUnit::new(r#if, count, unit)
 }
+
+macro_rules! neu_trace {
+    ($name:literal, $g:ident) => {
+        crate::trace_log!("(`{}`: @{})", $name, $g.beg());
+    };
+    ($name:literal, $g:ident -> $ret:expr) => {
+        crate::trace_log!("(`{}`: @{}) -> {}, {:?}", $name, $g.beg(), $g.end(), $ret);
+    };
+    ($name:literal, $g:ident => $ret:expr) => {
+        crate::trace_log!("(`{}`: @{}) => {:?}", $name, $g.beg(), $ret);
+    };
+}
+
+pub(crate) use neu_trace;

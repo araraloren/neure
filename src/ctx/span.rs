@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::Ret;
 
 use crate::ctx::Context;
@@ -53,5 +55,11 @@ impl<'a, C: Context<'a>> Extract<'a, C, Span> for Span {
 
     fn extract(_: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
         Ok(Clone::clone(ret))
+    }
+}
+
+impl Display for Span {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{{beg: {}, len: {}}}", self.beg, self.len)
     }
 }

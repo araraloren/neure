@@ -28,6 +28,8 @@ pub enum Error {
 
     Repeat,
 
+    RepeatRange,
+
     OutOfBound,
 
     One,
@@ -68,6 +70,7 @@ impl Display for Error {
             Error::UnitRepeat => write!(f, "In (`UnitRepeat`): need more data"),
             Error::TryRepeat => write!(f, "In (`TryRepeat`): need more data"),
             Error::Repeat => write!(f, "In (`Repeat`): need more data"),
+            Error::RepeatRange => write!(f, "In (`RepeatRange`): need more data"),
             Error::OutOfBound => write!(f, "Got error: offset out of bound"),
             Error::One => write!(f, "In (`one`): need more data"),
             Error::OneMore => write!(f, "In (`one_more`): need more data"),

@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
-use crate::re::CtxGuard;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
@@ -109,9 +109,9 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let ret_l = self.left.constrct(g.ctx(), func);
-        let offset_l = g.offset();
+        let offset_l = g.end();
         let ret_r = self.right.constrct(g.reset().ctx(), func);
-        let offset_r = g.offset();
+        let offset_r = g.end();
         let (offset, ret) = if offset_l >= offset_r {
             (offset_l, ret_l)
         } else {
@@ -134,9 +134,9 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let ret_l = g.try_mat(&self.left);
-        let offset_l = g.offset();
+        let offset_l = g.end();
         let ret_r = g.reset().try_mat(&self.right);
-        let offset_r = g.offset();
+        let offset_r = g.end();
         let (off, ret) = if offset_l >= offset_r {
             (offset_l, ret_l)
         } else {

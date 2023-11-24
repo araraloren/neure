@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -9,6 +10,7 @@ use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
+use crate::trace_log;
 
 use super::length_of;
 use super::ret_and_inc;
@@ -99,9 +101,21 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = ctx.try_mat(self)?;
+        let mut g = CtxGuard::new(ctx);
+        let ret = {
+            trace_log!("(`repeat<{},{}>`: @{})", M, N, g.beg());
+            g.try_mat(self)
+        };
 
-        func.invoke(A::extract(ctx, &ret)?)
+        trace_log!(
+            "(`repeat<{},{}>`: @{}) -> {}, {:?}",
+            M,
+            N,
+            g.beg(),
+            g.end(),
+            ret.is_ok()
+        );
+        func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
 
@@ -115,15 +129,18 @@ where
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+        let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let iter = ctx.peek();
+        let mut ret = Err(Error::UnitRepeat);
+        let iter = g.ctx().peek();
 
+        trace_log!("(`repeat<{},{}>`: @{})", M, N, g.beg());
         if let Ok(mut iter) = iter {
             while cnt < N {
                 if let Some(pair) = iter.next() {
-                    if self.unit.is_match(&pair.1) && self.cond.check(ctx, &pair)? {
+                    if self.unit.is_match(&pair.1) && self.cond.check(g.ctx(), &pair)? {
                         cnt += 1;
                         if beg.is_none() {
                             beg = Some(pair.0);
@@ -135,18 +152,14 @@ where
                 }
                 break;
             }
-
             if cnt >= M {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
-
-                return Ok(ret_and_inc(
-                    ctx,
-                    cnt,
-                    beg.map(|v| length_of(v, ctx, end)).unwrap_or(0),
-                ));
+                let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
+                ret = Ok(ret_and_inc(g.ctx(), cnt, len));
             }
         }
-        Err(crate::err::Error::UnitRepeat)
+        trace_log!("(`repeat<{},{}>`: @{}) => {:?}", M, N, g.beg(), ret);
+        ret
     }
 }
 
@@ -248,9 +261,20 @@ where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = ctx.try_mat(self)?;
+        let mut g = CtxGuard::new(ctx);
+        let ret = {
+            trace_log!("(`repeat_range({})`: @{})", self.range, g.beg());
+            g.try_mat(self)
+        };
 
-        func.invoke(A::extract(ctx, &ret)?)
+        trace_log!(
+            "(`repeat_range({})`: @{}) -> {}, {:?}",
+            self.range,
+            g.beg(),
+            g.end(),
+            ret.is_ok()
+        );
+        func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
 
@@ -263,11 +287,14 @@ where
     type Ret = Span;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+        let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let iter = ctx.peek();
+        let mut ret = Err(Error::RepeatRange);
+        let iter = g.ctx().peek();
 
+        trace_log!("(`repeat_range({})`: @{})", self.range, g.beg());
         if let Ok(mut iter) = iter {
             fn bound_checker(max: Option<usize>) -> impl Fn(usize) -> bool {
                 move |val| max.map(|max| val < max).unwrap_or(true)
@@ -281,7 +308,7 @@ where
 
             while cond(cnt) {
                 if let Some(pair) = iter.next() {
-                    if self.unit.is_match(&pair.1) && self.cond.check(ctx, &pair)? {
+                    if self.unit.is_match(&pair.1) && self.cond.check(g.ctx(), &pair)? {
                         cnt += 1;
                         if beg.is_none() {
                             beg = Some(pair.0);
@@ -295,14 +322,16 @@ where
             }
             if self.range.contains(&cnt) {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
-
-                return Ok(ret_and_inc(
-                    ctx,
-                    cnt,
-                    beg.map(|v| length_of(v, ctx, end)).unwrap_or(0),
-                ));
+                let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
+                ret = Ok(ret_and_inc(g.ctx(), cnt, len));
             }
         }
-        Err(crate::err::Error::Repeat)
+        trace_log!(
+            "(`repeat_range({})`: @{}) => {:?}",
+            self.range,
+            g.beg(),
+            ret
+        );
+        ret
     }
 }
