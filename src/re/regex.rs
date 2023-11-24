@@ -123,13 +123,13 @@ where
     RegexQuote::new(pat, left, right)
 }
 
-pub fn repeat<'a, C, P, R>(pat: P, range: R, capacity: usize) -> RegexRepeat<C, P>
+pub fn repeat<'a, C, P, R>(pat: P, range: R) -> RegexRepeat<C, P>
 where
     P: Regex<C>,
     R: Into<CRange<usize>>,
     C: Context<'a> + Policy<C>,
 {
-    RegexRepeat::new(pat, range).with_capacity(capacity)
+    RegexRepeat::new(pat, range)
 }
 
 ///
@@ -153,39 +153,23 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn sep<'a, C, S, P>(
-    pat: P,
-    sep: S,
-    min: usize,
-    skip: bool,
-    capacity: usize,
-) -> RegexSeparate<C, P, S>
+pub fn sep<'a, C, S, P>(pat: P, sep: S, skip: bool) -> RegexSeparate<C, P, S>
 where
     P: Regex<C>,
     S: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    RegexSeparate::new(pat, sep)
-        .with_capacity(capacity)
-        .with_skip(skip)
-        .at_least(min)
+    RegexSeparate::new(pat, sep).with_skip(skip)
 }
 
-pub fn sep_collect<'a, C, S, P, T>(
-    pat: P,
-    sep: S,
-    min: usize,
-    skip: bool,
-) -> RegexSeparateCollect<C, P, S, T>
+pub fn sep_collect<'a, C, S, P, T>(pat: P, sep: S, skip: bool) -> RegexSeparateCollect<C, P, S, T>
 where
     P: Regex<C>,
     S: Regex<C>,
     T: FromIterator<P::Ret>,
     C: Context<'a> + Policy<C>,
 {
-    RegexSeparateCollect::new(pat, sep)
-        .with_skip(skip)
-        .at_least(min)
+    RegexSeparateCollect::new(pat, sep).with_skip(skip)
 }
 
 pub fn sep_once<'a, C, L, S, R>(left: L, sep: S, right: R) -> RegexSeparateOnce<C, L, S, R>
