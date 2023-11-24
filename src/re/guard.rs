@@ -34,7 +34,7 @@ where
         }
     }
 
-    pub fn beg(&self) -> usize {
+    pub fn offset(&self) -> usize {
         self.offset
     }
 

@@ -108,18 +108,18 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret1 = self.left.constrct(g.ctx(), func);
-        let off1 = g.ctx().offset();
-        let ret2 = self.right.constrct(g.reset().ctx(), func);
-        let off2 = g.ctx().offset();
-        let (off, ret) = if off1 >= off2 {
-            (off1, ret1)
+        let ret_l = self.left.constrct(g.ctx(), func);
+        let offset_l = g.offset();
+        let ret_r = self.right.constrct(g.reset().ctx(), func);
+        let offset_r = g.offset();
+        let (offset, ret) = if offset_l >= offset_r {
+            (offset_l, ret_l)
         } else {
-            (off2, ret2)
+            (offset_r, ret_r)
         };
 
-        g.ctx().set_offset(off);
-        ret
+        g.ctx().set_offset(offset);
+        g.process_ret(ret)
     }
 }
 
@@ -133,18 +133,18 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let ret1 = g.try_mat(&self.left);
-        let off1 = g.ctx().offset();
-        let ret2 = g.reset().try_mat(&self.right);
-        let off2 = g.ctx().offset();
-        let (off, ret) = if off1 >= off2 {
-            (off1, ret1)
+        let ret_l = g.try_mat(&self.left);
+        let offset_l = g.offset();
+        let ret_r = g.reset().try_mat(&self.right);
+        let offset_r = g.offset();
+        let (off, ret) = if offset_l >= offset_r {
+            (offset_l, ret_l)
         } else {
-            (off2, ret2)
+            (offset_r, ret_r)
         };
 
-        trace_log!("LTM (left = {} <> right = {})", off1, off2);
+        trace_log!("LTM (left = {} <> right = {})", offset_l, offset_r);
         g.ctx().set_offset(off);
-        ret
+        g.process_ret(ret)
     }
 }

@@ -5,10 +5,10 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::ctor::Map;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
-use crate::re::op::Map;
 use crate::re::CtxGuard;
 use crate::re::Regex;
 

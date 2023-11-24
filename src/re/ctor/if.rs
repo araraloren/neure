@@ -118,13 +118,14 @@ where
     type Ret = T::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let ret = (self.r#if)(ctx)?;
+        let mut g = CtxGuard::new(ctx);
+        let ret = (self.r#if)(g.ctx())?;
 
         trace_log!("running if logical: {}", ret);
         if ret {
-            ctx.try_mat(&self.regex)
+            g.try_mat(&self.regex)
         } else {
-            ctx.try_mat(&self.r#else)
+            g.try_mat(&self.r#else)
         }
     }
 }

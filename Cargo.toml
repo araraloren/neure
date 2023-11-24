@@ -25,6 +25,7 @@ tracing = { version = "0.1", optional = true }
 
 [features]
 log = ["tracing"]
+default = ["log"]
 
 [[bench]]
 name = "nom_cap"

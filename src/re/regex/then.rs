@@ -2,18 +2,10 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
-use crate::ctx::Ret;
-use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::map::Select0;
-use crate::re::map::Select1;
-use crate::re::map::SelectEq;
-use crate::re::op::Map;
-use crate::re::Ctor;
 use crate::re::CtxGuard;
-use crate::re::Extract;
-use crate::re::Handler;
 use crate::re::Regex;
+use crate::trace_log;
 
 ///
 /// Match `P` and then match `T`.
@@ -44,13 +36,13 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct Then<C, P, T> {
+pub struct RegexThen<C, P, T> {
     pat: P,
     then: T,
     marker: PhantomData<C>,
 }
 
-impl<C, P, T> Clone for Then<C, P, T>
+impl<C, P, T> Clone for RegexThen<C, P, T>
 where
     P: Clone,
     T: Clone,
@@ -64,7 +56,7 @@ where
     }
 }
 
-impl<C, P, T> Then<C, P, T> {
+impl<C, P, T> RegexThen<C, P, T> {
     pub fn new(pat: P, then: T) -> Self {
         Self {
             pat,
@@ -98,61 +90,25 @@ impl<C, P, T> Then<C, P, T> {
         self.then = then;
         self
     }
-
-    pub fn _0<O>(self) -> Map<C, Self, Select0, O> {
-        Map::new(self, Select0)
-    }
-
-    pub fn _1<O>(self) -> Map<C, Self, Select1, O> {
-        Map::new(self, Select1)
-    }
-
-    pub fn _eq<I1, I2>(self) -> Map<C, Self, SelectEq, (I1, I2)> {
-        Map::new(self, SelectEq)
-    }
 }
 
-impl<'a, C, P, T, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for Then<C, P, T>
+impl<'a, C, P, T> Regex<C> for RegexThen<C, P, T>
 where
-    P: Ctor<'a, C, M, O1>,
-    T: Ctor<'a, C, M, O2>,
+    P: Regex<C>,
+    T: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
-        let mut g = CtxGuard::new(ctx);
-
-        match self.pat.constrct(g.ctx(), func) {
-            Ok(ret1) => {
-                let ret = self.then.constrct(g.ctx(), func);
-                let ret2 = g.process_ret(ret)?;
-
-                Ok((ret1, ret2))
-            }
-            Err(e) => {
-                g.reset();
-                Err(e)
-            }
-        }
-    }
-}
-
-impl<'a, C, P, T> Regex<C> for Then<C, P, T>
-where
-    P: Regex<C, Ret = Span>,
-    T: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
-{
-    type Ret = P::Ret;
+    type Ret = (P::Ret, T::Ret);
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&self.pat)?;
 
-        ret.add_assign(g.try_mat(&self.then)?);
-        Ok(ret)
+        trace_log!("(`then`: @{}) => try match left", g.offset());
+        let ret1 = g.try_mat(&self.pat)?;
+
+        trace_log!("(`then`: @{}) => try match left", g.offset());
+        let ret2 = g.try_mat(&self.then)?;
+
+        Ok((ret1, ret2))
     }
 }

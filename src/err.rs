@@ -14,6 +14,8 @@ pub enum Error {
 
     TryInto,
 
+    LockMutex,
+
     RegexOption,
 
     FromStr,
@@ -55,6 +57,7 @@ impl Display for Error {
             Error::Null => write!(f, "Error::Null"),
             Error::Other => write!(f, "Error::Other"),
 
+            Error::LockMutex => write!(f, "Can not lock mutex for regex"),
             Error::Collect => write!(f, "In (`Collect`): need more data"),
             Error::SeparateCollect => write!(f, "In (`SeparateCollect`): need more data"),
             Error::Separate => write!(f, "In (`Separate`): need more data"),

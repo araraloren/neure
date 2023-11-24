@@ -1,12 +1,11 @@
-mod ctor;
 mod extract;
 mod guard;
 mod into;
 mod null;
-mod op;
-mod other;
 
+pub mod ctor;
 pub mod map;
+pub mod regex;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -18,16 +17,8 @@ pub use self::ctor::into_boxed_ctor;
 pub use self::ctor::into_dyn_ctor;
 pub use self::ctor::rec_parser;
 pub use self::ctor::rec_parser_sync;
-pub use self::ctor::BoxedCtor;
-pub use self::ctor::BoxedCtorHelper;
+pub use self::ctor::ConstructOp;
 pub use self::ctor::Ctor;
-pub use self::ctor::DynamicCreateCtorThen;
-pub use self::ctor::DynamicCreateCtorThenHelper;
-pub use self::ctor::DynamicCtor;
-pub use self::ctor::DynamicCtorHandler;
-pub use self::ctor::DynamicCtorHelper;
-pub use self::ctor::RecursiveCtor;
-pub use self::ctor::RecursiveCtorSync;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
 pub use self::extract::HandlerV;
@@ -35,29 +26,8 @@ pub use self::guard::CtxGuard;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
-pub use self::op::branch;
-pub use self::op::Collect;
-pub use self::op::IfRegex;
-pub use self::op::LongestTokenMatch;
-pub use self::op::Map;
-pub use self::op::Or;
-pub use self::op::PadUnit;
-pub use self::op::PaddedUnit;
-pub use self::op::Pattern;
-pub use self::op::Quote;
-pub use self::op::RegexOp;
-pub use self::op::Repeat;
-pub use self::op::Separate;
-pub use self::op::SeparateCollect;
-pub use self::op::SeparateOnce;
-pub use self::op::Then;
-pub use self::other::into_dyn_regex;
-pub use self::other::DynamicCreateRegexThen;
-pub use self::other::DynamicCreateRegexThenHelper;
-pub use self::other::DynamicRegex;
-pub use self::other::DynamicRegexHandler;
-pub use self::other::DynamicRegexHelper;
 
+use self::ctor::Or;
 use crate::ctx::Context;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
@@ -173,8 +143,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let ret: std::sync::MutexGuard<'_, P> =
-            self.lock().expect("Oops ?! Can not unwrap mutex ...");
+        let ret = self.lock().map_err(|_| Error::LockMutex)?;
         (*ret).try_parse(ctx)
     }
 }
@@ -233,152 +202,6 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         self.as_ref().try_parse(ctx)
-    }
-}
-
-///
-/// Match `P1` then `P2`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let ip = re::string("127.0.0.1");
-///     let colon = ':'.repeat_one();
-///     let port = neu::digit(10).repeat_one_more();
-///     let local = ip.then(colon).then(port);
-///     let mut ctx = CharsCtx::new("127.0.0.1:8080");
-///
-///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
-///     Ok(())
-/// # }
-/// ```
-pub fn then<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
-where
-    O: Ret,
-    P1: Regex<C, Ret = O>,
-    P2: Regex<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&p1)?;
-
-        ret.add_assign(g.try_mat(&p2)?);
-        Ok(ret)
-    }
-}
-
-///
-/// Match `P1` or `P2`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let name = re::string("localhost");
-///     let ip = re::string("127.0.0.1");
-///     let local = name.or(ip);
-///     let local = local.then(":8080");
-///     let mut ctx = CharsCtx::new("127.0.0.1:8080");
-///
-///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
-///     let mut ctx = CharsCtx::new("localhost:8080");
-///
-///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
-///     Ok(())
-/// # }
-/// ```
-pub fn or<'a, C, O, P1, P2>(p1: P1, p2: P2) -> impl Fn(&mut C) -> Result<O, Error>
-where
-    O: Ret,
-    P1: Regex<C, Ret = O>,
-    P2: Regex<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| p1.try_parse(ctx).or_else(|_| p2.try_parse(ctx))
-}
-
-///
-/// Match the `P` enclosed by `L` and `R`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let comma = re::zero_one(',');
-///     let digit = re::one_more('0'..='9');
-///     let digit = re::terminated(comma, digit);
-///     let array = re::quote(re::one('['), re::one(']'), digit.repeat(3..4));
-///     let mut ctx = CharsCtx::new("[123,456,789]");
-///
-///     assert_eq!(
-///         ctx.try_mat_t(&array)?,
-///         vec![Span::new(1, 3), Span::new(5, 3), Span::new(9, 3)]
-///     );
-///     Ok(())
-/// # }
-/// ```
-pub fn quote<'a, C, L, R, P>(l: L, r: R, p: P) -> impl Fn(&mut C) -> Result<P::Ret, Error>
-where
-    P: Regex<C>,
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-
-        g.try_mat(&l)?;
-        let ret = g.try_mat(&p)?;
-
-        g.try_mat(&r)?;
-        Ok(ret)
-    }
-}
-
-///
-/// Match the `P` terminated by `S`, return the return value of `P`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let comma = re::zero_one(',');
-///     let digit = re::one_more('0'..='9');
-///     let digit = re::terminated(comma, digit);
-///     let mut ctx = CharsCtx::new("123,456,789");
-///
-///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
-///     assert_eq!(ctx.try_mat(&digit)?, Span::new(4, 3));
-///     assert_eq!(ctx.try_mat(&digit)?, Span::new(8, 3));
-///     Ok(())
-/// # }
-/// ```
-pub fn terminated<'a, C, S, P>(sep: S, p: P) -> impl Fn(&mut C) -> Result<P::Ret, Error>
-where
-    P: Regex<C>,
-    S: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(&p)?;
-
-        g.try_mat(&sep)?;
-        Ok(ret)
     }
 }
 
@@ -760,14 +583,19 @@ where
     C: Context<'a, Orig = str>,
 {
     move |ctx: &mut C| {
+        let len = lit.len();
+
+        trace_log!(
+            "(`string`: @{}) => '{}' <-> '{}'",
+            ctx.offset(),
+            lit,
+            ctx.orig_sub(ctx.offset(), len)?
+        );
         if !ctx.orig()?.starts_with(lit) {
             Err(Error::String)
         } else {
-            let len = lit.len();
-            let _str = ctx.orig_sub(ctx.offset(), len)?;
             let ret = R::from(ctx, (1, len));
 
-            trace_log!("match string \"{}\" with {}", lit, _str);
             ctx.inc(len);
             Ok(ret)
         }
@@ -798,14 +626,19 @@ where
     C: Context<'a, Orig = [u8]>,
 {
     move |ctx: &mut C| {
+        let len = lit.len();
+
+        trace_log!(
+            "(`bytes`: @{}) => '{:?}' <-> '{:?}'",
+            ctx.offset(),
+            lit,
+            ctx.orig_sub(ctx.offset(), len)?
+        );
         if !ctx.orig()?.starts_with(lit) {
             Err(Error::Bytes)
         } else {
-            let len = lit.len();
-            let _byte = ctx.orig_sub(ctx.offset(), len)?;
             let ret = R::from(ctx, (1, len));
 
-            trace_log!("match bytes \"{:?}\" with {:?}", lit, _byte);
             ctx.inc(len);
             Ok(ret)
         }

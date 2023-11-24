@@ -19,6 +19,10 @@ impl SimpleStorer {
         }
     }
 
+    pub fn new_with(spans: Vec<Vec<Span>>) -> Self {
+        Self { spans }
+    }
+
     pub fn with_capacity(mut self, capacity: usize) -> Self {
         self.spans = vec![vec![]; capacity];
         self

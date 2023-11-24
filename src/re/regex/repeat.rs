@@ -1,14 +1,11 @@
 use std::marker::PhantomData;
+use std::ops::RangeBounds;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
-use crate::ctx::Ret;
-use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
-use crate::re::Ctor;
-use crate::re::Extract;
-use crate::re::Handler;
+use crate::re::CtxGuard;
 use crate::re::Regex;
 
 ///
@@ -36,14 +33,14 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Debug, Copy)]
-pub struct Repeat<C, P> {
+pub struct RegexRepeat<C, P> {
     pat: P,
     range: CRange<usize>,
     capacity: usize,
     marker: PhantomData<C>,
 }
 
-impl<C, P> Clone for Repeat<C, P>
+impl<C, P> Clone for RegexRepeat<C, P>
 where
     P: Clone,
 {
@@ -57,14 +54,26 @@ where
     }
 }
 
-impl<C, P> Repeat<C, P> {
+impl<C, P> RegexRepeat<C, P> {
     pub fn new(pat: P, range: impl Into<CRange<usize>>) -> Self {
+        let range = range.into();
+        let capacity = Self::guess_capacity(&range, 0);
+
         Self {
             pat,
-            range: range.into(),
-            capacity: 0,
+            range,
+            capacity,
             marker: PhantomData,
         }
+    }
+
+    pub fn guess_capacity(range: &CRange<usize>, val: usize) -> usize {
+        let start = match range.start_bound() {
+            std::ops::Bound::Included(v) => *v,
+            std::ops::Bound::Excluded(v) => *v,
+            std::ops::Bound::Unbounded => val,
+        };
+        start.max(val)
     }
 
     pub fn pat(&self) -> &P {
@@ -122,55 +131,22 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O> Ctor<'a, C, M, Vec<O>> for Repeat<C, P>
+impl<'a, C, P> Regex<C> for RegexRepeat<C, P>
 where
-    P: Ctor<'a, C, M, O>,
+    P: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
-        let mut cnt = 0;
-        let mut res = Vec::with_capacity(self.capacity);
-
-        while self.is_contain(cnt) {
-            let ret = self.pat.constrct(ctx, handler);
-
-            match ret {
-                Ok(ret) => {
-                    res.push(ret);
-                    cnt += 1;
-                }
-                Err(_) => {
-                    break;
-                }
-            }
-        }
-        if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(res)
-        } else {
-            Err(Error::TryRepeat)
-        }
-    }
-}
-
-impl<'a, C, P> Regex<C> for Repeat<C, P>
-where
-    P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
-{
-    type Ret = Span;
+    type Ret = Vec<P::Ret>;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let mut g = CtxGuard::new(ctx);
+        let mut all_rets = Vec::with_capacity(self.capacity);
         let mut cnt = 0;
-        let mut span = <Span as Ret>::from(ctx, (0, 0));
 
         while self.is_contain(cnt) {
-            match ctx.try_mat(&self.pat) {
+            match g.try_mat(&self.pat) {
                 Ok(ret) => {
-                    span.add_assign(ret);
+                    all_rets.push(ret);
                     cnt += 1;
                 }
                 Err(_) => {
@@ -178,10 +154,10 @@ where
                 }
             }
         }
-        if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(span)
+        g.process_ret(if std::ops::RangeBounds::contains(&self.range, &cnt) {
+            Ok(all_rets)
         } else {
             Err(Error::TryRepeat)
-        }
+        })
     }
 }

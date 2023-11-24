@@ -143,7 +143,7 @@ where
         let mut g = CtxGuard::new(ctx);
 
         g.try_mat(&self.left).or_else(|_| {
-            trace_log!("or ... offset = {}", g.ctx().offset());
+            trace_log!("or ... offset = {}", g.offset());
             g.reset().try_mat(&self.right)
         })
     }
