@@ -1,7 +1,7 @@
 use super::Neu;
 
 use crate::trace_log;
-use crate::LogOrNot;
+use crate::MayDebug;
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Equal<T> {
@@ -14,7 +14,7 @@ impl<T> Equal<T> {
     }
 }
 
-impl<T: PartialEq + LogOrNot> Neu<T> for Equal<T> {
+impl<T: PartialEq + MayDebug> Neu<T> for Equal<T> {
     fn is_match(&self, other: &T) -> bool {
         trace_log!("match ({:?}) with value ({:?})(in)", self.val, other);
         &self.val == other
@@ -40,6 +40,6 @@ impl<T: PartialEq + LogOrNot> Neu<T> for Equal<T> {
 ///     Ok(())
 /// }
 /// ```
-pub const fn equal<T: PartialEq + LogOrNot>(val: T) -> Equal<T> {
+pub const fn equal<T: PartialEq + MayDebug>(val: T) -> Equal<T> {
     Equal { val }
 }

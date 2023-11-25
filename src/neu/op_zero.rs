@@ -113,7 +113,7 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Ok(<Self::Ret as Ret>::from(g.ctx(), (0, 0)));
+        let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
 
         neu_trace!("neure_zero_one", g);
         if let Ok(mut iter) = g.ctx().peek() {
@@ -229,7 +229,7 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Ok(<Self::Ret as Ret>::from(g.ctx(), (0, 0)));
+        let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
 
         neu_trace!("neure_zero_more", g);
         if let Ok(mut iter) = g.ctx().peek() {

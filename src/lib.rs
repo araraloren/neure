@@ -19,16 +19,16 @@ pub(crate) mod log {
 }
 
 #[cfg(feature = "log")]
-pub trait LogOrNot: std::fmt::Debug {}
+pub trait MayDebug: std::fmt::Debug {}
 
 #[cfg(feature = "log")]
-impl<T> LogOrNot for T where T: std::fmt::Debug {}
+impl<T> MayDebug for T where T: std::fmt::Debug {}
 
 #[cfg(not(feature = "log"))]
-pub trait LogOrNot {}
+pub trait MayDebug {}
 
 #[cfg(not(feature = "log"))]
-impl<T> LogOrNot for T {}
+impl<T> MayDebug for T {}
 
 pub use charize::charize;
 pub mod prelude {

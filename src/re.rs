@@ -41,6 +41,7 @@ pub use self::regex::sep_once;
 pub use self::regex::then;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
+
 use self::regex::RegexOr;
 
 use crate::ctx::Context;
@@ -441,12 +442,14 @@ where
     C: Context<'a>,
 {
     |ctx: &mut C| {
-        if ctx.offset() == 0 {
-            trace_log!("match start of context");
-            Ok(<Span as Ret>::from(ctx, (0, 0)))
+        let ret = if ctx.offset() == 0 {
+            Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
         } else {
             Err(Error::Start)
-        }
+        };
+
+        trace_log!("(`start`: @{}) => {:?}", ctx.offset(), ret);
+        ret
     }
 }
 
@@ -477,12 +480,14 @@ where
     C: Context<'a>,
 {
     |ctx: &mut C| {
-        if ctx.len() != ctx.offset() {
+        let ret = if ctx.len() != ctx.offset() {
             Err(Error::End)
         } else {
-            trace_log!("match end of context");
-            Ok(<Span as Ret>::from(ctx, (0, 0)))
-        }
+            Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
+        };
+
+        trace_log!("(`end`: @{}) => {:?}", ctx.offset(), ret);
+        ret
     }
 }
 
@@ -510,21 +515,22 @@ where
 {
     move |ctx: &mut C| {
         let len = lit.len();
+        let beg = ctx.offset();
+        let ret = {
+            trace_log!(
+                "(`string`: @{beg}) '{lit:?}' <-> '{:?}'",
+                ctx.orig_sub(beg, len)?
+            );
+            if !ctx.orig()?.starts_with(lit) {
+                Err(Error::String)
+            } else {
+                ctx.inc(len);
+                Ok(Span::new(beg, len))
+            }
+        };
 
-        trace_log!(
-            "(`string`: @{}) => '{}' <-> '{}'",
-            ctx.offset(),
-            lit,
-            ctx.orig_sub(ctx.offset(), len)?
-        );
-        if !ctx.orig()?.starts_with(lit) {
-            Err(Error::String)
-        } else {
-            let ret = <Span as Ret>::from(ctx, (1, len));
-
-            ctx.inc(len);
-            Ok(ret)
-        }
+        trace_log!("(`string`: @{beg}) => {ret:?}");
+        ret
     }
 }
 
@@ -552,21 +558,22 @@ where
 {
     move |ctx: &mut C| {
         let len = lit.len();
+        let beg = ctx.offset();
+        let ret = {
+            trace_log!(
+                "(`bytes`: @{beg}) => '{lit:?}' <-> '{:?}'",
+                ctx.orig_sub(beg, len)?
+            );
+            if !ctx.orig()?.starts_with(lit) {
+                Err(Error::Bytes)
+            } else {
+                ctx.inc(len);
+                Ok(Span::new(beg, len))
+            }
+        };
 
-        trace_log!(
-            "(`bytes`: @{}) => '{:?}' <-> '{:?}'",
-            ctx.offset(),
-            lit,
-            ctx.orig_sub(ctx.offset(), len)?
-        );
-        if !ctx.orig()?.starts_with(lit) {
-            Err(Error::Bytes)
-        } else {
-            let ret = <Span as Ret>::from(ctx, (1, len));
-
-            ctx.inc(len);
-            Ok(ret)
-        }
+        trace_log!("(`bytes`: @{beg}) => {ret:?}");
+        ret
     }
 }
 
@@ -588,25 +595,24 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn consume<'a, C>(length: usize) -> impl Fn(&mut C) -> Result<Span, Error>
+pub fn consume<'a, C>(len: usize) -> impl Fn(&mut C) -> Result<Span, Error>
 where
     C: Context<'a>,
 {
     move |ctx: &mut C| {
-        trace_log!(
-            "try to consume length {}, current offset = {}, total = {}",
-            length,
-            ctx.offset(),
-            ctx.len()
-        );
-        if ctx.len() - ctx.offset() >= length {
-            let ret = <Span as Ret>::from(ctx, (1, length));
+        let beg = ctx.offset();
+        let ret = {
+            trace_log!("(`consume`: @{beg}) len = {len}");
+            if ctx.len() - beg >= len {
+                ctx.inc(len);
+                Ok(Span::new(beg, len))
+            } else {
+                Err(Error::Consume)
+            }
+        };
 
-            ctx.inc(length);
-            Ok(ret)
-        } else {
-            Err(Error::Consume)
-        }
+        trace_log!("(`consume`: @{beg}) len = {len} => {ret:?}");
+        ret
     }
 }
 
@@ -648,13 +654,17 @@ where
 {
     move |ctx: &mut C| {
         let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(&re);
+        let ret = {
+            trace_log!("(`not`: @{})", g.beg());
+            g.try_mat(&re)
+        };
         let ret = if ret.is_err() {
-            Ok(R::from(g.ctx(), (0, 0)))
+            Ok(R::from_ctx(g.ctx(), (0, 0)))
         } else {
             Err(Error::Other)
         };
 
+        trace_log!("(`not`: @{}) => {ret:?}", g.beg());
         g.process_ret(ret)
     }
 }

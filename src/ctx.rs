@@ -5,6 +5,7 @@ mod span;
 
 use crate::err::Error;
 use crate::re::Regex;
+use crate::MayDebug;
 
 pub use self::ctx::RegexCtx;
 pub use self::guard::CtxGuard;
@@ -51,7 +52,7 @@ pub trait Context<'a> {
     fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
 }
 
-pub trait Ret
+pub trait Ret: MayDebug
 where
     Self: Sized,
 {
@@ -63,7 +64,7 @@ where
 
     fn add_assign(&mut self, other: Self) -> &mut Self;
 
-    fn from<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
+    fn from_ctx<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
     where
         C: Context<'a>;
 }
@@ -107,7 +108,7 @@ impl Ret for () {
         self
     }
 
-    fn from<'a, C>(_: &mut C, _: (usize, usize)) -> Self
+    fn from_ctx<'a, C>(_: &mut C, _: (usize, usize)) -> Self
     where
         C: Context<'a>,
     {

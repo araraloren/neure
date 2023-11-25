@@ -83,10 +83,14 @@ where
         let value = self.value.get();
 
         if count == 0 {
-            value && self.unit.is_match(other)
+            let ret = self.unit.is_match(other);
+
+            crate::trace_log!("[`may({})`]: unit -> {:?}", count, ret);
+            value && ret
         } else {
             let ret = self.r#if.is_match(other);
 
+            crate::trace_log!("[`may({})`]: if -> {:?}", count, ret);
             self.value.set(value && ret);
             self.count.set(count - 1);
             ret

@@ -13,8 +13,7 @@ mod range;
 
 use crate::ctx::Context;
 use crate::ctx::Ret;
-use crate::trace_log;
-use crate::LogOrNot;
+use crate::MayDebug;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -93,35 +92,32 @@ pub trait Neu<T: ?Sized> {
 
 impl<T, F> Neu<T> for F
 where
-    T: LogOrNot,
+    T: MayDebug,
     F: Fn(&T) -> bool,
 {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match function with value ({:?})(in)", other);
-        (self)(other)
+        neu_trace!("func", "func", other, (self)(other))
     }
 }
 
 impl<T> Neu<T> for char
 where
-    T: LogOrNot,
+    T: MayDebug,
     Self: PartialEq<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match ({}) with value ({:?})(in)", self, other);
-        self == other
+        neu_trace!("char", self, other, self == other)
     }
 }
 
 impl<T> Neu<T> for u8
 where
-    T: LogOrNot,
+    T: MayDebug,
     Self: PartialEq<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match ({}) with value ({:?})(in)", self, other);
-        self == other
+        neu_trace!("u8", self, other, self == other)
     }
 }
 
@@ -192,7 +188,7 @@ impl<T> Neu<T> for Rc<dyn Neu<T>> {
     }
 }
 
-impl<const N: usize, T: PartialEq + LogOrNot> Neu<T> for [T; N] {
+impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
     ///
     /// Match any value in the array.
     ///
@@ -210,12 +206,11 @@ impl<const N: usize, T: PartialEq + LogOrNot> Neu<T> for [T; N] {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match array({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("array", self, other, self.contains(other))
     }
 }
 
-impl<'a, T: PartialEq + LogOrNot> Neu<T> for &'a [T] {
+impl<'a, T: PartialEq + MayDebug> Neu<T> for &'a [T] {
     ///
     /// Match any value in the array.
     ///
@@ -234,12 +229,11 @@ impl<'a, T: PartialEq + LogOrNot> Neu<T> for &'a [T] {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match array({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("slice", self, other, self.contains(other))
     }
 }
 
-impl<T: PartialEq + LogOrNot> Neu<T> for Vec<T> {
+impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
     ///
     /// Match any value in the vector.
     ///
@@ -264,12 +258,11 @@ impl<T: PartialEq + LogOrNot> Neu<T> for Vec<T> {
     /// ```
     ///
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match vector({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("vector", self, other, self.contains(other))
     }
 }
 
-impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
+impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
     ///
     /// Match value in the range.
     ///
@@ -291,12 +284,11 @@ impl<'a, T: 'a + ?Sized + PartialOrd + LogOrNot> Neu<T> for (Bound<&'a T>, Bound
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("bound(&T)", self, other, self.contains(other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for (Bound<T>, Bound<T>) {
+impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
     ///
     /// Match value in the range.
     ///
@@ -317,12 +309,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for (Bound<T>, Bound<T>) {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("bound(T)", self, other, self.contains(other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
     ///
     /// Match value in the range.
     ///
@@ -342,12 +333,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<&T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(&other)
+        neu_trace!("range(&T)", self, other, self.contains(&other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
     ///
     /// Match value in the range.
     ///
@@ -367,11 +357,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::Range<T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        self.contains(other)
+        neu_trace!("range(T)", self, other, self.contains(other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
     ///
     /// Match value in the range.
     ///
@@ -391,12 +381,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<&T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(&other)
+        neu_trace!("range_from(&T)", self, other, self.contains(&other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
     ///
     /// Match value in the range.
     ///
@@ -416,12 +405,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFrom<T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("range_from(T)", self, other, self.contains(other))
     }
 }
 
-impl<T: ?Sized + PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFull {
+impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
     ///
     /// Match value in the range.
     ///
@@ -441,12 +429,11 @@ impl<T: ?Sized + PartialOrd + LogOrNot> Neu<T> for std::ops::RangeFull {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("range_full", self, other, self.contains(&other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
     ///
     /// Match value in the range.
     ///
@@ -466,12 +453,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<&T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(&other)
+        neu_trace!("range_inclusive(&T)", self, other, self.contains(&other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
     ///
     /// Match value in the range.
     ///
@@ -491,12 +477,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeInclusive<T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("range_inclusive(T)", self, other, self.contains(other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
     ///
     /// Match value in the range.
     ///
@@ -516,12 +501,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<&T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(&other)
+        neu_trace!("range_to(&T)", self, other, self.contains(&other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
     ///
     /// Match value in the range.
     ///
@@ -541,12 +525,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeTo<T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("range_to(T)", self, other, self.contains(other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
     ///
     /// Match value in the range.
     ///
@@ -566,12 +549,11 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<&T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(&other)
+        neu_trace!("range_to_inclusive(&T)", self, other, self.contains(&other))
     }
 }
 
-impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
     ///
     /// Match value in the range.
     ///
@@ -591,8 +573,7 @@ impl<T: PartialOrd + LogOrNot> Neu<T> for std::ops::RangeToInclusive<T> {
     /// # }
     /// ```
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match range({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        neu_trace!("range_to_inclusive(T)", self, other, self.contains(other))
     }
 }
 
@@ -718,7 +699,7 @@ pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option
 
 #[inline(always)]
 pub(crate) fn ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
-    let ret = R::from(ctx, (count, len));
+    let ret = R::from_ctx(ctx, (count, len));
 
     ctx.inc(len);
     ret
@@ -1053,6 +1034,12 @@ macro_rules! neu_trace {
     ($name:literal, $g:ident => $ret:expr) => {
         crate::trace_log!("(`{}`: @{}) => {:?}", $name, $g.beg(), $ret);
     };
+    ($name:literal, $self:expr, $value:ident, $ret:expr) => {{
+        let ret = $ret;
+
+        crate::trace_log!("[`{}`]: {:?} <-> `{:?}` -> {}", $name, $self, $value, ret);
+        ret
+    }};
 }
 
 pub(crate) use neu_trace;

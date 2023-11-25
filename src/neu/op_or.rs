@@ -73,6 +73,9 @@ where
     R: Neu<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        self.left.is_match(other) || self.right.is_match(other)
+        let ret = self.left.is_match(other) || self.right.is_match(other);
+
+        crate::trace_log!("[`or`]:  => {ret}",);
+        ret
     }
 }

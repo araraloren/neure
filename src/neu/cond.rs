@@ -18,7 +18,10 @@ where
 {
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error> {
-        (self)(ctx, item)
+        let ret = (self)(ctx, item);
+
+        crate::trace_log!("check cond: {:?}", ret);
+        ret
     }
 }
 
@@ -47,13 +50,18 @@ impl<'a, C, R> NeuCond<'a, C> for ReCond<R>
 where
     C::Orig: 'a,
     C: Context<'a>,
+    R::Ret: crate::ctx::Ret,
     R: Regex<RegexCtx<'a, C::Orig>>,
     RegexCtx<'a, C::Orig>: Context<'a>,
 {
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
         let mut ctx = RegexCtx::new(ctx.orig_at(ctx.offset() + item.0)?);
-        let ret = ctx.try_mat_t(&self.0);
+        let ret = {
+            crate::trace_log!("regex cond");
+            ctx.try_mat_t(&self.0)
+        };
 
+        crate::trace_log!("regex cond: {:?}", ret);
         Ok(ret.is_ok())
     }
 }

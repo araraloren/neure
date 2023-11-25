@@ -53,6 +53,9 @@ where
     U: Neu<T>,
 {
     fn is_match(&self, other: &T) -> bool {
-        !self.unit.is_match(other)
+        let ret = !self.unit.is_match(other);
+
+        crate::trace_log!("[`not`]:  => {ret}",);
+        ret
     }
 }

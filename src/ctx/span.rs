@@ -37,7 +37,7 @@ impl Ret for Span {
         self
     }
 
-    fn from<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
+    fn from_ctx<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
     where
         C: Context<'a>,
     {

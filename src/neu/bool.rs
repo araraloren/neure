@@ -1,10 +1,10 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+use super::neu_trace;
 use super::Neu;
 
-use crate::trace_log;
-use crate::LogOrNot;
+use crate::MayDebug;
 
 pub struct True<T>(PhantomData<T>);
 
@@ -34,10 +34,9 @@ impl<T> True<T> {
     }
 }
 
-impl<T: LogOrNot> Neu<T> for True<T> {
+impl<T: MayDebug> Neu<T> for True<T> {
     fn is_match(&self, _other: &T) -> bool {
-        trace_log!("always true: ({:?})(in)", _other);
-        true
+        neu_trace!("true", "true", _other, true)
     }
 }
 
@@ -55,7 +54,7 @@ impl<T: LogOrNot> Neu<T> for True<T> {
 ///   assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
 /// # }
 /// ```
-pub const fn any<T: LogOrNot>() -> True<T> {
+pub const fn any<T: MayDebug>() -> True<T> {
     True(PhantomData)
 }
 
@@ -87,10 +86,9 @@ impl<T> False<T> {
     }
 }
 
-impl<T: LogOrNot> Neu<T> for False<T> {
+impl<T: MayDebug> Neu<T> for False<T> {
     fn is_match(&self, _other: &T) -> bool {
-        trace_log!("always false: ({:?})(in)", _other);
-        false
+        neu_trace!("false", "false", _other, false)
     }
 }
 
@@ -108,6 +106,6 @@ impl<T: LogOrNot> Neu<T> for False<T> {
 ///   assert!(ctx.try_mat(&none.repeat(6)).is_err());
 /// # }
 /// ```
-pub const fn none<T: LogOrNot>() -> False<T> {
+pub const fn none<T: MayDebug>() -> False<T> {
     False(PhantomData)
 }
