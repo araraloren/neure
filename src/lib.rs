@@ -14,7 +14,9 @@ pub(crate) use tracing::trace as trace_log;
 pub(crate) mod log {
     #[macro_export]
     macro_rules! trace_log {
-        ($($arg:tt)*) => {};
+        ($($arg:tt)*) => {
+            ();
+        };
     }
 }
 

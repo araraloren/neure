@@ -5,11 +5,11 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::trace_log;
 
 #[derive(Debug, Default, Copy)]
 pub struct IfRegex<C, T, I, E> {
@@ -119,14 +119,15 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let ret = (self.r#if)(g.ctx())?;
-
-        trace_log!("running if logical: {}", ret);
-        if ret {
+        let beg = g.beg();
+        let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
+        let ret = if ret {
             g.try_mat(&self.regex)
         } else {
             g.try_mat(&self.r#else)
-        }
+        };
+
+        trace!("if", beg => g.end(), ret)
     }
 }
 

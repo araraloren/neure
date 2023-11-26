@@ -1,4 +1,4 @@
-use super::neu_trace;
+use super::trace_u;
 use super::Neu;
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -12,7 +12,7 @@ impl Alphabetic {
 
 impl Neu<char> for Alphabetic {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("alphabetic", self, other, other.is_alphabetic())
+        trace_u!("alphabetic", self, other, other.is_alphabetic())
     }
 }
 
@@ -50,7 +50,7 @@ impl Alphanumeric {
 
 impl Neu<char> for Alphanumeric {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("alphanumeric", self, other, other.is_alphanumeric())
+        trace_u!("alphanumeric", self, other, other.is_alphanumeric())
     }
 }
 
@@ -89,7 +89,7 @@ impl Ascii {
 
 impl Neu<char> for Ascii {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii", self, other, other.is_ascii())
+        trace_u!("ascii", self, other, other.is_ascii())
     }
 }
 
@@ -127,7 +127,7 @@ impl AsciiAlphabetic {
 
 impl Neu<char> for AsciiAlphabetic {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_alphabetic", self, other, other.is_ascii_alphabetic())
+        trace_u!("ascii_alphabetic", self, other, other.is_ascii_alphabetic())
     }
 }
 
@@ -165,7 +165,7 @@ impl AsciiAlphanumeric {
 
 impl Neu<char> for AsciiAlphanumeric {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!(
+        trace_u!(
             "ascii_alphanumeric",
             self,
             other,
@@ -208,7 +208,7 @@ impl AsciiControl {
 
 impl Neu<char> for AsciiControl {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_control", self, other, other.is_ascii_control())
+        trace_u!("ascii_control", self, other, other.is_ascii_control())
     }
 }
 
@@ -246,7 +246,7 @@ impl AsciiDigit {
 
 impl Neu<char> for AsciiDigit {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_digit", self, other, other.is_ascii_digit())
+        trace_u!("ascii_digit", self, other, other.is_ascii_digit())
     }
 }
 
@@ -284,7 +284,7 @@ impl AsciiGraphic {
 
 impl Neu<char> for AsciiGraphic {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_graphic", self, other, other.is_ascii_graphic())
+        trace_u!("ascii_graphic", self, other, other.is_ascii_graphic())
     }
 }
 
@@ -322,7 +322,7 @@ impl AsciiHexDigit {
 
 impl Neu<char> for AsciiHexDigit {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_hexdigit", self, other, other.is_ascii_hexdigit())
+        trace_u!("ascii_hexdigit", self, other, other.is_ascii_hexdigit())
     }
 }
 
@@ -360,7 +360,7 @@ impl AsciiLowercase {
 
 impl Neu<char> for AsciiLowercase {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_lowercase", self, other, other.is_ascii_lowercase())
+        trace_u!("ascii_lowercase", self, other, other.is_ascii_lowercase())
     }
 }
 
@@ -398,7 +398,7 @@ impl AsciiPunctuation {
 
 impl Neu<char> for AsciiPunctuation {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!(
+        trace_u!(
             "ascii_punctuation",
             self,
             other,
@@ -441,7 +441,7 @@ impl AsciiUppercase {
 
 impl Neu<char> for AsciiUppercase {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_uppercase", self, other, other.is_ascii_uppercase())
+        trace_u!("ascii_uppercase", self, other, other.is_ascii_uppercase())
     }
 }
 
@@ -479,7 +479,7 @@ impl AsciiWhiteSpace {
 
 impl Neu<char> for AsciiWhiteSpace {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("ascii_whitespace", self, other, other.is_ascii_whitespace())
+        trace_u!("ascii_whitespace", self, other, other.is_ascii_whitespace())
     }
 }
 
@@ -520,7 +520,7 @@ impl Control {
 
 impl Neu<char> for Control {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("control", self, other, other.is_control())
+        trace_u!("control", self, other, other.is_control())
     }
 }
 
@@ -558,7 +558,7 @@ impl Digit {
 
 impl Neu<char> for Digit {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("digit", self, other, other.is_digit(self.0))
+        trace_u!("digit", self, other, other.is_digit(self.0))
     }
 }
 
@@ -596,7 +596,7 @@ impl Lowercase {
 
 impl Neu<char> for Lowercase {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("lowercase", self, other, other.is_lowercase())
+        trace_u!("lowercase", self, other, other.is_lowercase())
     }
 }
 
@@ -634,7 +634,7 @@ impl Numeric {
 
 impl Neu<char> for Numeric {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("numeric", self, other, other.is_numeric())
+        trace_u!("numeric", self, other, other.is_numeric())
     }
 }
 
@@ -672,7 +672,7 @@ impl Uppercase {
 
 impl Neu<char> for Uppercase {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("uppercase", self, other, other.is_uppercase())
+        trace_u!("uppercase", self, other, other.is_uppercase())
     }
 }
 
@@ -710,7 +710,7 @@ impl WhiteSpace {
 
 impl Neu<char> for WhiteSpace {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("whitespace", self, other, other.is_whitespace())
+        trace_u!("whitespace", self, other, other.is_whitespace())
     }
 }
 
@@ -750,7 +750,7 @@ impl Wild {
 
 impl Neu<char> for Wild {
     fn is_match(&self, other: &char) -> bool {
-        neu_trace!("wild", '\n', other, other != &'\n')
+        trace_u!("wild", '\n', other, other != &'\n')
     }
 }
 

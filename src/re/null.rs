@@ -6,8 +6,8 @@ use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Regex;
-use crate::trace_log;
 
+use super::trace;
 use super::Ctor;
 use super::Extract;
 use super::Handler;
@@ -29,10 +29,10 @@ where
     type Ret = R;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let beg = ctx.offset();
         let ret = Ok(<R as Ret>::from_ctx(ctx, (0, 0)));
 
-        trace_log!("(`null`: @{}) => {ret:?}", ctx.offset());
-        ret
+        trace!("null", beg => ctx.offset(), ret)
     }
 }
 
@@ -45,9 +45,10 @@ where
         H: Handler<A, Out = O, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
+        let beg = ctx.offset();
         let ret = ctx.try_mat(self);
 
-        trace_log!("(`null`: @{}) -> {:?}", ctx.offset(), ret.is_ok());
+        trace!("null", beg -> ctx.offset(), ret.is_ok());
         handler.invoke(A::extract(ctx, &ret?)?)
     }
 }

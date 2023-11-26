@@ -2,6 +2,8 @@ use std::{cell::Cell, marker::PhantomData};
 
 use super::Neu;
 
+use crate::{trace_log, MayDebug};
+
 #[derive(Debug, Default)]
 pub struct MayUnit<U, I, T>
 where
@@ -77,6 +79,7 @@ impl<U, I, T> Neu<T> for MayUnit<U, I, T>
 where
     U: Neu<T>,
     I: Neu<T>,
+    T: MayDebug,
 {
     fn is_match(&self, other: &T) -> bool {
         let count = self.count.get();
@@ -85,12 +88,12 @@ where
         if count == 0 {
             let ret = self.unit.is_match(other);
 
-            crate::trace_log!("[`may({})`]: unit -> {:?}", count, ret);
+            trace_log!("{:?} -> u`may({})` -> {:?}", other, count, ret);
             value && ret
         } else {
             let ret = self.r#if.is_match(other);
 
-            crate::trace_log!("[`may({})`]: if -> {:?}", count, ret);
+            trace_log!("{:?} -> u`may if({})`:  -> {:?}", other, count, ret);
             self.value.set(value && ret);
             self.count.set(count - 1);
             ret

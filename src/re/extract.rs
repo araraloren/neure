@@ -90,45 +90,6 @@ impl_handler_for!(A B C D E);
 
 impl_handler_for!(A B C D E F);
 
-pub trait HandlerV<V, Args> {
-    type Out;
-    type Error: Into<Error>;
-
-    fn invoke(&mut self, v: V, args: Args) -> Result<Self::Out, Self::Error>;
-}
-
-macro_rules! impl_handler_for {
-    ($($arg:ident)*) => {
-        impl<V, Func, Out, $($arg,)*> HandlerV<V, ($($arg,)*)> for Func
-        where
-            Func: FnMut(V, $($arg),*) -> Result<Out, Error>,
-        {
-            type Out = Out;
-            type Error = Error;
-
-
-            #[allow(non_snake_case)]
-            fn invoke(&mut self, v: V, ($($arg,)*): ($($arg,)*)) -> Result<Self::Out, Self::Error> {
-                (self)(v, $($arg,)*)
-            }
-        }
-    };
-}
-
-impl_handler_for!();
-
-impl_handler_for!(A);
-
-impl_handler_for!(A B);
-
-impl_handler_for!(A B C);
-
-impl_handler_for!(A B C D);
-
-impl_handler_for!(A B C D E);
-
-impl_handler_for!(A B C D E F);
-
 impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for &'a str {
     type Out<'b> = &'b str;
 

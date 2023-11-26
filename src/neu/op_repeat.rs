@@ -6,11 +6,11 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::trace_v;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::trace_log;
 
 use super::length_of;
 use super::ret_and_inc;
@@ -102,19 +102,11 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = {
-            trace_log!("(`repeat<{},{}>`: @{})", M, N, g.beg());
-            g.try_mat(self)
-        };
+        let beg = g.beg();
+        let range = M..N;
+        let ret = trace_v!("neu repeat", &range, beg, g.try_mat(self));
 
-        trace_log!(
-            "(`repeat<{},{}>`: @{}) -> {}, {:?}",
-            M,
-            N,
-            g.beg(),
-            g.end(),
-            ret.is_ok()
-        );
+        trace_v!( "neu repeat", range, beg -> g.end(), ret.is_ok(), 1);
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -135,8 +127,10 @@ where
         let mut end = None;
         let mut ret = Err(Error::UnitRepeat);
         let iter = g.ctx().peek();
+        let offset = g.beg();
+        let range = M..N;
 
-        trace_log!("(`repeat<{},{}>`: @{})", M, N, g.beg());
+        trace_v!("neu repeat", &range, offset, ());
         if let Ok(mut iter) = iter {
             while cnt < N {
                 if let Some(pair) = iter.next() {
@@ -158,8 +152,7 @@ where
                 ret = Ok(ret_and_inc(g.ctx(), cnt, len));
             }
         }
-        trace_log!("(`repeat<{},{}>`: @{}) => {:?}", M, N, g.beg(), ret);
-        ret
+        trace_v!("neu repeat", range, offset => g.end(), ret, cnt)
     }
 }
 
@@ -262,18 +255,10 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = {
-            trace_log!("(`repeat_range({})`: @{})", self.range, g.beg());
-            g.try_mat(self)
-        };
+        let beg = g.beg();
+        let ret = trace_v!("neu repeat_range", self.range, beg, g.try_mat(self));
 
-        trace_log!(
-            "(`repeat_range({})`: @{}) -> {}, {:?}",
-            self.range,
-            g.beg(),
-            g.end(),
-            ret.is_ok()
-        );
+        trace_v!( "neu repeat_range", self.range, beg -> g.end(), ret.is_ok(), 1);
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -293,8 +278,9 @@ where
         let mut end = None;
         let mut ret = Err(Error::RepeatRange);
         let iter = g.ctx().peek();
+        let offset = g.beg();
 
-        trace_log!("(`repeat_range({})`: @{})", self.range, g.beg());
+        trace_v!("neu repeat_range", self.range, offset, ());
         if let Ok(mut iter) = iter {
             fn bound_checker(max: Option<usize>) -> impl Fn(usize) -> bool {
                 move |val| max.map(|max| val < max).unwrap_or(true)
@@ -326,12 +312,6 @@ where
                 ret = Ok(ret_and_inc(g.ctx(), cnt, len));
             }
         }
-        trace_log!(
-            "(`repeat_range({})`: @{}) => {:?}",
-            self.range,
-            g.beg(),
-            ret
-        );
-        ret
+        trace_v!("neu repeat_range", self.range, offset => g.end(), ret, cnt)
     }
 }

@@ -9,6 +9,7 @@ use crate::re::ctor::Map;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -96,20 +97,14 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
+        let beg = g.beg();
+        let l = trace!("dynamic_create_ctor_then", beg @ "pat", self.pat.constrct(g.ctx(), func));
+        let l = g.process_ret(l)?;
+        let r = trace!("dynamic_create_ctor_then", beg @ "dynamic ctor", (self.func)(&l)?.constrct(g.ctx(), func));
+        let r = g.process_ret(r)?;
 
-        match self.pat.constrct(g.ctx(), func) {
-            Ok(ret1) => {
-                let ctor = (self.func)(&ret1)?;
-                let ret = ctor.constrct(g.ctx(), func);
-                let ret2 = g.process_ret(ret)?;
-
-                Ok((ret1, ret2))
-            }
-            Err(e) => {
-                g.reset();
-                Err(e)
-            }
-        }
+        trace!("dynamic_create_ctor_then", beg -> g.end(), true);
+        Ok((l, r))
     }
 }
 

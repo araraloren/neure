@@ -3,9 +3,10 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
+use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::prelude::Ret;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -81,21 +82,27 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let ret = V::from_iter(std::iter::from_fn(|| {
-            match self.pat.constrct(g.ctx(), func) {
-                Ok(ret) => {
-                    cnt += 1;
-                    Some(ret)
+        let mut ret = Err(Error::Collect);
+        let beg = g.beg();
+        let val = trace!(
+            "collect",
+            beg,
+            V::from_iter(std::iter::from_fn(|| {
+                match self.pat.constrct(g.ctx(), func) {
+                    Ok(ret) => {
+                        cnt += 1;
+                        Some(ret)
+                    }
+                    Err(_) => None,
                 }
-                Err(_) => None,
-            }
-        }));
+            }))
+        );
 
-        g.process_ret(if cnt >= self.min {
-            Ok(ret)
-        } else {
-            Err(Error::Collect)
-        })
+        if cnt >= self.min {
+            ret = Ok(val);
+        }
+        trace!("collect", beg -> g.end(), ret.is_ok());
+        g.process_ret(ret)
     }
 }
 
@@ -110,16 +117,18 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
+        let mut ret = Err(Error::Collect);
+        let beg = g.beg();
 
         // don't use g.try_mat
+        trace!("collect", beg, ());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             cnt += 1;
             span.add_assign(ret);
         }
-        g.process_ret(if cnt >= self.min {
-            Ok(span)
-        } else {
-            Err(Error::Collect)
-        })
+        if cnt >= self.min {
+            ret = Ok(span);
+        }
+        trace!("collect", beg => g.end(), g.process_ret(ret))
     }
 }

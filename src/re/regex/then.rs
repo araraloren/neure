@@ -4,8 +4,8 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Regex;
-use crate::trace_log;
 
 ///
 /// Match `P` and then match `T`.
@@ -102,13 +102,11 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let beg = g.beg();
+        let r_p = trace!("then", beg @ "pat", g.try_mat(&self.pat)?);
+        let r_t = trace!("then", beg @ "then", g.try_mat(&self.then)?);
 
-        trace_log!("(`then`: @{}) => try match left", g.beg());
-        let ret1 = g.try_mat(&self.pat)?;
-
-        trace_log!("(`then`: @{}) => try match left", g.beg());
-        let ret2 = g.try_mat(&self.then)?;
-
-        Ok((ret1, ret2))
+        trace!("then", beg => g.end(), true);
+        Ok((r_p, r_t))
     }
 }

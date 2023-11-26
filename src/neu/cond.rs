@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use crate::ctx::{Context, Policy, RegexCtx};
 use crate::err::Error;
 use crate::re::Regex;
+use crate::trace_log;
 
 pub trait NeuCond<'a, C>
 where
@@ -20,7 +21,7 @@ where
     fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error> {
         let ret = (self)(ctx, item);
 
-        crate::trace_log!("check cond: {:?}", ret);
+        trace_log!("running cond -> {:?}", ret);
         ret
     }
 }
@@ -57,11 +58,11 @@ where
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
         let mut ctx = RegexCtx::new(ctx.orig_at(ctx.offset() + item.0)?);
         let ret = {
-            crate::trace_log!("regex cond");
+            trace_log!("running regex cond");
             ctx.try_mat_t(&self.0)
         };
 
-        crate::trace_log!("regex cond: {:?}", ret);
+        crate::trace_log!("running regex cond -> {:?}", ret);
         Ok(ret.is_ok())
     }
 }

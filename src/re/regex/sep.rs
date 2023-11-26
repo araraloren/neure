@@ -4,6 +4,9 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
+use crate::neu::CRange;
+use crate::re::trace;
+use crate::re::trace_v;
 use crate::re::Regex;
 
 ///
@@ -117,11 +120,13 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let ret1 = g.try_mat(&self.left)?;
-        let _ = g.try_mat(&self.sep)?;
-        let ret2 = g.try_mat(&self.right)?;
+        let beg = g.beg();
+        let l = trace!("separate_once", beg @ "left", g.try_mat(&self.left)?);
+        let _ = trace!("separate_once", beg @ "sep", g.try_mat(&self.sep)?);
+        let r = trace!("separate_once", beg @ "right", g.try_mat(&self.right)?);
 
-        Ok((ret1, ret2))
+        trace!("separate_once", beg => g.end(), true);
+        Ok((l, r))
     }
 }
 
@@ -274,7 +279,11 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut res = Vec::with_capacity(self.capacity.max(self.min));
+        let mut ret = Err(Error::Separate);
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
 
+        trace_v!("separate", range, beg, ());
         while let Ok(ret) = g.try_mat(&self.pat) {
             let sep_ret = g.try_mat(&self.sep);
 
@@ -284,11 +293,13 @@ where
                 break;
             }
         }
-        g.process_ret(if res.len() >= self.min {
-            Ok(res)
-        } else {
-            Err(Error::Separate)
-        })
+        let len = res.len();
+
+        if len >= self.min {
+            ret = Ok(res);
+        }
+        trace_v!("separate", range, beg => g.end(), ret.is_ok(), len);
+        g.process_ret(ret)
     }
 }
 
@@ -421,24 +432,33 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let mut ret = Err(Error::SeparateCollect);
         let mut cnt = 0;
-        let ret = T::from_iter(std::iter::from_fn(|| {
-            g.try_mat(&self.pat).ok().and_then(|ret| {
-                let sep_ret = g.try_mat(&self.sep);
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
+        let val = trace_v!(
+            "separate_collect",
+            range,
+            beg,
+            T::from_iter(std::iter::from_fn(|| {
+                g.try_mat(&self.pat).ok().and_then(|ret| {
+                    let sep_ret = g.try_mat(&self.sep);
 
-                if sep_ret.is_ok() || self.skip {
-                    cnt += 1;
-                    Some(ret)
-                } else {
-                    None
-                }
-            })
-        }));
+                    if sep_ret.is_ok() || self.skip {
+                        cnt += 1;
+                        Some(ret)
+                    } else {
+                        None
+                    }
+                })
+            }))
+        );
 
-        g.process_ret(if cnt >= self.min {
-            Ok(ret)
-        } else {
-            Err(Error::SeparateCollect)
-        })
+        if cnt >= self.min {
+            ret = Ok(val);
+        }
+
+        trace_v!("separate_collect", range, beg => g.end(), ret.is_ok(), cnt);
+        g.process_ret(ret)
     }
 }

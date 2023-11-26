@@ -136,20 +136,20 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
     }
 
     fn set_offset(&mut self, offset: usize) -> &mut Self {
-        trace_log!("set offset <- {offset}");
         self.offset = offset;
+        trace_log!("set {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
-        trace_log!("offset + {offset}");
         self.offset += offset;
+        trace_log!("inc {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn dec(&mut self, offset: usize) -> &mut Self {
-        trace_log!("offset - {offset}");
         self.offset -= offset;
+        trace_log!("dec {offset} -> ctx -> {}", self.offset);
         self
     }
 
@@ -238,7 +238,6 @@ where
     {
         let ret = self.try_mat(pat)?;
 
-        trace_log!("try mat return span in map: {:?}", ret);
         handler.invoke(A::extract(self, &ret)?)
     }
 

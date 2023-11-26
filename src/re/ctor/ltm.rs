@@ -5,11 +5,11 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::trace_log;
 
 ///
 /// Match `L` and `R`, return the longest match result.
@@ -133,18 +133,19 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let ret_l = g.try_mat(&self.left);
+        let beg = g.beg();
+        let r_l = trace!("ltm", beg @ "left", g.try_mat(&self.left));
         let offset_l = g.end();
-        let ret_r = g.reset().try_mat(&self.right);
+        let r_r = trace!("ltm", beg @ "right", g.reset().try_mat(&self.right));
         let offset_r = g.end();
         let (off, ret) = if offset_l >= offset_r {
-            (offset_l, ret_l)
+            (offset_l, r_l)
         } else {
-            (offset_r, ret_r)
+            (offset_r, r_r)
         };
 
-        trace_log!("LTM (left = {} <> right = {})", offset_l, offset_r);
+        // todo
         g.ctx().set_offset(off);
-        g.process_ret(ret)
+        trace!("ltm", beg => g.end(), g.process_ret(ret))
     }
 }

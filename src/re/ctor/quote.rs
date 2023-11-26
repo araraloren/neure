@@ -6,6 +6,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -128,13 +129,13 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
+        let beg = g.beg();
+        let _ = trace!("quote", beg @ "left", g.try_mat(&self.left)?);
+        let r = trace!("quote", beg @ "pat", self.pat.constrct(g.ctx(), func));
+        let r = g.process_ret(r)?;
+        let _ = trace!("quote", beg @ "right", g.try_mat(&self.right)?);
 
-        g.try_mat(&self.left)?;
-        let ret = self.pat.constrct(g.ctx(), func);
-        let ret = g.process_ret(ret)?;
-
-        g.try_mat(&self.right)?;
-        Ok(ret)
+        Ok(r)
     }
 }
 
@@ -149,10 +150,11 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&self.left)?;
+        let beg = g.beg();
+        let mut ret = trace!("quote", beg @ "left", g.try_mat(&self.left)?);
 
-        ret.add_assign(g.try_mat(&self.pat)?);
-        ret.add_assign(g.try_mat(&self.right)?);
+        ret.add_assign(trace!("quote", beg @ "pat", g.try_mat(&self.pat)?));
+        ret.add_assign(trace!("quote", beg @ "right", g.try_mat(&self.right)?));
         Ok(ret)
     }
 }

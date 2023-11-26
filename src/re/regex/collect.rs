@@ -4,6 +4,8 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
+use crate::neu::CRange;
+use crate::re::trace_v;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
@@ -74,18 +76,26 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let ret = O::from_iter(std::iter::from_fn(|| match g.try_mat(&self.pat) {
-            Ok(ret) => {
-                cnt += 1;
-                Some(ret)
-            }
-            Err(_) => None,
-        }));
+        let mut ret = Err(Error::Collect);
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
+        let val = trace_v!(
+            "collect",
+            range,
+            beg,
+            O::from_iter(std::iter::from_fn(|| match g.try_mat(&self.pat) {
+                Ok(ret) => {
+                    cnt += 1;
+                    Some(ret)
+                }
+                Err(_) => None,
+            }))
+        );
 
-        g.process_ret(if cnt >= self.min {
-            Ok(ret)
-        } else {
-            Err(Error::Collect)
-        })
+        if cnt >= self.min {
+            ret = Ok(val);
+        }
+        trace_v!("collect", range, beg => g.end(), ret.is_ok(), cnt);
+        g.process_ret(ret)
     }
 }

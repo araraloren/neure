@@ -26,7 +26,6 @@ pub use self::ctor::RecursiveCtor;
 pub use self::ctor::RecursiveCtorSync;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
-pub use self::extract::HandlerV;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
@@ -57,7 +56,6 @@ use crate::neu::NeureOneMore;
 use crate::neu::NeureZeroMore;
 use crate::neu::NeureZeroOne;
 use crate::neu::NullCond;
-use crate::trace_log;
 
 pub trait Regex<C> {
     type Ret;
@@ -442,14 +440,13 @@ where
     C: Context<'a>,
 {
     |ctx: &mut C| {
-        let ret = if ctx.offset() == 0 {
-            Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
-        } else {
-            Err(Error::Start)
-        };
+        let mut ret = Err(Error::Start);
+        let beg = ctx.offset();
 
-        trace_log!("(`start`: @{}) => {:?}", ctx.offset(), ret);
-        ret
+        if ctx.offset() == 0 {
+            ret = Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
+        }
+        trace!("start", beg => ctx.offset(), ret)
     }
 }
 
@@ -480,14 +477,13 @@ where
     C: Context<'a>,
 {
     |ctx: &mut C| {
-        let ret = if ctx.len() != ctx.offset() {
-            Err(Error::End)
-        } else {
-            Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
-        };
+        let mut ret = Err(Error::End);
+        let beg = ctx.offset();
 
-        trace_log!("(`end`: @{}) => {:?}", ctx.offset(), ret);
-        ret
+        if ctx.len() == ctx.offset() {
+            ret = Ok(<Span as Ret>::from_ctx(ctx, (0, 0)));
+        }
+        trace!("start", beg => ctx.offset(), ret)
     }
 }
 
@@ -514,23 +510,15 @@ where
     C: Context<'a, Orig = str>,
 {
     move |ctx: &mut C| {
+        let mut ret = Err(Error::String);
         let len = lit.len();
         let beg = ctx.offset();
-        let ret = {
-            trace_log!(
-                "(`string`: @{beg}) '{lit:?}' <-> '{:?}'",
-                ctx.orig_sub(beg, len)?
-            );
-            if !ctx.orig()?.starts_with(lit) {
-                Err(Error::String)
-            } else {
-                ctx.inc(len);
-                Ok(Span::new(beg, len))
-            }
-        };
 
-        trace_log!("(`string`: @{beg}) => {ret:?}");
-        ret
+        if ctx.orig()?.starts_with(lit) {
+            ctx.inc(len);
+            ret = Ok(Span::new(beg, len));
+        }
+        trace!("string", beg => ctx.offset(), ret)
     }
 }
 
@@ -557,23 +545,15 @@ where
     C: Context<'a, Orig = [u8]>,
 {
     move |ctx: &mut C| {
+        let mut ret = Err(Error::Bytes);
         let len = lit.len();
         let beg = ctx.offset();
-        let ret = {
-            trace_log!(
-                "(`bytes`: @{beg}) => '{lit:?}' <-> '{:?}'",
-                ctx.orig_sub(beg, len)?
-            );
-            if !ctx.orig()?.starts_with(lit) {
-                Err(Error::Bytes)
-            } else {
-                ctx.inc(len);
-                Ok(Span::new(beg, len))
-            }
-        };
 
-        trace_log!("(`bytes`: @{beg}) => {ret:?}");
-        ret
+        if !ctx.orig()?.starts_with(lit) {
+            ctx.inc(len);
+            ret = Ok(Span::new(beg, len));
+        }
+        trace!("bytes", beg => ctx.offset(), ret)
     }
 }
 
@@ -600,19 +580,14 @@ where
     C: Context<'a>,
 {
     move |ctx: &mut C| {
+        let mut ret = Err(Error::Consume);
         let beg = ctx.offset();
-        let ret = {
-            trace_log!("(`consume`: @{beg}) len = {len}");
-            if ctx.len() - beg >= len {
-                ctx.inc(len);
-                Ok(Span::new(beg, len))
-            } else {
-                Err(Error::Consume)
-            }
-        };
 
-        trace_log!("(`consume`: @{beg}) len = {len} => {ret:?}");
-        ret
+        if ctx.len() - beg >= len {
+            ctx.inc(len);
+            ret = Ok(Span::new(beg, len));
+        }
+        trace!("consume", beg => ctx.offset(), ret)
     }
 }
 
@@ -654,17 +629,120 @@ where
 {
     move |ctx: &mut C| {
         let mut g = CtxGuard::new(ctx);
-        let ret = {
-            trace_log!("(`not`: @{})", g.beg());
-            g.try_mat(&re)
-        };
-        let ret = if ret.is_err() {
-            Ok(R::from_ctx(g.ctx(), (0, 0)))
-        } else {
-            Err(Error::Other)
-        };
+        let mut ret = Err(Error::Other);
+        let beg = g.beg();
+        let re_ret = trace!("not", beg, g.try_mat(&re));
 
-        trace_log!("(`not`: @{}) => {ret:?}", g.beg());
-        g.process_ret(ret)
+        if re_ret.is_err() {
+            ret = Ok(R::from_ctx(g.ctx(), (0, 0)));
+        }
+        trace!("not", beg => g.reset().end(), ret)
     }
 }
+
+#[cfg(feature = "log")]
+macro_rules! trace {
+    ($name:literal, $beg:ident, $ret:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!("r`{}`@{} start", $name, $beg);
+        ret
+    }};
+    ($name:literal, $beg:ident @ $stage:literal, $ret:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!("r`{}`@{} try stage `{}`", $name, $beg, $stage);
+        ret
+    }};
+    ($name:literal, $beg:ident -> $end:expr, $ret:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!("r`{}`@{} -> {{end: {}, ret: {}}}", $name, $beg, $end, ret);
+        ret
+    }};
+    ($name:literal, $beg:ident => $end:expr, $ret:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!("r`{}`@{} => {{end: {}, ret: {:?}}}", $name, $beg, $end, ret);
+        ret
+    }};
+}
+
+#[cfg(feature = "log")]
+macro_rules! trace_v {
+    ($name:literal, $inner:expr, $beg:ident, $ret:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!("r`{}({:?})`@{} start", $name, $inner, $beg);
+        ret
+    }};
+    ($name:literal, $inner:expr, $beg:ident @ $stage:literal, $ret:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!("r`{}({:?})`@{} try stage `{}`", $name, $inner, $beg, $stage);
+        ret
+    }};
+    ($name:literal, $inner:expr, $beg:ident => $end:expr, $ret:expr, $cnt:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!(
+            "r`{}({:?})`@{} => {{end: {}, ret: {:?}, cnt = {}}}",
+            $name,
+            $inner,
+            $beg,
+            $end,
+            ret,
+            $cnt
+        );
+        ret
+    }};
+    ($name:literal, $inner:expr, $beg:ident -> $end:expr, $ret:expr, $cnt:expr) => {{
+        let ret = $ret;
+        $crate::trace_log!(
+            "r`{}({:?})`@{} -> {{end: {}, ret: {}, cnt: {}}}",
+            $name,
+            $inner,
+            $beg,
+            $end,
+            ret,
+            $cnt
+        );
+        ret
+    }};
+}
+
+#[cfg(not(feature = "log"))]
+macro_rules! trace {
+    ($name:literal, $beg:ident, $ret:expr) => {{
+        let (_, _, ret) = ($name, $beg, $ret);
+        ret
+    }};
+    ($name:literal, $beg:ident @ $stage:literal, $ret:expr) => {{
+        let (_, _, _, ret) = ($name, $beg, $stage, $ret);
+        ret
+    }};
+    ($name:literal, $beg:ident -> $end:expr, $ret:expr) => {{
+        let (_, _, _, ret) = ($name, $beg, $end, $ret);
+        ret
+    }};
+    ($name:literal, $beg:ident => $end:expr, $ret:expr) => {{
+        let (_, _, _, ret) = ($name, $beg, $end, $ret);
+        ret
+    }};
+}
+
+#[cfg(not(feature = "log"))]
+macro_rules! trace_v {
+    ($name:literal, $inner:expr, $beg:ident, $ret:expr) => {{
+        let (_, _, _, ret) = ($name, $inner, $beg, $ret);
+        ret
+    }};
+    ($name:literal, $inner:expr, $beg:ident @ $stage:literal, $ret:expr) => {{
+        let (_, _, _, _, ret) = ($name, $inner, $beg, $stage, $ret);
+        ret
+    }};
+    ($name:literal, $inner:expr, $beg:ident => $end:expr, $ret:expr, $cnt:expr) => {{
+        let (_, _, _, _, ret) = ($name, $inner, $beg, $end, $ret);
+        ret
+    }};
+    ($name:literal, $inner:expr, $beg:ident -> $end:expr, $ret:expr, $cnt:expr) => {{
+        let (_, _, _, _, ret) = ($name, $inner, $beg, $end, $ret);
+        ret
+    }};
+}
+
+pub(crate) use trace;
+pub(crate) use trace_v;

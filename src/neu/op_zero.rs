@@ -6,7 +6,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::neu::neu_trace;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -93,12 +93,10 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = {
-            neu_trace!("neure_zero_one", g);
-            g.try_mat(self)
-        };
+        let beg = g.beg();
+        let ret = trace!("neure_zero_one", beg, g.try_mat(self));
 
-        neu_trace!("neure_zero_one", g -> ret);
+        trace!("neure_zero_one", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -114,8 +112,9 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
+        let beg = g.beg();
 
-        neu_trace!("neure_zero_one", g);
+        trace!("neure_zero_one", beg, ());
         if let Ok(mut iter) = g.ctx().peek() {
             if let Some((offset, item)) = iter.next() {
                 if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
@@ -125,8 +124,7 @@ where
                 }
             }
         }
-        neu_trace!("neure_zero_one", g => ret);
-        ret
+        trace!("neure_zero_one", beg => g.end(), ret)
     }
 }
 
@@ -206,12 +204,10 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = {
-            neu_trace!("neure_zero_more", g);
-            g.try_mat(self)
-        };
+        let beg = g.beg();
+        let ret = trace!("neure_zero_more", beg, g.try_mat(self));
 
-        neu_trace!("neure_zero_more", g -> ret);
+        trace!("neure_zero_more", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -230,8 +226,9 @@ where
         let mut beg = None;
         let mut end = None;
         let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
+        let offset = g.beg();
 
-        neu_trace!("neure_zero_more", g);
+        trace!("neure_zero_more", offset, ());
         if let Ok(mut iter) = g.ctx().peek() {
             for pair in iter.by_ref() {
                 if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
@@ -248,7 +245,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), cnt, len));
         }
-        neu_trace!("neure_zero_more", g => ret);
-        ret
+        trace!("neure_zero_more", offset => g.end(), ret)
     }
 }

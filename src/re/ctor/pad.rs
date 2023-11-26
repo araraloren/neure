@@ -6,6 +6,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -107,17 +108,14 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
+        let beg = g.beg();
+        let ret = trace!("pad", beg @ "pat", self.pat.constrct(g.ctx(), func));
 
-        match self.pat.constrct(g.ctx(), func) {
-            Ok(ret1) => {
-                g.try_mat(&self.tail)?;
-                Ok(ret1)
-            }
-            Err(e) => {
-                g.reset();
-                Err(e)
-            }
+        if ret.is_ok() {
+            let _ = trace!("pad", beg @ "tail", g.try_mat(&self.tail)?);
         }
+        trace!("pad", beg -> g.end(), ret.is_ok());
+        g.process_ret(ret)
     }
 }
 
@@ -131,10 +129,11 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&self.pat)?;
+        let beg = g.beg();
+        let mut ret = trace!("pad", beg @ "pat", g.try_mat(&self.pat)?);
 
-        ret.add_assign(g.try_mat(&self.tail)?);
-        Ok(ret)
+        ret.add_assign(trace!("pad", beg @ "tail", g.try_mat(&self.tail)?));
+        trace!("pad", beg => g.end(), Ok(ret))
     }
 }
 
@@ -168,7 +167,7 @@ where
 #[derive(Debug, Copy)]
 pub struct PaddedUnit<C, P, T> {
     pat: P,
-    tail: T,
+    head: T,
     marker: PhantomData<C>,
 }
 
@@ -180,7 +179,7 @@ where
     fn clone(&self) -> Self {
         Self {
             pat: self.pat.clone(),
-            tail: self.tail.clone(),
+            head: self.head.clone(),
             marker: self.marker,
         }
     }
@@ -190,7 +189,7 @@ impl<C, P, T> PaddedUnit<C, P, T> {
     pub fn new(pat: P, tail: T) -> Self {
         Self {
             pat,
-            tail,
+            head: tail,
             marker: PhantomData,
         }
     }
@@ -203,12 +202,12 @@ impl<C, P, T> PaddedUnit<C, P, T> {
         &mut self.pat
     }
 
-    pub fn tail(&self) -> &T {
-        &self.tail
+    pub fn head(&self) -> &T {
+        &self.head
     }
 
-    pub fn tail_mut(&mut self) -> &mut T {
-        &mut self.tail
+    pub fn head_mut(&mut self) -> &mut T {
+        &mut self.head
     }
 
     pub fn set_pat(&mut self, pat: P) -> &mut Self {
@@ -216,8 +215,8 @@ impl<C, P, T> PaddedUnit<C, P, T> {
         self
     }
 
-    pub fn set_tail(&mut self, tail: T) -> &mut Self {
-        self.tail = tail;
+    pub fn set_head(&mut self, head: T) -> &mut Self {
+        self.head = head;
         self
     }
 }
@@ -234,10 +233,12 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let _ = g.try_mat(&self.tail)?;
-        let ret = self.pat.constrct(g.ctx(), func);
+        let beg = g.beg();
+        let _ = trace!("padded", beg @ "head", g.try_mat(&self.head)?);
+        let r = trace!("padded", beg @ "pat", self.pat.constrct(g.ctx(), func));
 
-        g.process_ret(ret)
+        trace!("padded", beg -> g.end(), r.is_ok());
+        g.process_ret(r)
     }
 }
 
@@ -251,9 +252,10 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&self.tail)?;
+        let beg = g.beg();
+        let mut ret = trace!("padded", beg @ "head", g.try_mat(&self.head)?);
 
-        ret.add_assign(g.try_mat(&self.pat)?);
-        Ok(ret)
+        ret.add_assign(trace!("padded", beg @ "pat", g.try_mat(&self.pat)?));
+        trace!("padded", beg => g.end(), Ok(ret))
     }
 }

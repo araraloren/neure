@@ -4,8 +4,8 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Regex;
-use crate::trace_log;
 
 ///
 /// Match regex `P` quoted by `L` and `R`.
@@ -122,14 +122,11 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let beg = g.beg();
+        let _ = trace!("quote", beg @ "left", g.try_mat(&self.left)?);
+        let r = trace!("quote", beg @ "pat", g.try_mat(&self.pat)?);
+        let _ = trace!("quote", beg @ "right", g.try_mat(&self.right)?);
 
-        trace_log!("(`quote`: @{}) => try match left", g.beg());
-        g.try_mat(&self.left)?;
-        trace_log!("(`quote`: @{}) => try match pattern", g.beg());
-        let ret = g.try_mat(&self.pat)?;
-
-        trace_log!("(`quote`: @{}) => try match right", g.beg());
-        g.try_mat(&self.right)?;
-        Ok(ret)
+        Ok(r)
     }
 }

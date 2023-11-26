@@ -75,7 +75,7 @@ where
     fn is_match(&self, other: &T) -> bool {
         let ret = self.left.is_match(other) || self.right.is_match(other);
 
-        crate::trace_log!("[`or`]:  => {ret}",);
+        crate::trace_log!("neu logical `or` -> {ret}");
         ret
     }
 }

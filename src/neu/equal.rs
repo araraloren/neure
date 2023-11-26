@@ -1,6 +1,6 @@
+use super::trace_u;
 use super::Neu;
 
-use crate::trace_log;
 use crate::MayDebug;
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -16,8 +16,7 @@ impl<T> Equal<T> {
 
 impl<T: PartialEq + MayDebug> Neu<T> for Equal<T> {
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match ({:?}) with value ({:?})(in)", self.val, other);
-        &self.val == other
+        trace_u!("equal", self.val, other, &self.val == other)
     }
 }
 

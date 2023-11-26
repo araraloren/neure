@@ -6,6 +6,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::err::Error;
 use crate::neu::CRange;
+use crate::re::trace_v;
 use crate::re::Regex;
 
 ///
@@ -142,7 +143,10 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut all_rets = Vec::with_capacity(self.capacity);
         let mut cnt = 0;
+        let mut ret = Err(Error::TryRepeat);
+        let beg = g.beg();
 
+        trace_v!("repeat", self.range, beg, ());
         while self.is_contain(cnt) {
             match g.try_mat(&self.pat) {
                 Ok(ret) => {
@@ -154,10 +158,10 @@ where
                 }
             }
         }
-        g.process_ret(if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            Ok(all_rets)
-        } else {
-            Err(Error::TryRepeat)
-        })
+        if std::ops::RangeBounds::contains(&self.range, &cnt) {
+            ret = Ok(all_rets);
+        }
+        trace_v!("repeat", self.range, beg => g.end(), ret.is_ok(), cnt);
+        g.process_ret(ret)
     }
 }

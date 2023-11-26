@@ -6,9 +6,12 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::CRange;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
+use crate::re::trace;
+use crate::re::trace_v;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -141,15 +144,15 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret1 = self.left.constrct(g.ctx(), func);
-        let ret1 = g.process_ret(ret1)?;
+        let beg = g.beg();
+        let r = trace!("separate_once", beg @ "left", self.left.constrct(g.ctx(), func));
+        let r = g.process_ret(r)?;
+        let _ = trace!("separate_once", beg @ "sep",  g.try_mat(&self.sep)?);
+        let l = trace!("separate_once", beg @ "right", self.right.constrct(g.ctx(), func));
+        let l = g.process_ret(l)?;
 
-        g.try_mat(&self.sep)?;
-
-        let ret2 = self.right.constrct(g.ctx(), func);
-        let ret2 = g.process_ret(ret2)?;
-
-        Ok((ret1, ret2))
+        trace!("separate_once", beg => g.end(), true);
+        Ok((r, l))
     }
 }
 
@@ -165,10 +168,11 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
+        let beg = g.beg();
 
-        span.add_assign(g.try_mat(&self.left)?);
-        span.add_assign(g.try_mat(&self.sep)?);
-        span.add_assign(g.try_mat(&self.right)?);
+        span.add_assign(trace!("separate_once", beg @ "left", g.try_mat(&self.left)?));
+        span.add_assign(trace!("separate_once", beg @ "sep", g.try_mat(&self.sep)?));
+        span.add_assign(trace!("separate_once", beg @ "right", g.try_mat(&self.right)?));
 
         Ok(span)
     }
@@ -325,7 +329,10 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let mut res = Vec::with_capacity(self.capacity.max(self.min));
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
 
+        trace_v!("separate", range, beg, ());
         while let Ok(ret) = self.pat.constrct(g.ctx(), func) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
@@ -335,11 +342,15 @@ where
                 break;
             }
         }
-        g.process_ret(if res.len() >= self.min {
+        let len = res.len();
+        let ret = g.process_ret(if len >= self.min {
             Ok(res)
         } else {
             Err(Error::Separate)
-        })
+        });
+
+        trace_v!("separate_collect", range, beg -> g.end(), ret.is_ok(), len);
+        ret
     }
 }
 
@@ -355,7 +366,11 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
+        let mut ret = Err(Error::Separate);
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
 
+        trace_v!("separate", range, beg, ());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
@@ -369,11 +384,10 @@ where
                 break;
             }
         }
-        g.process_ret(if cnt >= self.min {
-            Ok(span)
-        } else {
-            Err(Error::Separate)
-        })
+        if cnt >= self.min {
+            ret = Ok(span);
+        }
+        trace_v!("separate", range, beg => g.end(), g.process_ret(ret), cnt )
     }
 }
 
@@ -508,25 +522,32 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let mut length = 0;
-        let ret = T::from_iter(std::iter::from_fn(|| {
-            self.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
-                let sep_ret = g.ctx().try_mat(&self.sep);
+        let mut cnt = 0;
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
+        let ret = {
+            trace_v!("separate_collect", range, beg, ());
+            T::from_iter(std::iter::from_fn(|| {
+                self.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
+                    let sep_ret = g.ctx().try_mat(&self.sep);
 
-                if sep_ret.is_ok() || self.skip {
-                    length += 1;
-                    Some(ret)
-                } else {
-                    None
-                }
-            })
-        }));
-
-        g.process_ret(if length >= self.min {
+                    if sep_ret.is_ok() || self.skip {
+                        cnt += 1;
+                        Some(ret)
+                    } else {
+                        None
+                    }
+                })
+            }))
+        };
+        let ret = g.process_ret(if cnt >= self.min {
             Ok(ret)
         } else {
             Err(Error::SeparateCollect)
-        })
+        });
+
+        trace_v!("separate_collect", range, beg -> g.end(), ret.is_ok(), cnt);
+        ret
     }
 }
 
@@ -542,7 +563,11 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
+        let mut ret = Err(Error::SeparateCollect);
+        let beg = g.beg();
+        let range: CRange<usize> = (self.min..).into();
 
+        trace_v!("separate_collect", range, beg, ());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
@@ -556,10 +581,9 @@ where
                 break;
             }
         }
-        g.process_ret(if cnt >= self.min {
-            Ok(span)
-        } else {
-            Err(Error::SeparateCollect)
-        })
+        if cnt >= self.min {
+            ret = Ok(span);
+        }
+        trace_v!("separate_collect", range, beg => g.end(), g.process_ret(ret), cnt)
     }
 }

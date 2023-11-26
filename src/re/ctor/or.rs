@@ -5,11 +5,11 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::trace_log;
 
 ///
 /// Match `L` or `R`.
@@ -120,14 +120,14 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        match self.left.constrct(g.ctx(), func) {
-            Ok(ret) => Ok(ret),
-            Err(_) => {
-                let ret = self.right.constrct(g.reset().ctx(), func);
+        let beg = g.beg();
+        let mut ret = trace!("or", beg @ "left", self.left.constrct(g.ctx(), func));
 
-                g.process_ret(ret)
-            }
+        if ret.is_err() {
+            ret = trace!("or", beg @ "right", self.right.constrct(g.reset().ctx(), func));
         }
+        trace!("or", beg -> g.end(), ret.is_ok());
+        g.process_ret(ret)
     }
 }
 
@@ -141,10 +141,11 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
+        let beg = g.beg();
+        let ret = trace!("or", beg @ "left", g.try_mat(&self.left).or_else(|_| {
+            trace!("or", beg @ "right", g.reset().try_mat(&self.right))
+        }));
 
-        g.try_mat(&self.left).or_else(|_| {
-            trace_log!("or ... offset = {}", g.beg());
-            g.reset().try_mat(&self.right)
-        })
+        trace!("or", beg => g.end(), ret)
     }
 }

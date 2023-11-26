@@ -5,7 +5,7 @@ use std::ops::RangeBounds;
 
 use super::Neu;
 
-use crate::trace_log;
+use super::trace_u;
 use crate::MayDebug;
 
 #[derive(Debug, Copy)]
@@ -87,8 +87,7 @@ impl<T> RangeBounds<T> for CRange<T> {
 
 impl<T: PartialOrd + MayDebug> Neu<T> for CRange<T> {
     fn is_match(&self, other: &T) -> bool {
-        trace_log!("match ({:?}) with value ({:?})(in)", self, other);
-        self.contains(other)
+        trace_u!("crange", self, other, self.contains(other))
     }
 }
 

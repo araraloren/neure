@@ -10,6 +10,7 @@ use crate::re::ctor::Map;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
+use crate::re::trace;
 use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
@@ -92,10 +93,13 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = g.try_mat(&self.pat)?;
+        let beg = g.beg();
+        let mut ret = trace!("dynamic_create_regex_then", beg @ "pat", g.try_mat(&self.pat)?);
 
-        ret.add_assign(g.try_mat(&(self.func)(&ret)?)?);
-        Ok(ret)
+        ret.add_assign(
+            trace!("dynamic_create_regex_then", beg @ "dynamic regex", g.try_mat(&(self.func)(&ret)?)?)
+        );
+        trace!("dynamic_create_regex_then", beg => g.end(), Ok(ret))
     }
 }
 

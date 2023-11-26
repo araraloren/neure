@@ -55,7 +55,7 @@ where
     fn is_match(&self, other: &T) -> bool {
         let ret = !self.unit.is_match(other);
 
-        crate::trace_log!("[`not`]:  => {ret}",);
+        crate::trace_log!("neu logical `not` -> {ret}");
         ret
     }
 }
