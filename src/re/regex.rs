@@ -1,6 +1,7 @@
 mod collect;
 mod dthen;
 mod dynamic;
+mod ltm;
 mod or;
 mod quote;
 mod repeat;
@@ -14,6 +15,7 @@ pub use self::dynamic::into_dyn_regex;
 pub use self::dynamic::DynamicRegex;
 pub use self::dynamic::DynamicRegexHandler;
 pub use self::dynamic::DynamicRegexHelper;
+pub use self::ltm::RegexLongestTokenMatch;
 pub use self::or::RegexOr;
 pub use self::quote::RegexQuote;
 pub use self::repeat::RegexRepeat;
@@ -88,6 +90,16 @@ where
     C: Context<'a> + Policy<C>,
 {
     RegexOr::new(left, right)
+}
+
+pub fn ltm<'a, C, O, L, R>(left: L, right: R) -> RegexLongestTokenMatch<C, L, R>
+where
+    O: Ret,
+    L: Regex<C, Ret = O>,
+    R: Regex<C, Ret = O>,
+    C: Context<'a> + Policy<C>,
+{
+    RegexLongestTokenMatch::new(left, right)
 }
 
 ///
