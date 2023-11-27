@@ -38,6 +38,7 @@ pub use self::regex::sep;
 pub use self::regex::sep_collect;
 pub use self::regex::sep_once;
 pub use self::regex::then;
+pub use self::regex::ltm;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
 
