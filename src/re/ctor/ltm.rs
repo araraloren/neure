@@ -10,6 +10,7 @@ use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
+use crate::trace_log;
 
 ///
 /// Match `L` and `R`, return the longest match result.
@@ -108,17 +109,25 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret_l = self.left.constrct(g.ctx(), func);
+        let beg = g.beg();
+        let r_l = trace!("ltm", beg @ "left", self.left.constrct(g.ctx(), func));
         let offset_l = g.end();
-        let ret_r = self.right.constrct(g.reset().ctx(), func);
+        let r_r = trace!("ltm", beg @ "right", self.right.constrct(g.reset().ctx(), func));
         let offset_r = g.end();
         let (offset, ret) = if offset_l >= offset_r {
-            (offset_l, ret_l)
+            (offset_l, r_l)
         } else {
-            (offset_r, ret_r)
+            (offset_r, r_r)
         };
 
+        trace_log!(
+            "r`ltm`@{} -> {{l: offset = {}, r: offset = {}}}",
+            beg,
+            offset_l,
+            offset_r
+        );
         g.ctx().set_offset(offset);
+        trace!("ltm", beg -> g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
@@ -144,7 +153,14 @@ where
             (offset_r, r_r)
         };
 
-        // todo
+        trace_log!(
+            "r`ltm`@{} -> {{l: offset = {}, ret = {:?}; r: offset = {}, ret = {:?}}}",
+            beg,
+            offset_l,
+            r_l,
+            offset_r,
+            r_r
+        );
         g.ctx().set_offset(off);
         trace!("ltm", beg => g.end(), g.process_ret(ret))
     }

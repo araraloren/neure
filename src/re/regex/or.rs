@@ -115,9 +115,11 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-
-        trace!("or", beg @ "left", g.try_mat(&self.left).or_else(|_| {
+        let ret = trace!("or", beg @ "left", g.try_mat(&self.left).or_else(|_| {
             trace!("or", beg @ "right", g.try_mat(&self.right))
-        }))
+        }));
+
+        trace!("or", beg => g.end(), ret.is_ok());
+        ret
     }
 }

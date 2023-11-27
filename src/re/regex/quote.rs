@@ -127,6 +127,7 @@ where
         let r = trace!("quote", beg @ "pat", g.try_mat(&self.pat)?);
         let _ = trace!("quote", beg @ "right", g.try_mat(&self.right)?);
 
+        trace!("quote", beg => g.end(), true);
         Ok(r)
     }
 }

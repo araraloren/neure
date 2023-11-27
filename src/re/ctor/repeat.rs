@@ -150,10 +150,10 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut res = Vec::with_capacity(self.capacity);
-        let mut ret = Err(Error::TryRepeat);
+        let mut ret = Err(Error::RegexRepeat);
         let beg = g.beg();
 
-        trace_v!("separate_collect", self.range, beg, ());
+        trace_v!("repeat", self.range, beg, ());
         while self.is_contain(cnt) {
             let ret = self.pat.constrct(g.ctx(), handler);
 
@@ -170,7 +170,7 @@ where
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             ret = Ok(res);
         }
-        trace_v!("separate_collect", self.range, beg -> g.end(), ret.is_ok(), cnt);
+        trace_v!("repeat", self.range, beg -> g.end(), ret.is_ok(), cnt);
         g.process_ret(ret)
     }
 }
@@ -186,10 +186,10 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
-        let mut ret = Err(Error::TryRepeat);
+        let mut ret = Err(Error::RegexRepeat);
         let beg = g.beg();
 
-        trace_v!("separate_collect", self.range, beg, ());
+        trace_v!("repeat", self.range, beg, ());
         while self.is_contain(cnt) {
             match g.ctx().try_mat(&self.pat) {
                 Ok(ret) => {
@@ -204,6 +204,6 @@ where
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             ret = Ok(span);
         }
-        trace_v!("separate_collect", self.range, beg => g.end(), g.process_ret(ret), cnt)
+        trace_v!("repeat", self.range, beg => g.end(), g.process_ret(ret), cnt)
     }
 }

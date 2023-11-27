@@ -46,14 +46,14 @@ use super::Map;
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct SeparateOnce<C, L, S, R> {
+pub struct SepOnce<C, L, S, R> {
     left: L,
     sep: S,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl<C, L, S, R> Clone for SeparateOnce<C, L, S, R>
+impl<C, L, S, R> Clone for SepOnce<C, L, S, R>
 where
     L: Clone,
     S: Clone,
@@ -69,7 +69,7 @@ where
     }
 }
 
-impl<C, L, S, R> SeparateOnce<C, L, S, R> {
+impl<C, L, S, R> SepOnce<C, L, S, R> {
     pub fn new(left: L, sep: S, right: R) -> Self {
         Self {
             left,
@@ -131,7 +131,7 @@ impl<C, L, S, R> SeparateOnce<C, L, S, R> {
     }
 }
 
-impl<'a, C, L, S, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for SeparateOnce<C, L, S, R>
+impl<'a, C, L, S, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for SepOnce<C, L, S, R>
 where
     L: Ctor<'a, C, M, O1>,
     R: Ctor<'a, C, M, O2>,
@@ -145,18 +145,18 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let r = trace!("separate_once", beg @ "left", self.left.constrct(g.ctx(), func));
+        let r = trace!("sep_once", beg @ "left", self.left.constrct(g.ctx(), func));
         let r = g.process_ret(r)?;
-        let _ = trace!("separate_once", beg @ "sep",  g.try_mat(&self.sep)?);
-        let l = trace!("separate_once", beg @ "right", self.right.constrct(g.ctx(), func));
+        let _ = trace!("sep_once", beg @ "sep",  g.try_mat(&self.sep)?);
+        let l = trace!("sep_once", beg @ "right", self.right.constrct(g.ctx(), func));
         let l = g.process_ret(l)?;
 
-        trace!("separate_once", beg => g.end(), true);
+        trace!("sep_once", beg => g.end(), true);
         Ok((r, l))
     }
 }
 
-impl<'a, C, L, S, R> Regex<C> for SeparateOnce<C, L, S, R>
+impl<'a, C, L, S, R> Regex<C> for SepOnce<C, L, S, R>
 where
     S: Regex<C, Ret = Span>,
     L: Regex<C, Ret = Span>,
@@ -170,11 +170,11 @@ where
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
         let beg = g.beg();
 
-        span.add_assign(trace!("separate_once", beg @ "left", g.try_mat(&self.left)?));
-        span.add_assign(trace!("separate_once", beg @ "sep", g.try_mat(&self.sep)?));
-        span.add_assign(trace!("separate_once", beg @ "right", g.try_mat(&self.right)?));
+        span.add_assign(trace!("sep_once", beg @ "left", g.try_mat(&self.left)?));
+        span.add_assign(trace!("sep_once", beg @ "sep", g.try_mat(&self.sep)?));
+        span.add_assign(trace!("sep_once", beg @ "right", g.try_mat(&self.right)?));
 
-        Ok(span)
+        trace!("sep_once", beg => g.end(), Ok(span))
     }
 }
 
@@ -419,7 +419,7 @@ where
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct SeparateCollect<C, P, S, O, T> {
+pub struct SepCollect<C, P, S, O, T> {
     pat: P,
     sep: S,
     skip: bool,
@@ -427,7 +427,7 @@ pub struct SeparateCollect<C, P, S, O, T> {
     marker: PhantomData<(C, O, T)>,
 }
 
-impl<C, P, S, O, T> Clone for SeparateCollect<C, P, S, O, T>
+impl<C, P, S, O, T> Clone for SepCollect<C, P, S, O, T>
 where
     P: Clone,
     S: Clone,
@@ -443,7 +443,7 @@ where
     }
 }
 
-impl<C, P, S, O, T> SeparateCollect<C, P, S, O, T> {
+impl<C, P, S, O, T> SepCollect<C, P, S, O, T> {
     pub fn new(pat: P, sep: S) -> Self {
         Self {
             pat,
@@ -509,7 +509,7 @@ impl<C, P, S, O, T> SeparateCollect<C, P, S, O, T> {
     }
 }
 
-impl<'a, C, S, P, M, O, T> Ctor<'a, C, M, T> for SeparateCollect<C, P, S, O, T>
+impl<'a, C, S, P, M, O, T> Ctor<'a, C, M, T> for SepCollect<C, P, S, O, T>
 where
     T: FromIterator<O>,
     P: Ctor<'a, C, M, O>,
@@ -526,7 +526,7 @@ where
         let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
         let ret = {
-            trace_v!("separate_collect", range, beg, ());
+            trace_v!("sep_collect", range, beg, ());
             T::from_iter(std::iter::from_fn(|| {
                 self.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
                     let sep_ret = g.ctx().try_mat(&self.sep);
@@ -543,15 +543,15 @@ where
         let ret = g.process_ret(if cnt >= self.min {
             Ok(ret)
         } else {
-            Err(Error::SeparateCollect)
+            Err(Error::SepCollect)
         });
 
-        trace_v!("separate_collect", range, beg -> g.end(), ret.is_ok(), cnt);
+        trace_v!("sep_collect", range, beg -> g.end(), ret.is_ok(), cnt);
         ret
     }
 }
 
-impl<'a, C, S, P, O, T> Regex<C> for SeparateCollect<C, P, S, O, T>
+impl<'a, C, S, P, O, T> Regex<C> for SepCollect<C, P, S, O, T>
 where
     S: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,
@@ -563,11 +563,11 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
-        let mut ret = Err(Error::SeparateCollect);
+        let mut ret = Err(Error::SepCollect);
         let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
 
-        trace_v!("separate_collect", range, beg, ());
+        trace_v!("sep_collect", range, beg, ());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
@@ -584,6 +584,6 @@ where
         if cnt >= self.min {
             ret = Ok(span);
         }
-        trace_v!("separate_collect", range, beg => g.end(), g.process_ret(ret), cnt)
+        trace_v!("sep_collect", range, beg => g.end(), g.process_ret(ret), cnt)
     }
 }

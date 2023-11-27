@@ -111,7 +111,7 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut iter = g.ctx().peek()?;
-        let mut ret = Err(Error::One);
+        let mut ret = Err(Error::NeuOne);
         let beg = g.beg();
 
         trace!("neure_one", beg, ());
@@ -222,11 +222,11 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::OneMore);
+        let mut ret = Err(Error::NeuOneMore);
         let mut iter = g.ctx().peek()?;
         let offset = g.beg();
 
-        trace!("neure_one", offset, ());
+        trace!("neure_one_more", offset, ());
         for pair in iter.by_ref() {
             if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
                 end = Some(pair);
@@ -241,6 +241,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), cnt, len))
         }
-        trace!("neure_one", offset => g.end(), ret)
+        trace!("neure_one_more", offset => g.end(), ret)
     }
 }

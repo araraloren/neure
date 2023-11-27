@@ -135,6 +135,7 @@ where
         let r = g.process_ret(r)?;
         let _ = trace!("quote", beg @ "right", g.try_mat(&self.right)?);
 
+        trace!("quote", beg -> g.end(), true);
         Ok(r)
     }
 }
@@ -155,6 +156,6 @@ where
 
         ret.add_assign(trace!("quote", beg @ "pat", g.try_mat(&self.pat)?));
         ret.add_assign(trace!("quote", beg @ "right", g.try_mat(&self.right)?));
-        Ok(ret)
+        trace!("quote", beg => g.end(), Ok(ret))
     }
 }

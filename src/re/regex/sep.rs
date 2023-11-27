@@ -36,14 +36,14 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct RegexSeparateOnce<C, L, S, R> {
+pub struct RegexSepOnce<C, L, S, R> {
     left: L,
     sep: S,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl<C, L, S, R> Clone for RegexSeparateOnce<C, L, S, R>
+impl<C, L, S, R> Clone for RegexSepOnce<C, L, S, R>
 where
     L: Clone,
     S: Clone,
@@ -59,7 +59,7 @@ where
     }
 }
 
-impl<C, L, S, R> RegexSeparateOnce<C, L, S, R> {
+impl<C, L, S, R> RegexSepOnce<C, L, S, R> {
     pub fn new(left: L, sep: S, right: R) -> Self {
         Self {
             left,
@@ -109,7 +109,7 @@ impl<C, L, S, R> RegexSeparateOnce<C, L, S, R> {
     }
 }
 
-impl<'a, C, L, S, R> Regex<C> for RegexSeparateOnce<C, L, S, R>
+impl<'a, C, L, S, R> Regex<C> for RegexSepOnce<C, L, S, R>
 where
     S: Regex<C>,
     L: Regex<C>,
@@ -121,11 +121,11 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let l = trace!("separate_once", beg @ "left", g.try_mat(&self.left)?);
-        let _ = trace!("separate_once", beg @ "sep", g.try_mat(&self.sep)?);
-        let r = trace!("separate_once", beg @ "right", g.try_mat(&self.right)?);
+        let l = trace!("sep_once", beg @ "left", g.try_mat(&self.left)?);
+        let _ = trace!("sep_once", beg @ "sep", g.try_mat(&self.sep)?);
+        let r = trace!("sep_once", beg @ "right", g.try_mat(&self.right)?);
 
-        trace!("separate_once", beg => g.end(), true);
+        trace!("sep_once", beg => g.end(), true);
         Ok((l, r))
     }
 }
@@ -331,7 +331,7 @@ where
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct RegexSeparateCollect<C, P, S, T> {
+pub struct RegexSepCollect<C, P, S, T> {
     pat: P,
     sep: S,
     skip: bool,
@@ -339,7 +339,7 @@ pub struct RegexSeparateCollect<C, P, S, T> {
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, P, S, T> Clone for RegexSeparateCollect<C, P, S, T>
+impl<C, P, S, T> Clone for RegexSepCollect<C, P, S, T>
 where
     P: Clone,
     S: Clone,
@@ -355,7 +355,7 @@ where
     }
 }
 
-impl<C, P, S, T> RegexSeparateCollect<C, P, S, T> {
+impl<C, P, S, T> RegexSepCollect<C, P, S, T> {
     pub fn new(pat: P, sep: S) -> Self {
         Self {
             pat,
@@ -421,7 +421,7 @@ impl<C, P, S, T> RegexSeparateCollect<C, P, S, T> {
     }
 }
 
-impl<'a, C, S, P, T> Regex<C> for RegexSeparateCollect<C, P, S, T>
+impl<'a, C, S, P, T> Regex<C> for RegexSepCollect<C, P, S, T>
 where
     S: Regex<C>,
     P: Regex<C>,
@@ -432,12 +432,12 @@ where
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::SeparateCollect);
+        let mut ret = Err(Error::SepCollect);
         let mut cnt = 0;
         let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
         let val = trace_v!(
-            "separate_collect",
+            "sep_collect",
             range,
             beg,
             T::from_iter(std::iter::from_fn(|| {
@@ -458,7 +458,7 @@ where
             ret = Ok(val);
         }
 
-        trace_v!("separate_collect", range, beg => g.end(), ret.is_ok(), cnt);
+        trace_v!("sep_collect", range, beg => g.end(), ret.is_ok(), cnt);
         g.process_ret(ret)
     }
 }

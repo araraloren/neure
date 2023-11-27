@@ -98,12 +98,15 @@ where
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
         let mut g = CtxGuard::new(ctx);
-        let ret = if (self.r#if)(g.ctx())? {
-            self.regex.constrct(g.ctx(), func)
+        let beg = g.beg();
+        let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
+        let ret = if ret {
+            trace!("if", beg @ "true", self.regex.constrct(g.ctx(), func))
         } else {
-            self.r#else.constrct(g.reset().ctx(), func)
+            trace!("if", beg @ "false", self.r#else.constrct(g.reset().ctx(), func))
         };
 
+        trace!("if", beg -> g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
@@ -122,9 +125,9 @@ where
         let beg = g.beg();
         let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
         let ret = if ret {
-            g.try_mat(&self.regex)
+            trace!("if", beg @ "true", g.try_mat(&self.regex))
         } else {
-            g.try_mat(&self.r#else)
+            trace!("if", beg @ "false", g.try_mat(&self.r#else))
         };
 
         trace!("if", beg => g.end(), ret)

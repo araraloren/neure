@@ -1,54 +1,51 @@
 use std::fmt::Display;
 
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy)]
 pub enum Error {
     Null,
 
-    Other,
-
-    Collect,
-
-    SeparateCollect,
-
-    Separate,
-
-    TryInto,
-
-    LockMutex,
-
-    RegexOption,
-
-    FromStr,
-
-    SelectEq,
-
-    UnitRepeat,
-
-    TryRepeat,
-
-    Repeat,
-
-    RepeatRange,
-
-    OutOfBound,
-
-    One,
-
-    OneMore,
-
-    CountIf,
-
-    Start,
-
-    End,
-
-    String,
-
-    Bytes,
+    Not,
 
     Consume,
 
-    SpanIndex,
+    Bytes,
+
+    String,
+
+    End,
+
+    Start,
+
+    LockMutex,
+
+    Option,
+
+    FromStr,
+
+    TryInto,
+
+    SelectEq,
+
+    SepCollect,
+
+    Collect,
+
+    Separate,
+
+    RegexRepeat,
+
+    NeuRepeatRange,
+
+    NeuRepeat,
+
+    NeuOneMore,
+
+    NeuOne,
+
+    OriginOutOfBound,
+
+    Other,
 }
 
 impl std::error::Error for Error {}
@@ -57,30 +54,27 @@ impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Null => write!(f, "Error::Null"),
-            Error::Other => write!(f, "Error::Other"),
-
-            Error::LockMutex => write!(f, "Can not lock mutex for regex"),
-            Error::Collect => write!(f, "In (`Collect`): need more data"),
-            Error::SeparateCollect => write!(f, "In (`SeparateCollect`): need more data"),
-            Error::Separate => write!(f, "In (`Separate`): need more data"),
-            Error::TryInto => write!(f, "In (`Map`): got error in `try_into`"),
-            Error::RegexOption => write!(f, "In (`Option<I>`): need option value in ctor or regex"),
-            Error::FromStr => write!(f, "In (`Map`): can not map str value to type"),
-            Error::SelectEq => write!(f, "In (`Map`): not equal"),
-            Error::UnitRepeat => write!(f, "In (`UnitRepeat`): need more data"),
-            Error::TryRepeat => write!(f, "In (`TryRepeat`): need more data"),
-            Error::Repeat => write!(f, "In (`Repeat`): need more data"),
-            Error::RepeatRange => write!(f, "In (`RepeatRange`): need more data"),
-            Error::OutOfBound => write!(f, "Got error: offset out of bound"),
-            Error::One => write!(f, "In (`one`): need more data"),
-            Error::OneMore => write!(f, "In (`one_more`): need more data"),
-            Error::CountIf => write!(f, "In (`count_if`): need more data"),
-            Error::Start => write!(f, "In (`start`): offset is not at the begining"),
-            Error::End => write!(f, "In (`end`): offset is not at the ending"),
-            Error::String => write!(f, "In (`string`): match failed"),
-            Error::Bytes => write!(f, "In (`bytes`): match failed"),
+            Error::Not => write!(f, "In (`not`): got error when invoke regex"),
             Error::Consume => write!(f, "In (`consume`): need more data"),
-            Error::SpanIndex => write!(f, "Got error: invalid span index"),
+            Error::Bytes => write!(f, "In (`bytes`): bytes not equal"),
+            Error::String => write!(f, "In (`string`): string not equal"),
+            Error::End => write!(f, "In (`end`): offset is not at the ending"),
+            Error::Start => write!(f, "In (`start`): offset is not at the begining"),
+            Error::LockMutex => write!(f, "Can not lock mutex for regex"),
+            Error::Option => write!(f, "In (`Option`): unexcepted `None` value"),
+            Error::FromStr => write!(f, "In (`FromStr`): got error in `from_str_radix`"),
+            Error::TryInto => write!(f, "In (`MapTryInto`): got error in `TryInto::try_into`"),
+            Error::SelectEq => write!(f, "In (`SelectEq`): tuple.0 and tuple.1 not equal"),
+            Error::SepCollect => write!(f, "In (`SepCollect`): need more data"),
+            Error::Collect => write!(f, "In (`Collect`): need more data"),
+            Error::Separate => write!(f, "In (`Separate`): need more data"),
+            Error::RegexRepeat => write!(f, "In (`RegexRepeat`): need more data"),
+            Error::NeuRepeatRange => write!(f, "In (`NeuRepeatRange`): need more data"),
+            Error::NeuRepeat => write!(f, "In (`NeuRepeat`): need more data"),
+            Error::NeuOneMore => write!(f, "In (`NeuOneMore`): need more data"),
+            Error::NeuOne => write!(f, "In (`NeuOne`): need more data"),
+            Error::OriginOutOfBound => write!(f, "Offset out of bound"),
+            Error::Other => write!(f, "Error::Other"),
         }
     }
 }

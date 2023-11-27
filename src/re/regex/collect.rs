@@ -80,7 +80,7 @@ where
         let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
         let val = trace_v!(
-            "collect",
+            "regex_collect",
             range,
             beg,
             O::from_iter(std::iter::from_fn(|| match g.try_mat(&self.pat) {
@@ -95,7 +95,7 @@ where
         if cnt >= self.min {
             ret = Ok(val);
         }
-        trace_v!("collect", range, beg => g.end(), ret.is_ok(), cnt);
+        trace_v!("regex_collect", range, beg => g.end(), ret.is_ok(), cnt);
         g.process_ret(ret)
     }
 }

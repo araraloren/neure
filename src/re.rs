@@ -123,7 +123,7 @@ where
     type Ret = P::Ret;
 
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        self.as_ref().ok_or(Error::RegexOption)?.try_parse(ctx)
+        self.as_ref().ok_or(Error::Option)?.try_parse(ctx)
     }
 }
 
@@ -629,11 +629,11 @@ where
 {
     move |ctx: &mut C| {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Other);
+        let mut ret = Err(Error::Not);
         let beg = g.beg();
-        let re_ret = trace!("not", beg, g.try_mat(&re));
+        let r = trace!("not", beg, g.try_mat(&re));
 
-        if re_ret.is_err() {
+        if r.is_err() {
             ret = Ok(R::from_ctx(g.ctx(), (0, 0)));
         }
         trace!("not", beg => g.reset().end(), ret)

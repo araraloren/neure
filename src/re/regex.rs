@@ -17,9 +17,9 @@ pub use self::dynamic::DynamicRegexHelper;
 pub use self::or::RegexOr;
 pub use self::quote::RegexQuote;
 pub use self::repeat::RegexRepeat;
+pub use self::sep::RegexSepCollect;
+pub use self::sep::RegexSepOnce;
 pub use self::sep::RegexSeparate;
-pub use self::sep::RegexSeparateCollect;
-pub use self::sep::RegexSeparateOnce;
 pub use self::then::RegexThen;
 
 use crate::ctx::Context;
@@ -162,24 +162,24 @@ where
     RegexSeparate::new(pat, sep).with_skip(skip)
 }
 
-pub fn sep_collect<'a, C, S, P, T>(pat: P, sep: S, skip: bool) -> RegexSeparateCollect<C, P, S, T>
+pub fn sep_collect<'a, C, S, P, T>(pat: P, sep: S, skip: bool) -> RegexSepCollect<C, P, S, T>
 where
     P: Regex<C>,
     S: Regex<C>,
     T: FromIterator<P::Ret>,
     C: Context<'a> + Policy<C>,
 {
-    RegexSeparateCollect::new(pat, sep).with_skip(skip)
+    RegexSepCollect::new(pat, sep).with_skip(skip)
 }
 
-pub fn sep_once<'a, C, L, S, R>(left: L, sep: S, right: R) -> RegexSeparateOnce<C, L, S, R>
+pub fn sep_once<'a, C, L, S, R>(left: L, sep: S, right: R) -> RegexSepOnce<C, L, S, R>
 where
     L: Regex<C>,
     S: Regex<C>,
     R: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    RegexSeparateOnce::new(left, sep, right)
+    RegexSepOnce::new(left, sep, right)
 }
 
 pub fn collect<'a, C, P, O>(pat: P, min: usize) -> RegexCollect<C, P, O>

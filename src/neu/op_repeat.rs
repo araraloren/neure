@@ -125,7 +125,7 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::UnitRepeat);
+        let mut ret = Err(Error::NeuRepeat);
         let iter = g.ctx().peek();
         let offset = g.beg();
         let range = M..N;
@@ -276,7 +276,7 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::RepeatRange);
+        let mut ret = Err(Error::NeuRepeatRange);
         let iter = g.ctx().peek();
         let offset = g.beg();
 

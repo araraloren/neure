@@ -39,9 +39,9 @@ pub use self::quote::Quote;
 pub use self::r#if::branch;
 pub use self::r#if::IfRegex;
 pub use self::repeat::Repeat;
+pub use self::sep::SepCollect;
+pub use self::sep::SepOnce;
 pub use self::sep::Separate;
-pub use self::sep::SeparateCollect;
-pub use self::sep::SeparateOnce;
 pub use self::then::Then;
 
 use crate::ctx::Context;
@@ -152,7 +152,7 @@ where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        Ctor::constrct(self.as_ref().ok_or(Error::RegexOption)?, ctx, handler)
+        Ctor::constrct(self.as_ref().ok_or(Error::Option)?, ctx, handler)
     }
 }
 
@@ -194,7 +194,7 @@ where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
     {
-        let ret = self.lock().expect("Oops ?! Can not unwrap mutex ...");
+        let ret = self.lock().map_err(|_| Error::LockMutex)?;
 
         Ctor::constrct(&*ret, ctx, handler)
     }
@@ -275,9 +275,9 @@ where
 
     fn sep<S>(self, sep: S) -> Separate<C, Self, S>;
 
-    fn sep_once<S, R>(self, sep: S, right: R) -> SeparateOnce<C, Self, S, R>;
+    fn sep_once<S, R>(self, sep: S, right: R) -> SepOnce<C, Self, S, R>;
 
-    fn sep_collect<S, O, T>(self, sep: S) -> SeparateCollect<C, Self, S, O, T>;
+    fn sep_collect<S, O, T>(self, sep: S) -> SepCollect<C, Self, S, O, T>;
 
     fn or<P>(self, pat: P) -> Or<C, Self, P>;
 
@@ -492,8 +492,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn sep_once<S, R>(self, sep: S, right: R) -> SeparateOnce<C, Self, S, R> {
-        SeparateOnce::new(self, sep, right)
+    fn sep_once<S, R>(self, sep: S, right: R) -> SepOnce<C, Self, S, R> {
+        SepOnce::new(self, sep, right)
     }
 
     ///
@@ -528,8 +528,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn sep_collect<S, O, V>(self, sep: S) -> SeparateCollect<C, Self, S, O, V> {
-        SeparateCollect::new(self, sep)
+    fn sep_collect<S, O, V>(self, sep: S) -> SepCollect<C, Self, S, O, V> {
+        SepCollect::new(self, sep)
     }
 
     ///
