@@ -1,3 +1,4 @@
+mod and;
 mod collect;
 mod dthen;
 mod dynamic;
@@ -6,8 +7,8 @@ mod or;
 mod quote;
 mod repeat;
 mod sep;
-mod then;
 
+pub use self::and::RegexAnd;
 pub use self::collect::RegexCollect;
 pub use self::dthen::DynamicCreateRegexThen;
 pub use self::dthen::DynamicCreateRegexThenHelper;
@@ -22,7 +23,6 @@ pub use self::repeat::RegexRepeat;
 pub use self::sep::RegexSepCollect;
 pub use self::sep::RegexSepOnce;
 pub use self::sep::RegexSeparate;
-pub use self::then::RegexThen;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -50,13 +50,13 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-pub fn then<'a, C, P, T>(pat: P, then: T) -> RegexThen<C, P, T>
+pub fn and<'a, C, L, R>(left: L, right: R) -> RegexAnd<C, L, R>
 where
-    P: Regex<C>,
-    T: Regex<C>,
+    L: Regex<C>,
+    R: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    RegexThen::new(pat, then)
+    RegexAnd::new(left, right)
 }
 
 ///

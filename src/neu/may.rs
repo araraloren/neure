@@ -81,6 +81,7 @@ where
     I: Neu<T>,
     T: MayDebug,
 {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         let count = self.count.get();
         let value = self.value.get();

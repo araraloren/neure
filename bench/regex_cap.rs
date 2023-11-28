@@ -69,37 +69,24 @@ mod email_neure {
     use super::*;
 
     fn parser(storer: &mut SimpleStorer, str: &str) -> Result<(), neure::err::Error> {
-        let letter = neu!(['a' - 'z']);
-        let number = neu!(['0' - '9']);
-        let us = neu!('_');
-        let dot = neu!('.');
-        let plus = neu!('+');
-        let minus = neu!('-');
-        let at = re!('@');
-        let pre = re!((letter, number, us, dot, plus, minus)+);
-        let domain = letter
-            .or(number.or(dot.or(minus)))
-            .repeat_range(0..)
-            .set_cond(move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
-                if ch == '.' {
-                    // don't match dot if we don't have more dot
-                    if let Ok(str) = Context::orig_at(ctx, ctx.offset() + length + 1) {
-                        return Ok(str.find('.').is_some());
-                    }
-                }
-                Ok(true)
-            });
-        let post = re!((letter, dot){2,6});
-        let dot = re!((dot){1});
         let start = re::start();
         let end = re::end();
+        let letter = neu!(['a' - 'z']);
+        let number = neu!(['0' - '9']);
+        let pre = re!((letter, number, '_', '.', '+', '-')+);
+        let domain = letter.or(number).or('.').or('-').repeat_to::<30>().set_cond(
+            move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
+                Ok(!(ch == '.' && ctx.orig_at(ctx.offset() + length + 1)?.find('.').is_none()))
+            },
+        );
+        let post = re!((letter, '.'){2,6});
         let mut ctx = RegexCtx::new(str);
 
         ctx.try_mat(&start)?;
         storer.try_cap(0, &mut ctx, &pre)?;
-        ctx.try_mat(&at)?;
+        ctx.try_mat(&"@")?;
         storer.try_cap(1, &mut ctx, &domain)?;
-        ctx.try_mat(&dot)?;
+        ctx.try_mat(&".")?;
         storer.try_cap(2, &mut ctx, &post)?;
         ctx.try_mat(&end)?;
         Ok(())

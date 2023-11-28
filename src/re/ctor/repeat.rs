@@ -142,6 +142,7 @@ where
     P: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
@@ -182,6 +183,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

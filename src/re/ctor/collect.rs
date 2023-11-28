@@ -75,6 +75,7 @@ where
     P: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
@@ -113,6 +114,7 @@ where
 {
     type Ret = P::Ret;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

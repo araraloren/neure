@@ -28,6 +28,7 @@ where
 {
     type Ret = R;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let beg = ctx.offset();
         let ret = Ok(<R as Ret>::from_ctx(ctx, (0, 0)));
@@ -40,6 +41,7 @@ impl<'a, C, O> Ctor<'a, C, O, O> for NullRegex<Span>
 where
     C: Context<'a, Orig = str> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,

@@ -139,6 +139,7 @@ where
 {
     type Ret = Vec<P::Ret>;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut all_rets = Vec::with_capacity(self.capacity);

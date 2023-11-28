@@ -36,77 +36,78 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct RegexThen<C, P, T> {
-    pat: P,
-    then: T,
+pub struct RegexAnd<C, L, R> {
+    left: L,
+    right: R,
     marker: PhantomData<C>,
 }
 
-impl<C, P, T> Clone for RegexThen<C, P, T>
+impl<C, L, R> Clone for RegexAnd<C, L, R>
 where
-    P: Clone,
-    T: Clone,
+    L: Clone,
+    R: Clone,
 {
     fn clone(&self) -> Self {
         Self {
-            pat: self.pat.clone(),
-            then: self.then.clone(),
+            left: self.left.clone(),
+            right: self.right.clone(),
             marker: self.marker,
         }
     }
 }
 
-impl<C, P, T> RegexThen<C, P, T> {
+impl<C, P, T> RegexAnd<C, P, T> {
     pub fn new(pat: P, then: T) -> Self {
         Self {
-            pat,
-            then,
+            left: pat,
+            right: then,
             marker: PhantomData,
         }
     }
 
-    pub fn pat(&self) -> &P {
-        &self.pat
+    pub fn left(&self) -> &P {
+        &self.left
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
-        &mut self.pat
+    pub fn left_mut(&mut self) -> &mut P {
+        &mut self.left
     }
 
-    pub fn then(&self) -> &T {
-        &self.then
+    pub fn right(&self) -> &T {
+        &self.right
     }
 
-    pub fn then_mut(&mut self) -> &mut T {
-        &mut self.then
+    pub fn right_mut(&mut self) -> &mut T {
+        &mut self.right
     }
 
-    pub fn set_pat(&mut self, pat: P) -> &mut Self {
-        self.pat = pat;
+    pub fn set_left(&mut self, left: P) -> &mut Self {
+        self.left = left;
         self
     }
 
-    pub fn set_then(&mut self, then: T) -> &mut Self {
-        self.then = then;
+    pub fn set_right(&mut self, right: T) -> &mut Self {
+        self.right = right;
         self
     }
 }
 
-impl<'a, C, P, T> Regex<C> for RegexThen<C, P, T>
+impl<'a, C, L, R> Regex<C> for RegexAnd<C, L, R>
 where
-    P: Regex<C>,
-    T: Regex<C>,
+    L: Regex<C>,
+    R: Regex<C>,
     C: Context<'a> + Policy<C>,
 {
-    type Ret = (P::Ret, T::Ret);
+    type Ret = (L::Ret, R::Ret);
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let r_p = trace!("then", beg @ "pat", g.try_mat(&self.pat)?);
-        let r_t = trace!("then", beg @ "then", g.try_mat(&self.then)?);
+        let r_p = trace!("and", beg @ "left", g.try_mat(&self.left)?);
+        let r_t = trace!("and", beg @ "right", g.try_mat(&self.right)?);
 
-        trace!("then", beg => g.end(), true);
+        trace!("and", beg => g.end(), true);
         Ok((r_p, r_t))
     }
 }

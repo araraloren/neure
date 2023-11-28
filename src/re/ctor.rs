@@ -1,3 +1,4 @@
+mod and;
 mod boxed;
 mod collect;
 mod dthen;
@@ -11,7 +12,6 @@ mod pat;
 mod quote;
 mod repeat;
 mod sep;
-mod then;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -19,6 +19,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+pub use self::and::And;
 pub use self::boxed::into_boxed_ctor;
 pub use self::boxed::BoxedCtor;
 pub use self::boxed::BoxedCtorHelper;
@@ -42,7 +43,6 @@ pub use self::repeat::Repeat;
 pub use self::sep::SepCollect;
 pub use self::sep::SepOnce;
 pub use self::sep::Separate;
-pub use self::then::Then;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -283,7 +283,7 @@ where
 
     fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P>;
 
-    fn then<T>(self, then: T) -> Then<C, Self, T>;
+    fn and<T>(self, then: T) -> And<C, Self, T>;
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
@@ -612,8 +612,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn then<P>(self, then: P) -> Then<C, Self, P> {
-        Then::new(self, then)
+    fn and<P>(self, then: P) -> And<C, Self, P> {
+        And::new(self, then)
     }
 
     ///

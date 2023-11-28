@@ -83,6 +83,7 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
@@ -101,6 +102,7 @@ where
 {
     type Ret = P::Ret;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         ctx.try_mat(&self.pat)
     }

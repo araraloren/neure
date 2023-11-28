@@ -55,6 +55,7 @@ where
     R: Regex<RegexCtx<'a, C::Orig>>,
     RegexCtx<'a, C::Orig>: Context<'a>,
 {
+    #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
         let mut ctx = RegexCtx::new(ctx.orig_at(ctx.offset() + item.0)?);
         let ret = {

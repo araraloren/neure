@@ -35,3 +35,9 @@ harness = false
 name = "regex_cap"
 path = "./bench/regex_cap.rs"
 harness = false
+
+
+[[bench]]
+name = "regex_nocap"
+path = "./bench/regex_nocap.rs"
+harness = false

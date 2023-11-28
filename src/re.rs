@@ -29,16 +29,16 @@ pub use self::extract::Handler;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
+pub use self::regex::and;
 pub use self::regex::collect;
 pub use self::regex::into_dyn_regex;
+pub use self::regex::ltm;
 pub use self::regex::or;
 pub use self::regex::quote;
 pub use self::regex::repeat;
 pub use self::regex::sep;
 pub use self::regex::sep_collect;
 pub use self::regex::sep_once;
-pub use self::regex::then;
-pub use self::regex::ltm;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
 
@@ -86,6 +86,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::string(self);
         pattern.try_parse(ctx)
@@ -98,6 +99,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::bytes(self);
         pattern.try_parse(ctx)
@@ -110,6 +112,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::bytes(self.as_slice());
         pattern.try_parse(ctx)
@@ -436,6 +439,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
+#[inline(always)]
 pub fn start<'a, C>() -> impl Fn(&mut C) -> Result<Span, Error>
 where
     C: Context<'a>,
@@ -473,6 +477,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
+#[inline(always)]
 pub fn end<'a, C>() -> impl Fn(&mut C) -> Result<Span, Error>
 where
     C: Context<'a>,
@@ -506,6 +511,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
+#[inline(always)]
 pub fn string<'a, 'b, C>(lit: &'b str) -> impl Fn(&mut C) -> Result<Span, Error> + 'b
 where
     C: Context<'a, Orig = str>,
@@ -541,6 +547,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
+#[inline(always)]
 pub fn bytes<'a, 'b, C>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<Span, Error> + 'b
 where
     C: Context<'a, Orig = [u8]>,
@@ -576,6 +583,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
+#[inline(always)]
 pub fn consume<'a, C>(len: usize) -> impl Fn(&mut C) -> Result<Span, Error>
 where
     C: Context<'a>,
@@ -623,6 +631,24 @@ where
     or(regex, null())
 }
 
+///
+/// Return a regex which reverse the result of `re`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let re = re::not("]]]");
+///     let mut ctx = CharsCtx::new("[123,456,789]");
+///
+///     assert_eq!(ctx.try_mat(&re)?, Span::new(0, 0));
+///     Ok(())
+/// # }
+/// ```
 pub fn not<'a, C, R>(re: impl Regex<C, Ret = R>) -> impl Fn(&mut C) -> Result<R, Error>
 where
     R: Ret,

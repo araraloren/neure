@@ -87,6 +87,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
@@ -109,6 +110,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
@@ -198,6 +200,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,
@@ -220,6 +223,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

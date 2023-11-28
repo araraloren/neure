@@ -86,6 +86,7 @@ impl<T> RangeBounds<T> for CRange<T> {
 }
 
 impl<T: PartialOrd + MayDebug> Neu<T> for CRange<T> {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("crange", self, other, self.contains(other))
     }

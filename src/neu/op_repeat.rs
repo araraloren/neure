@@ -233,6 +233,7 @@ where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
+    #[inline(always)]
     pub fn set_cond<F>(self, r#if: F) -> NeureRepeatRange<'a, C, U, F>
     where
         F: NeuCond<'a, C>,
@@ -271,6 +272,7 @@ where
 {
     type Ret = Span;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

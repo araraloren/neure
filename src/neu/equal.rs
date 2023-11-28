@@ -15,6 +15,7 @@ impl<T> Equal<T> {
 }
 
 impl<T: PartialEq + MayDebug> Neu<T> for Equal<T> {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("equal", self.val, other, &self.val == other)
     }

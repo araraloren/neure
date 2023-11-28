@@ -118,6 +118,7 @@ where
 {
     type Ret = (L::Ret, R::Ret);
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
@@ -276,6 +277,7 @@ where
 {
     type Ret = Vec<P::Ret>;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut res = Vec::with_capacity(self.capacity.max(self.min));
@@ -430,6 +432,7 @@ where
 {
     type Ret = T;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut ret = Err(Error::SepCollect);

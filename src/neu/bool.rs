@@ -35,6 +35,7 @@ impl<T> True<T> {
 }
 
 impl<T: MayDebug> Neu<T> for True<T> {
+    #[inline(always)]
     fn is_match(&self, _other: &T) -> bool {
         trace_u!("true", "true", _other, true)
     }
@@ -87,6 +88,7 @@ impl<T> False<T> {
 }
 
 impl<T: MayDebug> Neu<T> for False<T> {
+    #[inline(always)]
     fn is_match(&self, _other: &T) -> bool {
         trace_u!("false", "false", _other, false)
     }

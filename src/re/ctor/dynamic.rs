@@ -49,6 +49,7 @@ impl<'a, 'b, C, M, O> Ctor<'a, C, M, O> for DynamicCtor<'b, C, O>
 where
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, _: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,

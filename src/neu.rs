@@ -106,6 +106,7 @@ where
     T: MayDebug,
     Self: PartialEq<T>,
 {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("char", self, other, self == other)
     }
@@ -116,6 +117,7 @@ where
     T: MayDebug,
     Self: PartialEq<T>,
 {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("u8", self, other, self == other)
     }
@@ -205,6 +207,7 @@ impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
     ///   assert_eq!(ctx2.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 2));
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("array", self, other, self.contains(other))
     }
@@ -228,6 +231,7 @@ impl<'a, T: PartialEq + MayDebug> Neu<T> for &'a [T] {
     ///   assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("slice", self, other, self.contains(other))
     }
@@ -257,6 +261,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
     /// # }
     /// ```
     ///
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("vector", self, other, self.contains(other))
     }
@@ -283,6 +288,7 @@ impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("bound(&T)", self, other, self.contains(other))
     }
@@ -308,6 +314,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("bound(T)", self, other, self.contains(other))
     }
@@ -332,6 +339,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range(&T)", self, other, self.contains(&other))
     }
@@ -356,6 +364,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range(T)", self, other, self.contains(other))
     }
@@ -380,6 +389,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_from(&T)", self, other, self.contains(&other))
     }
@@ -404,6 +414,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_from(T)", self, other, self.contains(other))
     }
@@ -428,6 +439,7 @@ impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_full", self, other, self.contains(&other))
     }
@@ -452,6 +464,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_inclusive(&T)", self, other, self.contains(&other))
     }
@@ -476,6 +489,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_inclusive(T)", self, other, self.contains(other))
     }
@@ -500,6 +514,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to(&T)", self, other, self.contains(&other))
     }
@@ -524,6 +539,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to(T)", self, other, self.contains(other))
     }
@@ -548,6 +564,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to_inclusive(&T)", self, other, self.contains(&other))
     }
@@ -572,6 +589,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
     ///     Ok(())
     /// # }
     /// ```
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to_inclusive(T)", self, other, self.contains(other))
     }

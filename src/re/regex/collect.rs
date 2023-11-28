@@ -73,6 +73,7 @@ where
 {
     type Ret = O;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

@@ -72,6 +72,7 @@ where
     L: Neu<T>,
     R: Neu<T>,
 {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         let ret = self.left.is_match(other) || self.right.is_match(other);
 

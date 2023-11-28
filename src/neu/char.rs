@@ -11,6 +11,7 @@ impl Alphabetic {
 }
 
 impl Neu<char> for Alphabetic {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("alphabetic", self, other, other.is_alphabetic())
     }
@@ -49,6 +50,7 @@ impl Alphanumeric {
 }
 
 impl Neu<char> for Alphanumeric {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("alphanumeric", self, other, other.is_alphanumeric())
     }
@@ -88,6 +90,7 @@ impl Ascii {
 }
 
 impl Neu<char> for Ascii {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii", self, other, other.is_ascii())
     }
@@ -126,6 +129,7 @@ impl AsciiAlphabetic {
 }
 
 impl Neu<char> for AsciiAlphabetic {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_alphabetic", self, other, other.is_ascii_alphabetic())
     }
@@ -164,6 +168,7 @@ impl AsciiAlphanumeric {
 }
 
 impl Neu<char> for AsciiAlphanumeric {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!(
             "ascii_alphanumeric",
@@ -207,6 +212,7 @@ impl AsciiControl {
 }
 
 impl Neu<char> for AsciiControl {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_control", self, other, other.is_ascii_control())
     }
@@ -245,6 +251,7 @@ impl AsciiDigit {
 }
 
 impl Neu<char> for AsciiDigit {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_digit", self, other, other.is_ascii_digit())
     }
@@ -283,6 +290,7 @@ impl AsciiGraphic {
 }
 
 impl Neu<char> for AsciiGraphic {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_graphic", self, other, other.is_ascii_graphic())
     }
@@ -321,6 +329,7 @@ impl AsciiHexDigit {
 }
 
 impl Neu<char> for AsciiHexDigit {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_hexdigit", self, other, other.is_ascii_hexdigit())
     }
@@ -359,6 +368,7 @@ impl AsciiLowercase {
 }
 
 impl Neu<char> for AsciiLowercase {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_lowercase", self, other, other.is_ascii_lowercase())
     }
@@ -397,6 +407,7 @@ impl AsciiPunctuation {
 }
 
 impl Neu<char> for AsciiPunctuation {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!(
             "ascii_punctuation",
@@ -440,6 +451,7 @@ impl AsciiUppercase {
 }
 
 impl Neu<char> for AsciiUppercase {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_uppercase", self, other, other.is_ascii_uppercase())
     }
@@ -478,6 +490,7 @@ impl AsciiWhiteSpace {
 }
 
 impl Neu<char> for AsciiWhiteSpace {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("ascii_whitespace", self, other, other.is_ascii_whitespace())
     }
@@ -519,6 +532,7 @@ impl Control {
 }
 
 impl Neu<char> for Control {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("control", self, other, other.is_control())
     }
@@ -557,6 +571,7 @@ impl Digit {
 }
 
 impl Neu<char> for Digit {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("digit", self, other, other.is_digit(self.0))
     }
@@ -595,6 +610,7 @@ impl Lowercase {
 }
 
 impl Neu<char> for Lowercase {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("lowercase", self, other, other.is_lowercase())
     }
@@ -633,6 +649,7 @@ impl Numeric {
 }
 
 impl Neu<char> for Numeric {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("numeric", self, other, other.is_numeric())
     }
@@ -671,6 +688,7 @@ impl Uppercase {
 }
 
 impl Neu<char> for Uppercase {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("uppercase", self, other, other.is_uppercase())
     }
@@ -709,6 +727,7 @@ impl WhiteSpace {
 }
 
 impl Neu<char> for WhiteSpace {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("whitespace", self, other, other.is_whitespace())
     }
@@ -749,6 +768,7 @@ impl Wild {
 }
 
 impl Neu<char> for Wild {
+    #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
         trace_u!("wild", '\n', other, other != &'\n')
     }

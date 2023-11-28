@@ -52,6 +52,7 @@ impl<U, T> Neu<T> for Not<U, T>
 where
     U: Neu<T>,
 {
+    #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         let ret = !self.unit.is_match(other);
 

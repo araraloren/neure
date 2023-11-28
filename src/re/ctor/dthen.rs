@@ -91,6 +91,7 @@ where
     C: Context<'a> + Policy<C>,
     F: Fn(&O1) -> Result<T, Error>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
     where
         H: Handler<A, Out = M, Error = Error>,

@@ -40,6 +40,7 @@ impl<'a, C, R> DynamicRegex<'a, C, R> {
 impl<'a, C, R> Regex<C> for DynamicRegex<'a, C, R> {
     type Ret = R;
 
+    #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         self.inner.try_parse(ctx)
     }
@@ -49,6 +50,7 @@ impl<'a, 'b, C, O> Ctor<'a, C, O, O> for DynamicRegex<'b, C, Span>
 where
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = O, Error = Error>,

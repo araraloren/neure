@@ -51,8 +51,8 @@ impl JsonParser {
             let ws = Self::ws_u8().repeat_full();
             let sign = re!([b'+' b'-']{0,1});
             let digit = re!([b'0' - b'9']{1,});
-            let dec = b".".then(digit).pat();
-            let num = sign.then(digit).then(dec.or(re::null()));
+            let dec = b".".and(digit).pat();
+            let num = sign.and(digit).and(dec.or(re::null()));
             let num = num.pat().map(Self::to_digit);
 
             let str_val = re!([^ b'"']*);

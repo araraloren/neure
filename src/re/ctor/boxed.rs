@@ -59,6 +59,7 @@ where
     T: Ctor<'a, C, M, O>,
     C: Context<'a> + Policy<C>,
 {
+    #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
