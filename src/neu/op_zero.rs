@@ -14,6 +14,7 @@ use crate::re::Regex;
 
 use super::length_of;
 use super::ret_and_inc;
+use super::Condition;
 use super::Neu;
 use super::NeuCond;
 
@@ -67,12 +68,14 @@ where
     }
 }
 
-impl<'a, C, U, T, I> NeureZeroOne<C, U, T, I>
+impl<'a, C, U, I> Condition<'a, C> for NeureZeroOne<C, U, C::Item, I>
 where
-    U: Neu<T>,
+    U: Neu<C::Item>,
     C: Context<'a>,
 {
-    pub fn set_cond<F>(self, r#if: F) -> NeureZeroOne<C, U, T, F>
+    type Out<F> = NeureZeroOne<C, U, C::Item, F>;
+
+    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
@@ -180,12 +183,14 @@ where
     }
 }
 
-impl<'a, C, U, T, I> NeureZeroMore<C, U, T, I>
+impl<'a, C, U, I> Condition<'a, C> for NeureZeroMore<C, U, C::Item, I>
 where
-    U: Neu<T>,
+    U: Neu<C::Item>,
     C: Context<'a>,
 {
-    pub fn set_cond<F>(self, r#if: F) -> NeureZeroMore<C, U, T, F>
+    type Out<F> = NeureZeroMore<C, U, C::Item, F>;
+
+    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {

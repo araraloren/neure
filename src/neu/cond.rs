@@ -1,6 +1,8 @@
 use std::fmt::Debug;
+use std::marker::PhantomData;
 
-use crate::ctx::{Context, Policy, RegexCtx};
+use crate::ctx::Context;
+use crate::ctx::Policy;
 use crate::err::Error;
 use crate::re::Regex;
 use crate::trace_log;
@@ -10,6 +12,17 @@ where
     C: Context<'a>,
 {
     fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error>;
+}
+
+pub trait Condition<'a, C>
+where
+    C: Context<'a>,
+{
+    type Out<F>;
+
+    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    where
+        F: NeuCond<'a, C>;
 }
 
 impl<'a, C, F> NeuCond<'a, C> for F
@@ -39,35 +52,39 @@ where
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ReCond<T>(T);
+pub struct RegexCond<'a, C, T> {
+    regex: T,
+    marker: PhantomData<(&'a (), C)>,
+}
 
-impl<T> ReCond<T> {
+impl<'a, C, T> RegexCond<'a, C, T> {
     pub fn new(regex: T) -> Self {
-        Self(regex)
+        Self {
+            regex,
+            marker: PhantomData,
+        }
     }
 }
 
-impl<'a, C, R> NeuCond<'a, C> for ReCond<R>
+impl<'a, C, T> NeuCond<'a, C> for RegexCond<'a, C, T>
 where
     C::Orig: 'a,
-    C: Context<'a>,
-    R::Ret: crate::ctx::Ret,
-    R: Regex<RegexCtx<'a, C::Orig>>,
-    RegexCtx<'a, C::Orig>: Context<'a>,
+    T: Regex<C>,
+    C: Context<'a> + Policy<C>,
 {
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
-        let mut ctx = RegexCtx::new(ctx.orig_at(ctx.offset() + item.0)?);
+        let mut ctx = ctx.clone_with(ctx.orig_at(ctx.offset() + item.0)?);
         let ret = {
             trace_log!("running regex cond");
-            ctx.try_mat_t(&self.0)
+            ctx.try_mat_t(&self.regex)
         };
 
-        crate::trace_log!("running regex cond -> {:?}", ret);
+        crate::trace_log!("running regex cond -> {:?}", ret.is_ok());
         Ok(ret.is_ok())
     }
 }
 
-pub fn re_cond<R>(regex: R) -> ReCond<R> {
-    ReCond::new(regex)
+pub fn re_cond<'a, C, T>(regex: T) -> RegexCond<'a, C, T> {
+    RegexCond::new(regex)
 }

@@ -74,11 +74,14 @@ mod email_neure {
         let letter = neu!(['a' - 'z']);
         let number = neu!(['0' - '9']);
         let pre = re!((letter, number, '_', '.', '+', '-')+);
-        let domain = letter.or(number).or('.').or('-').repeat_to::<30>().set_cond(
-            move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
+        let domain = letter
+            .or(number)
+            .or('.')
+            .or('-')
+            .repeat_to::<30>()
+            .set_cond(move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
                 Ok(!(ch == '.' && ctx.orig_at(ctx.offset() + length + 1)?.find('.').is_none()))
-            },
-        );
+            });
         let post = re!((letter, '.'){2,6});
         let mut ctx = RegexCtx::new(str);
 

@@ -118,6 +118,10 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
             .get(offset..(offset + len))
             .ok_or(Error::OriginOutOfBound)
     }
+
+    fn clone_with(&self, orig: &'a Self::Orig) -> Self {
+        RegexCtx::new(orig)
+    }
 }
 
 impl<'a> Context<'a> for RegexCtx<'a, str> {
@@ -165,6 +169,10 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
         self.dat
             .get(offset..(offset + len))
             .ok_or(Error::OriginOutOfBound)
+    }
+
+    fn clone_with(&self, orig: &'a Self::Orig) -> Self {
+        RegexCtx::new(orig)
     }
 }
 

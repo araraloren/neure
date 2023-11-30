@@ -50,6 +50,8 @@ pub trait Context<'a> {
     fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error>;
 
     fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
+
+    fn clone_with(&self, orig: &'a Self::Orig) -> Self;
 }
 
 pub trait Ret: MayDebug

@@ -160,3 +160,11 @@ macro_rules! neu {
         $crate::neu::space()
     };
 }
+
+#[macro_export]
+macro_rules! escape {
+    ($re:expr, $escape:expr, $or:expr) => {{
+        let cond = $crate::neu::re_cond($crate::re::not($escape));
+        $re.set_cond(cond).or($or)
+    }};
+}

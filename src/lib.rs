@@ -42,6 +42,7 @@ pub mod prelude {
     pub use crate::ctx::Ret;
     pub use crate::ctx::Span;
     pub use crate::neu;
+    pub use crate::neu::Condition;
     pub use crate::neu::Neu;
     pub use crate::neu::Neu2Re;
     pub use crate::neu::NeuCond;

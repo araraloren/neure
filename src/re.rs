@@ -50,6 +50,7 @@ use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::Condition;
 use crate::neu::Neu;
 use crate::neu::Neu2Re;
 use crate::neu::NeureOne;
@@ -368,7 +369,7 @@ where
 ///
 pub fn count<'a, const M: usize, const N: usize, C, U>(
     unit: U,
-) -> crate::neu::NeureRepeat<'a, M, N, C, U, NullCond>
+) -> crate::neu::NeureRepeat<M, N, C, U, NullCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
@@ -408,7 +409,7 @@ where
 pub fn count_if<'a, const M: usize, const N: usize, C, U, F>(
     re: U,
     r#if: F,
-) -> crate::neu::NeureRepeat<'a, M, N, C, U, F>
+) -> crate::neu::NeureRepeat<M, N, C, U, F>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,

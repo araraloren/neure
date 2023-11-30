@@ -13,6 +13,7 @@ use crate::re::Regex;
 
 use super::length_of;
 use super::ret_and_inc;
+use super::Condition;
 use super::Neu;
 use super::NeuCond;
 
@@ -66,12 +67,14 @@ where
     }
 }
 
-impl<'a, C, U, T, I> NeureOne<C, U, T, I>
+impl<'a, C, U, I> Condition<'a, C> for NeureOne<C, U, C::Item, I>
 where
-    U: Neu<T>,
-    C: Context<'a>,
+    U: Neu<C::Item>,
+    C: Context<'a> + 'a,
 {
-    pub fn set_cond<F>(self, r#if: F) -> NeureOne<C, U, T, F>
+    type Out<F> = NeureOne<C, U, C::Item, F>;
+
+    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
@@ -177,12 +180,14 @@ where
     }
 }
 
-impl<'a, C, U, T, I> NeureOneMore<C, U, T, I>
+impl<'a, C, U, I> Condition<'a, C> for NeureOneMore<C, U, C::Item, I>
 where
-    U: Neu<T>,
-    C: Context<'a>,
+    U: Neu<C::Item>,
+    C: Context<'a> + 'a,
 {
-    pub fn set_cond<F>(self, r#if: F) -> NeureOneMore<C, U, T, F>
+    type Out<F> = NeureOneMore<C, U, C::Item, F>;
+
+    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
@@ -192,10 +197,9 @@ where
 
 impl<'a, U, C, O, I> Ctor<'a, C, O, O> for NeureOneMore<C, U, C::Item, I>
 where
-    C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Policy<C> + 'a,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>

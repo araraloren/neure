@@ -68,9 +68,10 @@ pub use self::char::Uppercase;
 pub use self::char::WhiteSpace;
 pub use self::char::Wild;
 pub use self::cond::re_cond;
+pub use self::cond::Condition;
 pub use self::cond::NeuCond;
 pub use self::cond::NullCond;
-pub use self::cond::ReCond;
+pub use self::cond::RegexCond;
 pub use self::equal::equal;
 pub use self::equal::Equal;
 pub use self::may::MayUnit;
@@ -728,15 +729,15 @@ where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
 {
-    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond>;
+    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<M, N, C, Self, NullCond>;
 
-    fn repeat_times<const M: usize>(self) -> NeureRepeat<'a, M, M, C, Self, NullCond>;
+    fn repeat_times<const M: usize>(self) -> NeureRepeat<M, M, C, Self, NullCond>;
 
-    fn repeat_from<const M: usize>(self) -> NeureRepeat<'a, M, { usize::MAX }, C, Self, NullCond>;
+    fn repeat_from<const M: usize>(self) -> NeureRepeat<M, { usize::MAX }, C, Self, NullCond>;
 
-    fn repeat_to<const N: usize>(self) -> NeureRepeat<'a, 0, N, C, Self, NullCond>;
+    fn repeat_to<const N: usize>(self) -> NeureRepeat<0, N, C, Self, NullCond>;
 
-    fn repeat_full(self) -> NeureRepeat<'a, 0, { usize::MAX }, C, Self, NullCond>;
+    fn repeat_full(self) -> NeureRepeat<0, { usize::MAX }, C, Self, NullCond>;
 
     fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond>;
 
@@ -746,10 +747,7 @@ where
 
     fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond>;
 
-    fn repeat_range(
-        self,
-        range: impl Into<CRange<usize>>,
-    ) -> NeureRepeatRange<'a, C, Self, NullCond>;
+    fn repeat_range(self, range: impl Into<CRange<usize>>) -> NeureRepeatRange<C, Self, NullCond>;
 }
 
 impl<'a, C, U> Neu2Re<'a, C> for U
@@ -776,7 +774,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<'a, M, N, C, Self, NullCond> {
+    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<M, N, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
@@ -799,7 +797,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn repeat_times<const M: usize>(self) -> NeureRepeat<'a, M, M, C, Self, NullCond> {
+    fn repeat_times<const M: usize>(self) -> NeureRepeat<M, M, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
@@ -822,7 +820,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn repeat_from<const M: usize>(self) -> NeureRepeat<'a, M, { usize::MAX }, C, Self, NullCond> {
+    fn repeat_from<const M: usize>(self) -> NeureRepeat<M, { usize::MAX }, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
@@ -845,7 +843,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn repeat_to<const N: usize>(self) -> NeureRepeat<'a, 0, N, C, Self, NullCond> {
+    fn repeat_to<const N: usize>(self) -> NeureRepeat<0, N, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
@@ -868,7 +866,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn repeat_full(self) -> NeureRepeat<'a, 0, { usize::MAX }, C, Self, NullCond> {
+    fn repeat_full(self) -> NeureRepeat<0, { usize::MAX }, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
@@ -983,10 +981,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn repeat_range(
-        self,
-        range: impl Into<CRange<usize>>,
-    ) -> NeureRepeatRange<'a, C, Self, NullCond> {
+    fn repeat_range(self, range: impl Into<CRange<usize>>) -> NeureRepeatRange<C, Self, NullCond> {
         NeureRepeatRange::new(self, range.into(), NullCond)
     }
 }
