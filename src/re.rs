@@ -558,7 +558,7 @@ where
         let len = lit.len();
         let beg = ctx.offset();
 
-        if !ctx.orig()?.starts_with(lit) {
+        if ctx.orig()?.starts_with(lit) {
             ctx.inc(len);
             ret = Ok(Span::new(beg, len));
         }

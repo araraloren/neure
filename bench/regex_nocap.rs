@@ -111,12 +111,12 @@ mod email_neure2 {
             },
         );
         let email = re::start()
-            .and(name)
-            .and("@")
-            .and(domain)
-            .and(".")
-            .and(re!((alpha, '.'){2,6}))
-            .and(re::end());
+            .then(name)
+            .then("@")
+            .then(domain)
+            .then(".")
+            .then(re!((alpha, '.'){2,6}))
+            .then(re::end());
 
         ctx.try_mat(&email)?;
         Ok(())

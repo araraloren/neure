@@ -8,6 +8,7 @@ mod op_not;
 mod op_one;
 mod op_or;
 mod op_repeat;
+mod op_then;
 mod op_zero;
 mod range;
 
@@ -82,6 +83,7 @@ pub use self::op_one::NeureOneMore;
 pub use self::op_or::Or;
 pub use self::op_repeat::NeureRepeat;
 pub use self::op_repeat::NeureRepeatRange;
+pub use self::op_then::NeureThen;
 pub use self::op_zero::NeureZeroMore;
 pub use self::op_zero::NeureZeroOne;
 pub use self::range::range;
@@ -597,12 +599,12 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
 }
 
 pub trait NeuOp<C> {
-    fn or<U>(self, regex: U) -> Or<Self, U, C>
+    fn or<U>(self, unit: U) -> Or<Self, U, C>
     where
         U: Neu<C>,
         Self: Neu<C> + Sized;
 
-    fn and<U>(self, regex: U) -> And<Self, U, C>
+    fn and<U>(self, unit: U) -> And<Self, U, C>
     where
         U: Neu<C>,
         Self: Neu<C> + Sized;
@@ -729,6 +731,10 @@ where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
 {
+    fn then<R>(self, unit: R) -> NeureThen<C, Self, R, C::Item, NullCond>
+    where
+        R: Neu<C::Item>;
+
     fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<M, N, C, Self, NullCond>;
 
     fn repeat_times<const M: usize>(self) -> NeureRepeat<M, M, C, Self, NullCond>;
@@ -755,6 +761,13 @@ where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
 {
+    fn then<R>(self, unit: R) -> NeureThen<C, Self, R, C::Item, NullCond>
+    where
+        R: Neu<C::Item>,
+    {
+        NeureThen::new(self, unit, NullCond)
+    }
+
     ///
     /// Repeat the match M ..= N times.
     ///

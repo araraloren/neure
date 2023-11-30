@@ -51,11 +51,14 @@ impl JsonParser {
             let ws = Self::ws_u8().repeat_full();
             let sign = re!([b'+' b'-']{0,1});
             let digit = re!([b'0' - b'9']{1,});
-            let dec = b".".and(digit).pat();
-            let num = sign.and(digit).and(dec.or(re::null()));
+            let dec = b".".then(digit).pat();
+            let num = sign.then(digit).then(dec.or(re::null()));
             let num = num.pat().map(Self::to_digit);
 
-            let str_val = re!([^ b'"']*);
+            let escape = b'\r'.or(b'\t').or(b'\n').or(b'\\').or(b'\"');
+            let escape = b'\\'.then(escape);
+            let cond = neu::re_cond(re::not(escape));
+            let str_val = b'\"'.not().repeat_one_more().set_cond(cond).or(escape).repeat(0..).pat();
             let str = str_val.quote(re!(b'"'), re!(b'"'));
             let str = str.map(|v| Ok(JsonZero::Str(v)));
 
@@ -87,5 +90,8 @@ impl JsonParser {
 }
 
 pub fn main() {
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
     dbg!(JsonParser::parse(&JSON).unwrap());
 }

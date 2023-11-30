@@ -45,13 +45,13 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Debug, Default, Copy)]
-pub struct And<C, L, R> {
+pub struct Then<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl<C, L, R> Clone for And<C, L, R>
+impl<C, L, R> Clone for Then<C, L, R>
 where
     L: Clone,
     R: Clone,
@@ -65,7 +65,7 @@ where
     }
 }
 
-impl<C, L, R> And<C, L, R> {
+impl<C, L, R> Then<C, L, R> {
     pub fn new(pat: L, then: R) -> Self {
         Self {
             left: pat,
@@ -113,7 +113,7 @@ impl<C, L, R> And<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for And<C, L, R>
+impl<'a, C, L, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for Then<C, L, R>
 where
     L: Ctor<'a, C, M, O1>,
     R: Ctor<'a, C, M, O2>,
@@ -127,17 +127,17 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("and", beg @ "left", self.left.constrct(g.ctx(), func).map(|ret1| {
-            trace!("and", beg @ "right", self.right.constrct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
+        let ret = trace!("then", beg @ "left", self.left.constrct(g.ctx(), func).map(|ret1| {
+            trace!("then", beg @ "right", self.right.constrct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
         }) );
         let ret = g.process_ret(ret)?;
 
-        trace!("and", beg => g.end(), ret.is_ok());
+        trace!("then", beg => g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
 
-impl<'a, C, L, R> Regex<C> for And<C, L, R>
+impl<'a, C, L, R> Regex<C> for Then<C, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
@@ -149,9 +149,9 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let mut ret = trace!("and", beg @ "left", g.try_mat(&self.left)?);
+        let mut ret = trace!("then", beg @ "left", g.try_mat(&self.left)?);
 
-        ret.add_assign(trace!("and", beg @ "right", g.try_mat(&self.right)?));
-        trace!("and", beg => g.end(), Ok(ret))
+        ret.add_assign(trace!("then", beg @ "right", g.try_mat(&self.right)?));
+        trace!("then", beg => g.end(), Ok(ret))
     }
 }

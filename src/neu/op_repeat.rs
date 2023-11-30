@@ -143,7 +143,7 @@ where
                 ret = Ok(ret_and_inc(g.ctx(), cnt, len));
             }
         }
-        trace_v!("neu repeat", range, offset => g.end(), ret, cnt)
+        trace_v!("neu repeat", range, offset => g.end(), g.process_ret(ret), cnt)
     }
 }
 
@@ -294,6 +294,6 @@ where
                 ret = Ok(ret_and_inc(g.ctx(), cnt, len));
             }
         }
-        trace_v!("neu repeat_range", self.range, offset => g.end(), ret, cnt)
+        trace_v!("neu repeat_range", self.range, offset => g.end(), g.process_ret(ret), cnt)
     }
 }

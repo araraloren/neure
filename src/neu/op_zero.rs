@@ -129,7 +129,7 @@ where
                 }
             }
         }
-        trace!("neure_zero_one", beg => g.end(), ret)
+        trace!("neure_zero_one", beg => g.end(), g.process_ret(ret))
     }
 }
 
@@ -254,6 +254,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), cnt, len));
         }
-        trace!("neure_zero_more", offset => g.end(), ret)
+        trace!("neure_zero_more", offset => g.end(), g.process_ret(ret))
     }
 }
