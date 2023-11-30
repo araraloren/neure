@@ -9,7 +9,7 @@ pub enum Error {
 
     Consume,
 
-    Bytes,
+    Slice,
 
     String,
 
@@ -56,7 +56,7 @@ impl Display for Error {
             Error::Null => write!(f, "Error::Null"),
             Error::Not => write!(f, "In (`not`): got error when invoke regex"),
             Error::Consume => write!(f, "In (`consume`): need more data"),
-            Error::Bytes => write!(f, "In (`bytes`): bytes not equal"),
+            Error::Slice => write!(f, "In (`slice`): bytes not equal"),
             Error::String => write!(f, "In (`string`): string not equal"),
             Error::End => write!(f, "In (`end`): offset is not at the ending"),
             Error::Start => write!(f, "In (`start`): offset is not at the begining"),

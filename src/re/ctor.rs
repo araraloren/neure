@@ -142,6 +142,21 @@ where
     }
 }
 
+impl<'a, const N: usize, C, O> Ctor<'a, C, O, O> for [u8; N]
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for Option<I>
 where
     I: Ctor<'a, C, M, O>,

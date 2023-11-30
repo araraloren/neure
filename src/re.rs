@@ -41,11 +41,16 @@ pub use self::regex::sep_collect;
 pub use self::regex::sep_once;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
+use self::regex::RegexConsume;
+use self::regex::RegexEnd;
+use self::regex::RegexNot;
+use self::regex::RegexSlice;
+use self::regex::RegexStart;
+use self::regex::RegexString;
 
 use self::regex::RegexOr;
 
 use crate::ctx::Context;
-use crate::ctx::CtxGuard;
 use crate::ctx::Policy;
 use crate::ctx::Ret;
 use crate::ctx::Span;
@@ -102,7 +107,7 @@ where
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::re::bytes(self);
+        let pattern = crate::re::slice(self);
         pattern.try_parse(ctx)
     }
 }
@@ -115,7 +120,20 @@ where
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::re::bytes(self.as_slice());
+        let pattern = crate::re::slice(self.as_slice());
+        pattern.try_parse(ctx)
+    }
+}
+
+impl<'a, const N: usize, C> Regex<C> for [u8; N]
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    type Ret = Span;
+
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::re::slice(self.as_slice());
         pattern.try_parse(ctx)
     }
 }
@@ -441,19 +459,8 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn start<'a, C>() -> impl Fn(&mut C) -> Result<Span, Error>
-where
-    C: Context<'a>,
-{
-    |ctx: &mut C| {
-        let mut ret = Err(Error::Start);
-        let beg = ctx.offset();
-
-        if ctx.offset() == 0 {
-            ret = Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
-        }
-        trace!("start", beg => ctx.offset(), ret)
-    }
+pub fn start() -> RegexStart {
+    RegexStart::new()
 }
 
 ///
@@ -479,19 +486,8 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn end<'a, C>() -> impl Fn(&mut C) -> Result<Span, Error>
-where
-    C: Context<'a>,
-{
-    |ctx: &mut C| {
-        let mut ret = Err(Error::End);
-        let beg = ctx.offset();
-
-        if ctx.len() == ctx.offset() {
-            ret = Ok(<Span as Ret>::from_ctx(ctx, (0, 0)));
-        }
-        trace!("start", beg => ctx.offset(), ret)
-    }
+pub fn end() -> RegexEnd {
+    RegexEnd::new()
 }
 
 ///
@@ -513,21 +509,8 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn string<'a, 'b, C>(lit: &'b str) -> impl Fn(&mut C) -> Result<Span, Error> + 'b
-where
-    C: Context<'a, Orig = str>,
-{
-    move |ctx: &mut C| {
-        let mut ret = Err(Error::String);
-        let len = lit.len();
-        let beg = ctx.offset();
-
-        if ctx.orig()?.starts_with(lit) {
-            ctx.inc(len);
-            ret = Ok(Span::new(beg, len));
-        }
-        trace!("string", beg => ctx.offset(), ret)
-    }
+pub fn string(lit: &str) -> RegexString<'_> {
+    RegexString::new(lit)
 }
 
 ///
@@ -549,21 +532,8 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn bytes<'a, 'b, C>(lit: &'b [u8]) -> impl Fn(&mut C) -> Result<Span, Error> + 'b
-where
-    C: Context<'a, Orig = [u8]>,
-{
-    move |ctx: &mut C| {
-        let mut ret = Err(Error::Bytes);
-        let len = lit.len();
-        let beg = ctx.offset();
-
-        if ctx.orig()?.starts_with(lit) {
-            ctx.inc(len);
-            ret = Ok(Span::new(beg, len));
-        }
-        trace!("bytes", beg => ctx.offset(), ret)
-    }
+pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
+    RegexSlice::new(lit)
 }
 
 ///
@@ -585,20 +555,8 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn consume<'a, C>(len: usize) -> impl Fn(&mut C) -> Result<Span, Error>
-where
-    C: Context<'a>,
-{
-    move |ctx: &mut C| {
-        let mut ret = Err(Error::Consume);
-        let beg = ctx.offset();
-
-        if ctx.len() - beg >= len {
-            ctx.inc(len);
-            ret = Ok(Span::new(beg, len));
-        }
-        trace!("consume", beg => ctx.offset(), ret)
-    }
+pub fn consume(len: usize) -> RegexConsume {
+    RegexConsume::new(len)
 }
 
 ///
@@ -650,22 +608,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn not<'a, C, R>(re: impl Regex<C, Ret = R>) -> impl Fn(&mut C) -> Result<R, Error>
-where
-    R: Ret,
-    C: Context<'a> + Policy<C>,
-{
-    move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Not);
-        let beg = g.beg();
-        let r = trace!("not", beg, g.try_mat(&re));
-
-        if r.is_err() {
-            ret = Ok(R::from_ctx(g.ctx(), (0, 0)));
-        }
-        trace!("not", beg => g.reset().end(), ret)
-    }
+pub fn not<T>(re: T) -> RegexNot<T> {
+    RegexNot::new(re)
 }
 
 #[cfg(feature = "log")]

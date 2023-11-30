@@ -51,10 +51,22 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexCond<'a, C, T> {
     regex: T,
     marker: PhantomData<(&'a (), C)>,
+}
+
+impl<'a, C, T> Clone for RegexCond<'a, C, T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            regex: self.regex.clone(),
+            marker: self.marker,
+        }
+    }
 }
 
 impl<'a, C, T> RegexCond<'a, C, T> {

@@ -1,13 +1,19 @@
+mod anchor;
 mod and;
 mod collect;
 mod dthen;
 mod dynamic;
 mod ltm;
+mod not;
 mod or;
 mod quote;
 mod repeat;
 mod sep;
+mod slice;
 
+pub use self::anchor::RegexConsume;
+pub use self::anchor::RegexEnd;
+pub use self::anchor::RegexStart;
 pub use self::and::RegexAnd;
 pub use self::collect::RegexCollect;
 pub use self::dthen::DynamicCreateRegexThen;
@@ -17,12 +23,15 @@ pub use self::dynamic::DynamicRegex;
 pub use self::dynamic::DynamicRegexHandler;
 pub use self::dynamic::DynamicRegexHelper;
 pub use self::ltm::RegexLongestTokenMatch;
+pub use self::not::RegexNot;
 pub use self::or::RegexOr;
 pub use self::quote::RegexQuote;
 pub use self::repeat::RegexRepeat;
 pub use self::sep::RegexSepCollect;
 pub use self::sep::RegexSepOnce;
 pub use self::sep::RegexSeparate;
+pub use self::slice::RegexSlice;
+pub use self::slice::RegexString;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
