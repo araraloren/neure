@@ -149,6 +149,15 @@ macro_rules! neu {
             re
         }
     };
+    (($($regex:expr),+)) => {
+        {
+            let re = $crate::neu::none();
+            $(
+                let re = re.or($regex);
+            )+
+            re
+        }
+    };
 
     ($ch:ident ) => {
         $crate::neu::equal($crate::charize!($ch))

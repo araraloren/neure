@@ -29,12 +29,11 @@ fn bench_color(c: &mut Criterion) {
     ];
     let re: Regex = Regex::new(r"^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$").unwrap();
     let mut locs = re.capture_locations();
-    let mut storer = SimpleStorer::new(3);
 
-    c.bench_function("email of nom", {
+    c.bench_function("email of regex", {
         move |b| {
             b.iter(|| {
-                black_box(email_nom::parse(
+                black_box(email_regex::parse(
                     black_box(&re),
                     black_box(&mut locs),
                     black_box(&test_cases),
@@ -48,7 +47,6 @@ fn bench_color(c: &mut Criterion) {
         move |b| {
             b.iter(|| {
                 black_box(email_neure::parse(
-                    black_box(&mut storer),
                     black_box(&test_cases),
                     black_box(&results),
                 ))
@@ -68,52 +66,42 @@ criterion::criterion_main!(benches);
 mod email_neure {
     use super::*;
 
-    fn parser(storer: &mut SimpleStorer, str: &str) -> Result<(), neure::err::Error> {
-        let start = re::start();
-        let end = re::end();
-        let letter = neu!(['a' - 'z']);
-        let number = neu!(['0' - '9']);
-        let pre = re!((letter, number, '_', '.', '+', '-')+);
-        let domain = letter
-            .or(number)
-            .or('.')
-            .or('-')
-            .repeat_to::<30>()
+    fn parser(str: &str) -> Result<(&str, &str, &str), neure::err::Error> {
+        let letter = neu::range('a' ..= 'z');
+        let number = neu::digit(10);
+        let name = re!((letter, number, '_', '.', '+', '-')+);
+        let domain = neu!((letter, number, '.', '-'))
+            .repeat_to::<256>()
             .set_cond(move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
                 Ok(!(ch == '.' && ctx.orig_at(ctx.offset() + length + 1)?.find('.').is_none()))
             });
-        let post = re!((letter, '.'){2,6});
+        let post = neu!((letter, '.')).repeat::<2, 6>();
+        let email = name
+            .sep_once("@", domain.sep_once(".", post))
+            .map(|(v1, (v2, v3))| Ok((v1, v2, v3)))
+            .quote(re::start(), re::end());
         let mut ctx = RegexCtx::new(str);
 
-        ctx.try_mat(&start)?;
-        storer.try_cap(0, &mut ctx, &pre)?;
-        ctx.try_mat(&"@")?;
-        storer.try_cap(1, &mut ctx, &domain)?;
-        ctx.try_mat(&".")?;
-        storer.try_cap(2, &mut ctx, &post)?;
-        ctx.try_mat(&end)?;
-        Ok(())
+        ctx.ctor(&email)
     }
 
-    pub fn parse(
-        storer: &mut SimpleStorer,
-        tests: &[&str],
-        results: &[Option<(&str, &str, &str)>],
-    ) {
+    pub fn parse(tests: &[&str], results: &[Option<(&str, &str, &str)>]) {
         for (test, result) in tests.iter().zip(results.iter()) {
-            let ret = parser(storer.reset(), test).is_ok();
+            let ret = parser(test);
 
-            assert_eq!(ret, result.is_some(), "test = {}", test);
+            assert_eq!(ret.is_ok(), result.is_some(), "test = {}", test);
             if let Some(result) = result {
-                assert_eq!(storer.slice(test, 0, 0).unwrap(), result.0);
-                assert_eq!(storer.slice(test, 1, 0).unwrap(), result.1);
-                assert_eq!(storer.slice(test, 2, 0).unwrap(), result.2);
+                let ret = ret.unwrap();
+
+                assert_eq!(ret.0, result.0);
+                assert_eq!(ret.1, result.1);
+                assert_eq!(ret.2, result.2);
             }
         }
     }
 }
 
-mod email_nom {
+mod email_regex {
     use super::*;
     use ::regex::CaptureLocations;
 

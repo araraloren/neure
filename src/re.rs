@@ -458,7 +458,6 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[inline(always)]
 pub fn start() -> RegexStart {
     RegexStart::new()
 }
@@ -485,7 +484,6 @@ pub fn start() -> RegexStart {
 ///     Ok(())
 /// # }
 /// ```
-#[inline(always)]
 pub fn end() -> RegexEnd {
     RegexEnd::new()
 }
@@ -508,7 +506,6 @@ pub fn end() -> RegexEnd {
 ///     Ok(())
 /// # }
 /// ```
-#[inline(always)]
 pub fn string(lit: &str) -> RegexString<'_> {
     RegexString::new(lit)
 }
@@ -531,7 +528,6 @@ pub fn string(lit: &str) -> RegexString<'_> {
 ///     Ok(())
 /// # }
 /// ```
-#[inline(always)]
 pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
     RegexSlice::new(lit)
 }
@@ -554,7 +550,6 @@ pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
 ///     Ok(())
 /// # }
 /// ```
-#[inline(always)]
 pub fn consume(len: usize) -> RegexConsume {
     RegexConsume::new(len)
 }

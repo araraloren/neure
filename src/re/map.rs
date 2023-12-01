@@ -177,6 +177,7 @@ where
 macro_rules! impl_from_str_radix {
     ($int:ty) => {
         impl $crate::re::map::TryFromStrRadix for $int {
+            #[inline(always)]
             fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
                 <$int>::from_str_radix(src, radix)
             }
@@ -196,18 +197,24 @@ impl_from_str_radix!(u64);
 impl_from_str_radix!(usize);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FromStrRadix<T>((PhantomData<T>, u32));
+pub struct FromStrRadix<T> {
+    radix: u32,
+    marker: PhantomData<T>,
+}
 
 impl<T> FromStrRadix<T>
 where
     T: TryFromStrRadix,
 {
     pub fn new(radix: u32) -> Self {
-        Self((PhantomData, radix))
+        Self {
+            radix,
+            marker: PhantomData,
+        }
     }
 
     pub fn radix(&self) -> u32 {
-        self.0 .1
+        self.radix
     }
 }
 
@@ -216,11 +223,13 @@ where
     O: TryFromStrRadix,
     I: AsRef<str>,
 {
+    #[inline(always)]
     fn map_to(&self, val: I) -> Result<O, Error> {
         O::from_str_radix(val.as_ref(), self.radix()).map_err(|_| Error::FromStr)
     }
 }
 
+#[inline(always)]
 pub fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
     FromStrRadix::new(radix)
 }

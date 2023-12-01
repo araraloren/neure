@@ -42,17 +42,6 @@ fn bench_color(c: &mut Criterion) {
             })
         }
     });
-
-    c.bench_function("email of neure 2 no capture", {
-        move |b| {
-            b.iter(|| {
-                black_box(email_neure2::parse(
-                    black_box(&test_cases),
-                    black_box(&results),
-                ))
-            })
-        }
-    });
 }
 
 criterion::criterion_group!(
@@ -68,44 +57,10 @@ mod email_neure {
 
     fn parser(str: &str) -> Result<(), neure::err::Error> {
         let mut ctx = RegexCtx::new(str);
-        let alpha = neu!(['a' - 'z']);
-        let num = neu!(['0' - '9']);
-        let name = re!((alpha, num, '_', '.', '+', '-')+);
-        let domain = alpha.or(num).or('.').or('-').repeat_full().set_cond(
-            |ctx: &CharsCtx, item: &(usize, char)| {
-                Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
-            },
-        );
-        let post = re!((alpha, '.'){2,6});
-        let start = re::start();
-        let end = re::end();
-
-        ctx.try_mat(&start)?;
-        ctx.try_mat(&name)?;
-        ctx.try_mat(&"@")?;
-        ctx.try_mat(&domain)?;
-        ctx.try_mat(&".")?;
-        ctx.try_mat(&post)?;
-        ctx.try_mat(&end)?;
-        Ok(())
-    }
-
-    pub fn parse(tests: &[&str], results: &[bool]) {
-        for (test, result) in tests.iter().zip(results.iter()) {
-            assert_eq!(parser(test).is_ok(), *result, "test = {}", test);
-        }
-    }
-}
-
-mod email_neure2 {
-    use super::*;
-
-    fn parser(str: &str) -> Result<(), neure::err::Error> {
-        let mut ctx = RegexCtx::new(str);
-        let alpha = neu!(['a' - 'z']);
-        let num = neu!(['0' - '9']);
-        let name = re!((alpha, num, '_', '.', '+', '-')+);
-        let domain = alpha.or(num).or('.').or('-').repeat_full().set_cond(
+        let alpha = neu::range('a' ..= 'z');
+        let num = neu::digit(10);
+        let name = neu!((alpha, num, '_', '.', '+', '-')).repeat_one_more();
+        let domain = alpha.or(num).or('.').or('-').repeat_to::<256>().set_cond(
             |ctx: &CharsCtx, item: &(usize, char)| {
                 Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
             },
@@ -115,7 +70,7 @@ mod email_neure2 {
             .then("@")
             .then(domain)
             .then(".")
-            .then(re!((alpha, '.'){2,6}))
+            .then(neu!((alpha, '.')).repeat::<2, 6>())
             .then(re::end());
 
         ctx.try_mat(&email)?;
