@@ -13,10 +13,6 @@ categories = ["parsing"]
 lto = true
 codegen-units = 1
 
-[profile.bench]
-lto = true
-codegen-units = 1
-
 [dev-dependencies]
 regex = "^1.0"
 nom = "^7.1"
@@ -41,15 +37,9 @@ name = "regex_cap"
 path = "./bench/regex_cap.rs"
 harness = false
 
-
 [[bench]]
 name = "regex_nocap"
 path = "./bench/regex_nocap.rs"
-harness = false
-
-[[bench]]
-name = "func"
-path = "./bench/func.rs"
 harness = false
 
 [[bench]]
