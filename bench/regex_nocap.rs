@@ -57,7 +57,7 @@ mod email_neure {
 
     fn parser(str: &str) -> Result<(), neure::err::Error> {
         let mut ctx = RegexCtx::new(str);
-        let alpha = neu::range('a' ..= 'z');
+        let alpha = neu::range('a'..='z');
         let num = neu::digit(10);
         let name = neu!((alpha, num, '_', '.', '+', '-')).repeat_one_more();
         let domain = alpha.or(num).or('.').or('-').repeat_to::<256>().set_cond(

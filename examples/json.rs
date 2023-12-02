@@ -26,14 +26,6 @@ impl JsonParser {
         ctx.ctor(&parser)
     }
 
-    pub fn ws_u8() -> impl Neu<u8> + Copy {
-        |byte: &u8| {
-            char::from_u32(*byte as u32)
-                .map(|v| v.is_whitespace())
-                .unwrap_or(false)
-        }
-    }
-
     pub fn to_digit<'a>(val: &[u8]) -> Result<JsonZero<'a>, Error> {
         std::str::from_utf8(val)
             .map_err(|_| Error::Other)?
@@ -46,14 +38,14 @@ impl JsonParser {
         regex: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
     ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
         move |ctx| {
-            let ws = Self::ws_u8().repeat_full();
-            let sign = b'+'.or(b'-').repeat_zero_one();
+            let ws = u8::is_ascii_whitespace.repeat_full();
+            let sign = neu!((b'+', b'-')).repeat_zero_one();
             let digit = range(b'0'..=b'9').repeat_one_more();
             let dec = b".".then(digit).pat();
             let num = sign.then(digit).then(dec.or(re::null()));
             let num = num.pat().map(&Self::to_digit);
 
-            let escape = b'\r'.or(b'\t').or(b'\n').or(b'\\').or(b'\"');
+            let escape = neu!((b'\r', b'\t', b'\n', b'\\', b'\"'));
             let escape = b'\\'.then(escape);
             let cond = neu::re_cond(re::not(escape));
             let str_val = b'\"'
@@ -73,9 +65,7 @@ impl JsonParser {
             let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(regex.clone())))));
             let ele = ele.pad(ws).padded(ws);
 
-            let alpha = neu!([b'a' - b'z' b'A' - b'Z' b'0' - b'9']);
-            let under_score = neu!(b'_');
-            let key = re!((alpha, under_score)+);
+            let key = re!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
             let key = key.quote(b"\"", b"\"");
             let key = key.pad(ws).padded(ws);
             let obj = key.sep_once(b":", ele);

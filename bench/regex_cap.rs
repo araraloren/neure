@@ -67,7 +67,7 @@ mod email_neure {
     use super::*;
 
     fn parser(str: &str) -> Result<(&str, &str, &str), neure::err::Error> {
-        let letter = neu::range('a' ..= 'z');
+        let letter = neu::range('a'..='z');
         let number = neu::digit(10);
         let name = re!((letter, number, '_', '.', '+', '-')+);
         let domain = neu!((letter, number, '.', '-'))
