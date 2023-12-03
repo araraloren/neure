@@ -43,9 +43,13 @@ pub enum Error {
 
     NeuOne,
 
+    NeuThen,
+
     OriginOutOfBound,
 
     Other,
+
+    Uid(usize),
 }
 
 impl std::error::Error for Error {}
@@ -73,8 +77,10 @@ impl Display for Error {
             Error::NeuRepeat => write!(f, "In (`NeuRepeat`): need more data"),
             Error::NeuOneMore => write!(f, "In (`NeuOneMore`): need more data"),
             Error::NeuOne => write!(f, "In (`NeuOne`): need more data"),
+            Error::NeuThen => write!(f, "In (`NeuThen`): need more data"),
             Error::OriginOutOfBound => write!(f, "Offset out of bound"),
             Error::Other => write!(f, "Error::Other"),
+            Error::Uid(id) => write!(f, "Got error(id = {id})"),
         }
     }
 }

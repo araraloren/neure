@@ -2,6 +2,30 @@ use std::marker::PhantomData;
 
 use super::Neu;
 
+///
+/// Return true if the value matched all `Neu`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let large_than = |c: &char| *c > '7';
+///     let digit = neu::digit(10).and(large_than).repeat::<1, 3>();
+///     let mut ctx = CharsCtx::new("899");
+///
+///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
+///
+///     let digit = re!((neu::digit(10).and(large_than)){1,3});
+///     let mut ctx = CharsCtx::new("99c");
+///
+///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 2));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct And<L, R, T>
 where
@@ -79,4 +103,27 @@ where
         crate::trace_log!("neu logical `and` -> {ret}");
         ret
     }
+}
+
+///
+/// # Example
+/// 
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     const BEG: u8 = 'a' as u8 - 1;
+///     const END: u8 = 'z' as u8 + 1;
+///
+///     let char = neu::and(|a: &u8| a > &BEG, |a: &u8| a < &END);
+///     let str = char.repeat_range(6..);
+///     let mut ctx = BytesCtx::new(br#"abcedfgABCEE"#);
+///
+///     assert_eq!(ctx.try_mat(&str)?, Span::new(0, 7));
+///     Ok(())
+/// # }
+/// ```
+pub fn and<T, L: Neu<T>, R: Neu<T>>(left: L, right: R) -> And<L, R, T> {
+    And::new(left, right)
 }

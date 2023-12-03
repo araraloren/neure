@@ -2,6 +2,29 @@ use std::marker::PhantomData;
 
 use super::Neu;
 
+///
+/// Return true if the value matched any `Neu`.
+///  
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let aorb = 'a'.or('b').repeat::<1, 2>();
+///     let mut ctx = CharsCtx::new("abc");
+///
+///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
+///
+///     let aorb = re!(['a' 'b']{1,2});
+///     let mut ctx = CharsCtx::new("abc");
+///
+///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct Or<L, R, T>
 where
@@ -79,4 +102,8 @@ where
         crate::trace_log!("neu logical `or` -> {ret}");
         ret
     }
+}
+
+pub fn or<T, L: Neu<T>, R: Neu<T>>(left: L, right: R) -> Or<L, R, T> {
+    Or::new(left, right)
 }

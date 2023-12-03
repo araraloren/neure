@@ -25,6 +25,30 @@ where
         F: NeuCond<'a, C>;
 }
 
+///
+/// # Check the condition when match.
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let str = neu::not(b'"')
+///         .repeat_one_more()
+///         // avoid match escape sequence
+///         .set_cond(|ctx: &BytesCtx, (item_offset, _item): &(usize, u8)| {
+///             Ok(!ctx.orig_at(ctx.offset() + item_offset)?.starts_with(b"\\\""))
+///         })
+///         // match the escape sequence in another regex
+///         .or(b"\\\"")
+///         .repeat(1..)
+///         .pat();
+///     let mut ctx = BytesCtx::new(br#""Hello world from \"rust\"!""#);
+///
+///     assert_eq!(ctx.try_mat(&str.quote(b"\"", b"\""))?, Span::new(0, 28));
+///     Ok(())
+/// # }
+/// ```
 impl<'a, C, F> NeuCond<'a, C> for F
 where
     C: Context<'a>,
@@ -97,6 +121,31 @@ where
     }
 }
 
+///
+/// Create a condition using in [`Condition`] base on regex.
+///
+/// # Example
+///
+///```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let escape = b'\\'.then(b'"');
+///     let str = neu::not(b'"')
+///         .repeat_one_more()
+///         // avoid match escape sequence
+///         .set_cond(neu::re_cond(re::not(escape)))
+///         // match the escape sequence in another regex
+///         .or(escape)
+///         .repeat(1..)
+///         .pat();
+///     let mut ctx = BytesCtx::new(br#""Hello world from \"rust\"!""#);
+///
+///     assert_eq!(ctx.try_mat(&str.quote(b"\"", b"\""))?, Span::new(0, 28));
+///     Ok(())
+/// # }
+/// ```
 pub fn re_cond<'a, C, T>(regex: T) -> RegexCond<'a, C, T> {
     RegexCond::new(regex)
 }

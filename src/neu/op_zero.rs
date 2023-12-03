@@ -18,6 +18,25 @@ use super::Condition;
 use super::Neu;
 use super::NeuCond;
 
+///
+/// Repeat the match zero or one time.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_zero_one();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureZeroOne<C, U, T, I>
 where
@@ -133,6 +152,25 @@ where
     }
 }
 
+///
+/// Repeat the match `0 ..` times.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_zero_more();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureZeroMore<C, U, T, I>
 where

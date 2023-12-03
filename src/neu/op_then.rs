@@ -117,9 +117,9 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("neure_one", beg, g.try_mat(self));
+        let ret = trace!("neure_then", beg, g.try_mat(self));
 
-        trace!("neure_one", beg -> g.end(), ret.is_ok());
+        trace!("neure_then", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -137,20 +137,22 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut iter = g.ctx().peek()?;
-        let mut ret = Err(Error::NeuOne);
+        let mut ret = Err(Error::NeuThen);
         let beg = g.beg();
 
-        trace!("neure_one", beg, ());
-        if let Some((offset, item)) = iter.next() {
-            if self.left.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
-                if let Some((offset, item)) = iter.next() {
-                    if self.right.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
-                        let len = length_of(offset, g.ctx(), iter.next().map(|v| v.0));
+        trace!("neure_then", beg, ());
+        if let Some((fst_offset, item)) = iter.next() {
+            if self.left.is_match(&item) && self.cond.check(g.ctx(), &(fst_offset, item))? {
+                if let Some((snd_offset, item)) = iter.next() {
+                    if self.right.is_match(&item)
+                        && self.cond.check(g.ctx(), &(snd_offset, item))?
+                    {
+                        let len = length_of(fst_offset, g.ctx(), iter.next().map(|v| v.0));
                         ret = Ok(ret_and_inc(g.ctx(), 1, len));
                     }
                 }
             }
         }
-        trace!("neure_one", beg => g.end(), g.process_ret(ret))
+        trace!("neure_then", beg => g.end(), g.process_ret(ret))
     }
 }

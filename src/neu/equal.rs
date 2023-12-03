@@ -28,11 +28,11 @@ impl<T: PartialEq + MayDebug> Neu<T> for Equal<T> {
 ///
 /// ```
 /// use neure::prelude::*;
-/// use unit::*;
+/// use neu::*;
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let letter = equal('A');
-///     let letter = letter.repeat(3);
+///     let letter = letter.repeat_times::<3>();
 ///     let mut ctx = CharsCtx::new("AAAabcd");
 ///
 ///     assert_eq!(ctx.try_mat(&letter)?, Span::new(0, 3));

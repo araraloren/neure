@@ -49,11 +49,8 @@ use self::regex::RegexSlice;
 use self::regex::RegexStart;
 use self::regex::RegexString;
 
-use self::regex::RegexOr;
-
 use crate::ctx::Context;
 use crate::ctx::Policy;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::Condition;
@@ -521,7 +518,7 @@ pub fn string(lit: &str) -> RegexString<'_> {
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///     let head = re::bytes(&[0xff, 0xff]);
+///     let head = re::slice(&[0xff, 0xff]);
 ///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
 ///
 ///     assert_eq!(ctx.try_mat(&head)?, Span::new(0, 2));
@@ -534,7 +531,7 @@ pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
 }
 
 ///
-/// Consume given length items.
+/// Consume given length datas.
 ///
 /// # Example
 ///
@@ -556,7 +553,7 @@ pub fn consume(len: usize) -> RegexConsume {
 }
 
 ///
-/// Consume given length items.
+/// Consume all the left datas.
 ///
 /// # Example
 ///
@@ -565,10 +562,10 @@ pub fn consume(len: usize) -> RegexConsume {
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///     let null = re::consume(6);
+///     let str = re::string("aabb");
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
-///     assert_eq!(ctx.try_mat(&null)?, Span::new(0, 6));
+///     assert_eq!(ctx.try_mat(&str.then(re::consume_all()))?, Span::new(0, 8));
 ///
 ///     Ok(())
 /// # }
@@ -597,15 +594,6 @@ pub fn consume_all() -> RegexConsumeAll {
 /// ```
 pub fn null<R>() -> NullRegex<R> {
     NullRegex::new()
-}
-
-pub fn nullable<'a, P, C>(regex: P) -> RegexOr<C, P, NullRegex<P::Ret>>
-where
-    P::Ret: Ret,
-    P: Regex<C>,
-    C: Context<'a> + Policy<C>,
-{
-    or(regex, null())
 }
 
 ///

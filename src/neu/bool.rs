@@ -46,13 +46,12 @@ impl<T: MayDebug> Neu<T> for True<T> {
 /// # Example
 /// ```
 /// # use neure::prelude::*;
-/// # use neure::unit::*;
 /// #
 /// # fn main() {
-///   let any = any();
+///   let any = neu::any();
 ///   let mut ctx = CharsCtx::new("abc%$#&");
 ///
-///   assert_eq!(ctx.try_mat(&any.repeat(6)).unwrap(), Span::new(0, 6));
+///   assert_eq!(ctx.try_mat(&any.repeat_times::<6>()).unwrap(), Span::new(0, 6));
 /// # }
 /// ```
 pub const fn any<T: MayDebug>() -> True<T> {
@@ -99,13 +98,12 @@ impl<T: MayDebug> Neu<T> for False<T> {
 /// # Example
 /// ```
 /// # use neure::prelude::*;
-/// # use neure::unit::*;
 /// #
 /// # fn main() {
-///   let none = none();
+///   let none = neu::none();
 ///   let mut ctx = CharsCtx::new("abc%$#&");
 ///
-///   assert!(ctx.try_mat(&none.repeat(6)).is_err());
+///   assert!(ctx.try_mat(&none.repeat_times::<6>()).is_err());
 /// # }
 /// ```
 pub const fn none<T: MayDebug>() -> False<T> {

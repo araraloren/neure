@@ -76,10 +76,13 @@ pub use self::cond::RegexCond;
 pub use self::equal::equal;
 pub use self::equal::Equal;
 pub use self::may::MayUnit;
+pub use self::op_and::and;
 pub use self::op_and::And;
+pub use self::op_not::not;
 pub use self::op_not::Not;
 pub use self::op_one::NeureOne;
 pub use self::op_one::NeureOneMore;
+pub use self::op_or::or;
 pub use self::op_or::Or;
 pub use self::op_repeat::NeureRepeat;
 pub use self::op_repeat::NeureRepeatRange;
@@ -193,405 +196,404 @@ impl<T> Neu<T> for Rc<dyn Neu<T>> {
     }
 }
 
+///
+/// Match any value in the array.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() {
+///   let arr = ['a', 'c', 'f', 'e'];
+///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
+///   let mut ctx2 = CharsCtx::new("acdde");
+///
+///   assert_eq!(ctx1.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 5));
+///   assert_eq!(ctx2.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 2));
+/// # }
+/// ```
 impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
-    ///
-    /// Match any value in the array.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() {
-    ///   let arr = ['a', 'c', 'f', 'e'];
-    ///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
-    ///   let mut ctx2 = CharsCtx::new("acdde");
-    ///
-    ///   assert_eq!(ctx1.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 5));
-    ///   assert_eq!(ctx2.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 2));
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("array", self, other, self.contains(other))
     }
 }
 
+///
+/// Match any value in the array.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() {
+///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
+///   let arr = UnitOp::repeat(arr, 2..6);
+///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
+///   let mut ctx2 = BytesCtx::new(b"acdde");
+///
+///   assert_eq!(ctx1.try_mat(&arr).unwrap(), Span::new(0, 5));
+///   assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
+/// # }
+/// ```
 impl<'a, T: PartialEq + MayDebug> Neu<T> for &'a [T] {
-    ///
-    /// Match any value in the array.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() {
-    ///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-    ///   let arr = UnitOp::repeat(arr, 2..6);
-    ///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
-    ///   let mut ctx2 = BytesCtx::new(b"acdde");
-    ///
-    ///   assert_eq!(ctx1.try_mat(&arr).unwrap(), Span::new(0, 5));
-    ///   assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("slice", self, other, self.contains(other))
     }
 }
 
+///
+/// Match any value in the vector.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     let mut ctx = CharsCtx::new("0xbbb");
+///
+///     assert!(ctx.try_mat(&hex).is_err());
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
-    ///
-    /// Match any value in the vector.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     let mut ctx = CharsCtx::new("0xbbb");
-    ///
-    ///     assert!(ctx.try_mat(&hex).is_err());
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
-    ///
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("vector", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+///
+/// ```
+/// # use std::ops::Bound;
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = (Bound::Included(&'a'), Bound::Excluded(&'g'));
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use std::ops::Bound;
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = (Bound::Included(&'a'), Bound::Excluded(&'g'));
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("bound(&T)", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use std::ops::Bound;
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use std::ops::Bound;
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("bound(T)", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = &'a' .. &'g';
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = &'a' .. &'g';
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range(&T)", self, other, self.contains(&other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a' .. 'g';
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a' .. 'g';
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range(T)", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let from = &'a' ..;
+///     let from = re!((from){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 8));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let from = &'a' ..;
-    ///     let from = re!((from){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 8));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_from(&T)", self, other, self.contains(&other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let from = 'a' ..;
+///     let from = re!((from){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let from = 'a' ..;
-    ///     let from = re!((from){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 8));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_from(T)", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let full = ..;
+///     let full = re!((full){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&full)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let full = ..;
-    ///     let full = re!((full){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&full)?, Span::new(0, 8));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_full", self, other, self.contains(&other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = &'a' ..= &'f';
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = &'a' ..= &'f';
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_inclusive(&T)", self, other, self.contains(&other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a' ..= 'f';
+///     let hex = re!((hex){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a' ..= 'f';
-    ///     let hex = re!((hex){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_inclusive(T)", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let to = .. &'g';
+///     let to = re!((to){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let to = .. &'g';
-    ///     let to = re!((to){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to(&T)", self, other, self.contains(&other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let to = .. 'g';
+///     let to = re!((to){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let to = .. 'g';
-    ///     let to = re!((to){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to(T)", self, other, self.contains(other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let to = ..= &'f';
+///     let to = re!((to){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let to = ..= &'f';
-    ///     let to = re!((to){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to_inclusive(&T)", self, other, self.contains(&other))
     }
 }
 
+///
+/// Match value in the range.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let to = ..= 'f';
+///     let to = re!((to){1,6});
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
-    ///
-    /// Match value in the range.
-    ///
-    /// # Example
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let to = ..= 'f';
-    ///     let to = re!((to){1,6});
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("range_to_inclusive(T)", self, other, self.contains(other))
@@ -618,29 +620,6 @@ impl<C, T> NeuOp<C> for T
 where
     T: Neu<C>,
 {
-    ///
-    /// Return true if the value matched any `Neu`.
-    ///  
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let aorb = 'a'.or('b').repeat::<1, 2>();
-    ///     let mut ctx = CharsCtx::new("abc");
-    ///
-    ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
-    ///
-    ///     let aorb = re!(['a' 'b']{1,2});
-    ///     let mut ctx = CharsCtx::new("abc");
-    ///
-    ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn or<U>(self, unit: U) -> Or<Self, U, C>
     where
         U: Neu<C>,
@@ -649,30 +628,6 @@ where
         Or::new(self, unit)
     }
 
-    ///
-    /// Return true if the value matched all `Neu`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let large_than = |c: &char| *c > '7';
-    ///     let digit = neu::digit(10).and(large_than).repeat::<1, 3>();
-    ///     let mut ctx = CharsCtx::new("899");
-    ///
-    ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
-    ///
-    ///     let digit = re!((neu::digit(10).and(large_than)){1,3});
-    ///     let mut ctx = CharsCtx::new("99c");
-    ///
-    ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 2));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn and<U>(self, unit: U) -> And<Self, U, C>
     where
         U: Neu<C>,
@@ -681,29 +636,6 @@ where
         And::new(self, unit)
     }
 
-    ///
-    /// Return true if the value not matched.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let not_digit = neu::digit(10).not().repeat::<1, 3>();
-    ///     let mut ctx = CharsCtx::new("cc9");
-    ///
-    ///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 2));
-    ///
-    ///     let not_digit = re!((neu::digit(10).not()){1,3});
-    ///     let mut ctx = CharsCtx::new("c99");
-    ///
-    ///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 1));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn not(self) -> Not<Self, C>
     where
         Self: Neu<C> + Sized,
@@ -768,232 +700,42 @@ where
         NeureThen::new(self, unit, NullCond)
     }
 
-    ///
-    /// Repeat the match M ..= N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat::<1, 6>();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<M, N, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match M times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_times::<6>();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_times<const M: usize>(self) -> NeureRepeat<M, M, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match minimum M times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_from::<1>();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_from<const M: usize>(self) -> NeureRepeat<M, { usize::MAX }, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_to::<6>();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_to<const N: usize>(self) -> NeureRepeat<0, N, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_full();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_full(self) -> NeureRepeat<0, { usize::MAX }, C, Self, NullCond> {
         NeureRepeat::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_one();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond> {
         NeureOne::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_one_more();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_one_more(self) -> NeureOneMore<C, Self, C::Item, NullCond> {
         NeureOneMore::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_zero_one();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_zero_one(self) -> NeureZeroOne<C, Self, C::Item, NullCond> {
         NeureZeroOne::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_zero_more();
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond> {
         NeureZeroMore::new(self, NullCond)
     }
 
-    ///
-    /// Repeat the match maxinmum N times.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::prelude::*;
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
-    ///     let hex = 'a'..'g';
-    ///     let hex = hex.repeat_range(1..7);
-    ///     let mut ctx = CharsCtx::new("aabbccgg");
-    ///
-    ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-    ///
-    ///     Ok(())
-    /// # }
-    /// ```
     fn repeat_range(self, range: impl Into<CRange<usize>>) -> NeureRepeatRange<C, Self, NullCond> {
         NeureRepeatRange::new(self, range.into(), NullCond)
     }

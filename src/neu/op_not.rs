@@ -2,6 +2,29 @@ use std::marker::PhantomData;
 
 use super::Neu;
 
+///
+/// Return true if the value not matched.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let not_digit = neu::digit(10).not().repeat::<1, 3>();
+///     let mut ctx = CharsCtx::new("cc9");
+///
+///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 2));
+///
+///     let not_digit = re!((neu::digit(10).not()){1,3});
+///     let mut ctx = CharsCtx::new("c99");
+///
+///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 1));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct Not<U, T>
 where
@@ -59,4 +82,9 @@ where
         crate::trace_log!("neu logical `not` -> {ret}");
         ret
     }
+}
+
+// TODO
+pub fn not<T, U: Neu<T>>(unit: U) -> Not<U, T> {
+    Not::new(unit)
 }

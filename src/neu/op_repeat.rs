@@ -19,6 +19,76 @@ use super::Condition;
 use super::Neu;
 use super::NeuCond;
 
+///
+/// Repeat the match `M .. N` times.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat::<1, 6>();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
+///
+/// # Example 1
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_full();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
+///
+/// # Example 2
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_to::<6>();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
+///
+/// # Example 3
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_from::<1>();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureRepeat<const M: usize, const N: usize, C, U, I> {
     unit: U,
@@ -147,6 +217,25 @@ where
     }
 }
 
+///
+/// Repeat the match.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_range(1..7);
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureRepeatRange<C, U, I> {
     unit: U,

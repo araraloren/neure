@@ -17,6 +17,25 @@ use super::Condition;
 use super::Neu;
 use super::NeuCond;
 
+///
+/// Repeat the match one time.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_one();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureOne<C, U, T, I>
 where
@@ -130,6 +149,25 @@ where
     }
 }
 
+///
+/// Repeat the match `1 ..` times.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = 'a'..'g';
+///     let hex = hex.repeat_one_more();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureOneMore<C, U, T, I>
 where
