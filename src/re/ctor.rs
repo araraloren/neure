@@ -5,6 +5,7 @@ mod dynamic;
 mod r#if;
 mod ltm;
 mod map;
+mod opt;
 mod or;
 mod pad;
 mod pat;
@@ -31,6 +32,7 @@ pub use self::dynamic::DynamicCtorHandler;
 pub use self::dynamic::DynamicCtorHelper;
 pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
+pub use self::opt::OptionPat;
 pub use self::or::Or;
 pub use self::pad::PadUnit;
 pub use self::pad::PaddedUnit;
@@ -42,6 +44,7 @@ pub use self::repeat::Repeat;
 pub use self::sep::SepCollect;
 pub use self::sep::SepOnce;
 pub use self::sep::Separate;
+pub use self::then::IfThen;
 pub use self::then::Then;
 
 use crate::ctx::Context;
@@ -286,6 +289,8 @@ where
 
     fn pat(self) -> Pattern<C, Self>;
 
+    fn opt(self) -> OptionPat<C, Self>;
+
     fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
 
     fn sep<S>(self, sep: S) -> Separate<C, Self, S>;
@@ -299,6 +304,8 @@ where
     fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P>;
 
     fn then<T>(self, then: T) -> Then<C, Self, T>;
+
+    fn if_then<I, T>(self, r#if: I, then: T) -> IfThen<C, Self, I, T>;
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
@@ -429,6 +436,10 @@ where
     /// ```
     fn pat(self) -> Pattern<C, Self> {
         Pattern::new(self)
+    }
+
+    fn opt(self) -> OptionPat<C, Self> {
+        OptionPat::new(self)
     }
 
     ///
@@ -629,6 +640,10 @@ where
     /// ```
     fn then<P>(self, then: P) -> Then<C, Self, P> {
         Then::new(self, then)
+    }
+
+    fn if_then<I, P>(self, r#if: I, then: P) -> IfThen<C, Self, I, P> {
+        IfThen::new(self, r#if, then)
     }
 
     ///

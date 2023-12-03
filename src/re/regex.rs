@@ -12,6 +12,7 @@ mod sep;
 mod slice;
 
 pub use self::anchor::RegexConsume;
+pub use self::anchor::RegexConsumeAll;
 pub use self::anchor::RegexEnd;
 pub use self::anchor::RegexStart;
 pub use self::and::RegexAnd;

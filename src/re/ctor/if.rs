@@ -13,7 +13,7 @@ use crate::re::Regex;
 
 #[derive(Debug, Default, Copy)]
 pub struct IfRegex<C, T, I, E> {
-    regex: T,
+    pat: T,
     r#if: I,
     r#else: E,
     marker: PhantomData<C>,
@@ -27,7 +27,7 @@ where
 {
     fn clone(&self) -> Self {
         Self {
-            regex: self.regex.clone(),
+            pat: self.pat.clone(),
             r#if: self.r#if.clone(),
             r#else: self.r#else.clone(),
             marker: self.marker,
@@ -38,19 +38,19 @@ where
 impl<C, T, I, E> IfRegex<C, T, I, E> {
     pub fn new(regex: T, r#if: I, r#else: E) -> Self {
         Self {
-            regex,
+            pat: regex,
             r#if,
             r#else,
             marker: PhantomData,
         }
     }
 
-    pub fn regex(&self) -> &T {
-        &self.regex
+    pub fn pat(&self) -> &T {
+        &self.pat
     }
 
-    pub fn regex_mut(&mut self) -> &mut T {
-        &mut self.regex
+    pub fn pat_mut(&mut self) -> &mut T {
+        &mut self.pat
     }
 
     pub fn r#if(&self) -> &I {
@@ -69,12 +69,12 @@ impl<C, T, I, E> IfRegex<C, T, I, E> {
         &mut self.r#else
     }
 
-    pub fn set_regex(&mut self, regex: T) -> &mut Self {
-        self.regex = regex;
+    pub fn set_pat(&mut self, pat: T) -> &mut Self {
+        self.pat = pat;
         self
     }
 
-    pub fn and(&mut self, r#if: I) -> &mut Self {
+    pub fn set_if(&mut self, r#if: I) -> &mut Self {
         self.r#if = r#if;
         self
     }
@@ -102,7 +102,7 @@ where
         let beg = g.beg();
         let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
         let ret = if ret {
-            trace!("if", beg @ "true", self.regex.constrct(g.ctx(), func))
+            trace!("if", beg @ "true", self.pat.constrct(g.ctx(), func))
         } else {
             trace!("if", beg @ "false", self.r#else.constrct(g.reset().ctx(), func))
         };
@@ -127,7 +127,7 @@ where
         let beg = g.beg();
         let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
         let ret = if ret {
-            trace!("if", beg @ "true", g.try_mat(&self.regex))
+            trace!("if", beg @ "true", g.try_mat(&self.pat))
         } else {
             trace!("if", beg @ "false", g.try_mat(&self.r#else))
         };

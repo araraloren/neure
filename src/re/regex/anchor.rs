@@ -138,3 +138,44 @@ where
         trace!("consume", beg => ctx.offset(), ret)
     }
 }
+
+#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct RegexConsumeAll;
+
+impl RegexConsumeAll {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl<'a, C, O> Ctor<'a, C, O, O> for RegexConsumeAll
+where
+    C: Context<'a> + Policy<C>,
+{
+    #[inline(always)]
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(self)?;
+
+        func.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, C> Regex<C> for RegexConsumeAll
+where
+    C: Context<'a>,
+{
+    type Ret = Span;
+
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+        let beg = ctx.offset();
+        let len = ctx.len().saturating_sub(ctx.offset());
+
+        ctx.inc(len);
+        trace!("consume_all", beg => ctx.offset(), Ok(Span::new(beg, len)))
+    }
+}

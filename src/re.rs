@@ -42,6 +42,7 @@ pub use self::regex::sep_once;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
 use self::regex::RegexConsume;
+use self::regex::RegexConsumeAll;
 use self::regex::RegexEnd;
 use self::regex::RegexNot;
 use self::regex::RegexSlice;
@@ -552,6 +553,28 @@ pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
 /// ```
 pub fn consume(len: usize) -> RegexConsume {
     RegexConsume::new(len)
+}
+
+///
+/// Consume given length items.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let null = re::consume(6);
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&null)?, Span::new(0, 6));
+///
+///     Ok(())
+/// # }
+/// ```
+pub fn consume_all() -> RegexConsumeAll {
+    RegexConsumeAll::new()
 }
 
 ///
