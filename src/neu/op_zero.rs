@@ -117,9 +117,9 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("neure_zero_one", beg, g.try_mat(self));
+        let ret = trace!("neu_zero_one", beg, g.try_mat(self));
 
-        trace!("neure_zero_one", beg -> g.end(), ret.is_ok());
+        trace!("neu_zero_one", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -138,7 +138,7 @@ where
         let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
         let beg = g.beg();
 
-        trace!("neure_zero_one", beg, ());
+        trace!("neu_zero_one", beg, ());
         if let Ok(mut iter) = g.ctx().peek() {
             if let Some((offset, item)) = iter.next() {
                 if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
@@ -148,7 +148,7 @@ where
                 }
             }
         }
-        trace!("neure_zero_one", beg => g.end(), g.process_ret(ret))
+        trace!("neu_zero_one", beg => g.end(), g.process_ret(ret))
     }
 }
 
@@ -251,9 +251,9 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("neure_zero_more", beg, g.try_mat(self));
+        let ret = trace!("neu_zero_more", beg, g.try_mat(self));
 
-        trace!("neure_zero_more", beg -> g.end(), ret.is_ok());
+        trace!("neu_zero_more", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -275,7 +275,7 @@ where
         let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
         let offset = g.beg();
 
-        trace!("neure_zero_more", offset, ());
+        trace!("neu_zero_more", offset, ());
         if let Ok(mut iter) = g.ctx().peek() {
             for pair in iter.by_ref() {
                 if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
@@ -292,6 +292,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), cnt, len));
         }
-        trace!("neure_zero_more", offset => g.end(), g.process_ret(ret))
+        trace!("neu_zero_more", offset => g.end(), g.process_ret(ret))
     }
 }

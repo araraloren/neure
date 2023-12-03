@@ -116,9 +116,9 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("neure_one", beg, g.try_mat(self));
+        let ret = trace!("neu_one", beg, g.try_mat(self));
 
-        trace!("neure_one", beg -> g.end(), ret.is_ok());
+        trace!("neu_one", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -138,14 +138,14 @@ where
         let mut ret = Err(Error::NeuOne);
         let beg = g.beg();
 
-        trace!("neure_one", beg, ());
+        trace!("neu_one", beg, ());
         if let Some((offset, item)) = iter.next() {
             if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
                 let len = length_of(offset, g.ctx(), iter.next().map(|v| v.0));
                 ret = Ok(ret_and_inc(g.ctx(), 1, len));
             }
         }
-        trace!("neure_one", beg => g.end(), g.process_ret(ret))
+        trace!("neu_one", beg => g.end(), g.process_ret(ret))
     }
 }
 
@@ -247,9 +247,9 @@ where
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("neure_one_more", beg, g.try_mat(self));
+        let ret = trace!("neu_one_more", beg, g.try_mat(self));
 
-        trace!("neure_one_more", beg -> g.end(), ret.is_ok());
+        trace!("neu_one_more", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -272,7 +272,7 @@ where
         let mut iter = g.ctx().peek()?;
         let offset = g.beg();
 
-        trace!("neure_one_more", offset, ());
+        trace!("neu_one_more", offset, ());
         for pair in iter.by_ref() {
             if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
                 end = Some(pair);
@@ -287,6 +287,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), cnt, len))
         }
-        trace!("neure_one_more", offset => g.end(), g.process_ret(ret))
+        trace!("neu_one_more", offset => g.end(), g.process_ret(ret))
     }
 }
