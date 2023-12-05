@@ -47,6 +47,10 @@ pub enum Error {
 
     OriginOutOfBound,
 
+    Vec,
+
+    PairVec,
+
     Other,
 
     Uid(usize),
@@ -78,6 +82,8 @@ impl Display for Error {
             Error::NeuOneMore => write!(f, "In (`NeuOneMore`): need more data"),
             Error::NeuOne => write!(f, "In (`NeuOne`): need more data"),
             Error::NeuThen => write!(f, "In (`NeuThen`): need more data"),
+            Error::Vec => write!(f, "In (`Vec`): all match failed"),
+            Error::PairVec => write!(f, "In (`Hash`): all match failed"),
             Error::OriginOutOfBound => write!(f, "Offset out of bound"),
             Error::Other => write!(f, "Error::Other"),
             Error::Uid(id) => write!(f, "Got error(id = {id})"),

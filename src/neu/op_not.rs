@@ -84,7 +84,23 @@ where
     }
 }
 
-// TODO
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let item = neu::not(u8::is_ascii_uppercase);
+///     let str = item.repeat_range(6..);
+///     let mut ctx = BytesCtx::new(br#"abcedfgABCEE"#);
+///
+///     assert_eq!(ctx.try_mat(&str)?, Span::new(0, 7));
+///     Ok(())
+/// # }
+/// ```
 pub fn not<T, U: Neu<T>>(unit: U) -> Not<U, T> {
     Not::new(unit)
 }

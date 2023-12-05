@@ -13,6 +13,7 @@ mod quote;
 mod repeat;
 mod sep;
 mod then;
+mod vec;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -46,6 +47,8 @@ pub use self::sep::SepOnce;
 pub use self::sep::Separate;
 pub use self::then::IfThen;
 pub use self::then::Then;
+pub use self::vec::PairVector;
+pub use self::vec::Vector;
 
 use crate::ctx::Context;
 use crate::ctx::Policy;
@@ -115,6 +118,36 @@ where
     }
 }
 
+impl<'a, C, O> Ctor<'a, C, O, O> for String
+where
+    C: Context<'a, Orig = str> + Policy<C>,
+{
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(&self.as_str())?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, C, O> Ctor<'a, C, O, O> for &String
+where
+    C: Context<'a, Orig = str> + Policy<C>,
+{
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(&self.as_str())?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
 impl<'a, C, O> Ctor<'a, C, O, O> for &[u8]
 where
     C: Context<'a, Orig = [u8]> + Policy<C>,
@@ -146,6 +179,36 @@ where
 }
 
 impl<'a, const N: usize, C, O> Ctor<'a, C, O, O> for [u8; N]
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, C, O> Ctor<'a, C, O, O> for Vec<u8>
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+    where
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    {
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, C, O> Ctor<'a, C, O, O> for &Vec<u8>
 where
     C: Context<'a, Orig = [u8]> + Policy<C>,
 {

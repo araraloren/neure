@@ -41,6 +41,9 @@ pub use self::regex::sep_collect;
 pub use self::regex::sep_once;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
+
+use self::ctor::PairVector;
+use self::ctor::Vector;
 use self::regex::RegexConsume;
 use self::regex::RegexConsumeAll;
 use self::regex::RegexEnd;
@@ -97,6 +100,32 @@ where
     }
 }
 
+impl<'a, C> Regex<C> for String
+where
+    C: Context<'a, Orig = str> + Policy<C>,
+{
+    type Ret = Span;
+
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::re::string(self.as_str());
+        pattern.try_parse(ctx)
+    }
+}
+
+impl<'a, C> Regex<C> for &String
+where
+    C: Context<'a, Orig = str> + Policy<C>,
+{
+    type Ret = Span;
+
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        let pattern = crate::re::string(self.as_str());
+        pattern.try_parse(ctx)
+    }
+}
+
 impl<'a, C> Regex<C> for &[u8]
 where
     C: Context<'a, Orig = [u8]> + Policy<C>,
@@ -133,6 +162,28 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let pattern = crate::re::slice(self.as_slice());
         pattern.try_parse(ctx)
+    }
+}
+
+impl<'a, C> Regex<C> for Vec<u8>
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        Regex::try_parse(&self.as_slice(), ctx)
+    }
+}
+
+impl<'a, C> Regex<C> for &Vec<u8>
+where
+    C: Context<'a, Orig = [u8]> + Policy<C>,
+{
+    type Ret = Span;
+
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        Regex::try_parse(&self.as_slice(), ctx)
     }
 }
 
@@ -616,6 +667,14 @@ pub fn null<R>() -> NullRegex<R> {
 /// ```
 pub fn not<T>(re: T) -> RegexNot<T> {
     RegexNot::new(re)
+}
+
+pub fn vector<T>(val: Vec<T>) -> Vector<T> {
+    Vector::new(val)
+}
+
+pub fn pair_vector<K, V>(val: Vec<(K, V)>) -> PairVector<K, V> {
+    PairVector::new(val)
 }
 
 #[cfg(feature = "log")]
