@@ -3,7 +3,7 @@ use std::ops::RangeBounds;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace_v;
@@ -154,7 +154,7 @@ impl<'a, const M: usize, const N: usize, U, C, O, I> Ctor<'a, C, O, O>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Match<C> + 'a,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -316,7 +316,7 @@ impl<'a, U, C, M, I> Ctor<'a, C, M, M> for NeureRepeatRange<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Match<C> + 'a,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>

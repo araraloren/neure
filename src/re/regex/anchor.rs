@@ -1,5 +1,5 @@
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -20,7 +20,7 @@ impl RegexStart {
 
 impl<'a, C, O> Ctor<'a, C, O, O> for RegexStart
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -63,7 +63,7 @@ impl RegexEnd {
 
 impl<'a, C, O> Ctor<'a, C, O, O> for RegexEnd
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -106,7 +106,7 @@ impl RegexConsume {
 
 impl<'a, C, O> Ctor<'a, C, O, O> for RegexConsume
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -150,7 +150,7 @@ impl RegexConsumeAll {
 
 impl<'a, C, O> Ctor<'a, C, O, O> for RegexConsumeAll
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>

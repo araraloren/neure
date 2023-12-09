@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::map::MapSingle;
@@ -82,7 +82,7 @@ impl<'a, C, M, O, V, P, F> Ctor<'a, C, M, V> for Map<C, P, F, O>
 where
     P: Ctor<'a, C, M, O>,
     F: MapSingle<O, V>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
@@ -97,7 +97,7 @@ where
 impl<'a, C, P, F, O> Regex<C> for Map<C, P, F, O>
 where
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 

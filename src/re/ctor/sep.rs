@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -136,7 +136,7 @@ where
     L: Ctor<'a, C, M, O1>,
     R: Ctor<'a, C, M, O2>,
     S: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
@@ -162,7 +162,7 @@ where
     S: Regex<C, Ret = Span>,
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Span;
 
@@ -322,7 +322,7 @@ impl<'a, C, S, P, M, O> Ctor<'a, C, M, Vec<O>> for Separate<C, P, S>
 where
     P: Ctor<'a, C, M, O>,
     S: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error>
@@ -337,7 +337,7 @@ where
 
         trace_v!("separate", range, beg, ());
         while let Ok(ret) = self.pat.constrct(g.ctx(), func) {
-            let sep_ret = g.ctx().try_mat(&self.sep);
+            let sep_ret = trace_v!("separate", range, beg @ "sep", g.ctx().try_mat(&self.sep));
 
             if sep_ret.is_ok() || self.skip {
                 res.push(ret);
@@ -352,7 +352,7 @@ where
             Err(Error::Separate)
         });
 
-        trace_v!("separate_collect", range, beg -> g.end(), ret.is_ok(), len);
+        trace_v!("separate", range, beg -> g.end(), ret.is_ok(), len);
         ret
     }
 }
@@ -361,7 +361,7 @@ impl<'a, C, S, P> Regex<C> for Separate<C, P, S>
 where
     S: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Span;
 
@@ -518,7 +518,7 @@ where
     T: FromIterator<O>,
     P: Ctor<'a, C, M, O>,
     S: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<T, Error>
@@ -534,7 +534,8 @@ where
             trace_v!("sep_collect", range, beg, ());
             T::from_iter(std::iter::from_fn(|| {
                 self.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
-                    let sep_ret = g.ctx().try_mat(&self.sep);
+                    let sep_ret =
+                        trace_v!("sep_collect", range, beg @ "sep", g.ctx().try_mat(&self.sep));
 
                     if sep_ret.is_ok() || self.skip {
                         cnt += 1;
@@ -560,7 +561,7 @@ impl<'a, C, S, P, O, T> Regex<C> for SepCollect<C, P, S, O, T>
 where
     S: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Span;
 

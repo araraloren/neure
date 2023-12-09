@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::ctor::Map;
@@ -88,7 +88,7 @@ impl<'a, C, P, F, T, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for DynamicCreateCtorTh
 where
     P: Ctor<'a, C, M, O1>,
     T: Ctor<'a, C, M, O2>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
     F: Fn(&O1) -> Result<T, Error>,
 {
     #[inline(always)]
@@ -112,7 +112,7 @@ where
 impl<'a, C, P, F> Regex<C> for DynamicCreateCtorThen<C, P, F>
 where
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -124,7 +124,7 @@ where
 pub trait DynamicCreateCtorThenHelper<'a, C>
 where
     Self: Sized,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn dyn_then_ctor<F>(self, func: F) -> DynamicCreateCtorThen<C, Self, F>;
 }
@@ -132,7 +132,7 @@ where
 impl<'a, C, T> DynamicCreateCtorThenHelper<'a, C> for T
 where
     Self: Sized,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn dyn_then_ctor<F>(self, func: F) -> DynamicCreateCtorThen<C, Self, F> {
         DynamicCreateCtorThen::new(self, func)

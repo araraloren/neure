@@ -3,7 +3,7 @@ use std::ops::RangeBounds;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::neu::CRange;
 use crate::re::trace_v;
@@ -135,7 +135,7 @@ impl<C, P> RegexRepeat<C, P> {
 impl<'a, C, P> Regex<C> for RegexRepeat<C, P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Vec<P::Ret>;
 

@@ -1,5 +1,5 @@
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
@@ -48,7 +48,7 @@ impl<'a, C, R> Regex<C> for DynamicRegex<'a, C, R> {
 
 impl<'a, 'b, C, O> Ctor<'a, C, O, O> for DynamicRegex<'b, C, Span>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
@@ -82,7 +82,7 @@ where
 
 impl<'a, 'b, C, R, T> DynamicRegexHelper<'a, 'b, C, R> for T
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
     T: Fn(&mut C) -> Result<R, Error> + 'b,
 {
     fn into_dyn_regex(self) -> DynamicRegex<'b, C, R>

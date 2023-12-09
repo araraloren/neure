@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::neu::CRange;
 use crate::re::trace_v;
@@ -69,7 +69,7 @@ impl<'a, C, P, O> Regex<C> for RegexCollect<C, P, O>
 where
     P: Regex<C>,
     O: FromIterator<P::Ret>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = O;
 

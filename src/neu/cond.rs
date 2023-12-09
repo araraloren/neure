@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::re::Regex;
 use crate::trace_log;
@@ -106,7 +106,7 @@ impl<'a, C, T> NeuCond<'a, C> for RegexCond<'a, C, T>
 where
     C::Orig: 'a,
     T: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {

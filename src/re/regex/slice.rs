@@ -1,5 +1,5 @@
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace;
@@ -22,7 +22,7 @@ impl<'a, T> RegexSlice<'a, T> {
 impl<'a, 'b, C, O, T> Ctor<'a, C, O, O> for RegexSlice<'b, T>
 where
     T: PartialOrd + 'a,
-    C: Context<'a, Orig = [T]> + Policy<C>,
+    C: Context<'a, Orig = [T]> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -70,7 +70,7 @@ impl<'a> RegexString<'a> {
 
 impl<'a, 'b, C, O> Ctor<'a, C, O, O> for RegexString<'b>
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>

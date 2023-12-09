@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace;
@@ -107,7 +107,7 @@ where
     L: Neu<C::Item>,
     R: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Match<C> + 'a,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>

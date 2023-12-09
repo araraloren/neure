@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -107,7 +107,7 @@ where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -241,7 +241,7 @@ where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>

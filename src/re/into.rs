@@ -1,5 +1,5 @@
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
@@ -144,7 +144,7 @@ where
 impl<'a, C, O, T> Ctor<'a, C, O, O> for BoxedRegex<C, T>
 where
     T: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where

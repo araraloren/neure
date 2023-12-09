@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::re::trace;
 use crate::re::Regex;
@@ -116,7 +116,7 @@ where
     L: Regex<C>,
     R: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 

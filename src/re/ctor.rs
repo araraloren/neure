@@ -51,7 +51,7 @@ pub use self::vec::PairVector;
 pub use self::vec::Vector;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::AsciiWhiteSpace;
@@ -74,7 +74,7 @@ where
 
 impl<'a, C, O, F> Ctor<'a, C, O, O> for F
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
     F: Fn(&mut C) -> Result<Span, Error>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
@@ -90,7 +90,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for Box<dyn Regex<C, Ret = Span>>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -105,7 +105,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for &str
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -120,7 +120,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for String
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -135,7 +135,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for &String
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -150,7 +150,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for &[u8]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -165,7 +165,7 @@ where
 
 impl<'a, const N: usize, C, O> Ctor<'a, C, O, O> for &[u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -180,7 +180,7 @@ where
 
 impl<'a, const N: usize, C, O> Ctor<'a, C, O, O> for [u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -195,7 +195,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -210,7 +210,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for &Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -226,7 +226,7 @@ where
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for Option<I>
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -240,7 +240,7 @@ where
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for RefCell<I>
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -254,7 +254,7 @@ where
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for Cell<I>
 where
     I: Ctor<'a, C, M, O> + Copy,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -268,7 +268,7 @@ where
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for Mutex<I>
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -284,7 +284,7 @@ where
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for Arc<I>
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -298,7 +298,7 @@ where
 impl<'a, C, M, O, I> Ctor<'a, C, M, O> for Rc<I>
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
     where
@@ -346,7 +346,7 @@ where
 pub trait ConstructOp<'a, C>
 where
     Self: Sized,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
@@ -469,7 +469,7 @@ where
 impl<'a, C, T> ConstructOp<'a, C> for T
 where
     T: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)

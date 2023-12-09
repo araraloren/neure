@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -39,7 +39,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for NullRegex<Span>
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>

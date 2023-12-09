@@ -1,5 +1,5 @@
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
@@ -47,7 +47,7 @@ impl<'a, C, R> Regex<C> for DynamicCtor<'a, C, R> {
 
 impl<'a, 'b, C, M, O> Ctor<'a, C, M, O> for DynamicCtor<'b, C, O>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, _: &mut H) -> Result<O, Error>

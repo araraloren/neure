@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::neu::CRange;
 use crate::re::trace;
@@ -114,7 +114,7 @@ where
     S: Regex<C>,
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = (L::Ret, R::Ret);
 
@@ -273,7 +273,7 @@ impl<'a, C, S, P> Regex<C> for RegexSeparate<C, P, S>
 where
     S: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Vec<P::Ret>;
 
@@ -428,7 +428,7 @@ where
     S: Regex<C>,
     P: Regex<C>,
     T: FromIterator<P::Ret>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = T;
 

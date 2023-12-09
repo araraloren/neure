@@ -1,10 +1,13 @@
 use std::str::CharIndices;
 
+use super::BPolicy;
 use super::Context;
+use super::PolicyCtx;
+use super::PolicyMatch;
 use super::Regex;
 use super::Span;
 
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::re::Ctor;
@@ -73,6 +76,13 @@ where
     pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
         SimpleStorer::new(capacity)
     }
+
+    pub fn with_b_policy<O>(self, before_policy: O) -> PolicyCtx<'a, T, O> {
+        PolicyCtx {
+            inner: self,
+            b_policy: Some(before_policy),
+        }
+    }
 }
 
 impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
@@ -92,16 +102,19 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
 
     fn set_offset(&mut self, offset: usize) -> &mut Self {
         self.offset = offset;
+        trace_log!("set {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
         self.offset += offset;
+        trace_log!("inc {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn dec(&mut self, offset: usize) -> &mut Self {
         self.offset -= offset;
+        trace_log!("dec {offset} -> ctx -> {}", self.offset);
         self
     }
 
@@ -176,7 +189,7 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
     }
 }
 
-impl<'a, T> Policy<RegexCtx<'a, T>> for RegexCtx<'a, T>
+impl<'a, T> Match<RegexCtx<'a, T>> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,
@@ -185,19 +198,22 @@ where
         &mut self,
         pat: &Pat,
     ) -> Result<Pat::Ret, Error> {
-        self.try_mat_policy(pat, |_| Ok(()), |_, ret| ret)
+        self.try_mat_policy(pat, &|_: &mut Self| Ok(()))
     }
+}
 
-    fn try_mat_policy<Pat: Regex<RegexCtx<'a, T>> + ?Sized>(
-        &mut self,
-        pat: &Pat,
-        mut pre: impl FnMut(&mut RegexCtx<'a, T>) -> Result<(), Error>,
-        mut post: impl FnMut(&mut RegexCtx<'a, T>, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
-    ) -> Result<Pat::Ret, Error> {
-        pre(self)?;
-        let ret = pat.try_parse(self);
-
-        post(self, ret)
+impl<'a, T, B> PolicyMatch<RegexCtx<'a, T>, B> for RegexCtx<'a, T>
+where
+    T: ?Sized,
+    Self: Context<'a>,
+    B: BPolicy<RegexCtx<'a, T>>,
+{
+    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Pat::Ret, Error>
+    where
+        Pat: Regex<RegexCtx<'a, T>> + ?Sized,
+    {
+        b_policy.inv_before_match(self)?;
+        pat.try_parse(self)
     }
 }
 

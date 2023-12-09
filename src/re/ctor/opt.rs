@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -55,7 +55,7 @@ impl<C, P> OptionPat<C, P> {
 impl<'a, C, M, O, P> Ctor<'a, C, M, Option<O>> for OptionPat<C, P>
 where
     P: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<Option<O>, Error>
@@ -78,7 +78,7 @@ where
 impl<'a, C, P> Regex<C> for OptionPat<C, P>
 where
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 

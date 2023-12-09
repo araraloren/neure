@@ -35,7 +35,7 @@ pub use self::slice::RegexSlice;
 pub use self::slice::RegexString;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::neu::CRange;
 use crate::re::Regex;
@@ -64,7 +64,7 @@ pub fn and<'a, C, L, R>(left: L, right: R) -> RegexAnd<C, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexAnd::new(left, right)
 }
@@ -97,7 +97,7 @@ where
     O: Ret,
     L: Regex<C, Ret = O>,
     R: Regex<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexOr::new(left, right)
 }
@@ -107,7 +107,7 @@ where
     O: Ret,
     L: Regex<C, Ret = O>,
     R: Regex<C, Ret = O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexLongestTokenMatch::new(left, right)
 }
@@ -140,7 +140,7 @@ where
     P: Regex<C>,
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexQuote::new(pat, left, right)
 }
@@ -149,7 +149,7 @@ pub fn repeat<'a, C, P, R>(pat: P, range: R) -> RegexRepeat<C, P>
 where
     P: Regex<C>,
     R: Into<CRange<usize>>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexRepeat::new(pat, range)
 }
@@ -179,7 +179,7 @@ pub fn sep<'a, C, S, P>(pat: P, sep: S, skip: bool) -> RegexSeparate<C, P, S>
 where
     P: Regex<C>,
     S: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexSeparate::new(pat, sep).with_skip(skip)
 }
@@ -189,7 +189,7 @@ where
     P: Regex<C>,
     S: Regex<C>,
     T: FromIterator<P::Ret>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexSepCollect::new(pat, sep).with_skip(skip)
 }
@@ -199,7 +199,7 @@ where
     L: Regex<C>,
     S: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexSepOnce::new(left, sep, right)
 }
@@ -208,7 +208,7 @@ pub fn collect<'a, C, P, O>(pat: P, min: usize) -> RegexCollect<C, P, O>
 where
     P: Regex<C>,
     O: FromIterator<P::Ret>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     RegexCollect::new(pat).at_least(min)
 }

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace;
@@ -106,7 +106,7 @@ where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -237,7 +237,7 @@ impl<'a, U, C, O, I> Ctor<'a, C, O, O> for NeureOneMore<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Policy<C> + 'a,
+    C: Context<'a> + Match<C> + 'a,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>

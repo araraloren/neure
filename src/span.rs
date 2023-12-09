@@ -1,5 +1,5 @@
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::iter::IndexBySpan;
@@ -105,7 +105,7 @@ impl SimpleStorer {
         pat: &P,
     ) -> Result<P::Ret, Error>
     where
-        C: Context<'a> + Policy<C>,
+        C: Context<'a> + Match<C>,
     {
         let ret = ctx.try_mat(pat)?;
 

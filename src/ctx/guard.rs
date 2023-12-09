@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::re::Regex;
 
@@ -61,7 +61,7 @@ where
 
 impl<'a, 'b, C> CtxGuard<'a, 'b, C>
 where
-    C: Context<'b> + Policy<C>,
+    C: Context<'b> + Match<C>,
 {
     pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
         self.ctx.try_mat_t(pattern).map(|r| {

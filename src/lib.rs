@@ -37,7 +37,7 @@ pub mod prelude {
     pub use crate::ctx::BytesCtx;
     pub use crate::ctx::CharsCtx;
     pub use crate::ctx::Context;
-    pub use crate::ctx::Policy;
+    pub use crate::ctx::Match;
     pub use crate::ctx::RegexCtx;
     pub use crate::ctx::Ret;
     pub use crate::ctx::Span;

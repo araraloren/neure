@@ -53,7 +53,7 @@ use self::regex::RegexStart;
 use self::regex::RegexString;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::Condition;
@@ -89,7 +89,7 @@ where
 
 impl<'a, C> Regex<C> for &str
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     type Ret = Span;
 
@@ -102,7 +102,7 @@ where
 
 impl<'a, C> Regex<C> for String
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     type Ret = Span;
 
@@ -115,7 +115,7 @@ where
 
 impl<'a, C> Regex<C> for &String
 where
-    C: Context<'a, Orig = str> + Policy<C>,
+    C: Context<'a, Orig = str> + Match<C>,
 {
     type Ret = Span;
 
@@ -128,7 +128,7 @@ where
 
 impl<'a, C> Regex<C> for &[u8]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     type Ret = Span;
 
@@ -141,7 +141,7 @@ where
 
 impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     type Ret = Span;
 
@@ -154,7 +154,7 @@ where
 
 impl<'a, const N: usize, C> Regex<C> for [u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     type Ret = Span;
 
@@ -167,7 +167,7 @@ where
 
 impl<'a, C> Regex<C> for Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     type Ret = Span;
 
@@ -178,7 +178,7 @@ where
 
 impl<'a, C> Regex<C> for &Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Policy<C>,
+    C: Context<'a, Orig = [u8]> + Match<C>,
 {
     type Ret = Span;
 
@@ -190,7 +190,7 @@ where
 impl<'a, P, C> Regex<C> for Option<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -202,7 +202,7 @@ where
 impl<'a, P, C> Regex<C> for RefCell<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -214,7 +214,7 @@ where
 impl<'a, P, C> Regex<C> for Cell<P>
 where
     P: Regex<C> + Copy,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -226,7 +226,7 @@ where
 impl<'a, P, C> Regex<C> for Mutex<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -239,7 +239,7 @@ where
 impl<'a, P, C> Regex<C> for Arc<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -251,7 +251,7 @@ where
 impl<'a, P, C> Regex<C> for Rc<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 
@@ -262,7 +262,7 @@ where
 
 impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Ret;
 
@@ -273,7 +273,7 @@ where
 
 impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Ret;
 
@@ -284,7 +284,7 @@ where
 
 impl<'a, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Ret;
 

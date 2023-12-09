@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace;
@@ -101,7 +101,7 @@ impl<'a, C, L, R, M, O> Ctor<'a, C, M, O> for LongestTokenMatch<C, L, R>
 where
     L: Ctor<'a, C, M, O>,
     R: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -137,7 +137,7 @@ impl<'a, C, L, R> Regex<C> for LongestTokenMatch<C, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = L::Ret;
 

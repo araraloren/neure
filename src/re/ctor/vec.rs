@@ -3,7 +3,7 @@ use std::ops::DerefMut;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace;
@@ -39,7 +39,7 @@ impl<T> DerefMut for Vector<T> {
 impl<'a, C, T, M, O> Ctor<'a, C, M, O> for Vector<T>
 where
     T: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -67,7 +67,7 @@ where
 impl<'a, C, T> Regex<C> for Vector<T>
 where
     T: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = T::Ret;
 
@@ -117,7 +117,7 @@ impl<'a, C, K, V, M> Ctor<'a, C, M, V> for PairVector<K, V>
 where
     V: Clone,
     K: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
@@ -145,7 +145,7 @@ where
 impl<'a, C, K, V> Regex<C> for PairVector<K, V>
 where
     K: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = K::Ret;
 

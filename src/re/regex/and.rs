@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::re::trace;
 use crate::re::Regex;
@@ -96,7 +96,7 @@ impl<'a, C, L, R> Regex<C> for RegexAnd<C, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = (L::Ret, R::Ret);
 

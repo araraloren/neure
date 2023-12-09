@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
@@ -81,7 +81,7 @@ impl<C, P> Pattern<C, P> {
 impl<'a, C, O, P> Ctor<'a, C, O, O> for Pattern<C, P>
 where
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
@@ -98,7 +98,7 @@ where
 impl<'a, C, P> Regex<C> for Pattern<C, P>
 where
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = P::Ret;
 

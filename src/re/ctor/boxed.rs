@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Ctor;
@@ -57,7 +57,7 @@ where
 impl<'a, C, M, O, T> Ctor<'a, C, M, O> for BoxedCtor<C, T>
 where
     T: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
@@ -72,14 +72,14 @@ where
 pub fn into_boxed_ctor<'a, C, M, O, I>(invoke: I) -> BoxedCtor<C, I>
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     BoxedCtor::new(Box::new(invoke))
 }
 
 pub trait BoxedCtorHelper<'a, C, M, O>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn into_boxed_ctor(self) -> BoxedCtor<C, Self>
     where
@@ -89,7 +89,7 @@ where
 impl<'a, C, M, O, I> BoxedCtorHelper<'a, C, M, O> for I
 where
     I: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn into_boxed_ctor(self) -> BoxedCtor<C, Self>
     where

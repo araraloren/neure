@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -117,7 +117,7 @@ impl<'a, C, L, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for Then<C, L, R>
 where
     L: Ctor<'a, C, M, O1>,
     R: Ctor<'a, C, M, O2>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
@@ -141,7 +141,7 @@ impl<'a, C, L, R> Regex<C> for Then<C, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = L::Ret;
 
@@ -275,7 +275,7 @@ where
     L: Ctor<'a, C, M, O1>,
     R: Ctor<'a, C, M, O2>,
     I: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error>
@@ -309,7 +309,7 @@ where
     I: Regex<C, Ret = Span>,
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = L::Ret;
 

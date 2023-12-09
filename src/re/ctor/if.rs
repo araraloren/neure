@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::trace;
@@ -89,7 +89,7 @@ impl<'a, C, T, I, E, M, O> Ctor<'a, C, M, O> for IfRegex<C, T, I, E>
 where
     T: Ctor<'a, C, M, O>,
     E: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
 {
     #[inline(always)]
@@ -116,7 +116,7 @@ impl<'a, C, T, I, E> Regex<C> for IfRegex<C, T, I, E>
 where
     T: Regex<C, Ret = Span>,
     E: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
 {
     type Ret = T::Ret;
@@ -142,7 +142,7 @@ pub fn branch<'a, C>(
     r#else: impl Regex<C, Ret = Span>,
 ) -> impl Regex<C, Ret = Span>
 where
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     IfRegex::new(re, r#if, r#else)
 }

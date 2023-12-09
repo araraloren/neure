@@ -3,7 +3,7 @@ use std::ops::RangeBounds;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -140,7 +140,7 @@ impl<C, P> Repeat<C, P> {
 impl<'a, C, P, M, O> Ctor<'a, C, M, Vec<O>> for Repeat<C, P>
 where
     P: Ctor<'a, C, M, O>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
@@ -179,7 +179,7 @@ where
 impl<'a, C, P> Regex<C> for Repeat<C, P>
 where
     P: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     type Ret = Span;
 

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
-use crate::ctx::Policy;
+use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -86,7 +86,7 @@ impl<'a, C, P, F, T> Regex<C> for DynamicCreateRegexThen<C, P, F>
 where
     P: Regex<C, Ret = Span>,
     T: Regex<C, Ret = Span>,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
     F: Fn(&Span) -> Result<T, Error>,
 {
     type Ret = P::Ret;
@@ -107,7 +107,7 @@ where
 pub trait DynamicCreateRegexThenHelper<'a, C>
 where
     Self: Sized,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn dyn_then_re<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F>;
 }
@@ -115,7 +115,7 @@ where
 impl<'a, C, T> DynamicCreateRegexThenHelper<'a, C> for T
 where
     Self: Sized,
-    C: Context<'a> + Policy<C>,
+    C: Context<'a> + Match<C>,
 {
     fn dyn_then_re<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F> {
         DynamicCreateRegexThen::new(self, func)

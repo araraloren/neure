@@ -1,14 +1,18 @@
-#[allow(clippy::module_inception)]
-mod ctx;
 mod guard;
+mod policy;
+#[allow(clippy::module_inception)]
+mod regex;
 mod span;
+
+use std::marker::PhantomData;
 
 use crate::err::Error;
 use crate::re::Regex;
 use crate::MayDebug;
 
-pub use self::ctx::RegexCtx;
 pub use self::guard::CtxGuard;
+pub use self::policy::PolicyCtx;
+pub use self::regex::RegexCtx;
 pub use self::span::Span;
 
 pub type BytesCtx<'a> = RegexCtx<'a, [u8]>;
@@ -71,7 +75,7 @@ where
         C: Context<'a>;
 }
 
-pub trait Policy<C> {
+pub trait Match<C> {
     fn is_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
         self.try_mat_t(pat).is_ok()
     }
@@ -84,13 +88,15 @@ pub trait Policy<C> {
     ) -> Result<Pat::Ret, Error> {
         self.try_mat_t(pat)
     }
+}
 
-    fn try_mat_policy<Pat: Regex<C> + ?Sized>(
-        &mut self,
-        pat: &Pat,
-        pre: impl FnMut(&mut C) -> Result<(), Error>,
-        post: impl FnMut(&mut C, Result<Pat::Ret, Error>) -> Result<Pat::Ret, Error>,
-    ) -> Result<Pat::Ret, Error>;
+pub trait PolicyMatch<C, B>
+where
+    B: BPolicy<C>,
+{
+    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Pat::Ret, Error>
+    where
+        Pat: Regex<C> + ?Sized;
 }
 
 impl Ret for () {
@@ -115,4 +121,60 @@ impl Ret for () {
         C: Context<'a>,
     {
     }
+}
+
+pub trait BPolicy<C> {
+    fn inv_before_match(&self, ctx: &mut C) -> Result<(), Error>;
+}
+
+impl<C, F> BPolicy<C> for F
+where
+    F: Fn(&mut C) -> Result<(), Error>,
+{
+    fn inv_before_match(&self, ctx: &mut C) -> Result<(), Error> {
+        (self)(ctx)
+    }
+}
+
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct RegexPolicy<'a, C, T> {
+    regex: T,
+    marker: PhantomData<(&'a (), C)>,
+}
+
+impl<'a, C, T> Clone for RegexPolicy<'a, C, T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            regex: self.regex.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<'a, C, T> RegexPolicy<'a, C, T> {
+    pub fn new(regex: T) -> Self {
+        Self {
+            regex,
+            marker: PhantomData,
+        }
+    }
+}
+
+impl<'a, C, T> BPolicy<C> for RegexPolicy<'a, C, T>
+where
+    C::Orig: 'a,
+    T: Regex<C>,
+    C: Context<'a> + Match<C>,
+{
+    fn inv_before_match(&self, ctx: &mut C) -> Result<(), Error> {
+        ctx.try_mat_t(&self.regex)?;
+        Ok(())
+    }
+}
+
+pub fn regex_policy<'a, C, T>(regex: T) -> RegexPolicy<'a, C, T> {
+    RegexPolicy::new(regex)
 }
