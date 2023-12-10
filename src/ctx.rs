@@ -90,10 +90,7 @@ pub trait Match<C> {
     }
 }
 
-pub trait PolicyMatch<C, B>
-where
-    B: BPolicy<C>,
-{
+pub trait PolicyMatch<C, B> {
     fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Pat::Ret, Error>
     where
         Pat: Regex<C> + ?Sized;
@@ -124,25 +121,37 @@ impl Ret for () {
 }
 
 pub trait BPolicy<C> {
-    fn inv_before_match(&self, ctx: &mut C) -> Result<(), Error>;
+    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error>;
 }
 
 impl<C, F> BPolicy<C> for F
 where
     F: Fn(&mut C) -> Result<(), Error>,
 {
-    fn inv_before_match(&self, ctx: &mut C) -> Result<(), Error> {
+    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
         (self)(ctx)
     }
 }
 
+impl<C, B> BPolicy<C> for Option<B>
+where
+    B: BPolicy<C>,
+{
+    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
+        match self {
+            Some(ref_) => ref_.invoke_policy(ctx),
+            None => unimplemented!(""),
+        }
+    }
+}
+
 #[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RegexPolicy<'a, C, T> {
+pub struct RePolicy<'a, C, T> {
     regex: T,
     marker: PhantomData<(&'a (), C)>,
 }
 
-impl<'a, C, T> Clone for RegexPolicy<'a, C, T>
+impl<'a, C, T> Clone for RePolicy<'a, C, T>
 where
     T: Clone,
 {
@@ -154,7 +163,7 @@ where
     }
 }
 
-impl<'a, C, T> RegexPolicy<'a, C, T> {
+impl<'a, C, T> RePolicy<'a, C, T> {
     pub fn new(regex: T) -> Self {
         Self {
             regex,
@@ -163,18 +172,18 @@ impl<'a, C, T> RegexPolicy<'a, C, T> {
     }
 }
 
-impl<'a, C, T> BPolicy<C> for RegexPolicy<'a, C, T>
+impl<'a, C, T> BPolicy<C> for RePolicy<'a, C, T>
 where
     C::Orig: 'a,
     T: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    fn inv_before_match(&self, ctx: &mut C) -> Result<(), Error> {
+    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
         ctx.try_mat_t(&self.regex)?;
         Ok(())
     }
 }
 
-pub fn regex_policy<'a, C, T>(regex: T) -> RegexPolicy<'a, C, T> {
-    RegexPolicy::new(regex)
+pub fn re_policy<'a, C, T>(regex: T) -> RePolicy<'a, C, T> {
+    RePolicy::new(regex)
 }

@@ -18,7 +18,7 @@ where
     T: ?Sized,
 {
     pub(crate) inner: RegexCtx<'a, T>,
-    pub(crate) b_policy: Option<B>,
+    pub(crate) b_policy: B,
 }
 
 impl<'a, T, B> Clone for PolicyCtx<'a, T, B>
@@ -48,14 +48,14 @@ where
     pub fn new(dat: &'a T, before_policy: B) -> Self {
         Self {
             inner: RegexCtx::new(dat),
-            b_policy: Some(before_policy),
+            b_policy: before_policy,
         }
     }
 
-    pub fn with_b_policy<O>(self, before_policy: O) -> PolicyCtx<'a, T, O> {
+    pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<'a, T, O> {
         PolicyCtx {
             inner: self.inner,
-            b_policy: Some(before_policy),
+            b_policy: before_policy,
         }
     }
 
@@ -138,7 +138,10 @@ where
     }
 
     fn clone_with(&self, orig: &'a Self::Orig) -> Self {
-        PolicyCtx::new(orig, self.b_policy.as_ref().unwrap().clone())
+        PolicyCtx {
+            inner: RegexCtx::new(orig),
+            b_policy: self.b_policy.clone(),
+        }
     }
 }
 
@@ -188,7 +191,10 @@ where
     }
 
     fn clone_with(&self, orig: &'a Self::Orig) -> Self {
-        PolicyCtx::new(orig, self.b_policy.as_ref().unwrap().clone())
+        PolicyCtx {
+            inner: RegexCtx::new(orig),
+            b_policy: self.b_policy.clone(),
+        }
     }
 }
 
@@ -196,17 +202,14 @@ impl<'a, T, B> Match<PolicyCtx<'a, T, B>> for PolicyCtx<'a, T, B>
 where
     T: ?Sized,
     Self: Context<'a>,
-    B: BPolicy<PolicyCtx<'a, T, B>>,
+    B: BPolicy<RegexCtx<'a, T>>,
 {
     fn try_mat_t<Pat: Regex<PolicyCtx<'a, T, B>> + ?Sized>(
         &mut self,
         pat: &Pat,
     ) -> Result<Pat::Ret, Error> {
-        let b_policy = self.b_policy.take().unwrap();
-        let ret = self.try_mat_policy(pat, &b_policy);
-
-        self.b_policy = Some(b_policy);
-        ret
+        self.b_policy.invoke_policy(&mut self.inner)?;
+        pat.try_parse(self)
     }
 }
 
@@ -214,13 +217,13 @@ impl<'a, T, B> PolicyMatch<PolicyCtx<'a, T, B>, B> for PolicyCtx<'a, T, B>
 where
     T: ?Sized,
     Self: Context<'a>,
-    B: BPolicy<PolicyCtx<'a, T, B>>,
+    B: BPolicy<RegexCtx<'a, T>>,
 {
     fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Pat::Ret, Error>
     where
         Pat: Regex<PolicyCtx<'a, T, B>> + ?Sized,
     {
-        b_policy.inv_before_match(self)?;
+        b_policy.invoke_policy(&mut self.inner)?;
         pat.try_parse(self)
     }
 }
@@ -244,7 +247,7 @@ impl<'a, T, B> PolicyCtx<'a, T, B>
 where
     T: ?Sized,
     Self: Context<'a>,
-    B: BPolicy<PolicyCtx<'a, T, B>> + 'a,
+    B: BPolicy<RegexCtx<'a, T>> + 'a,
 {
     pub fn ctor_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
     where

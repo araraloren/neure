@@ -1,9 +1,11 @@
 use std::str::CharIndices;
 
+use super::re_policy;
 use super::BPolicy;
 use super::Context;
 use super::PolicyCtx;
 use super::PolicyMatch;
+use super::RePolicy;
 use super::Regex;
 use super::Span;
 
@@ -77,10 +79,25 @@ where
         SimpleStorer::new(capacity)
     }
 
-    pub fn with_b_policy<O>(self, before_policy: O) -> PolicyCtx<'a, T, O> {
+    pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<'a, T, O>
+    where
+        O: BPolicy<Self>,
+    {
         PolicyCtx {
             inner: self,
-            b_policy: Some(before_policy),
+            b_policy: before_policy,
+        }
+    }
+}
+
+impl<'a, T> RegexCtx<'a, T>
+where
+    T: ?Sized,
+{
+    pub fn ignore<R>(self, regex: R) -> PolicyCtx<'a, T, RePolicy<'a, Self, R>> {
+        PolicyCtx {
+            inner: self,
+            b_policy: re_policy(regex),
         }
     }
 }
@@ -212,7 +229,7 @@ where
     where
         Pat: Regex<RegexCtx<'a, T>> + ?Sized,
     {
-        b_policy.inv_before_match(self)?;
+        b_policy.invoke_policy(self)?;
         pat.try_parse(self)
     }
 }

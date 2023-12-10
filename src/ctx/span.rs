@@ -33,7 +33,7 @@ impl Ret for Span {
     }
 
     fn add_assign(&mut self, other: Self) -> &mut Self {
-        self.len += other.len;
+        self.len += other.len + other.beg - (self.beg + self.len);
         self
     }
 
