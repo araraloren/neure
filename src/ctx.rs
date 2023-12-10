@@ -146,12 +146,12 @@ where
 }
 
 #[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RePolicy<'a, C, T> {
+pub struct RePolicy<C, T> {
     regex: T,
-    marker: PhantomData<(&'a (), C)>,
+    marker: PhantomData<C>,
 }
 
-impl<'a, C, T> Clone for RePolicy<'a, C, T>
+impl<C, T> Clone for RePolicy<C, T>
 where
     T: Clone,
 {
@@ -163,7 +163,7 @@ where
     }
 }
 
-impl<'a, C, T> RePolicy<'a, C, T> {
+impl<C, T> RePolicy<C, T> {
     pub fn new(regex: T) -> Self {
         Self {
             regex,
@@ -172,7 +172,7 @@ impl<'a, C, T> RePolicy<'a, C, T> {
     }
 }
 
-impl<'a, C, T> BPolicy<C> for RePolicy<'a, C, T>
+impl<'a, C, T> BPolicy<C> for RePolicy<C, T>
 where
     C::Orig: 'a,
     T: Regex<C>,
@@ -184,6 +184,6 @@ where
     }
 }
 
-pub fn re_policy<'a, C, T>(regex: T) -> RePolicy<'a, C, T> {
+pub fn re_policy<C, T>(regex: T) -> RePolicy<C, T> {
     RePolicy::new(regex)
 }

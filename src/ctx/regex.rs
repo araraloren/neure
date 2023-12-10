@@ -79,7 +79,7 @@ where
         SimpleStorer::new(capacity)
     }
 
-    pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<'a, T, O>
+    pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<Self, O>
     where
         O: BPolicy<Self>,
     {
@@ -94,7 +94,7 @@ impl<'a, T> RegexCtx<'a, T>
 where
     T: ?Sized,
 {
-    pub fn ignore<R>(self, regex: R) -> PolicyCtx<'a, T, RePolicy<'a, Self, R>> {
+    pub fn ignore<R>(self, regex: R) -> PolicyCtx<Self, RePolicy<Self, R>> {
         PolicyCtx {
             inner: self,
             b_policy: re_policy(regex),
