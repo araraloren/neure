@@ -486,8 +486,7 @@ where
     ///
     ///     let digit = re!(['0' - '9']+);
     ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
-    ///     let comma = ",".pad(' ');
-    ///     let digits = digit.terminated(comma);
+    ///     let digits = digit.sep(",".ws());
     ///     let array = digits.quote("[", "]");
     ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
     ///
@@ -516,7 +515,7 @@ where
     ///
     ///     let ascii = neu::ascii().repeat_one();
     ///     let lit = ascii.quote("'", "'");
-    ///     let ele = lit.sep(",".pad(' '));
+    ///     let ele = lit.sep(",".ws());
     ///     let arr = ele.quote("[", "]");
     ///     let mut ctx = CharsCtx::new("['a', 'c', 'd', 'f']");
     ///
@@ -539,7 +538,7 @@ where
     ///     color_eyre::install()?;
     ///
     ///     let name = re!([^ ',' ']' '[']+);
-    ///     let sep = ','.repeat_one().pad(neu::whitespace());
+    ///     let sep = ','.repeat_one().ws();
     ///     let arr = name.sep(sep);
     ///     let arr = arr.quote("[", "]");
     ///     let mut ctx = CharsCtx::new(r#"[c, rust, java, c++]"#);

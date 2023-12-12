@@ -208,8 +208,8 @@ impl<T> Neu<T> for Rc<dyn Neu<T>> {
 ///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
 ///   let mut ctx2 = CharsCtx::new("acdde");
 ///
-///   assert_eq!(ctx1.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 5));
-///   assert_eq!(ctx2.try_mat(&arr.repeat(2..6)).unwrap(), Span::new(0, 2));
+///   assert_eq!(ctx1.try_mat(&arr.repeat_range(2..6)).unwrap(), Span::new(0, 5));
+///   assert_eq!(ctx2.try_mat(&arr.repeat_range(2..6)).unwrap(), Span::new(0, 2));
 /// # }
 /// ```
 impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
@@ -228,7 +228,7 @@ impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
 /// #
 /// # fn main() {
 ///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-///   let arr = UnitOp::repeat(arr, 2..6);
+///   let arr = Neu2Re::repeat_range(arr, 2..6);
 ///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
 ///   let mut ctx2 = BytesCtx::new(b"acdde");
 ///
@@ -388,7 +388,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
 ///     let from = re!((from){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
-///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 8));
+///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 6));
 ///
 ///     Ok(())
 /// # }

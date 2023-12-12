@@ -12,6 +12,7 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+// todo!()
 #[derive(Debug, Default, Copy)]
 pub struct Collect<C, P, O> {
     pat: P,

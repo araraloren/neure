@@ -30,7 +30,7 @@ use super::NeuCond;
 ///     let re = b'+'
 ///         .or(b'-')
 ///         .then(u8::is_ascii_hexdigit)
-///         .then(u8::is_ascii_hexdigit.repeat_times::<4>())
+///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
 ///         .pat();
 ///
 ///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, b"+AE00");

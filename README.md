@@ -16,7 +16,7 @@ See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
 use neure::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let digit = regex!(['0' - '9']+); // match digit from 0 to 9 more than once
+    let digit = re!(['0' - '9']+); // match digit from 0 to 9 more than once
     let mut ctx = CharsCtx::new("2023rust");
 
     assert_eq!(ctx.map(&digit, |v: &str| Ok(v.parse::<u64>()))??, 2023);

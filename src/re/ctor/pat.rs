@@ -27,7 +27,7 @@ use crate::re::Regex;
 ///
 ///     let abc = "abc";
 ///     let com = "com";
-///     let website = abc.separate(".", com);
+///     let website = abc.sep_once(".", com);
 ///     let mut ctx = CharsCtx::new("abc.com");
 ///
 ///     assert_eq!(ctx.ctor(&website)?, ("abc", "com"));

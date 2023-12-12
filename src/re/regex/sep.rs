@@ -152,7 +152,7 @@ where
 ///
 ///     let ascii = neu::alphabetic().repeat_one_more();
 ///     let ty = ascii.map(|v| Ok(Tp(v)));
-///     let ele = ty.sep(",".pad(' '));
+///     let ele = ty.sep(",".ws());
 ///     let arr = ele.quote("<", ">");
 ///     let mut ctx = CharsCtx::new("<A, B, Len, Size>");
 ///
@@ -317,7 +317,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use neure::{prelude::*, re::FromStr};
+/// # use neure::{prelude::*, re::map::FromStr};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;

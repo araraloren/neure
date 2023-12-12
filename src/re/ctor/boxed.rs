@@ -82,7 +82,7 @@ where
 ///     let re = b'+'
 ///         .or(b'-')
 ///         .then(u8::is_ascii_hexdigit)
-///         .then(u8::is_ascii_hexdigit.repeat_times::<4>())
+///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
 ///         .pat()
 ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
 ///         .into_boxed_ctor();

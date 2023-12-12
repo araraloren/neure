@@ -122,10 +122,10 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///     let comma = re::zero_one(',');
+///     let comma = re::one(',');
 ///     let digit = re::one_more('0'..='9');
-///     let digit = re::terminated(comma, digit);
-///     let array = re::quote(re::one('['), re::one(']'), digit.repeat(3..4));
+///     let digit = re::sep(digit, comma, true);
+///     let array = re::quote(digit, re::one('['), re::one(']'));
 ///     let mut ctx = CharsCtx::new("[123,456,789]");
 ///
 ///     assert_eq!(
@@ -164,14 +164,12 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///     let comma = re::zero_one(',');
+///     let comma = re::one(',');
 ///     let digit = re::one_more('0'..='9');
-///     let digit = re::terminated(comma, digit);
+///     let digit = re::sep(digit, comma, true);
 ///     let mut ctx = CharsCtx::new("123,456,789");
 ///
-///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
-///     assert_eq!(ctx.try_mat(&digit)?, Span::new(4, 3));
-///     assert_eq!(ctx.try_mat(&digit)?, Span::new(8, 3));
+///     assert_eq!(ctx.try_mat_t(&digit)?, vec![Span::new(0, 3), Span::new(4, 3), Span::new(8, 3)]);
 ///     Ok(())
 /// # }
 /// ```

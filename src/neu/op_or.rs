@@ -115,7 +115,7 @@ where
 ///     let re = u8::is_ascii_hexdigit.or(b'g'.or(b'G')).repeat_times::<4>();
 ///     let re = re.padded(b"0x");
 ///
-///     assert_eq!(BytesCtx::new(b"0xcfhg").ctor(&re)?, b"cfhg");
+///     assert_eq!(BytesCtx::new(b"0xcfag").ctor(&re)?, b"cfag");
 ///     Ok(())
 /// # }
 /// ```

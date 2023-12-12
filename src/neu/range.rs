@@ -164,11 +164,10 @@ impl<T> From<std::ops::RangeToInclusive<T>> for CRange<T> {
 ///
 /// ```
 /// use neure::prelude::*;
-/// use unit::*;
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let letter = range('a' ..= 'f');
-///     let letter = letter.repeat(3);
+///     let letter = neu::range('a' ..= 'f');
+///     let letter = letter.repeat_times::<3>();
 ///     let mut ctx = CharsCtx::new("adfwgh");
 ///
 ///     assert_eq!(ctx.try_mat(&letter)?, Span::new(0, 3));
