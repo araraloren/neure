@@ -104,7 +104,21 @@ where
     }
 }
 
-// TODO
+///
+/// # Example
+/// 
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let re = u8::is_ascii_hexdigit.or(b'g'.or(b'G')).repeat_times::<4>();
+///     let re = re.padded(b"0x");
+///
+///     assert_eq!(BytesCtx::new(b"0xcfhg").ctor(&re)?, b"cfhg");
+///     Ok(())
+/// # }
+/// ```
 pub fn or<T, L: Neu<T>, R: Neu<T>>(left: L, right: R) -> Or<L, R, T> {
     Or::new(left, right)
 }

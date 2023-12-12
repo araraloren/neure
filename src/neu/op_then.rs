@@ -17,6 +17,28 @@ use super::Condition;
 use super::Neu;
 use super::NeuCond;
 
+///
+/// Construct a regex that match `L`, and then match `R`.
+/// 
+/// # Example
+/// 
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let re = b'+'
+///         .or(b'-')
+///         .then(u8::is_ascii_hexdigit)
+///         .then(u8::is_ascii_hexdigit.repeat_times::<4>())
+///         .pat();
+///
+///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, b"+AE00");
+///     assert!(BytesCtx::new(b"-GH66").ctor(&re).is_err());
+///     assert_eq!(BytesCtx::new(b"-83FD").ctor(&re)?, b"-83FD");
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Copy)]
 pub struct NeureThen<C, L, R, T, I>
 where

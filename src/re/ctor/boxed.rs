@@ -69,6 +69,30 @@ where
     }
 }
 
+///
+/// Construct a boxed `Ctor` that convert from `M` to `O`.
+/// 
+/// # Example
+/// 
+/// ```
+/// # use neure::{err::Error, prelude::*, re::BoxedCtorHelper};
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let re = b'+'
+///         .or(b'-')
+///         .then(u8::is_ascii_hexdigit)
+///         .then(u8::is_ascii_hexdigit.repeat_times::<4>())
+///         .pat()
+///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+///         .into_boxed_ctor();
+///
+///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, "+AE00");
+///     assert!(BytesCtx::new(b"-GH66").ctor(&re).is_err());
+///     assert_eq!(BytesCtx::new(b"-83FD").ctor(&re)?, "-83FD");
+///     Ok(())
+/// # }
+/// ```
 pub fn into_boxed_ctor<'a, C, M, O, I>(invoke: I) -> BoxedCtor<C, I>
 where
     I: Ctor<'a, C, M, O>,
