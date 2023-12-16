@@ -12,15 +12,32 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
-// todo!()
+///
+/// Repeat the regex `P` and then collect into another type `V`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let re = b'+'.repeat_one().collect::<_, Vec<_>>();
+///
+///     assert_eq!(BytesCtx::new(b"+++A").ctor(&re)?, vec![b"+", b"+", b"+"]);
+///     assert_eq!(BytesCtx::new(b"++-A").ctor(&re)?, vec![b"+", b"+"]);
+///     assert_eq!(BytesCtx::new(b"---A").ctor(&re)?, Vec::<&[u8]>::new());
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
-pub struct Collect<C, P, O> {
+pub struct Collect<C, P, O, V> {
     pat: P,
     min: usize,
-    marker: PhantomData<(O, C)>,
+    marker: PhantomData<(O, V, C)>,
 }
 
-impl<C, P, O> Clone for Collect<C, P, O>
+impl<C, P, O, V> Clone for Collect<C, P, O, V>
 where
     P: Clone,
 {
@@ -33,7 +50,7 @@ where
     }
 }
 
-impl<C, P, O> Collect<C, P, O> {
+impl<C, P, O, V> Collect<C, P, O, V> {
     pub fn new(pat: P) -> Self {
         Self {
             pat,
@@ -70,7 +87,7 @@ impl<C, P, O> Collect<C, P, O> {
     }
 }
 
-impl<'a, C, P, M, O, V> Ctor<'a, C, M, V> for Collect<C, P, O>
+impl<'a, C, P, M, O, V> Ctor<'a, C, M, V> for Collect<C, P, O, V>
 where
     V: FromIterator<O>,
     P: Ctor<'a, C, M, O>,
@@ -108,7 +125,7 @@ where
     }
 }
 
-impl<'a, C, P, O> Regex<C> for Collect<C, P, O>
+impl<'a, C, P, O, V> Regex<C> for Collect<C, P, O, V>
 where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,

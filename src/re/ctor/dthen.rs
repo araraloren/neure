@@ -134,6 +134,43 @@ where
     Self: Sized,
     C: Context<'a> + Match<C>,
 {
+    ///
+    /// Construct a new regex with `Ctor` implementation based on previous result.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::{err::Error, prelude::*, re::DynamicCreateCtorThenHelper};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let num = u8::is_ascii_digit
+    ///         .repeat_one()
+    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+    ///         .map(re::map::from_str::<usize>());
+    ///     let num = num.clone().sep_once(b",", num);
+    ///     let re = num.dyn_then_ctor(|a: &(usize, usize)| {
+    ///         // leave the a type empty cause rustc reject compile
+    ///         Ok(b'+'
+    ///             .repeat_range(a.0..a.0 + 1)
+    ///             .then(b'-'.repeat_range(a.1..a.1 + 1)))
+    ///     });
+    ///
+    ///     assert_eq!(
+    ///         BytesCtx::new(b"3,0+++").ctor(&re)?,
+    ///         ((3, 0), ([43, 43, 43].as_slice(), [].as_slice()))
+    ///     );
+    ///     assert_eq!(
+    ///         BytesCtx::new(b"2,1++-").ctor(&re)?,
+    ///         ((2, 1), ([43, 43].as_slice(), [45].as_slice()))
+    ///     );
+    ///     assert_eq!(
+    ///         BytesCtx::new(b"0,3---").ctor(&re)?,
+    ///         ((0, 3), ([].as_slice(), [45, 45, 45].as_slice()))
+    ///     );
+    ///     Ok(())
+    /// # }
+    /// ```
     fn dyn_then_ctor<F>(self, func: F) -> DynamicCreateCtorThen<C, Self, F> {
         DynamicCreateCtorThen::new(self, func)
     }

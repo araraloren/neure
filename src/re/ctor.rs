@@ -372,7 +372,7 @@ where
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
-    fn collect<O>(self) -> Collect<C, Self, O>;
+    fn collect<O, T>(self) -> Collect<C, Self, O, T>;
 
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
@@ -730,7 +730,7 @@ where
         Repeat::new(self, range)
     }
 
-    fn collect<O>(self) -> Collect<C, Self, O> {
+    fn collect<O, V>(self) -> Collect<C, Self, O, V> {
         Collect::new(self)
     }
 

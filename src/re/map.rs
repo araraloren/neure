@@ -98,8 +98,14 @@ pub fn select_eq() -> SelectEq {
     SelectEq::new()
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FromStr<T>(PhantomData<T>);
+
+impl<T> Clone for FromStr<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
 
 impl<T> FromStr<T> {
     pub fn new() -> Self {
@@ -123,8 +129,14 @@ pub fn from_str<T>() -> FromStr<T> {
     FromStr::new()
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MapInto<T>(PhantomData<T>);
+
+impl<T> Clone for MapInto<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
 
 impl<T> MapInto<T> {
     pub fn new() -> Self {
@@ -145,8 +157,14 @@ pub fn into<T>() -> MapInto<T> {
     MapInto::new()
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MapTryInto<T>(PhantomData<T>);
+
+impl<T> Clone for MapTryInto<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
 
 impl<T> MapTryInto<T> {
     pub fn new() -> Self {
@@ -196,10 +214,19 @@ impl_from_str_radix!(u32);
 impl_from_str_radix!(u64);
 impl_from_str_radix!(usize);
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FromStrRadix<T> {
     radix: u32,
     marker: PhantomData<T>,
+}
+
+impl<T> Clone for FromStrRadix<T> {
+    fn clone(&self) -> Self {
+        Self {
+            radix: self.radix,
+            marker: self.marker,
+        }
+    }
 }
 
 impl<T> FromStrRadix<T>

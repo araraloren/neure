@@ -71,9 +71,9 @@ where
 
 ///
 /// Construct a boxed `Ctor` that convert from `M` to `O`.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```
 /// # use neure::{err::Error, prelude::*, re::BoxedCtorHelper};
 /// #

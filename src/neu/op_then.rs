@@ -19,9 +19,9 @@ use super::NeuCond;
 
 ///
 /// Construct a regex that match `L`, and then match `R`.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```
 /// # use neure::prelude::*;
 /// #

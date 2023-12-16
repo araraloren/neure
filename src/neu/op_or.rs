@@ -106,7 +106,7 @@ where
 
 ///
 /// # Example
-/// 
+///
 /// ```
 /// # use neure::prelude::*;
 /// #
