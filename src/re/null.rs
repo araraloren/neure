@@ -39,7 +39,7 @@ where
 
 impl<'a, C, O> Ctor<'a, C, O, O> for NullRegex<Span>
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>

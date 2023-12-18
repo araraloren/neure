@@ -14,6 +14,11 @@ use crate::re::Regex;
 
 ///
 /// Repeat the regex `P` and then collect into another type `V`.
+/// 
+/// # Notice
+/// 
+/// `Collect` will always succeed if the minimum size is 0, be careful to use it with `.sep` faimly APIs.
+/// The default size is 1.
 ///
 /// # Example
 ///
@@ -54,7 +59,7 @@ impl<C, P, O, V> Collect<C, P, O, V> {
     pub fn new(pat: P) -> Self {
         Self {
             pat,
-            min: 0,
+            min: 1,
             marker: PhantomData,
         }
     }

@@ -150,7 +150,7 @@ where
     ///         .map(re::map::from_str::<usize>());
     ///     let num = num.clone().sep_once(b",", num);
     ///     let re = num.dyn_then_ctor(|a: &(usize, usize)| {
-    ///         // leave the a type empty cause rustc reject compile
+    ///         // leave the a's type empty cause rustc reject compile
     ///         Ok(b'+'
     ///             .repeat_range(a.0..a.0 + 1)
     ///             .then(b'-'.repeat_range(a.1..a.1 + 1)))
