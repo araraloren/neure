@@ -391,17 +391,14 @@ where
 /// # Example
 ///
 /// ```
-/// # use neure::{err::Error, prelude::*};
+/// # use neure::{
+/// #     err::Error,
+/// #     prelude::*,
+/// #     re::{rec_parser, RecursiveCtor},
+/// # };
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
-///     #[derive(Debug, PartialEq, Eq)]
-///     enum Tag {
-///         Start(String),
-///         End(String),
-///         Empty(String),
-///     }
 ///
 ///     #[derive(Debug, PartialEq, Eq)]
 ///     enum Xml {
@@ -409,44 +406,30 @@ where
 ///         Enclosed(String),
 ///     }
 ///
-///     fn xml_parser(ctx: &mut CharsCtx) -> Result<Vec<Xml>, Error> {
-///         let alpha = neu::alphabetic().repeat_full();
-///         let start = alpha
-///             .quote("<", ">")
-///             .map(|v: &str| Ok(Tag::Start(v.to_string())));
-///         let end = alpha
-///             .quote("</", ">")
-///             .map(|v: &str| Ok(Tag::End(v.to_string())));
-///         let empty = alpha
-///             .quote("<", "/>")
-///             .map(|v: &str| Ok(Tag::Empty(v.to_string())));
-///         let mut ret = vec![];
-///
-///         while let Ok(tag) = ctx.invoke(&start.or(empty)) {
-///             match tag {
-///                 Tag::Start(name) => {
-///                     let child = xml_parser(ctx)?;
-///                     let end = ctx.invoke(&end)?;
-///
-///                     if let Tag::End(end_name) = &end {
-///                         debug_assert_eq!(&name, end_name);
-///                         ret.push(Xml::Element { name, child });
-///                         continue;
-///                     }
-///                     unreachable!("Can not find end tag of {:?}", name);
+///     pub fn parser<'a: 'b, 'b>(
+///         ctor: RecursiveCtor<'b, CharsCtx<'a>, Vec<Xml>>,
+///     ) -> impl Fn(&mut CharsCtx<'a>) -> Result<Vec<Xml>, Error> + 'b {
+///         move |ctx| {
+///             let alpha = neu::alphabetic()
+///                 .repeat_full()
+///                 .map(|v: &str| Ok(v.to_string()));
+///             let s = alpha.quote("<", ">");
+///             let e = alpha.quote("</", ">");
+///             let c = alpha.quote("<", "/>").map(|v| Ok(Xml::Enclosed(v)));
+///             let m = |((l, c), r): ((String, Vec<Xml>), String)| {
+///                 if l != r {
+///                     Err(Error::Uid(0))
+///                 } else {
+///                     Ok(Xml::Element { name: l, child: c })
 ///                 }
-///                 Tag::Empty(name) => {
-///                     ret.push(Xml::Enclosed(name));
-///                 }
-///                 _ => {}
-///             }
+///             };
+///
+///             ctx.ctor(&s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..))
 ///         }
-///         Ok(ret)
 ///     }
-///
-///     let ret = xml_parser(&mut CharsCtx::new(
-///         "<language><rust><linux/></rust><cpp><windows/></cpp></language>",
-///     ))?;
+///     let xml = rec_parser(parser);
+///     let ret = CharsCtx::new("<language><rust><linux/></rust><cpp><windows/></cpp></language>")
+///         .ctor(&xml)?;
 ///     let chk = vec![Xml::Element {
 ///         name: "language".to_owned(),
 ///         child: vec![
@@ -462,7 +445,6 @@ where
 ///     }];
 ///
 ///     assert_eq!(ret, chk);
-///
 ///     Ok(())
 /// # }
 /// ```

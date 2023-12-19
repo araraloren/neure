@@ -11,17 +11,45 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Construct a branch struct base on the test `I`(Fn(&C) -> Result<bool, Error>).
+/// 
+/// # Example
+/// 
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let re1 = "google".sep_once(".", "com".or("is")).pat();
+///     let re2 = "google"
+///         .sep_once(".", "co".sep_once(".", "kr".or("jp")))
+///         .pat();
+///     // test the `orig` before match
+///     let re = re2.r#if(
+///         |ctx: &CharsCtx| ctx.orig().map(|v| v.ends_with("jp") || v.ends_with("kr")),
+///         re1,
+///     );
+///
+///     assert_eq!(CharsCtx::new("google.com").ctor(&re)?, "google.com");
+///     assert_eq!(CharsCtx::new("google.is").ctor(&re)?, "google.is");
+///     assert_eq!(CharsCtx::new("google.co.jp").ctor(&re)?, "google.co.jp");
+///     assert_eq!(CharsCtx::new("google.co.kr").ctor(&re)?, "google.co.kr");
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
-pub struct IfRegex<C, T, I, E> {
-    pat: T,
+pub struct IfRegex<C, P, I, E> {
+    pat: P,
     r#if: I,
     r#else: E,
     marker: PhantomData<C>,
 }
 
-impl<C, T, I, E> Clone for IfRegex<C, T, I, E>
+impl<C, P, I, E> Clone for IfRegex<C, P, I, E>
 where
-    T: Clone,
+    P: Clone,
     I: Clone,
     E: Clone,
 {
@@ -35,21 +63,21 @@ where
     }
 }
 
-impl<C, T, I, E> IfRegex<C, T, I, E> {
-    pub fn new(regex: T, r#if: I, r#else: E) -> Self {
+impl<C, P, I, E> IfRegex<C, P, I, E> {
+    pub fn new(pat: P, r#if: I, r#else: E) -> Self {
         Self {
-            pat: regex,
+            pat,
             r#if,
             r#else,
             marker: PhantomData,
         }
     }
 
-    pub fn pat(&self) -> &T {
+    pub fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut T {
+    pub fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
@@ -69,7 +97,7 @@ impl<C, T, I, E> IfRegex<C, T, I, E> {
         &mut self.r#else
     }
 
-    pub fn set_pat(&mut self, pat: T) -> &mut Self {
+    pub fn set_pat(&mut self, pat: P) -> &mut Self {
         self.pat = pat;
         self
     }
@@ -85,9 +113,9 @@ impl<C, T, I, E> IfRegex<C, T, I, E> {
     }
 }
 
-impl<'a, C, T, I, E, M, O> Ctor<'a, C, M, O> for IfRegex<C, T, I, E>
+impl<'a, C, P, I, E, M, O> Ctor<'a, C, M, O> for IfRegex<C, P, I, E>
 where
-    T: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O>,
     E: Ctor<'a, C, M, O>,
     C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
@@ -112,14 +140,14 @@ where
     }
 }
 
-impl<'a, C, T, I, E> Regex<C> for IfRegex<C, T, I, E>
+impl<'a, C, P, I, E> Regex<C> for IfRegex<C, P, I, E>
 where
-    T: Regex<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
     E: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
 {
-    type Ret = T::Ret;
+    type Ret = P::Ret;
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
@@ -136,13 +164,16 @@ where
     }
 }
 
-pub fn branch<'a, C>(
-    r#if: impl Fn(&C) -> Result<bool, Error>,
-    re: impl Regex<C, Ret = Span>,
-    r#else: impl Regex<C, Ret = Span>,
-) -> impl Regex<C, Ret = Span>
+pub fn branch<'a, C, P, I, E>(
+    r#if: I,
+    re: P ,
+    r#else: E,
+) -> IfRegex<C, P, I, E>
 where
     C: Context<'a> + Match<C>,
+    E: Regex<C, Ret = Span>,
+    P: Regex<C, Ret = Span>,
+    I: Fn(&C) -> Result<bool, Error>,
 {
     IfRegex::new(re, r#if, r#else)
 }
