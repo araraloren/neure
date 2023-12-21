@@ -403,9 +403,9 @@ where
 /// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
 /// it will return a collection that can constructed from `P`'s match results
 /// using [`from_iter`](std::iter::FromIterator::from_iter).
-/// 
+///
 /// # Notice
-/// 
+///
 /// `SepCollect` will always succeed if the minimum size is 0, be careful to use it with other `.sep` faimly APIs.
 /// The default size is 1.
 ///

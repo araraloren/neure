@@ -10,6 +10,84 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Map the result to another type.
+///
+/// # Example 1
+///
+/// ```
+/// # use neure::{err::Error, prelude::*};
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let str = neu::ascii_alphabetic()
+///         .repeat_times::<3>()
+///         // map &str to String
+///         .map(|v: &str| Ok(String::from(v)));
+///     let num = neu::digit(10)
+///         .repeat_times::<3>()
+///         // map &str to i32
+///         .map(|v: &str| v.parse::<i32>().map_err(|_| Error::Uid(0)));
+///     let (who, id) = CharsCtx::new("foo777").ctor(&str.then(num))?;
+///
+///     assert_eq!(who, "foo");
+///     assert_eq!(id, 777);
+///
+///     Ok(())
+/// # }
+/// ```
+///
+/// # Exampl 2
+///
+/// ```
+/// # use neure::{err::Error, prelude::*};
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let str = neu::ascii_alphabetic()
+///         .repeat_times::<3>()
+///         // map &str to String
+///         .map(|v: (Span, _)| Ok(v));
+///     let num = neu::digit(10)
+///         .repeat_times::<3>()
+///         // map &str to i32
+///         .map(|(span, v): (Span, &str)| Ok((span, v.parse::<i32>().map_err(|_| Error::Uid(0))?)));
+///     let (who, id) = // you can pass the Span to callback of map
+///         CharsCtx::new("foo777").ctor_with(&str.then(num), &mut |span: Span, v: _| Ok((span, v)))?;
+///
+///     assert_eq!(who, (Span::new(0, 3), "foo"));
+///     assert_eq!(id, (Span::new(3, 3), 777));
+///
+///     Ok(())
+/// # }
+/// ```
+///
+/// # Example 3
+///
+/// ```
+/// # use neure::{err::Error, prelude::*};
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let num = neu::digit(10).repeat_times::<3>();
+///     let id =
+///         CharsCtx::new("777").map(&num, |v: &str| v.parse::<i32>().map_err(|_| Error::Uid(0)))?;
+///
+///     assert_eq!(id, 777);
+///
+///     let (span, id) = CharsCtx::new("777").map(&num, |v: &str, span: Span| {
+///         Ok((span, v.parse::<i32>().map_err(|_| Error::Uid(0))?))
+///     })?;
+///
+///     assert_eq!(id, 777);
+///     assert_eq!(span, Span::new(0, 3));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct Map<C, P, F, O> {
     pat: P,

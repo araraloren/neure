@@ -60,12 +60,12 @@ where
 }
 
 ///
-/// For use in recursive parsers, 
-/// it will construct a type that implements `Ctor<'_, C, M, O>` 
+/// For use in recursive parsers,
+/// it will construct a type that implements `Ctor<'_, C, M, O>`
 /// from a closure(`Fn(&mut C) -> Result<O, Error>`).
-/// 
+///
 /// # Example 1
-/// 
+///
 /// ```
 /// # use neure::{err::Error, prelude::*, re::RecursiveCtor};
 /// #
@@ -96,9 +96,9 @@ where
 ///     Ok(())
 /// # }
 /// ```
-/// 
+///
 /// # Example 2
-/// 
+///
 /// ```
 /// # use neure::{err::Error, prelude::*};
 /// #

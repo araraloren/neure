@@ -13,9 +13,9 @@ use crate::re::Regex;
 
 ///
 /// Construct a branch struct base on the test `I`(Fn(&C) -> Result<bool, Error>).
-/// 
+///
 /// # Example
-/// 
+///
 /// ```
 /// # use neure::prelude::*;
 /// #
@@ -164,11 +164,7 @@ where
     }
 }
 
-pub fn branch<'a, C, P, I, E>(
-    r#if: I,
-    re: P ,
-    r#else: E,
-) -> IfRegex<C, P, I, E>
+pub fn branch<'a, C, P, I, E>(r#if: I, re: P, r#else: E) -> IfRegex<C, P, I, E>
 where
     C: Context<'a> + Match<C>,
     E: Regex<C, Ret = Span>,

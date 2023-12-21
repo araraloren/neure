@@ -34,9 +34,9 @@ use crate::trace_log;
 ///     let hex = hex.map(re::map::from_str_radix(16));
 ///     let num = dec.ltm(hex);
 ///     let val = num.sep(",".ws()).quote("{", "}");
-///     let mut ctx = CharsCtx::new(r#"{12, E1, A8, 88}"#);
+///     let mut ctx = CharsCtx::new(r#"{12, E1, A8, 88, 2F}"#);
 ///
-///     assert_eq!(ctx.ctor(&val)?, [12, 0xe1, 0xa8, 88]);
+///     assert_eq!(ctx.ctor(&val)?, [12, 0xe1, 0xa8, 88, 0x2f]);
 ///     Ok(())
 /// # }
 /// ```

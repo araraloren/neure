@@ -28,15 +28,51 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Code comparation between crate `regex`
 
 ```rust
-use ::regex::Regex;
-use neure::prelude::*;
-use neure::regex;
+mod neure_ {
+    use neure::prelude::*;
 
-thread_local! {
-    static REGEX: Regex = Regex::new(r"^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$").unwrap();
+    fn parser(str: &str) -> Result<(), neure::err::Error> {
+        let mut ctx = RegexCtx::new(str);
+        let alpha = neu::range('a'..='z');
+        let num = neu::digit(10);
+        let name = neu!((alpha, num, '_', '.', '+', '-')).repeat_one_more();
+        let domain = alpha.or(num).or('.').or('-').repeat_to::<256>().set_cond(
+            |ctx: &CharsCtx, item: &(usize, char)| {
+                Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
+            },
+        );
+        let email = re::start()
+            .then(name)
+            .then("@")
+            .then(domain)
+            .then(".")
+            .then(neu!((alpha, '.')).repeat::<2, 6>())
+            .then(re::end());
+
+        ctx.try_mat(&email)?;
+        Ok(())
+    }
+
+    pub fn parse(tests: &[&str], results: &[bool]) {
+        for (test, result) in tests.iter().zip(results.iter()) {
+            assert_eq!(parser(test).is_ok(), *result, "test = {}", test);
+        }
+    }
 }
 
-pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+mod regex_ {
+    use regex::Regex;
+
+    pub fn parse(re: &Regex, tests: &[&str], results: &[bool]) {
+        for (test, result) in tests.iter().zip(results.iter()) {
+            assert_eq!(re.is_match(test), *result);
+        }
+    }
+}
+
+fn main() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+
     let test_cases = [
         "plainaddress",
         "#@%^%#$@#$@#.com",
@@ -49,55 +85,15 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "firstname.lastname@example.com",
         "email@subdomain.example.com",
     ];
+    let results = [
+        false, false, false, false, false, false, false, true, true, true,
+    ];
+    let re: regex::Regex =
+        regex::Regex::new(r"^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$").unwrap();
 
-    let un_letter = unit!(['a' - 'z']);
-    let un_number = unit!(['0' - '9']);
-    let un_us = unit!('_');
-    let un_dot = unit!('.');
-    let un_plus = unit!('+');
-    let un_minus = unit!('-');
-    let re_at = regex!('@');
-    let un_postfix = un_letter.or(un_dot);
-    let un_domain = un_postfix.or(un_number.or(un_minus));
-    let re_prefix = regex!((un_domain.or(un_us.or(un_plus)))+);
-    let re_domain =
-        regex::count_if::<0, { usize::MAX }, _, _>(un_domain, |ctx: &CharsCtx, char| {
-            if char.1 == '.' {
-                // don't match dot if we don't have more dot
-                if let Ok(str) = ctx.orig_at(ctx.offset() + char.0 + 1) {
-                    return str.find('.').is_some();
-                }
-            }
-            true
-        });
-    let re_postfix = regex!((un_postfix){2,6});
-    let re_dot = regex!('.');
-    let re_start = regex::start();
-    let re_end = regex::end();
-    let parser = |storer: &mut SimpleStorer, str| -> Result<(), neure::err::Error> {
-        let mut ctx = CharsCtx::new(str);
+    regex_::parse(&re, &test_cases, &results);
+    neure_::parse(&test_cases, &results);
 
-        ctx.try_mat(&re_start)?;
-        storer.try_cap(0, &mut ctx, &re_prefix)?;
-        ctx.try_mat(&re_at)?;
-        storer.try_cap(1, &mut ctx, &re_domain)?;
-        ctx.try_mat(&re_dot)?;
-        storer.try_cap(2, &mut ctx, &re_postfix)?;
-        ctx.try_mat(&re_end)?;
-        Ok(())
-    };
-
-    let mut storer = SimpleStorer::new(3);
-    let mut locs = REGEX.try_with(|re| re.capture_locations()).unwrap();
-
-    test_cases.iter().for_each(|test| {
-        let res1 = parser(storer.reset(), test).is_ok();
-        let res2 = REGEX
-            .try_with(|regex| regex.captures_read(&mut locs, test).is_some())
-            .unwrap();
-
-        assert_eq!(res1, res2);
-    });
     Ok(())
 }
 ```
