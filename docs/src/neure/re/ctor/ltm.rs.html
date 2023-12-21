@@ -203,9 +203,9 @@
 ///     let hex = hex.map(re::map::from_str_radix(16));
 ///     let num = dec.ltm(hex);
 ///     let val = num.sep(&quot;,&quot;.ws()).quote(&quot;{&quot;, &quot;}&quot;);
-///     let mut ctx = CharsCtx::new(r#&quot;{12, E1, A8, 88}&quot;#);
+///     let mut ctx = CharsCtx::new(r#&quot;{12, E1, A8, 88, 2F}&quot;#);
 ///
-///     assert_eq!(ctx.ctor(&amp;val)?, [12, 0xe1, 0xa8, 88]);
+///     assert_eq!(ctx.ctor(&amp;val)?, [12, 0xe1, 0xa8, 88, 0x2f]);
 ///     Ok(())
 /// # }
 /// ```
