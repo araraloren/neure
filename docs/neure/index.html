@@ -16,15 +16,51 @@
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
 <h3 id="code-comparation-between-crate-regex"><a href="#code-comparation-between-crate-regex">Code comparation between crate <code>regex</code></a></h3>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>::regex::Regex;
-<span class="kw">use </span>neure::prelude::<span class="kw-2">*</span>;
-<span class="kw">use </span>neure::regex;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">mod </span>neure_ {
+    <span class="kw">use </span>neure::prelude::<span class="kw-2">*</span>;
 
-<span class="macro">thread_local! </span>{
-    <span class="kw">static </span>REGEX: Regex = Regex::new(<span class="string">r&quot;^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$&quot;</span>).unwrap();
+    <span class="kw">fn </span>parser(str: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), neure::err::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ctx = RegexCtx::new(str);
+        <span class="kw">let </span>alpha = neu::range(<span class="string">&#39;a&#39;</span>..=<span class="string">&#39;z&#39;</span>);
+        <span class="kw">let </span>num = neu::digit(<span class="number">10</span>);
+        <span class="kw">let </span>name = <span class="macro">neu!</span>((alpha, num, <span class="string">&#39;_&#39;</span>, <span class="string">&#39;.&#39;</span>, <span class="string">&#39;+&#39;</span>, <span class="string">&#39;-&#39;</span>)).repeat_one_more();
+        <span class="kw">let </span>domain = alpha.or(num).or(<span class="string">&#39;.&#39;</span>).or(<span class="string">&#39;-&#39;</span>).repeat_to::&lt;<span class="number">256</span>&gt;().set_cond(
+            |ctx: <span class="kw-2">&amp;</span>CharsCtx, item: <span class="kw-2">&amp;</span>(usize, char)| {
+                <span class="prelude-val">Ok</span>(!(item.<span class="number">1 </span>== <span class="string">&#39;.&#39; </span>&amp;&amp; ctx.orig_at(ctx.offset() + item.<span class="number">0 </span>+ <span class="number">1</span>)<span class="question-mark">?</span>.find(<span class="string">&#39;.&#39;</span>).is_none()))
+            },
+        );
+        <span class="kw">let </span>email = re::start()
+            .then(name)
+            .then(<span class="string">&quot;@&quot;</span>)
+            .then(domain)
+            .then(<span class="string">&quot;.&quot;</span>)
+            .then(<span class="macro">neu!</span>((alpha, <span class="string">&#39;.&#39;</span>)).repeat::&lt;<span class="number">2</span>, <span class="number">6</span>&gt;())
+            .then(re::end());
+
+        ctx.try_mat(<span class="kw-2">&amp;</span>email)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub fn </span>parse(tests: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str], results: <span class="kw-2">&amp;</span>[bool]) {
+        <span class="kw">for </span>(test, result) <span class="kw">in </span>tests.iter().zip(results.iter()) {
+            <span class="macro">assert_eq!</span>(parser(test).is_ok(), <span class="kw-2">*</span>result, <span class="string">&quot;test = {}&quot;</span>, test);
+        }
+    }
 }
 
-<span class="kw">pub fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
+<span class="kw">mod </span>regex_ {
+    <span class="kw">use </span>regex::Regex;
+
+    <span class="kw">pub fn </span>parse(re: <span class="kw-2">&amp;</span>Regex, tests: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str], results: <span class="kw-2">&amp;</span>[bool]) {
+        <span class="kw">for </span>(test, result) <span class="kw">in </span>tests.iter().zip(results.iter()) {
+            <span class="macro">assert_eq!</span>(re.is_match(test), <span class="kw-2">*</span>result);
+        }
+    }
+}
+
+<span class="kw">fn </span>main() -&gt; color_eyre::Result&lt;()&gt; {
+    color_eyre::install()<span class="question-mark">?</span>;
+
     <span class="kw">let </span>test_cases = [
         <span class="string">&quot;plainaddress&quot;</span>,
         <span class="string">&quot;#@%^%#$@#$@#.com&quot;</span>,
@@ -37,55 +73,15 @@
         <span class="string">&quot;firstname.lastname@example.com&quot;</span>,
         <span class="string">&quot;email@subdomain.example.com&quot;</span>,
     ];
+    <span class="kw">let </span>results = [
+        <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>,
+    ];
+    <span class="kw">let </span>re: regex::Regex =
+        regex::Regex::new(<span class="string">r&quot;^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$&quot;</span>).unwrap();
 
-    <span class="kw">let </span>un_letter = <span class="macro">unit!</span>([<span class="string">&#39;a&#39; </span>- <span class="string">&#39;z&#39;</span>]);
-    <span class="kw">let </span>un_number = <span class="macro">unit!</span>([<span class="string">&#39;0&#39; </span>- <span class="string">&#39;9&#39;</span>]);
-    <span class="kw">let </span>un_us = <span class="macro">unit!</span>(<span class="string">&#39;_&#39;</span>);
-    <span class="kw">let </span>un_dot = <span class="macro">unit!</span>(<span class="string">&#39;.&#39;</span>);
-    <span class="kw">let </span>un_plus = <span class="macro">unit!</span>(<span class="string">&#39;+&#39;</span>);
-    <span class="kw">let </span>un_minus = <span class="macro">unit!</span>(<span class="string">&#39;-&#39;</span>);
-    <span class="kw">let </span>re_at = <span class="macro">regex!</span>(<span class="string">&#39;@&#39;</span>);
-    <span class="kw">let </span>un_postfix = un_letter.or(un_dot);
-    <span class="kw">let </span>un_domain = un_postfix.or(un_number.or(un_minus));
-    <span class="kw">let </span>re_prefix = <span class="macro">regex!</span>((un_domain.or(un_us.or(un_plus)))+);
-    <span class="kw">let </span>re_domain =
-        regex::count_if::&lt;<span class="number">0</span>, { usize::MAX }, <span class="kw">_</span>, <span class="kw">_</span>&gt;(un_domain, |ctx: <span class="kw-2">&amp;</span>CharsCtx, char| {
-            <span class="kw">if </span>char.<span class="number">1 </span>== <span class="string">&#39;.&#39; </span>{
-                <span class="comment">// don&#39;t match dot if we don&#39;t have more dot
-                </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(str) = ctx.orig_at(ctx.offset() + char.<span class="number">0 </span>+ <span class="number">1</span>) {
-                    <span class="kw">return </span>str.find(<span class="string">&#39;.&#39;</span>).is_some();
-                }
-            }
-            <span class="bool-val">true
-        </span>});
-    <span class="kw">let </span>re_postfix = <span class="macro">regex!</span>((un_postfix){<span class="number">2</span>,<span class="number">6</span>});
-    <span class="kw">let </span>re_dot = <span class="macro">regex!</span>(<span class="string">&#39;.&#39;</span>);
-    <span class="kw">let </span>re_start = regex::start();
-    <span class="kw">let </span>re_end = regex::end();
-    <span class="kw">let </span>parser = |storer: <span class="kw-2">&amp;mut </span>SimpleStorer, str| -&gt; <span class="prelude-ty">Result</span>&lt;(), neure::err::Error&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>ctx = CharsCtx::new(str);
+    regex_::parse(<span class="kw-2">&amp;</span>re, <span class="kw-2">&amp;</span>test_cases, <span class="kw-2">&amp;</span>results);
+    neure_::parse(<span class="kw-2">&amp;</span>test_cases, <span class="kw-2">&amp;</span>results);
 
-        ctx.try_mat(<span class="kw-2">&amp;</span>re_start)<span class="question-mark">?</span>;
-        storer.try_cap(<span class="number">0</span>, <span class="kw-2">&amp;mut </span>ctx, <span class="kw-2">&amp;</span>re_prefix)<span class="question-mark">?</span>;
-        ctx.try_mat(<span class="kw-2">&amp;</span>re_at)<span class="question-mark">?</span>;
-        storer.try_cap(<span class="number">1</span>, <span class="kw-2">&amp;mut </span>ctx, <span class="kw-2">&amp;</span>re_domain)<span class="question-mark">?</span>;
-        ctx.try_mat(<span class="kw-2">&amp;</span>re_dot)<span class="question-mark">?</span>;
-        storer.try_cap(<span class="number">2</span>, <span class="kw-2">&amp;mut </span>ctx, <span class="kw-2">&amp;</span>re_postfix)<span class="question-mark">?</span>;
-        ctx.try_mat(<span class="kw-2">&amp;</span>re_end)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
-    };
-
-    <span class="kw">let </span><span class="kw-2">mut </span>storer = SimpleStorer::new(<span class="number">3</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>locs = REGEX.try_with(|re| re.capture_locations()).unwrap();
-
-    test_cases.iter().for_each(|test| {
-        <span class="kw">let </span>res1 = parser(storer.reset(), test).is_ok();
-        <span class="kw">let </span>res2 = REGEX
-            .try_with(|regex| regex.captures_read(<span class="kw-2">&amp;mut </span>locs, test).is_some())
-            .unwrap();
-
-        <span class="macro">assert_eq!</span>(res1, res2);
-    });
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
 <h3 id="license"><a href="#license">LICENSE</a></h3>
