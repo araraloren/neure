@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["charize","escape","neu","re","trace_log"],"mod":["ctx","err","iter","macro","neu","prelude","re","span"],"trait":["MayDebug"]};

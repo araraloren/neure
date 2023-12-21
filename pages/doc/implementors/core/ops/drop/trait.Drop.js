@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"neure":[["impl&lt;'a, 'b, C&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.74.1/core/ops/drop/trait.Drop.html\" title=\"trait core::ops::drop::Drop\">Drop</a> for <a class=\"struct\" href=\"neure/ctx/struct.CtxGuard.html\" title=\"struct neure::ctx::CtxGuard\">CtxGuard</a>&lt;'a, 'b, C&gt;<span class=\"where fmt-newline\">where\n    C: <a class=\"trait\" href=\"neure/ctx/trait.Context.html\" title=\"trait neure::ctx::Context\">Context</a>&lt;'b&gt;,</span>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
