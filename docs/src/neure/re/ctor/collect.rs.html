@@ -157,6 +157,7 @@
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
@@ -174,8 +175,9 @@
 <span class="doccomment">///
 /// Repeat the regex `P` and then collect into another type `V`.
 ///
-/// # Notice
+/// # Ctor
 ///
+/// Return a type `V` that collects the result of regex `P`.
 /// `Collect` will always succeed if the minimum size is 0, be careful to use it with `.sep` faimly APIs.
 /// The default size is 1.
 ///

@@ -127,12 +127,14 @@
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
 <a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">super</span>::Neu;
 
 <span class="doccomment">///
-/// Return true if the value matched all `Neu`.
+/// Return true if the value matches both `L` and `R`.
 ///
 /// # Example
 ///
@@ -235,6 +237,8 @@
 }
 
 <span class="doccomment">///
+/// Return true if the value matches both `L` and `R`.
+///
 /// # Example
 ///
 /// ```

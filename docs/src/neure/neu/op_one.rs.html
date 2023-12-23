@@ -290,6 +290,14 @@
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
 <a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
@@ -310,7 +318,11 @@
 <span class="kw">use </span><span class="kw">super</span>::NeuCond;
 
 <span class="doccomment">///
-/// Repeat the match one time.
+/// Repeat the unit `U` one time.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///
@@ -442,7 +454,11 @@
 }
 
 <span class="doccomment">///
-/// Repeat the match `1 ..` times.
+/// Repeat the unit `U` one or more times.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///

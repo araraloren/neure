@@ -386,6 +386,14 @@
 <a href="#386" id="386">386</a>
 <a href="#387" id="387">387</a>
 <a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 <span class="kw">use </span>std::ops::RangeBounds;
 
@@ -408,7 +416,11 @@
 <span class="kw">use </span><span class="kw">super</span>::NeuCond;
 
 <span class="doccomment">///
-/// Repeat the match `M .. N` times.
+/// Repeat the match unit `U` at least `M` times and at most `N` times.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///
@@ -606,7 +618,11 @@
 }
 
 <span class="doccomment">///
-/// Repeat the match.
+/// Repeat the unit `U` and the number of matches meet the given range.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///
