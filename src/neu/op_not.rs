@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use super::Neu;
 
 ///
-/// Return true if the value not matched.
+/// Return true if the given value not matches `U`.
 ///
 /// # Example
 ///
@@ -84,6 +84,8 @@ where
     }
 }
 
+///
+/// Return true if the given value not matches `U`.
 ///
 /// # Example
 ///

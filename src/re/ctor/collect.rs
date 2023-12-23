@@ -15,8 +15,9 @@ use crate::re::Regex;
 ///
 /// Repeat the regex `P` and then collect into another type `V`.
 ///
-/// # Notice
+/// # Ctor
 ///
+/// Return a type `V` that collects the result of regex `P`.
 /// `Collect` will always succeed if the minimum size is 0, be careful to use it with `.sep` faimly APIs.
 /// The default size is 1.
 ///

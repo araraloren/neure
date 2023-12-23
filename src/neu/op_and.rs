@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use super::Neu;
 
 ///
-/// Return true if the value matched all `Neu`.
+/// Return true if the value matches both `L` and `R`.
 ///
 /// # Example
 ///
@@ -105,6 +105,8 @@ where
     }
 }
 
+///
+/// Return true if the value matches both `L` and `R`.
 ///
 /// # Example
 ///

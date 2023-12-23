@@ -20,7 +20,11 @@ use super::Neu;
 use super::NeuCond;
 
 ///
-/// Repeat the match `M .. N` times.
+/// Repeat the match unit `U` at least `M` times and at most `N` times.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///
@@ -218,7 +222,11 @@ where
 }
 
 ///
-/// Repeat the match.
+/// Repeat the unit `U` and the number of matches meet the given range.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///

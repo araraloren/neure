@@ -158,7 +158,7 @@ impl<T> From<std::ops::RangeToInclusive<T>> for CRange<T> {
 }
 
 ///
-/// Match a character within given range.
+/// Match a character within the specified range.
 ///
 /// # Example
 ///

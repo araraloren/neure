@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, num::ParseIntError};
+use std::{borrow::Cow, marker::PhantomData, num::ParseIntError};
 
 use crate::err::Error;
 
@@ -98,12 +98,18 @@ pub fn select_eq() -> SelectEq {
     SelectEq::new()
 }
 
-#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FromStr<T>(PhantomData<T>);
 
 impl<T> Clone for FromStr<T> {
     fn clone(&self) -> Self {
         Self(self.0)
+    }
+}
+
+impl<T> Default for FromStr<T> {
+    fn default() -> Self {
+        Self(Default::default())
     }
 }
 
@@ -129,7 +135,7 @@ pub fn from_str<T>() -> FromStr<T> {
     FromStr::new()
 }
 
-#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MapInto<T>(PhantomData<T>);
 
 impl<T> Clone for MapInto<T> {
@@ -141,6 +147,12 @@ impl<T> Clone for MapInto<T> {
 impl<T> MapInto<T> {
     pub fn new() -> Self {
         Self(PhantomData)
+    }
+}
+
+impl<T> Default for MapInto<T> {
+    fn default() -> Self {
+        Self(Default::default())
     }
 }
 
@@ -157,7 +169,7 @@ pub fn into<T>() -> MapInto<T> {
     MapInto::new()
 }
 
-#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MapTryInto<T>(PhantomData<T>);
 
 impl<T> Clone for MapTryInto<T> {
@@ -169,6 +181,12 @@ impl<T> Clone for MapTryInto<T> {
 impl<T> MapTryInto<T> {
     pub fn new() -> Self {
         Self(PhantomData)
+    }
+}
+
+impl<T> Default for MapTryInto<T> {
+    fn default() -> Self {
+        Self(Default::default())
     }
 }
 
@@ -214,7 +232,7 @@ impl_from_str_radix!(u32);
 impl_from_str_radix!(u64);
 impl_from_str_radix!(usize);
 
-#[derive(Debug, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FromStrRadix<T> {
     radix: u32,
     marker: PhantomData<T>,
@@ -225,6 +243,15 @@ impl<T> Clone for FromStrRadix<T> {
         Self {
             radix: self.radix,
             marker: self.marker,
+        }
+    }
+}
+
+impl<T> Default for FromStrRadix<T> {
+    fn default() -> Self {
+        Self {
+            radix: Default::default(),
+            marker: Default::default(),
         }
     }
 }
@@ -259,4 +286,182 @@ where
 #[inline(always)]
 pub fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
     FromStrRadix::new(radix)
+}
+
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FromUtf8<T>(PhantomData<T>);
+
+impl<T> FromUtf8<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T> Clone for FromUtf8<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T> Default for FromUtf8<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<'a> MapSingle<&'a [u8], &'a str> for FromUtf8<&'a str> {
+    fn map_to(&self, val: &'a [u8]) -> Result<&'a str, Error> {
+        Ok(std::str::from_utf8(val).map_err(|_| Error::Utf8Error)?)
+    }
+}
+
+impl<'a> MapSingle<&'a [u8], String> for FromUtf8<String> {
+    fn map_to(&self, val: &'a [u8]) -> Result<String, Error> {
+        Ok(String::from_utf8(val.to_vec()).map_err(|_| Error::Utf8Error)?)
+    }
+}
+
+#[inline(always)]
+pub fn from_utf8<T>() -> FromUtf8<T> {
+    FromUtf8::default()
+}
+
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FromUtf8Lossy<T>(PhantomData<T>);
+
+impl<T> FromUtf8Lossy<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T> Clone for FromUtf8Lossy<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T> Default for FromUtf8Lossy<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<'a> MapSingle<&'a [u8], Cow<'a, str>> for FromUtf8Lossy<Cow<'a, str>> {
+    fn map_to(&self, val: &'a [u8]) -> Result<Cow<'a, str>, Error> {
+        Ok(String::from_utf8_lossy(val))
+    }
+}
+
+#[inline(always)]
+pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
+    FromUtf8Lossy::default()
+}
+
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FromLeBytes<T>(PhantomData<T>);
+
+impl<T> FromLeBytes<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T> Clone for FromLeBytes<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T> Default for FromLeBytes<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FromBeBytes<T>(PhantomData<T>);
+
+impl<T> FromBeBytes<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T> Clone for FromBeBytes<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T> Default for FromBeBytes<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+macro_rules! impl_from_bytes {
+    (le $ty:ty, $size:literal) => {
+        impl<'a> MapSingle<&'a [u8], $ty> for FromLeBytes<$ty> {
+            fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+                let bytes = val
+                    .chunks_exact($size)
+                    .next()
+                    .ok_or_else(|| Error::FromLeBytes)
+                    .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromLeBytes))??;
+                Ok(<$ty>::from_le_bytes(*bytes))
+            }
+        }
+    };
+    (be $ty:ty, $size:literal) => {
+        impl<'a> MapSingle<&'a [u8], $ty> for FromBeBytes<$ty> {
+            fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+                let bytes = val
+                    .chunks_exact($size)
+                    .next()
+                    .ok_or_else(|| Error::FromBeBytes)
+                    .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromBeBytes))??;
+                Ok(<$ty>::from_be_bytes(*bytes))
+            }
+        }
+    };
+}
+
+impl_from_bytes!(le i8, 1);
+impl_from_bytes!(le u8, 1);
+impl_from_bytes!(le i16, 2);
+impl_from_bytes!(le u16, 2);
+impl_from_bytes!(le i32, 4);
+impl_from_bytes!(le u32, 4);
+impl_from_bytes!(le i64, 8);
+impl_from_bytes!(le u64, 8);
+impl_from_bytes!(le f32, 4);
+impl_from_bytes!(le f64, 8);
+impl_from_bytes!(le i128, 16);
+impl_from_bytes!(le u128, 16);
+impl_from_bytes!(le isize, 8);
+impl_from_bytes!(le usize, 8);
+impl_from_bytes!(be i8, 1);
+impl_from_bytes!(be u8, 1);
+impl_from_bytes!(be i16, 2);
+impl_from_bytes!(be u16, 2);
+impl_from_bytes!(be i32, 4);
+impl_from_bytes!(be u32, 4);
+impl_from_bytes!(be i64, 8);
+impl_from_bytes!(be u64, 8);
+impl_from_bytes!(be f32, 4);
+impl_from_bytes!(be f64, 8);
+impl_from_bytes!(be i128, 16);
+impl_from_bytes!(be u128, 16);
+impl_from_bytes!(be isize, 8);
+impl_from_bytes!(be usize, 8);
+
+#[inline(always)]
+pub fn from_le_bytes<T>() -> FromLeBytes<T> {
+    FromLeBytes::default()
+}
+
+#[inline(always)]
+pub fn from_be_bytes<T>() -> FromBeBytes<T> {
+    FromBeBytes::default()
 }

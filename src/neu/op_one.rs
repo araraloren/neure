@@ -18,7 +18,11 @@ use super::Neu;
 use super::NeuCond;
 
 ///
-/// Repeat the match one time.
+/// Repeat the unit `U` one time.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///
@@ -150,7 +154,11 @@ where
 }
 
 ///
-/// Repeat the match `1 ..` times.
+/// Repeat the unit `U` one or more times.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///

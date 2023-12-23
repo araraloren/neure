@@ -96,8 +96,15 @@ impl Neu<char> for Ascii {
     }
 }
 
+impl Neu<u8> for Ascii {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii", self, other, other.is_ascii())
+    }
+}
+
 ///
-/// Reference [`is_ascii`](std::primitive::char::is_ascii).
+/// Reference [`is_ascii`](std::primitive::char::is_ascii) or [`is_ascii`](std::primitive::u8::is_ascii).
 ///
 /// # Example
 ///
@@ -135,8 +142,15 @@ impl Neu<char> for AsciiAlphabetic {
     }
 }
 
+impl Neu<u8> for AsciiAlphabetic {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_alphabetic", self, other, other.is_ascii_alphabetic())
+    }
+}
+
 ///
-/// Reference [`is_ascii_alphabetic`](std::primitive::char::is_ascii_alphabetic).
+/// Reference [`is_ascii_alphabetic`](std::primitive::char::is_ascii_alphabetic) or [`is_ascii_alphabetic`](std::primitive::u8::is_ascii_alphabetic).
 ///
 /// # Example
 ///
@@ -179,8 +193,20 @@ impl Neu<char> for AsciiAlphanumeric {
     }
 }
 
+impl Neu<u8> for AsciiAlphanumeric {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!(
+            "ascii_alphanumeric",
+            self,
+            other,
+            other.is_ascii_alphanumeric()
+        )
+    }
+}
+
 ///
-/// Reference [`is_ascii_alphanumeric`](std::primitive::char::is_ascii_alphanumeric).
+/// Reference [`is_ascii_alphanumeric`](std::primitive::char::is_ascii_alphanumeric) or [`is_ascii_alphanumeric`](std::primitive::u8::is_ascii_alphanumeric).
 ///
 /// # Example
 ///
@@ -218,8 +244,15 @@ impl Neu<char> for AsciiControl {
     }
 }
 
+impl Neu<u8> for AsciiControl {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_control", self, other, other.is_ascii_control())
+    }
+}
+
 ///
-/// Reference [`is_ascii_control`](std::primitive::char::is_ascii_control).
+/// Reference [`is_ascii_control`](std::primitive::char::is_ascii_control) or [`is_ascii_control`](std::primitive::u8::is_ascii_control).
 ///
 /// # Example
 ///
@@ -257,8 +290,15 @@ impl Neu<char> for AsciiDigit {
     }
 }
 
+impl Neu<u8> for AsciiDigit {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_digit", self, other, other.is_ascii_digit())
+    }
+}
+
 ///
-/// Reference [`is_ascii_digit`](std::primitive::char::is_ascii_digit).
+/// Reference [`is_ascii_digit`](std::primitive::char::is_ascii_digit) or [`is_ascii_digit`](std::primitive::u8::is_ascii_digit).
 ///
 /// # Example
 ///
@@ -296,8 +336,15 @@ impl Neu<char> for AsciiGraphic {
     }
 }
 
+impl Neu<u8> for AsciiGraphic {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_graphic", self, other, other.is_ascii_graphic())
+    }
+}
+
 ///
-/// Reference [`is_ascii_graphic`](std::primitive::char::is_ascii_graphic).
+/// Reference [`is_ascii_graphic`](std::primitive::char::is_ascii_graphic) or [`is_ascii_graphic`](std::primitive::u8::is_ascii_graphic).
 ///
 /// # Example
 ///
@@ -335,8 +382,15 @@ impl Neu<char> for AsciiHexDigit {
     }
 }
 
+impl Neu<u8> for AsciiHexDigit {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_hexdigit", self, other, other.is_ascii_hexdigit())
+    }
+}
+
 ///
-/// Reference [`is_ascii_hexdigit`](std::primitive::char::is_ascii_hexdigit).
+/// Reference [`is_ascii_hexdigit`](std::primitive::char::is_ascii_hexdigit) or [`is_ascii_hexdigit`](std::primitive::u8::is_ascii_hexdigit).
 ///
 /// # Example
 ///
@@ -374,8 +428,15 @@ impl Neu<char> for AsciiLowercase {
     }
 }
 
+impl Neu<u8> for AsciiLowercase {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_lowercase", self, other, other.is_ascii_lowercase())
+    }
+}
+
 ///
-/// Reference [`is_ascii_lowercase`](std::primitive::char::is_ascii_lowercase).
+/// Reference [`is_ascii_lowercase`](std::primitive::char::is_ascii_lowercase) or [`is_ascii_lowercase`](std::primitive::u8::is_ascii_lowercase).
 ///
 /// # Example
 ///
@@ -418,8 +479,20 @@ impl Neu<char> for AsciiPunctuation {
     }
 }
 
+impl Neu<u8> for AsciiPunctuation {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!(
+            "ascii_punctuation",
+            self,
+            other,
+            other.is_ascii_punctuation()
+        )
+    }
+}
+
 ///
-/// Reference [`is_ascii_punctuation`](std::primitive::char::is_ascii_punctuation).
+/// Reference [`is_ascii_punctuation`](std::primitive::char::is_ascii_punctuation) or [`is_ascii_punctuation`](std::primitive::u8::is_ascii_punctuation).
 ///
 /// # Example
 ///
@@ -457,8 +530,15 @@ impl Neu<char> for AsciiUppercase {
     }
 }
 
+impl Neu<u8> for AsciiUppercase {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_uppercase", self, other, other.is_ascii_uppercase())
+    }
+}
+
 ///
-/// Reference [`is_ascii_uppercase`](std::primitive::char::is_ascii_uppercase).
+/// Reference [`is_ascii_uppercase`](std::primitive::char::is_ascii_uppercase) or [`is_ascii_uppercase`](std::primitive::u8::is_ascii_uppercase).
 ///
 /// # Example
 ///
@@ -496,8 +576,15 @@ impl Neu<char> for AsciiWhiteSpace {
     }
 }
 
+impl Neu<u8> for AsciiWhiteSpace {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_u!("ascii_whitespace", self, other, other.is_ascii_whitespace())
+    }
+}
+
 ///
-/// Reference [`is_ascii_whitespace`](std::primitive::char::is_ascii_whitespace).
+/// Reference [`is_ascii_whitespace`](std::primitive::char::is_ascii_whitespace) or [`is_ascii_whitespace`](std::primitive::u8::is_ascii_whitespace).
 ///
 /// # Example
 ///

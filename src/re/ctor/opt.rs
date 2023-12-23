@@ -12,6 +12,9 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+///
+///
 #[derive(Debug, Default, Copy)]
 pub struct OptionPat<C, P> {
     pat: P,

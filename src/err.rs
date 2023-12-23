@@ -51,6 +51,12 @@ pub enum Error {
 
     PairVec,
 
+    Utf8Error,
+
+    FromLeBytes,
+
+    FromBeBytes,
+
     Other,
 
     Uid(usize),
@@ -85,6 +91,9 @@ impl Display for Error {
             Error::Vec => write!(f, "In (`Vec`): all match failed"),
             Error::PairVec => write!(f, "In (`Hash`): all match failed"),
             Error::OriginOutOfBound => write!(f, "Offset out of bound"),
+            Error::Utf8Error => write!(f, "In (`FromUtf8`): catch `Utf8Error` or `FromUtf8Error`"),
+            Error::FromLeBytes => write!(f, "In (`FromLeBytes`): need more bytes for given type"),
+            Error::FromBeBytes => write!(f, "In (`FromBeBytes`): need more bytes for given type"),
             Error::Other => write!(f, "Error::Other"),
             Error::Uid(id) => write!(f, "Got error(id = {id})"),
         }

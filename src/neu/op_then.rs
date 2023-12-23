@@ -18,7 +18,11 @@ use super::Neu;
 use super::NeuCond;
 
 ///
-/// Construct a regex that match `L`, and then match `R`.
+/// Construct a regex that matches unit `L` and then unit `R`.
+///
+/// # Ctor
+///
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///

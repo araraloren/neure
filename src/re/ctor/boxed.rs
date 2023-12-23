@@ -70,7 +70,7 @@ where
 }
 
 ///
-/// Construct a boxed `Ctor` that convert from `M` to `O`.
+/// Return a type that wraps `Ctor` with Box.
 ///
 /// # Example
 ///

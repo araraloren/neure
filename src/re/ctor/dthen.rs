@@ -15,6 +15,30 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// Like [`Then`](crate::re::ctor::Then), but create with [`.dyn_then_ctor`](crate::re::ctor::DynamicCreateCtorThenHelper#tymethod.dyn_then_ctor) of regex.
+///
+/// # Ctor
+///
+/// Return a tuple of `P`'s result and new regex result.
+///
+/// # Example
+///
+/// ```
+/// # use neure::{prelude::*, re::DynamicCreateCtorThenHelper};
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///
+///     let len = re::consume(2).map(re::map::from_le_bytes::<i16>());
+///     let data = len.dyn_then_ctor(|v: &i16| Ok(re::consume(*v as usize)));
+///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
+///
+///     assert_eq!(ret, (0x1f, b"Hello there, where are you from".as_ref()));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Default, Copy)]
 pub struct DynamicCreateCtorThen<C, P, F> {
     pat: P,
