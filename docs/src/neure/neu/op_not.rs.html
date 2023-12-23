@@ -104,12 +104,14 @@
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
 <a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">super</span>::Neu;
 
 <span class="doccomment">///
-/// Return true if the value not matched.
+/// Return true if the given value not matches `U`.
 ///
 /// # Example
 ///
@@ -191,6 +193,8 @@
 }
 
 <span class="doccomment">///
+/// Return true if the given value not matches `U`.
+///
 /// # Example
 ///
 /// ```
