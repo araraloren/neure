@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["neure"];
+window.ALL_CRATES = ["charize","neure"];
