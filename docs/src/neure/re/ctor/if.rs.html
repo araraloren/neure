@@ -173,7 +173,27 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::CtxGuard;
@@ -189,6 +209,10 @@
 <span class="doccomment">///
 /// Construct a branch struct base on the test `I`(Fn(&amp;C) -&gt; Result&lt;bool, Error&gt;).
 ///
+/// # Ctor
+///
+/// Return the result of `P` if `I` return true, otherwise return `E`.
+///
 /// # Example
 ///
 /// ```
@@ -196,7 +220,6 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 ///     color_eyre::install()?;
-///
 ///     let re1 = &quot;google&quot;.sep_once(&quot;.&quot;, &quot;com&quot;.or(&quot;is&quot;)).pat();
 ///     let re2 = &quot;google&quot;
 ///         .sep_once(&quot;.&quot;, &quot;co&quot;.sep_once(&quot;.&quot;, &quot;kr&quot;.or(&quot;jp&quot;)))
@@ -214,12 +237,27 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="attr">#[derive(Debug, Default, Copy)]
+</span><span class="attr">#[derive(Default, Copy)]
 </span><span class="kw">pub struct </span>IfRegex&lt;C, P, I, E&gt; {
     pat: P,
     r#if: I,
     r#else: E,
     marker: PhantomData&lt;C&gt;,
+}
+
+<span class="kw">impl</span>&lt;C, P, I, E&gt; Debug <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;
+<span class="kw">where
+    </span>P: Debug,
+    I: Debug,
+    E: Debug,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">&quot;IfRegex&quot;</span>)
+            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">&quot;r#if&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.r#if)
+            .field(<span class="string">&quot;r#else&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.r#else)
+            .finish()
+    }
 }
 
 <span class="kw">impl</span>&lt;C, P, I, E&gt; Clone <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;

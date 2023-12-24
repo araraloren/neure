@@ -184,7 +184,19 @@
 <a href="#184" id="184">184</a>
 <a href="#185" id="185">185</a>
 <a href="#186" id="186">186</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
@@ -206,7 +218,6 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 ///     color_eyre::install()?;
-///
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::&lt;3&gt;()
 ///         // map &amp;str to String
@@ -231,7 +242,6 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 ///     color_eyre::install()?;
-///
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::&lt;3&gt;()
 ///         // map &amp;str to String
@@ -257,7 +267,6 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 ///     color_eyre::install()?;
-///
 ///     let num = neu::digit(10).repeat_times::&lt;3&gt;();
 ///     let id =
 ///         CharsCtx::new(&quot;777&quot;).map(&amp;num, |v: &amp;str| v.parse::&lt;i32&gt;().map_err(|_| Error::Uid(0)))?;
@@ -274,11 +283,24 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="attr">#[derive(Debug, Default, Copy)]
+</span><span class="attr">#[derive(Default, Copy)]
 </span><span class="kw">pub struct </span>Map&lt;C, P, F, O&gt; {
     pat: P,
     mapper: F,
     marker: PhantomData&lt;(C, O)&gt;,
+}
+
+<span class="kw">impl</span>&lt;C, P, F, O&gt; Debug <span class="kw">for </span>Map&lt;C, P, F, O&gt;
+<span class="kw">where
+    </span>P: Debug,
+    F: Debug,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">&quot;Map&quot;</span>)
+            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">&quot;mapper&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.mapper)
+            .finish()
+    }
 }
 
 <span class="kw">impl</span>&lt;C, P, F, O&gt; Clone <span class="kw">for </span>Map&lt;C, P, F, O&gt;

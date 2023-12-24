@@ -199,7 +199,21 @@
 <a href="#199" id="199">199</a>
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::CtxGuard;
@@ -230,7 +244,6 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 ///     color_eyre::install()?;
-///
 ///     let len = re::consume(2).map(re::map::from_le_bytes::&lt;i16&gt;());
 ///     let data = len.dyn_then_ctor(|v: &amp;i16| Ok(re::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b&quot;\x1f\0Hello there, where are you from?&quot;).ctor(&amp;data)?;
@@ -240,11 +253,24 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="attr">#[derive(Debug, Default, Copy)]
+</span><span class="attr">#[derive(Default, Copy)]
 </span><span class="kw">pub struct </span>DynamicCreateCtorThen&lt;C, P, F&gt; {
     pat: P,
     func: F,
     marker: PhantomData&lt;C&gt;,
+}
+
+<span class="kw">impl</span>&lt;C, P, F&gt; Debug <span class="kw">for </span>DynamicCreateCtorThen&lt;C, P, F&gt;
+<span class="kw">where
+    </span>P: Debug,
+    F: Debug,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">&quot;DynamicCreateCtorThen&quot;</span>)
+            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">&quot;func&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.func)
+            .finish()
+    }
 }
 
 <span class="kw">impl</span>&lt;C, P, F&gt; Clone <span class="kw">for </span>DynamicCreateCtorThen&lt;C, P, F&gt;
