@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -14,6 +15,10 @@ use crate::re::Regex;
 ///
 /// Construct a branch struct base on the test `I`(Fn(&C) -> Result<bool, Error>).
 ///
+/// # Ctor
+///
+/// Return the result of `P` if `I` return true, otherwise return `E`.
+///
 /// # Example
 ///
 /// ```
@@ -21,7 +26,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let re1 = "google".sep_once(".", "com".or("is")).pat();
 ///     let re2 = "google"
 ///         .sep_once(".", "co".sep_once(".", "kr".or("jp")))
@@ -39,12 +43,27 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct IfRegex<C, P, I, E> {
     pat: P,
     r#if: I,
     r#else: E,
     marker: PhantomData<C>,
+}
+
+impl<C, P, I, E> Debug for IfRegex<C, P, I, E>
+where
+    P: Debug,
+    I: Debug,
+    E: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IfRegex")
+            .field("pat", &self.pat)
+            .field("r#if", &self.r#if)
+            .field("r#else", &self.r#else)
+            .finish()
+    }
 }
 
 impl<C, P, I, E> Clone for IfRegex<C, P, I, E>

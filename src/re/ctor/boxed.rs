@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -10,10 +11,32 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 // into_box
-#[derive(Debug, Clone)]
 pub struct BoxedCtor<C, T> {
     inner: Box<T>,
     marker: PhantomData<C>,
+}
+
+impl<C, T> Debug for BoxedCtor<C, T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BoxedCtor")
+            .field("inner", &self.inner)
+            .finish()
+    }
+}
+
+impl<C, T> Clone for BoxedCtor<C, T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            marker: self.marker,
+        }
+    }
 }
 
 impl<C, T> BoxedCtor<C, T> {

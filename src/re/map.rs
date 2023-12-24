@@ -311,13 +311,13 @@ impl<T> Default for FromUtf8<T> {
 
 impl<'a> MapSingle<&'a [u8], &'a str> for FromUtf8<&'a str> {
     fn map_to(&self, val: &'a [u8]) -> Result<&'a str, Error> {
-        Ok(std::str::from_utf8(val).map_err(|_| Error::Utf8Error)?)
+        std::str::from_utf8(val).map_err(|_| Error::Utf8Error)
     }
 }
 
 impl<'a> MapSingle<&'a [u8], String> for FromUtf8<String> {
     fn map_to(&self, val: &'a [u8]) -> Result<String, Error> {
-        Ok(String::from_utf8(val.to_vec()).map_err(|_| Error::Utf8Error)?)
+        String::from_utf8(val.to_vec()).map_err(|_| Error::Utf8Error)
     }
 }
 

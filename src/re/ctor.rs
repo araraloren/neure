@@ -399,7 +399,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     #[derive(Debug, PartialEq, Eq)]
 ///     enum Xml {
 ///         Element { name: String, child: Vec<Xml> },
@@ -465,7 +464,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let digit = re!(['0' - '9']+);
     ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
     ///     let digits = digit.sep(",".ws());
@@ -494,7 +492,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let ascii = neu::ascii().repeat_one();
     ///     let lit = ascii.quote("'", "'");
     ///     let ele = lit.sep(",".ws());
@@ -518,7 +515,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let name = re!([^ ',' ']' '[']+);
     ///     let sep = ','.repeat_one().ws();
     ///     let arr = name.sep(sep);
@@ -541,7 +537,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let key = neu::alphabetic().repeat_one_more().ws();
     ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
     ///     let sep = "=>".ws();
@@ -576,7 +571,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let key = neu::alphabetic().repeat_one_more().ws();
     ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
     ///     let sep = "=>".ws();
@@ -610,7 +604,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     #[derive(Debug, PartialEq, Eq)]
     ///     pub enum V<'a> {
     ///         S(&'a str),
@@ -643,7 +636,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     #[derive(Debug, PartialEq, Eq)]
     ///     pub struct Val<'a>(&'a str);
     ///
@@ -669,7 +661,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let ws = neu::whitespace().repeat_full();
     ///     let id = neu::ascii_alphabetic().repeat_one_more();
     ///     let st = "struct".ws().then(id)._1();
@@ -698,7 +689,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let int = neu::digit(10).repeat_one_more();
     ///     let int = int.map(re::map::from_str_radix::<i32>(10));
     ///     let num = int.ws().repeat(3..5);
@@ -731,7 +721,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let sep = neu!(['，' ';']);
     ///     let end = neu!(['。' '？' '！']);
     ///     let word = sep.or(end).not().repeat_one_more();
@@ -758,7 +747,6 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///
     ///     let num = neu::digit(10).repeat_times::<2>();
     ///     let time = num.sep_once(":", num);
     ///     let time = time.quote("[", "]").ws();

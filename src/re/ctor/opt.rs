@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -13,12 +14,43 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
+/// Match `P` and return the result wrapped by `Option`, ignoring the error.
 ///
+/// # Ctor
 ///
-#[derive(Debug, Default, Copy)]
+/// If the regex `P` matches, return `Some(T)`; otherwise return None.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let num = neu::digit(10)
+///         .repeat_one_more()
+///         .map(re::map::from_str())
+///         .opt();
+///
+///     assert_eq!(CharsCtx::new("8922").ctor(&num)?, Some(8922i32));
+///     assert_eq!(CharsCtx::new("f122").ctor(&num)?, None);
+///
+///     Ok(())
+/// # }
+/// ```
+#[derive(Default, Copy)]
 pub struct OptionPat<C, P> {
     pat: P,
     marker: PhantomData<C>,
+}
+
+impl<C, P> Debug for OptionPat<C, P>
+where
+    P: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OptionPat").field("pat", &self.pat).finish()
+    }
 }
 
 impl<C, P> Clone for OptionPat<C, P>

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -12,12 +13,11 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Match `L` or `R`.
+/// First try to match `L`, if it fails, then try to match `R`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return result of either `L` or `R`.
+/// Return the result of either `L` or `R`.
 ///
 /// # Example
 ///
@@ -26,7 +26,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     macro_rules! num {
 ///         ($s:literal) => {
 ///             neu::digit($s).repeat_one_more().map(from_str_radix($s))
@@ -51,11 +50,24 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Or<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, L, R> Debug for Or<C, L, R>
+where
+    L: Debug,
+    R: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Or")
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, L, R> Clone for Or<C, L, R>

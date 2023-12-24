@@ -22,7 +22,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
 ///     let str = str.quote("\"", "\"").map(Ok);
 ///     let int = neu::digit(10).repeat_one_more();

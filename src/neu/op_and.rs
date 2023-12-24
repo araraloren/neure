@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{fmt::Debug, marker::PhantomData};
 
 use super::Neu;
 
@@ -26,7 +26,7 @@ use super::Neu;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct And<L, R, T>
 where
     L: Neu<T>,
@@ -35,6 +35,19 @@ where
     left: L,
     right: R,
     marker: PhantomData<T>,
+}
+
+impl<L, R, T> Debug for And<L, R, T>
+where
+    L: Neu<T> + Debug,
+    R: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("And")
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<L, R, T> Clone for And<L, R, T>

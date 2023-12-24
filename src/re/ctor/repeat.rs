@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
@@ -15,12 +16,11 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Match `P` repeatedly.
+/// Repeatedly match regex `P`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a collection of `P`'s match results.
+/// It will return a [`Vec`] of `P`'s match results.
 ///
 /// # Example
 ///
@@ -29,7 +29,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let char = neu::any().repeat_one();
 ///     let num = char.ws().repeat(1..);
 ///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);
@@ -38,12 +37,25 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct Repeat<C, P> {
     pat: P,
     range: CRange<usize>,
     capacity: usize,
     marker: PhantomData<C>,
+}
+
+impl<C, P> Debug for Repeat<C, P>
+where
+    P: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Repeat")
+            .field("pat", &self.pat)
+            .field("range", &self.range)
+            .field("capacity", &self.capacity)
+            .finish()
+    }
 }
 
 impl<C, P> Clone for Repeat<C, P>

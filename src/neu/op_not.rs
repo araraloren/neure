@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{fmt::Debug, marker::PhantomData};
 
 use super::Neu;
 
@@ -25,13 +25,22 @@ use super::Neu;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Not<U, T>
 where
     U: Neu<T>,
 {
     unit: U,
     marker: PhantomData<T>,
+}
+
+impl<U, T> Debug for Not<U, T>
+where
+    U: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Not").field("unit", &self.unit).finish()
+    }
 }
 
 impl<U, T> Clone for Not<U, T>
@@ -94,7 +103,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let item = neu::not(u8::is_ascii_uppercase);
 ///     let str = item.repeat_range(6..);
 ///     let mut ctx = BytesCtx::new(br#"abcedfgABCEE"#);

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -13,12 +14,12 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Match regex `P` quoted by `L` and `R`.
+/// First try to match `L`. If it is succeeds, then try to match `P`.
+/// If it is succeeds, then try to match `R`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return result of `P` if matched.
+/// It will return the result of `P`, ignoring the result of `L` and `R`.
 ///
 /// # Example
 ///
@@ -27,7 +28,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let digit = neu::digit(10).repeat_full();
 ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
 ///     let str = re!([^ '"']+).quote("\"", "\"");
@@ -42,12 +42,27 @@ use crate::re::Regex;
 /// # }
 /// ```
 ///
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Quote<C, P, L, R> {
     pat: P,
     left: L,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, P, L, R> Debug for Quote<C, P, L, R>
+where
+    P: Debug,
+    L: Debug,
+    R: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Quote")
+            .field("pat", &self.pat)
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, P, L, R> Clone for Quote<C, P, L, R>

@@ -75,10 +75,21 @@ where
     }
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexCond<'a, C, T> {
     regex: T,
     marker: PhantomData<(&'a (), C)>,
+}
+
+impl<'a, C, T> Debug for RegexCond<'a, C, T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RegexCond")
+            .field("regex", &self.regex)
+            .finish()
+    }
 }
 
 impl<'a, C, T> Clone for RegexCond<'a, C, T>

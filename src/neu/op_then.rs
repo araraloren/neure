@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -43,7 +44,7 @@ use super::NeuCond;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct NeureThen<C, L, R, T, I>
 where
     L: Neu<T>,
@@ -53,6 +54,21 @@ where
     right: R,
     cond: I,
     marker: PhantomData<(C, T)>,
+}
+
+impl<C, L, R, T, I> Debug for NeureThen<C, L, R, T, I>
+where
+    I: Debug,
+    L: Neu<T> + Debug,
+    R: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NeureThen")
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .field("cond", &self.cond)
+            .finish()
+    }
 }
 
 impl<C, L, R, T, I> Clone for NeureThen<C, L, R, T, I>

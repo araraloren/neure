@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -13,12 +14,11 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Match `P` and `T` which padded by `P`.
+/// First try to match `P`. If the match succeeds, then try to match `T`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return result of `P`.
+/// It will return result of `P`, and ignoring the result of `T`.
 ///
 /// # Example
 ///
@@ -27,7 +27,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.pad("://");
 ///     let domain = neu::alphabetic().repeat_one_more();
@@ -39,11 +38,24 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct PadUnit<C, P, T> {
     pat: P,
     tail: T,
     marker: PhantomData<C>,
+}
+
+impl<C, P, T> Debug for PadUnit<C, P, T>
+where
+    P: Debug,
+    T: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PadUnit")
+            .field("pat", &self.pat)
+            .field("tail", &self.tail)
+            .finish()
+    }
 }
 
 impl<C, P, T> Clone for PadUnit<C, P, T>
@@ -140,12 +152,11 @@ where
 }
 
 ///
-/// Match `P` which padded by `T`.
+/// First try to match `T`. If it succeeds, try to match `P`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return result of `P`.
+/// It will return result of `P`, ignoring the result of `T`.
 ///
 /// # Example
 ///
@@ -154,7 +165,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.pad("://");
 ///     let domain = neu::alphabetic().repeat_one_more();
@@ -166,11 +176,24 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct PaddedUnit<C, P, T> {
     pat: P,
     head: T,
     marker: PhantomData<C>,
+}
+
+impl<C, P, T> Debug for PaddedUnit<C, P, T>
+where
+    P: Debug,
+    T: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PaddedUnit")
+            .field("pat", &self.pat)
+            .field("head", &self.head)
+            .finish()
+    }
 }
 
 impl<C, P, T> Clone for PaddedUnit<C, P, T>

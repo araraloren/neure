@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
@@ -93,11 +94,24 @@ use super::NeuCond;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct NeureRepeat<const M: usize, const N: usize, C, U, I> {
     unit: U,
     cond: I,
     marker: PhantomData<C>,
+}
+
+impl<const M: usize, const N: usize, C, U, I> Debug for NeureRepeat<M, N, C, U, I>
+where
+    I: Debug,
+    U: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NeureRepeat")
+            .field("unit", &self.unit)
+            .field("cond", &self.cond)
+            .finish()
+    }
 }
 
 impl<const M: usize, const N: usize, C, U, I> Clone for NeureRepeat<M, N, C, U, I>
@@ -244,12 +258,26 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct NeureRepeatRange<C, U, I> {
     unit: U,
     cond: I,
     range: CRange<usize>,
     marker: PhantomData<C>,
+}
+
+impl<C, U, I> Debug for NeureRepeatRange<C, U, I>
+where
+    U: Debug,
+    I: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NeureRepeatRange")
+            .field("unit", &self.unit)
+            .field("cond", &self.cond)
+            .field("range", &self.range)
+            .finish()
+    }
 }
 
 impl<C, U, I> Clone for NeureRepeatRange<C, U, I>

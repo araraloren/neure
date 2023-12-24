@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -17,8 +18,7 @@ use crate::trace_log;
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return the result of the longest match of either `L` or `R`.
+/// It will return the result of the longest match of either `L` or `R`.
 ///
 /// # Example
 ///
@@ -27,7 +27,6 @@ use crate::trace_log;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let dec = neu::digit(10).repeat_one_more();
 ///     let hex = neu::digit(16).repeat_one_more();
 ///     let dec = dec.map(re::map::from_str_radix::<i32>(10));
@@ -40,11 +39,24 @@ use crate::trace_log;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct LongestTokenMatch<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, L, R> Debug for LongestTokenMatch<C, L, R>
+where
+    L: Debug,
+    R: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LongestTokenMatch")
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, L, R> Clone for LongestTokenMatch<C, L, R>

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -17,12 +18,11 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Match `P` and then match `T`.
+/// First try to match `P`. If it succeeds, then try to match `T`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a tuple of results of `L` and `R`.
+/// It will return a tuple of results of `L` and `R`.
 ///
 /// # Example
 ///
@@ -31,7 +31,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
 ///     let str = str.quote("\"", "\"").map(Ok);
 ///     let int = neu::digit(10).repeat_one_more();
@@ -44,11 +43,24 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Then<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, L, R> Debug for Then<C, L, R>
+where
+    L: Debug,
+    R: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Then")
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, L, R> Clone for Then<C, L, R>
@@ -157,12 +169,13 @@ where
 }
 
 ///
-/// Match `P` and then match `T`.
+/// First try to match `P`. If it succeeds, then try to match `I`.
+/// If it succeeds, then try to match `T`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a tuple of results of `L` and `R`.
+/// If `I` match succeeds, return a tuple of result of `L` and Some(`T`)(result of `R`).
+/// Otherwise return a tulpe of result of `L` and None.
 ///
 /// # Example
 ///
@@ -171,25 +184,38 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
+///     let val = neu::ascii_alphabetic().repeat_one_more().ws();
+///     let tuple = val.if_then(",".ws(), val).quote("(", ")");
 ///
-///     let str = neu::ascii_alphabetic().repeat_one_more();
-///     let str = str.quote("\"", "\"").map(Ok);
-///     let int = neu::digit(10).repeat_one_more();
-///     let int = int.map(re::map::from_str_radix::<i32>(10));
-///     let tuple = str.ws().then(",".ws())._0().then(int.ws());
-///     let tuple = tuple.quote("(", ")");
-///     let mut ctx = CharsCtx::new(r#"("Galaxy", 42)"#);
-///
-///     assert_eq!(ctx.ctor(&tuple)?, ("Galaxy", 42));
+///     assert_eq!(CharsCtx::new("(abc)").ctor(&tuple)?, ("abc", None));
+///     assert_eq!(
+///         CharsCtx::new("(abc, cde)").ctor(&tuple)?,
+///         ("abc", Some("cde"))
+///     );
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct IfThen<C, L, I, R> {
     r#if: I,
     left: L,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, L, I, R> Debug for IfThen<C, L, I, R>
+where
+    L: Debug,
+    R: Debug,
+    I: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IfThen")
+            .field("r#if", &self.r#if)
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, L, I, R> Clone for IfThen<C, L, I, R>

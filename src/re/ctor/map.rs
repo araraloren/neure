@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -20,7 +21,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::<3>()
 ///         // map &str to String
@@ -45,7 +45,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::<3>()
 ///         // map &str to String
@@ -71,7 +70,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let num = neu::digit(10).repeat_times::<3>();
 ///     let id =
 ///         CharsCtx::new("777").map(&num, |v: &str| v.parse::<i32>().map_err(|_| Error::Uid(0)))?;
@@ -88,11 +86,24 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Map<C, P, F, O> {
     pat: P,
     mapper: F,
     marker: PhantomData<(C, O)>,
+}
+
+impl<C, P, F, O> Debug for Map<C, P, F, O>
+where
+    P: Debug,
+    F: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Map")
+            .field("pat", &self.pat)
+            .field("mapper", &self.mapper)
+            .finish()
+    }
 }
 
 impl<C, P, F, O> Clone for Map<C, P, F, O>

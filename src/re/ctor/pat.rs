@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -10,12 +11,11 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Ignore the interal struct of regex `P`, convert it to a single pattern.
+/// Call [`.try_mat`](crate::ctx::Match#tymethod.try_mat) to match regex `P`.
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return [`Orig`](crate::ctx::Context::Orig) if matched.
+/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
 ///
 /// # Example
 ///
@@ -24,7 +24,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let abc = "abc";
 ///     let com = "com";
 ///     let website = abc.sep_once(".", com);
@@ -38,10 +37,19 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Pattern<C, P> {
     pat: P,
     marker: PhantomData<C>,
+}
+
+impl<C, P> Debug for Pattern<C, P>
+where
+    P: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Pattern").field("pat", &self.pat).finish()
+    }
 }
 
 impl<C, P> Clone for Pattern<C, P>

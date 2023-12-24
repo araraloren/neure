@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -36,11 +37,23 @@ use crate::re::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Collect<C, P, O, V> {
     pat: P,
     min: usize,
     marker: PhantomData<(O, V, C)>,
+}
+
+impl<C, P, O, V> Debug for Collect<C, P, O, V>
+where
+    P: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Collect")
+            .field("pat", &self.pat)
+            .field("min", &self.min)
+            .finish()
+    }
 }
 
 impl<C, P, O, V> Clone for Collect<C, P, O, V>

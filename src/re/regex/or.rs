@@ -22,7 +22,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     macro_rules! num {
 ///         ($s:literal) => {
 ///             neu::digit($s).repeat_one_more().map(from_str_radix($s))

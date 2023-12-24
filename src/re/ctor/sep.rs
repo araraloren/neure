@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -24,8 +25,7 @@ use super::Map;
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a tuple of results of `L` and `R`.
+/// It will return a tuple of results of `L` and `R`.
 ///
 /// # Example
 ///
@@ -34,7 +34,6 @@ use super::Map;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let ele = neu::digit(10).repeat_times::<2>();
 ///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
@@ -45,12 +44,27 @@ use super::Map;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct SepOnce<C, L, S, R> {
     left: L,
     sep: S,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, L, S, R> Debug for SepOnce<C, L, S, R>
+where
+    L: Debug,
+    S: Debug,
+    R: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SepOnce")
+            .field("left", &self.left)
+            .field("sep", &self.sep)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, L, S, R> Clone for SepOnce<C, L, S, R>
@@ -185,8 +199,7 @@ where
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a collection of `P`'s match results.
+/// It will return a [`Vec`] of `P`'s match results.
 ///
 /// # Example
 ///
@@ -195,7 +208,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     #[derive(Debug, PartialEq, PartialOrd)]
 ///     pub struct Tp<'a>(&'a str);
 ///
@@ -210,7 +222,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct Separate<C, P, S> {
     pat: P,
     sep: S,
@@ -218,6 +230,22 @@ pub struct Separate<C, P, S> {
     capacity: usize,
     min: usize,
     marker: PhantomData<C>,
+}
+
+impl<C, P, S> Debug for Separate<C, P, S>
+where
+    P: Debug,
+    S: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Separate")
+            .field("pat", &self.pat)
+            .field("sep", &self.sep)
+            .field("skip", &self.skip)
+            .field("capacity", &self.capacity)
+            .field("min", &self.min)
+            .finish()
+    }
 }
 
 impl<C, P, S> Clone for Separate<C, P, S>
@@ -400,8 +428,7 @@ where
 ///
 /// # Ctor
 ///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a collection that can constructed from `P`'s match results
+/// It will return a [`Vec`] that can constructed from `P`'s match results
 /// using [`from_iter`](std::iter::FromIterator::from_iter).
 ///
 /// # Notice
@@ -416,7 +443,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let digit = neu::digit(10).repeat_one_more();
 ///     let val = digit.map(FromStr::<i64>::new());
 ///     let vals = val.sep_collect::<_, _, Vec<i64>>(",".ws());
@@ -427,13 +453,28 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct SepCollect<C, P, S, O, T> {
     pat: P,
     sep: S,
     skip: bool,
     min: usize,
     marker: PhantomData<(C, O, T)>,
+}
+
+impl<C, P, S, O, T> Debug for SepCollect<C, P, S, O, T>
+where
+    P: Debug,
+    S: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SepCollect")
+            .field("pat", &self.pat)
+            .field("sep", &self.sep)
+            .field("skip", &self.skip)
+            .field("min", &self.min)
+            .finish()
+    }
 }
 
 impl<C, P, S, O, T> Clone for SepCollect<C, P, S, O, T>

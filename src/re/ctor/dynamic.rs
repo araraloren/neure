@@ -71,7 +71,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     pub fn parser<'a: 'b, 'b>(
 ///         ctor: RecursiveCtor<'b, BytesCtx<'a>, &'a [u8]>,
 ///     ) -> impl Fn(&mut BytesCtx<'a>) -> Result<&'a [u8], Error> + 'b {

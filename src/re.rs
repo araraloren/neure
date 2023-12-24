@@ -657,7 +657,6 @@ pub fn null<R>() -> NullRegex<R> {
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let re = re::not("]]]");
 ///     let mut ctx = CharsCtx::new("[123,456,789]");
 ///

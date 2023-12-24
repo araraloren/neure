@@ -24,7 +24,6 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let ele = neu::digit(10).repeat_times::<2>();
 ///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
@@ -146,7 +145,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     #[derive(Debug, PartialEq, PartialOrd)]
 ///     pub struct Tp<'a>(&'a str);
 ///
@@ -321,7 +319,6 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///
 ///     let digit = neu::digit(10).repeat_one_more();
 ///     let val = digit.map(FromStr::<i64>::new());
 ///     let vals = val.sep_collect::<_, _, Vec<i64>>(",".ws());

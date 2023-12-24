@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -40,7 +41,7 @@ use super::NeuCond;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct NeureOne<C, U, T, I>
 where
     U: Neu<T>,
@@ -48,6 +49,19 @@ where
     unit: U,
     cond: I,
     marker: PhantomData<(C, T)>,
+}
+
+impl<C, U, T, I> Debug for NeureOne<C, U, T, I>
+where
+    I: Debug,
+    U: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NeureOne")
+            .field("unit", &self.unit)
+            .field("cond", &self.cond)
+            .finish()
+    }
 }
 
 impl<C, U, T, I> Clone for NeureOne<C, U, T, I>
@@ -176,7 +190,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Copy)]
+#[derive(Copy)]
 pub struct NeureOneMore<C, U, T, I>
 where
     U: Neu<T>,
@@ -184,6 +198,19 @@ where
     unit: U,
     cond: I,
     marker: PhantomData<(C, T)>,
+}
+
+impl<C, U, T, I> Debug for NeureOneMore<C, U, T, I>
+where
+    I: Debug,
+    U: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NeureOneMore")
+            .field("unit", &self.unit)
+            .field("cond", &self.cond)
+            .finish()
+    }
 }
 
 impl<C, U, T, I> Clone for NeureOneMore<C, U, T, I>
