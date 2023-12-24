@@ -106,7 +106,15 @@
 <a href="#106" id="106">106</a>
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::{fmt::Debug, marker::PhantomData};
 
 <span class="kw">use </span><span class="kw">super</span>::Neu;
 
@@ -133,13 +141,22 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="attr">#[derive(Debug, Default, Copy)]
+</span><span class="attr">#[derive(Default, Copy)]
 </span><span class="kw">pub struct </span>Not&lt;U, T&gt;
 <span class="kw">where
     </span>U: Neu&lt;T&gt;,
 {
     unit: U,
     marker: PhantomData&lt;T&gt;,
+}
+
+<span class="kw">impl</span>&lt;U, T&gt; Debug <span class="kw">for </span>Not&lt;U, T&gt;
+<span class="kw">where
+    </span>U: Neu&lt;T&gt; + Debug,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">&quot;Not&quot;</span>).field(<span class="string">&quot;unit&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.unit).finish()
+    }
 }
 
 <span class="kw">impl</span>&lt;U, T&gt; Clone <span class="kw">for </span>Not&lt;U, T&gt;
@@ -202,7 +219,6 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 ///     color_eyre::install()?;
-///
 ///     let item = neu::not(u8::is_ascii_uppercase);
 ///     let str = item.repeat_range(6..);
 ///     let mut ctx = BytesCtx::new(br#&quot;abcedfgABCEE&quot;#);
