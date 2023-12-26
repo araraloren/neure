@@ -1096,7 +1096,67 @@
 
 <span class="kw">pub type </span>RecursiveCtorSync&lt;<span class="lifetime">&#39;a</span>, C, O&gt; = Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;DynamicCtor&lt;<span class="lifetime">&#39;a</span>, C, O&gt;&gt;&gt;&gt;;
 
-<span class="kw">pub fn </span>rec_parser&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, O, I&gt;(
+<span class="doccomment">///
+/// # Example
+///
+/// ```
+/// # use neure::{
+/// #     err::Error,
+/// #     prelude::*,
+/// #     re::{rec_parser, RecursiveCtor},
+/// # };
+/// #
+/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
+///     color_eyre::install()?;
+///     #[derive(Debug, PartialEq, Eq)]
+///     enum Xml {
+///         Element { name: String, child: Vec&lt;Xml&gt; },
+///         Enclosed(String),
+///     }
+///
+///     pub fn parser&lt;&#39;a: &#39;b, &#39;b&gt;(
+///         ctor: RecursiveCtor&lt;&#39;b, CharsCtx&lt;&#39;a&gt;, Vec&lt;Xml&gt;&gt;,
+///     ) -&gt; impl Fn(&amp;mut CharsCtx&lt;&#39;a&gt;) -&gt; Result&lt;Vec&lt;Xml&gt;, Error&gt; + &#39;b {
+///         move |ctx| {
+///             let alpha = neu::alphabetic()
+///                 .repeat_full()
+///                 .map(|v: &amp;str| Ok(v.to_string()));
+///             let s = alpha.quote(&quot;&lt;&quot;, &quot;&gt;&quot;);
+///             let e = alpha.quote(&quot;&lt;/&quot;, &quot;&gt;&quot;);
+///             let c = alpha.quote(&quot;&lt;&quot;, &quot;/&gt;&quot;).map(|v| Ok(Xml::Enclosed(v)));
+///             let m = |((l, c), r): ((String, Vec&lt;Xml&gt;), String)| {
+///                 if l != r {
+///                     Err(Error::Uid(0))
+///                 } else {
+///                     Ok(Xml::Element { name: l, child: c })
+///                 }
+///             };
+///
+///             ctx.ctor(&amp;s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..))
+///         }
+///     }
+///     let xml = rec_parser(parser);
+///     let ret = CharsCtx::new(&quot;&lt;language&gt;&lt;rust&gt;&lt;linux/&gt;&lt;/rust&gt;&lt;cpp&gt;&lt;windows/&gt;&lt;/cpp&gt;&lt;/language&gt;&quot;)
+///         .ctor(&amp;xml)?;
+///     let chk = vec![Xml::Element {
+///         name: &quot;language&quot;.to_owned(),
+///         child: vec![
+///             Xml::Element {
+///                 name: &quot;rust&quot;.to_owned(),
+///                 child: vec![Xml::Enclosed(&quot;linux&quot;.to_owned())],
+///             },
+///             Xml::Element {
+///                 name: &quot;cpp&quot;.to_owned(),
+///                 child: vec![Xml::Enclosed(&quot;windows&quot;.to_owned())],
+///             },
+///         ],
+///     }];
+///
+///     assert_eq!(ret, chk);
+///     Ok(())
+/// # }
+/// ```
+</span><span class="kw">pub fn </span>rec_parser&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, O, I&gt;(
     handler: <span class="kw">impl </span>Fn(RecursiveCtor&lt;<span class="lifetime">&#39;b</span>, C, O&gt;) -&gt; I,
 ) -&gt; RecursiveCtor&lt;<span class="lifetime">&#39;b</span>, C, O&gt;
 <span class="kw">where
@@ -1170,67 +1230,7 @@
         </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Item = char&gt;;
 }
 
-<span class="doccomment">///
-/// # Example
-///
-/// ```
-/// # use neure::{
-/// #     err::Error,
-/// #     prelude::*,
-/// #     re::{rec_parser, RecursiveCtor},
-/// # };
-/// #
-/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
-///     #[derive(Debug, PartialEq, Eq)]
-///     enum Xml {
-///         Element { name: String, child: Vec&lt;Xml&gt; },
-///         Enclosed(String),
-///     }
-///
-///     pub fn parser&lt;&#39;a: &#39;b, &#39;b&gt;(
-///         ctor: RecursiveCtor&lt;&#39;b, CharsCtx&lt;&#39;a&gt;, Vec&lt;Xml&gt;&gt;,
-///     ) -&gt; impl Fn(&amp;mut CharsCtx&lt;&#39;a&gt;) -&gt; Result&lt;Vec&lt;Xml&gt;, Error&gt; + &#39;b {
-///         move |ctx| {
-///             let alpha = neu::alphabetic()
-///                 .repeat_full()
-///                 .map(|v: &amp;str| Ok(v.to_string()));
-///             let s = alpha.quote(&quot;&lt;&quot;, &quot;&gt;&quot;);
-///             let e = alpha.quote(&quot;&lt;/&quot;, &quot;&gt;&quot;);
-///             let c = alpha.quote(&quot;&lt;&quot;, &quot;/&gt;&quot;).map(|v| Ok(Xml::Enclosed(v)));
-///             let m = |((l, c), r): ((String, Vec&lt;Xml&gt;), String)| {
-///                 if l != r {
-///                     Err(Error::Uid(0))
-///                 } else {
-///                     Ok(Xml::Element { name: l, child: c })
-///                 }
-///             };
-///
-///             ctx.ctor(&amp;s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..))
-///         }
-///     }
-///     let xml = rec_parser(parser);
-///     let ret = CharsCtx::new(&quot;&lt;language&gt;&lt;rust&gt;&lt;linux/&gt;&lt;/rust&gt;&lt;cpp&gt;&lt;windows/&gt;&lt;/cpp&gt;&lt;/language&gt;&quot;)
-///         .ctor(&amp;xml)?;
-///     let chk = vec![Xml::Element {
-///         name: &quot;language&quot;.to_owned(),
-///         child: vec![
-///             Xml::Element {
-///                 name: &quot;rust&quot;.to_owned(),
-///                 child: vec![Xml::Enclosed(&quot;linux&quot;.to_owned())],
-///             },
-///             Xml::Element {
-///                 name: &quot;cpp&quot;.to_owned(),
-///                 child: vec![Xml::Enclosed(&quot;windows&quot;.to_owned())],
-///             },
-///         ],
-///     }];
-///
-///     assert_eq!(ret, chk);
-///     Ok(())
-/// # }
-/// ```
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, T&gt; ConstructOp&lt;<span class="lifetime">&#39;a</span>, C&gt; <span class="kw">for </span>T
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, T&gt; ConstructOp&lt;<span class="lifetime">&#39;a</span>, C&gt; <span class="kw">for </span>T
 <span class="kw">where
     </span>T: Regex&lt;C&gt;,
     C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
