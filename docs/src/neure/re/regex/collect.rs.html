@@ -100,7 +100,42 @@
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::CtxGuard;
@@ -110,11 +145,44 @@
 <span class="kw">use </span><span class="kw">crate</span>::re::trace_v;
 <span class="kw">use </span><span class="kw">crate</span>::re::Regex;
 
-<span class="attr">#[derive(Debug, Default, Copy)]
+<span class="doccomment">///
+/// Match the regex `P` repeatedly, and collect the result into given type `O`.
+///
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
+///     color_eyre::install()?;
+///     let hex = re::consume(2);
+///     let vec = re::collect::&lt;_, _, Vec&lt;_&gt;&gt;(hex, 1);
+///
+///     assert_eq!(
+///         BytesCtx::new(b&quot;1f002f&quot;).try_mat_t(&amp;vec)?,
+///         vec![Span::new(0, 2), Span::new(2, 2), Span::new(4, 2)]
+///     );
+///     Ok(())
+/// # }
+/// ```
+</span><span class="attr">#[derive(Default, Copy)]
 </span><span class="kw">pub struct </span>RegexCollect&lt;C, P, O&gt; {
     pat: P,
     min: usize,
     marker: PhantomData&lt;(O, C)&gt;,
+}
+
+<span class="kw">impl</span>&lt;C, P, O&gt; Debug <span class="kw">for </span>RegexCollect&lt;C, P, O&gt;
+<span class="kw">where
+    </span>P: Debug,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">&quot;RegexCollect&quot;</span>)
+            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">&quot;min&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.min)
+            .finish()
+    }
 }
 
 <span class="kw">impl</span>&lt;C, P, O&gt; Clone <span class="kw">for </span>RegexCollect&lt;C, P, O&gt;

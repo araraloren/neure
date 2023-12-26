@@ -179,6 +179,10 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
@@ -190,7 +194,8 @@
 <span class="kw">use </span><span class="kw">crate</span>::re::Handler;
 <span class="kw">use </span><span class="kw">crate</span>::re::Regex;
 
-<span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+<span class="doccomment">/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`](crate::ctx::Context) is equal to 0.
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>RegexStart;
 
 <span class="kw">impl </span>RegexStart {
@@ -233,7 +238,8 @@
     }
 }
 
-<span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+<span class="doccomment">/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`](crate::ctx::Context) is equal to [`len`](crate::ctx::Context#tymethod.len).
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>RegexEnd;
 
 <span class="kw">impl </span>RegexEnd {
@@ -276,7 +282,8 @@
     }
 }
 
-<span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+<span class="doccomment">/// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>RegexConsume(usize);
 
 <span class="kw">impl </span>RegexConsume {
@@ -320,7 +327,8 @@
     }
 }
 
-<span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+<span class="doccomment">/// Consume all remaining [`Item`](crate::ctx::Context::Item)s of the [`Context`].
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>RegexConsumeAll;
 
 <span class="kw">impl </span>RegexConsumeAll {
