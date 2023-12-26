@@ -187,7 +187,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::re::Regex;
 
 <span class="doccomment">///
-/// Repeat the regex `P` and then collect into another type `V`.
+/// Repeatedly match the regex `P` at least [`min`](crate::re::ctor::Collect#tymethod.min) times.
 ///
 /// # Ctor
 ///
@@ -204,9 +204,9 @@
 ///     color_eyre::install()?;
 ///     let re = b&#39;+&#39;.repeat_one().collect::&lt;_, Vec&lt;_&gt;&gt;();
 ///
+///     assert!(BytesCtx::new(b&quot;---A&quot;).ctor(&amp;re).is_err());
 ///     assert_eq!(BytesCtx::new(b&quot;+++A&quot;).ctor(&amp;re)?, vec![b&quot;+&quot;, b&quot;+&quot;, b&quot;+&quot;]);
 ///     assert_eq!(BytesCtx::new(b&quot;++-A&quot;).ctor(&amp;re)?, vec![b&quot;+&quot;, b&quot;+&quot;]);
-///     assert_eq!(BytesCtx::new(b&quot;---A&quot;).ctor(&amp;re)?, Vec::&lt;&amp;[u8]&gt;::new());
 ///     Ok(())
 /// # }
 /// ```
