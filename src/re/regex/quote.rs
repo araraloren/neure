@@ -7,35 +7,12 @@ use crate::err::Error;
 use crate::re::trace;
 use crate::re::Regex;
 
+/// First try to match `L`. If it is succeeds, then try to match `P`.
+/// If it is succeeds, then try to match `R`.
 ///
-/// Match regex `P` quoted by `L` and `R`.
+/// # Regex
 ///
-/// # Ctor
-///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return result of `P` if matched.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let digit = neu::digit(10).repeat_full();
-///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
-///     let str = re!([^ '"']+).quote("\"", "\"");
-///     let tuple = digit.then(",")._0().then(str);
-///     let tuple = tuple.quote("(", ")");
-///
-///     let mut ctx = CharsCtx::new("(42,\"rust\")");
-///
-///     assert_eq!(ctx.ctor(&tuple)?, (42, "rust"));
-///
-///     Ok(())
-/// # }
-/// ```
-///
+/// It will return the result of `P`, ignoring the result of `L` and `R`.
 #[derive(Debug, Default, Copy)]
 pub struct RegexQuote<C, P, L, R> {
     pat: P,

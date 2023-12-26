@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -13,11 +14,24 @@ use crate::re::map::SelectEq;
 use crate::re::trace;
 use crate::re::Regex;
 
-#[derive(Debug, Default, Copy)]
+#[derive(Default, Copy)]
 pub struct DynamicCreateRegexThen<C, P, F> {
     pat: P,
     func: F,
     marker: PhantomData<C>,
+}
+
+impl<C, P, F> Debug for DynamicCreateRegexThen<C, P, F>
+where
+    P: Debug,
+    F: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DynamicCreateRegexThen")
+            .field("pat", &self.pat)
+            .field("func", &self.func)
+            .finish()
+    }
 }
 
 impl<C, P, F> Clone for DynamicCreateRegexThen<C, P, F>

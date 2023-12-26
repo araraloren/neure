@@ -9,6 +9,7 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`](crate::ctx::Context) is equal to 0.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexStart;
 
@@ -52,6 +53,7 @@ where
     }
 }
 
+/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`](crate::ctx::Context) is equal to [`len`](crate::ctx::Context#tymethod.len).
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexEnd;
 
@@ -95,6 +97,7 @@ where
     }
 }
 
+/// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexConsume(usize);
 
@@ -139,6 +142,7 @@ where
     }
 }
 
+/// Consume all remaining [`Item`](crate::ctx::Context::Item)s of the [`Context`].
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexConsumeAll;
 

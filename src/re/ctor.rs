@@ -313,6 +313,66 @@ pub type RecursiveCtor<'a, C, O> = Rc<RefCell<Option<DynamicCtor<'a, C, O>>>>;
 
 pub type RecursiveCtorSync<'a, C, O> = Arc<Mutex<Option<DynamicCtor<'a, C, O>>>>;
 
+///
+/// # Example
+///
+/// ```
+/// # use neure::{
+/// #     err::Error,
+/// #     prelude::*,
+/// #     re::{rec_parser, RecursiveCtor},
+/// # };
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     #[derive(Debug, PartialEq, Eq)]
+///     enum Xml {
+///         Element { name: String, child: Vec<Xml> },
+///         Enclosed(String),
+///     }
+///
+///     pub fn parser<'a: 'b, 'b>(
+///         ctor: RecursiveCtor<'b, CharsCtx<'a>, Vec<Xml>>,
+///     ) -> impl Fn(&mut CharsCtx<'a>) -> Result<Vec<Xml>, Error> + 'b {
+///         move |ctx| {
+///             let alpha = neu::alphabetic()
+///                 .repeat_full()
+///                 .map(|v: &str| Ok(v.to_string()));
+///             let s = alpha.quote("<", ">");
+///             let e = alpha.quote("</", ">");
+///             let c = alpha.quote("<", "/>").map(|v| Ok(Xml::Enclosed(v)));
+///             let m = |((l, c), r): ((String, Vec<Xml>), String)| {
+///                 if l != r {
+///                     Err(Error::Uid(0))
+///                 } else {
+///                     Ok(Xml::Element { name: l, child: c })
+///                 }
+///             };
+///
+///             ctx.ctor(&s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..))
+///         }
+///     }
+///     let xml = rec_parser(parser);
+///     let ret = CharsCtx::new("<language><rust><linux/></rust><cpp><windows/></cpp></language>")
+///         .ctor(&xml)?;
+///     let chk = vec![Xml::Element {
+///         name: "language".to_owned(),
+///         child: vec![
+///             Xml::Element {
+///                 name: "rust".to_owned(),
+///                 child: vec![Xml::Enclosed("linux".to_owned())],
+///             },
+///             Xml::Element {
+///                 name: "cpp".to_owned(),
+///                 child: vec![Xml::Enclosed("windows".to_owned())],
+///             },
+///         ],
+///     }];
+///
+///     assert_eq!(ret, chk);
+///     Ok(())
+/// # }
+/// ```
 pub fn rec_parser<'a, 'b, C, O, I>(
     handler: impl Fn(RecursiveCtor<'b, C, O>) -> I,
 ) -> RecursiveCtor<'b, C, O>
@@ -387,66 +447,6 @@ where
         C: Context<'a, Item = char>;
 }
 
-///
-/// # Example
-///
-/// ```
-/// # use neure::{
-/// #     err::Error,
-/// #     prelude::*,
-/// #     re::{rec_parser, RecursiveCtor},
-/// # };
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     #[derive(Debug, PartialEq, Eq)]
-///     enum Xml {
-///         Element { name: String, child: Vec<Xml> },
-///         Enclosed(String),
-///     }
-///
-///     pub fn parser<'a: 'b, 'b>(
-///         ctor: RecursiveCtor<'b, CharsCtx<'a>, Vec<Xml>>,
-///     ) -> impl Fn(&mut CharsCtx<'a>) -> Result<Vec<Xml>, Error> + 'b {
-///         move |ctx| {
-///             let alpha = neu::alphabetic()
-///                 .repeat_full()
-///                 .map(|v: &str| Ok(v.to_string()));
-///             let s = alpha.quote("<", ">");
-///             let e = alpha.quote("</", ">");
-///             let c = alpha.quote("<", "/>").map(|v| Ok(Xml::Enclosed(v)));
-///             let m = |((l, c), r): ((String, Vec<Xml>), String)| {
-///                 if l != r {
-///                     Err(Error::Uid(0))
-///                 } else {
-///                     Ok(Xml::Element { name: l, child: c })
-///                 }
-///             };
-///
-///             ctx.ctor(&s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..))
-///         }
-///     }
-///     let xml = rec_parser(parser);
-///     let ret = CharsCtx::new("<language><rust><linux/></rust><cpp><windows/></cpp></language>")
-///         .ctor(&xml)?;
-///     let chk = vec![Xml::Element {
-///         name: "language".to_owned(),
-///         child: vec![
-///             Xml::Element {
-///                 name: "rust".to_owned(),
-///                 child: vec![Xml::Enclosed("linux".to_owned())],
-///             },
-///             Xml::Element {
-///                 name: "cpp".to_owned(),
-///                 child: vec![Xml::Enclosed("windows".to_owned())],
-///             },
-///         ],
-///     }];
-///
-///     assert_eq!(ret, chk);
-///     Ok(())
-/// # }
-/// ```
 impl<'a, C, T> ConstructOp<'a, C> for T
 where
     T: Regex<C>,

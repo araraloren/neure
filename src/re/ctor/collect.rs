@@ -14,7 +14,7 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Repeat the regex `P` and then collect into another type `V`.
+/// Repeatedly match the regex `P` at least [`min`](crate::re::ctor::Collect#tymethod.min) times.
 ///
 /// # Ctor
 ///
@@ -31,9 +31,9 @@ use crate::re::Regex;
 ///     color_eyre::install()?;
 ///     let re = b'+'.repeat_one().collect::<_, Vec<_>>();
 ///
+///     assert!(BytesCtx::new(b"---A").ctor(&re).is_err());
 ///     assert_eq!(BytesCtx::new(b"+++A").ctor(&re)?, vec![b"+", b"+", b"+"]);
 ///     assert_eq!(BytesCtx::new(b"++-A").ctor(&re)?, vec![b"+", b"+"]);
-///     assert_eq!(BytesCtx::new(b"---A").ctor(&re)?, Vec::<&[u8]>::new());
 ///     Ok(())
 /// # }
 /// ```

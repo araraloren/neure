@@ -10,6 +10,11 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+/// Reverse the result, return zero length [`Span`] if match failed.
+///
+/// # Regex
+///
+/// Return zero length [`Span`] if `T` match failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RegexNot<T> {
     val: T,

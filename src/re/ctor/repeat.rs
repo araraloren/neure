@@ -16,7 +16,7 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Repeatedly match regex `P`.
+/// Repeatedly match regex `P`, and the number of matches must meet the given range.
 ///
 /// # Ctor
 ///

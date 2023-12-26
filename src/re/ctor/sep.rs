@@ -428,7 +428,7 @@ where
 ///
 /// # Ctor
 ///
-/// It will return a [`Vec`] that can constructed from `P`'s match results
+/// It will return a `T` that can constructed from `P`'s match results
 /// using [`from_iter`](std::iter::FromIterator::from_iter).
 ///
 /// # Notice

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -8,50 +9,29 @@ use crate::re::trace;
 use crate::re::Regex;
 use crate::trace_log;
 
+/// Match `L` and `R`, return the longest match result.
 ///
-/// Match `L` or `R`.
+/// # Regex
 ///
-/// # Ctor
-///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return result of either `L` or `R`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::{prelude::*, re::map::from_str_radix};
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     macro_rules! num {
-///         ($s:literal) => {
-///             neu::digit($s).repeat_one_more().map(from_str_radix($s))
-///         };
-///     }
-///
-///     let (bin, oct, dec, hex) = (num!(2), num!(8), num!(10), num!(16));
-///     let num = dec.ltm(hex);
-///     let dec = "0d".then(dec)._1();
-///     let oct = "0o".then(oct)._1();
-///     let hex = "0x".then(hex)._1();
-///     let bin = "0b".then(bin)._1();
-///     let pos = "+".map(|_| Ok(1));
-///     let neg = "-".map(|_| Ok(-1));
-///     let sign = pos.or(neg.or(re::null().map(|_| Ok(1))));
-///     let num = bin.or(oct.or(dec.or(hex))).or(num);
-///     let num = sign.then(num).map(|(s, v): (_, i64)| Ok(s * v));
-///     let val = num.sep(",".ws()).quote("[", "]");
-///     let mut ctx = CharsCtx::new(r#"[0d18, 0o17, 0x18, 0b1010, 18, 1E]"#);
-///
-///     assert_eq!(ctx.ctor(&val)?, [18, 15, 24, 10, 18, 30]);
-///     Ok(())
-/// # }
-/// ```
-#[derive(Debug, Default, Copy)]
+/// It will return the result of the longest match of either `L` or `R`.
+#[derive(Default, Copy)]
 pub struct RegexLongestTokenMatch<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
+}
+
+impl<C, L, R> Debug for RegexLongestTokenMatch<C, L, R>
+where
+    L: Debug,
+    R: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RegexLongestTokenMatch")
+            .field("left", &self.left)
+            .field("right", &self.right)
+            .finish()
+    }
 }
 
 impl<C, L, R> Clone for RegexLongestTokenMatch<C, L, R>

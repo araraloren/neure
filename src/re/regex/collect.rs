@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -8,11 +9,44 @@ use crate::neu::CRange;
 use crate::re::trace_v;
 use crate::re::Regex;
 
-#[derive(Debug, Default, Copy)]
+///
+/// Match the regex `P` repeatedly, and collect the result into given type `O`.
+///
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let hex = re::consume(2);
+///     let vec = re::collect::<_, _, Vec<_>>(hex, 1);
+///
+///     assert_eq!(
+///         BytesCtx::new(b"1f002f").try_mat_t(&vec)?,
+///         vec![Span::new(0, 2), Span::new(2, 2), Span::new(4, 2)]
+///     );
+///     Ok(())
+/// # }
+/// ```
+#[derive(Default, Copy)]
 pub struct RegexCollect<C, P, O> {
     pat: P,
     min: usize,
     marker: PhantomData<(O, C)>,
+}
+
+impl<C, P, O> Debug for RegexCollect<C, P, O>
+where
+    P: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RegexCollect")
+            .field("pat", &self.pat)
+            .field("min", &self.min)
+            .finish()
+    }
 }
 
 impl<C, P, O> Clone for RegexCollect<C, P, O>

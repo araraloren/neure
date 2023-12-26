@@ -9,29 +9,11 @@ use crate::neu::CRange;
 use crate::re::trace_v;
 use crate::re::Regex;
 
+/// Repeatedly match regex `P`, and the number of matches must meet the given range.
 ///
-/// Match `P` repeatedly.
+/// # Regex
 ///
-/// # Ctor
-///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a collection of `P`'s match results.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let char = neu::any().repeat_one();
-///     let num = char.ws().repeat(1..);
-///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);
-///
-///     assert_eq!(ctx.ctor(&num)?, ["你", "好", "，", "世", "界", "？"]);
-///     Ok(())
-/// # }
-/// ```
+/// It will return a [`Vec`] of `P`'s match results.
 #[derive(Debug, Copy)]
 pub struct RegexRepeat<C, P> {
     pat: P,

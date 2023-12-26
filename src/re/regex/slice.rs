@@ -8,6 +8,11 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
+/// Match given slice in the [`Context`].
+///
+/// # Regex
+///
+/// Return a [`Span`] as match result.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RegexSlice<'a, T> {
     val: &'a [T],
@@ -57,6 +62,11 @@ where
     }
 }
 
+/// Match given string in the [`Context`].
+///
+/// # Regex
+///
+/// Return a [`Span`] as match result.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RegexString<'a> {
     val: &'a str,

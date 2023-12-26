@@ -7,41 +7,19 @@ use crate::err::Error;
 use crate::re::trace;
 use crate::re::Regex;
 
+/// First try to match `L`. If it succeeds, then try to match `R`.
 ///
-/// Match `P` and then match `T`.
+/// # Regex
 ///
-/// # Ctor
-///
-/// When using with [`ctor`](crate::ctx::RegexCtx::ctor),
-/// it will return a tuple of results of `L` and `R`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
-///     let str = neu::ascii_alphabetic().repeat_one_more();
-///     let str = str.quote("\"", "\"").map(Ok);
-///     let int = neu::digit(10).repeat_one_more();
-///     let int = int.map(re::map::from_str_radix::<i32>(10));
-///     let tuple = str.ws().then(",".ws())._0().then(int.ws());
-///     let tuple = tuple.quote("(", ")");
-///     let mut ctx = CharsCtx::new(r#"("Galaxy", 42)"#);
-///
-///     assert_eq!(ctx.ctor(&tuple)?, ("Galaxy", 42));
-///     Ok(())
-/// # }
-/// ```
+/// Return a tuple of result of `L` and result of `R`.
 #[derive(Debug, Default, Copy)]
-pub struct RegexAnd<C, L, R> {
+pub struct RegexThen<C, L, R> {
     left: L,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl<C, L, R> Clone for RegexAnd<C, L, R>
+impl<C, L, R> Clone for RegexThen<C, L, R>
 where
     L: Clone,
     R: Clone,
@@ -55,7 +33,7 @@ where
     }
 }
 
-impl<C, P, T> RegexAnd<C, P, T> {
+impl<C, P, T> RegexThen<C, P, T> {
     pub fn new(pat: P, then: T) -> Self {
         Self {
             left: pat,
@@ -91,7 +69,7 @@ impl<C, P, T> RegexAnd<C, P, T> {
     }
 }
 
-impl<'a, C, L, R> Regex<C> for RegexAnd<C, L, R>
+impl<'a, C, L, R> Regex<C> for RegexThen<C, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
@@ -103,10 +81,10 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let r_p = trace!("and", beg @ "left", g.try_mat(&self.left)?);
-        let r_t = trace!("and", beg @ "right", g.try_mat(&self.right)?);
+        let r_p = trace!("then", beg @ "left", g.try_mat(&self.left)?);
+        let r_t = trace!("then", beg @ "right", g.try_mat(&self.right)?);
 
-        trace!("and", beg => g.end(), true);
+        trace!("then", beg => g.end(), true);
         Ok((r_p, r_t))
     }
 }

@@ -29,16 +29,17 @@ pub use self::extract::Handler;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
-pub use self::regex::and;
 pub use self::regex::collect;
 pub use self::regex::into_dyn_regex;
 pub use self::regex::ltm;
 pub use self::regex::or;
 pub use self::regex::quote;
+pub use self::regex::re_map;
 pub use self::regex::repeat;
 pub use self::regex::sep;
 pub use self::regex::sep_collect;
 pub use self::regex::sep_once;
+pub use self::regex::then;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
 

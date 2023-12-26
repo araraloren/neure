@@ -1,21 +1,21 @@
 mod anchor;
-mod and;
 mod collect;
 mod dthen;
 mod dynamic;
 mod ltm;
+mod map;
 mod not;
 mod or;
 mod quote;
 mod repeat;
 mod sep;
 mod slice;
+mod then;
 
 pub use self::anchor::RegexConsume;
 pub use self::anchor::RegexConsumeAll;
 pub use self::anchor::RegexEnd;
 pub use self::anchor::RegexStart;
-pub use self::and::RegexAnd;
 pub use self::collect::RegexCollect;
 pub use self::dthen::DynamicCreateRegexThen;
 pub use self::dthen::DynamicCreateRegexThenHelper;
@@ -24,6 +24,7 @@ pub use self::dynamic::DynamicRegex;
 pub use self::dynamic::DynamicRegexHandler;
 pub use self::dynamic::DynamicRegexHelper;
 pub use self::ltm::RegexLongestTokenMatch;
+pub use self::map::RegexMap;
 pub use self::not::RegexNot;
 pub use self::or::RegexOr;
 pub use self::quote::RegexQuote;
@@ -33,6 +34,7 @@ pub use self::sep::RegexSepOnce;
 pub use self::sep::RegexSeparate;
 pub use self::slice::RegexSlice;
 pub use self::slice::RegexString;
+pub use self::then::RegexThen;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -40,8 +42,13 @@ use crate::ctx::Ret;
 use crate::neu::CRange;
 use crate::re::Regex;
 
+use super::map::MapSingle;
+
+/// First try to match `L`. If it succeeds, then try to match `R`.
 ///
-/// Match `P1` then `P2`.
+/// # Return
+///
+/// Return a tuple of result of `L` and result of `R`.
 ///
 /// # Example
 ///
@@ -50,23 +57,24 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 ///     color_eyre::install()?;
-///     let ip = re::string("127.0.0.1");
-///     let colon = ':'.repeat_one();
-///     let port = neu::digit(10).repeat_one_more();
-///     let local = ip.then(colon).then(port);
-///     let mut ctx = CharsCtx::new("127.0.0.1:8080");
+///     let val = neu::ascii_alphabetic().repeat_one_more();
+///     let num = neu::ascii_alphanumeric().repeat_one_more();
+///     let tuple = re::regex::then(val, num);
 ///
-///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
+///     assert_eq!(
+///         CharsCtx::new("abc42").try_mat_t(&tuple)?,
+///         (Span::new(0, 3), Span::new(3, 2))
+///     );
 ///     Ok(())
 /// # }
 /// ```
-pub fn and<'a, C, L, R>(left: L, right: R) -> RegexAnd<C, L, R>
+pub fn then<'a, C, L, R>(left: L, right: R) -> RegexThen<C, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    RegexAnd::new(left, right)
+    RegexThen::new(left, right)
 }
 
 ///
@@ -202,6 +210,33 @@ where
     RegexSepOnce::new(left, sep, right)
 }
 
+///
+/// Match the regex `P` repeatedly, and collect the result into given type `O`.
+///
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let val = neu::ascii_alphabetic().repeat_one();
+///     let vec = re::collect::<_, _, Vec<_>>(val, 1);
+///
+///     assert_eq!(
+///         CharsCtx::new("abcdf").try_mat_t(&vec)?,
+///         vec![
+///             Span::new(0, 1),
+///             Span::new(1, 1),
+///             Span::new(2, 1),
+///             Span::new(3, 1),
+///             Span::new(4, 1),
+///         ]
+///     );
+///     Ok(())
+/// # }
+/// ```
 pub fn collect<'a, C, P, O>(pat: P, min: usize) -> RegexCollect<C, P, O>
 where
     P: Regex<C>,
@@ -209,4 +244,13 @@ where
     C: Context<'a> + Match<C>,
 {
     RegexCollect::new(pat).at_least(min)
+}
+
+pub fn re_map<'a, C, P, F, I, O>(pat: P, func: F) -> RegexMap<C, P, F, O>
+where
+    F: MapSingle<I, O>,
+    P: Regex<C, Ret = I>,
+    C: Context<'a> + Match<C>,
+{
+    RegexMap::new(pat, func)
 }
