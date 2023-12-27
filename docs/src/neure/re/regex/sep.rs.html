@@ -399,6 +399,12 @@
 <a href="#399" id="399">399</a>
 <a href="#400" id="400">400</a>
 <a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
@@ -647,7 +653,8 @@
 
             <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
                 res.push(ret);
-            } <span class="kw">else </span>{
+            }
+            <span class="kw">if </span>sep_ret.is_err() {
                 <span class="kw">break</span>;
             }
         }
@@ -772,6 +779,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="prelude-val">Err</span>(Error::SepCollect);
         <span class="kw">let </span><span class="kw-2">mut </span>cnt = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>end = <span class="bool-val">false</span>;
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
         <span class="kw">let </span>val = <span class="macro">trace_v!</span>(
@@ -782,13 +790,17 @@
                 g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.pat).ok().and_then(|ret| {
                     <span class="kw">let </span>sep_ret = g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep);
 
-                    <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
-                        cnt += <span class="number">1</span>;
-                        <span class="prelude-val">Some</span>(ret)
-                    } <span class="kw">else </span>{
-                        <span class="prelude-val">None
-                    </span>}
-                })
+                    <span class="kw">if </span>!end {
+                        <span class="kw">if </span>sep_ret.is_err() {
+                            end = <span class="bool-val">true</span>;
+                        }
+                        <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
+                            cnt += <span class="number">1</span>;
+                            <span class="kw">return </span><span class="prelude-val">Some</span>(ret);
+                        }
+                    }
+                    <span class="prelude-val">None
+                </span>})
             }))
         );
 
