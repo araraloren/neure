@@ -640,6 +640,14 @@
 <a href="#640" id="640">640</a>
 <a href="#641" id="641">641</a>
 <a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -1011,7 +1019,8 @@
 
             <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
                 res.push(ret);
-            } <span class="kw">else </span>{
+            }
+            <span class="kw">if </span>sep_ret.is_err() {
                 <span class="kw">break</span>;
             }
         }
@@ -1054,7 +1063,8 @@
                 <span class="kw">if let </span><span class="prelude-val">Ok</span>(sep_ret) = sep_ret {
                     span.add_assign(sep_ret);
                 }
-            } <span class="kw">else </span>{
+            }
+            <span class="kw">if </span>sep_ret.is_err() {
                 <span class="kw">break</span>;
             }
         }
@@ -1216,6 +1226,7 @@
     {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span><span class="kw-2">mut </span>cnt = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>end = <span class="bool-val">false</span>;
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
         <span class="kw">let </span>ret = {
@@ -1225,13 +1236,17 @@
                     <span class="kw">let </span>sep_ret =
                         <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg @ <span class="string">&quot;sep&quot;</span>, g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep));
 
-                    <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
-                        cnt += <span class="number">1</span>;
-                        <span class="prelude-val">Some</span>(ret)
-                    } <span class="kw">else </span>{
-                        <span class="prelude-val">None
-                    </span>}
-                })
+                    <span class="kw">if </span>!end {
+                        <span class="kw">if </span>sep_ret.is_err() {
+                            end = <span class="bool-val">true</span>;
+                        }
+                        <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
+                            cnt += <span class="number">1</span>;
+                            <span class="kw">return </span><span class="prelude-val">Some</span>(ret);
+                        }
+                    }
+                    <span class="prelude-val">None
+                </span>})
             }))
         };
         <span class="kw">let </span>ret = g.process_ret(<span class="kw">if </span>cnt &gt;= <span class="self">self</span>.min {
@@ -1272,7 +1287,8 @@
                 <span class="kw">if let </span><span class="prelude-val">Ok</span>(sep_ret) = sep_ret {
                     span.add_assign(sep_ret);
                 }
-            } <span class="kw">else </span>{
+            }
+            <span class="kw">if </span>sep_ret.is_err() {
                 <span class="kw">break</span>;
             }
         }
