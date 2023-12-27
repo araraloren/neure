@@ -246,7 +246,8 @@ where
 
             if sep_ret.is_ok() || self.skip {
                 res.push(ret);
-            } else {
+            }
+            if sep_ret.is_err() {
                 break;
             }
         }
@@ -371,6 +372,7 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut ret = Err(Error::SepCollect);
         let mut cnt = 0;
+        let mut end = false;
         let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
         let val = trace_v!(
@@ -381,12 +383,16 @@ where
                 g.try_mat(&self.pat).ok().and_then(|ret| {
                     let sep_ret = g.try_mat(&self.sep);
 
-                    if sep_ret.is_ok() || self.skip {
-                        cnt += 1;
-                        Some(ret)
-                    } else {
-                        None
+                    if !end {
+                        if sep_ret.is_err() {
+                            end = true;
+                        }
+                        if sep_ret.is_ok() || self.skip {
+                            cnt += 1;
+                            return Some(ret);
+                        }
                     }
+                    None
                 })
             }))
         );

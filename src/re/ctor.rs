@@ -457,6 +457,8 @@ where
     }
 
     ///
+    /// Call [`.try_mat`](crate::ctx::Match#tymethod.try_mat) to match regex `P`.
+    ///
     /// # Example
     ///
     /// ```
@@ -480,10 +482,32 @@ where
         Pattern::new(self)
     }
 
+    /// Match `P` and return the result wrapped by `Option`, ignoring the error.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let num = neu::digit(10)
+    ///         .repeat_one_more()
+    ///         .map(re::map::from_str::<usize>())
+    ///         .opt();
+    ///
+    ///     assert_eq!(CharsCtx::new("foo").ctor(&num)?, None);
+    ///     assert_eq!(CharsCtx::new("955").ctor(&num)?, Some(955));
+    ///     Ok(())
+    /// # }
+    /// ```
     fn opt(self) -> OptionPat<C, Self> {
         OptionPat::new(self)
     }
 
+    ///
+    /// First try to match `L`. If it is succeeds, then try to match `P`.
+    /// If it is succeeds, then try to match `R`.
     ///
     /// # Example
     ///
@@ -508,6 +532,8 @@ where
     }
 
     ///
+    /// Match regex `P` as many times as possible, with S as the delimiter.
+    ///
     /// # Example
     ///
     /// ```
@@ -529,6 +555,8 @@ where
         Separate::new(self, sep)
     }
 
+    ///
+    /// Match `L` and `R` separated by `S`.
     ///
     /// # Example
     ///
@@ -561,6 +589,8 @@ where
         SepOnce::new(self, sep, right)
     }
 
+    ///
+    /// Match regex `P` as many times as possible, with S as the delimiter.
     ///
     /// # Example
     ///
@@ -597,6 +627,8 @@ where
     }
 
     ///
+    /// First try to match `L`, if it fails, then try to match `R`.
+    ///
     /// # Example
     ///
     /// ```
@@ -629,6 +661,8 @@ where
     }
 
     ///
+    /// Match `L` and `R`, return the longest match result.
+    ///
     /// # Example
     ///
     /// ```
@@ -654,6 +688,8 @@ where
     }
 
     ///
+    /// First try to match `P`. If it succeeds, then try to match `T`.
+    ///
     /// # Example
     ///
     /// ```
@@ -677,6 +713,43 @@ where
         Then::new(self, then)
     }
 
+    ///
+    /// First try to match `P`. If it succeeds, then try to match `I`.
+    /// If it succeeds, then try to match `T`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let sp = neu::whitespace().repeat_full();
+    ///     let using = "use"
+    ///         .sep_once(
+    ///             "",
+    ///             neu::ascii_alphanumeric()
+    ///                 .or('*')
+    ///                 .or('_')
+    ///                 .repeat_one_more()
+    ///                 .sep("::"),
+    ///         )
+    ///         ._1()
+    ///         .if_then("as", neu::ascii_alphanumeric().repeat_one_more());
+    ///
+    ///     for (str, res) in [
+    ///         (
+    ///             "use neure::prelude::*",
+    ///             (vec!["neure", "prelude", "*"], None),
+    ///         ),
+    ///         ("use neure as regex", (vec!["neure"], Some("regex"))),
+    ///     ] {
+    ///         assert_eq!(CharsCtx::new(str).ignore(sp).ctor(&using)?, res);
+    ///     }
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn if_then<I, P>(self, r#if: I, then: P) -> IfThen<C, Self, I, P> {
         IfThen::new(self, r#if, then)
     }
