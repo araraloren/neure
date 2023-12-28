@@ -65,7 +65,7 @@ mod neure_json {
         }
 
         pub fn parser<'a: 'b, 'b>(
-            regex: RecursiveCtor<'b, BytesCtx<'a>, Json>,
+            ctor: RecursiveCtor<'b, BytesCtx<'a>, Json>,
         ) -> impl Fn(&mut BytesCtx<'a>) -> Result<Json, Error> + 'b {
             move |ctx| {
                 let ws = u8::is_ascii_whitespace.repeat_full();
@@ -99,7 +99,7 @@ mod neure_json {
                 let bool_f = re::slice(b"false").map(|_| Ok(Json::Bool(false)));
                 let null = re::slice(b"null").map(|_| Ok(Json::Null));
 
-                let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(regex.clone())))));
+                let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
                 let ele = ele.pad(ws).padded(ws);
                 let ele = Rc::new(ele);
 
@@ -147,7 +147,7 @@ mod neure_json_zero {
         }
 
         pub fn parser<'a: 'b, 'b>(
-            regex: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
+            ctor: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
         ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
             move |ctx| {
                 let ws = u8::is_ascii_whitespace.repeat_full();
@@ -174,7 +174,7 @@ mod neure_json_zero {
                 let bool_f = re::slice(b"false").map(|_| Ok(JsonZero::Bool(false)));
                 let null = re::slice(b"null").map(|_| Ok(JsonZero::Null));
 
-                let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(regex.clone())))));
+                let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
                 let ele = ele.pad(ws).padded(ws);
                 let ele = std::rc::Rc::new(ele);
 

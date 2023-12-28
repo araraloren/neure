@@ -755,6 +755,8 @@ where
     }
 
     ///
+    /// Repeatedly match regex `P`, and the number of matches must meet the given range.
+    ///
     /// # Example
     ///
     /// ```
@@ -775,10 +777,54 @@ where
         Repeat::new(self, range)
     }
 
+    ///
+    /// Repeatedly match the regex `P` at least [`min`](crate::re::ctor::Collect#tymethod.min) times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let val = re::consume(2)
+    ///         .map(re::map::from_le_bytes::<i16>())
+    ///         .collect::<_, Vec<_>>();
+    ///
+    ///     assert_eq!(
+    ///         BytesCtx::new(b"\x2f\0\x1f\0\x0f\0").ctor(&val)?,
+    ///         vec![0x2f, 0x1f, 0x0f]
+    ///     );
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn collect<O, V>(self) -> Collect<C, Self, O, V> {
         Collect::new(self)
     }
 
+    ///
+    /// Construct a branch struct base on the test `I`(Fn(&C) -> Result<bool, Error>).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let val = "file://".r#if(
+    ///         // test if it is a file url
+    ///         |ctx: &CharsCtx| Ok(ctx.orig()?.starts_with("file")),
+    ///         "http://",
+    ///     );
+    ///
+    ///     assert_eq!(CharsCtx::new("file://").ctor(&val)?, "file://");
+    ///     assert_eq!(CharsCtx::new("http://").ctor(&val)?, "http://");
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>,
@@ -786,6 +832,8 @@ where
         IfRegex::new(self, r#if, r#else)
     }
 
+    ///
+    /// First try to match `P`. If the match succeeds, then try to match `T`.
     ///
     /// # Example
     ///
@@ -813,6 +861,8 @@ where
     }
 
     ///  
+    /// First try to match `T`. If it succeeds, try to match `P`.
+    ///
     /// # Example
     ///
     /// ```
@@ -847,6 +897,24 @@ where
         PaddedUnit::new(self, pat)
     }
 
+    /// A shortcut for matching trailing ascii spaces.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let str = "file://      ";
+    ///     let val = "file://".ws();
+    ///
+    ///     assert_eq!(CharsCtx::new(str).ctor(&val)?, "file://");
+    ///     assert_eq!(CharsCtx::new(str).try_mat(&val)?, Span::new(0, 13));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
     fn ws(self) -> PadUnit<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>,

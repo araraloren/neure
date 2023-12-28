@@ -78,7 +78,8 @@ where
 }
 
 ///
-/// Match `P1` or `P2`.
+/// First try to match `L`, if it fails, then try to match `R`.
+/// Return the result of either `L` or `R`.
 ///
 /// # Example
 ///
@@ -89,14 +90,14 @@ where
 ///     color_eyre::install()?;
 ///     let name = re::string("localhost");
 ///     let ip = re::string("127.0.0.1");
-///     let local = name.or(ip);
-///     let local = local.then(":8080");
-///     let mut ctx = CharsCtx::new("127.0.0.1:8080");
+///     let local = re::or(name, ip);
+///     let mut ctx = CharsCtx::new("127.0.0.1");
 ///
-///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
-///     let mut ctx = CharsCtx::new("localhost:8080");
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 9));
+///     let mut ctx = CharsCtx::new("localhost");
 ///
-///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 9));
+///
 ///     Ok(())
 /// # }
 /// ```
@@ -110,6 +111,33 @@ where
     RegexOr::new(left, right)
 }
 
+/// Match `L` and `R`, return the longest match result.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let name = re::string("localhost");
+///     let ip = re::string("8080");
+///     let withip = name.sep_once(":", ip);
+///     let local = re::or(name, withip);
+///     let mut ctx = CharsCtx::new("localhost:8080");
+///
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 9));
+///     let local = re::ltm(name, withip);
+///     let mut ctx = CharsCtx::new("localhost");
+///
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 9));
+///     let mut ctx = CharsCtx::new("localhost:8080");
+///
+///     assert_eq!(ctx.try_mat(&local)?, Span::new(0, 14));
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn ltm<'a, C, O, L, R>(left: L, right: R) -> RegexLongestTokenMatch<C, L, R>
 where
     O: Ret,
@@ -121,7 +149,9 @@ where
 }
 
 ///
-/// Match the `P` enclosed by `L` and `R`.
+/// First try to match `L`. If it is succeeds, then try to match `P`.
+/// If it is succeeds, then try to match `R`.
+/// It will return the result of `P`, ignoring the result of `L` and `R`.
 ///
 /// # Example
 ///
@@ -153,6 +183,33 @@ where
     RegexQuote::new(pat, left, right)
 }
 
+/// Repeatedly match regex `P`, and the number of matches must meet the given range.
+/// It will return a [`Vec`] of `P`'s match results.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let name = re::string("foo");
+///     let names = re::repeat(name, 1..5);
+///     let mut ctx = CharsCtx::new("foofoofoofoo");
+///
+///     assert_eq!(
+///         ctx.try_mat_t(&names)?,
+///         vec![
+///             Span::new(0, 3),
+///             Span::new(3, 3),
+///             Span::new(6, 3),
+///             Span::new(9, 3)
+///         ]
+///     );
+///
+///     Ok(())
+/// # }
+/// ```
 pub fn repeat<'a, C, P, R>(pat: P, range: R) -> RegexRepeat<C, P>
 where
     P: Regex<C>,
@@ -163,7 +220,9 @@ where
 }
 
 ///
-/// Match the `P` terminated by `S`, return the return value of `P`.
+/// Match regex `P` as many times as possible, with S as the delimiter.
+/// It will return a [`Vec`] of `P`'s match results.
+/// Set `skip` to `true` if the last delimiter is optional.
 ///
 /// # Example
 ///
@@ -190,16 +249,39 @@ where
     RegexSeparate::new(pat, sep).with_skip(skip)
 }
 
-pub fn sep_collect<'a, C, S, P, T>(pat: P, sep: S, skip: bool) -> RegexSepCollect<C, P, S, T>
+/// Match regex `P` as many times as possible, with S as the delimiter.
+/// It will return a `T` that can constructed from `P`'s match results
+/// using [`from_iter`](std::iter::FromIterator::from_iter).
+///
+/// # Notice
+///
+/// `SepCollect` will always succeed if the minimum size is 0, be careful to use it with other `.sep` faimly APIs.
+/// The default size is 1.
+///
+/// # Example
+///
+/// ```
+/// ```
+pub fn sep_collect<'a, C, P, T>(
+    pat: P,
+    sep: impl Regex<C>,
+    skip: bool,
+) -> RegexSepCollect<C, P, impl Regex<C>, T>
 where
     P: Regex<C>,
-    S: Regex<C>,
     T: FromIterator<P::Ret>,
     C: Context<'a> + Match<C>,
 {
     RegexSepCollect::new(pat, sep).with_skip(skip)
 }
 
+/// Match `L` and `R` separated by `S`.
+/// It will return a tuple of results of `L` and `R`.
+///
+/// # Example
+///
+/// ```
+/// ```
 pub fn sep_once<'a, C, L, S, R>(left: L, sep: S, right: R) -> RegexSepOnce<C, L, S, R>
 where
     L: Regex<C>,
@@ -211,7 +293,7 @@ where
 }
 
 ///
-/// Match the regex `P` repeatedly, and collect the result into given type `O`.
+/// Match the regex `P` repeatedly, and collect the result into given type `T`.
 ///
 ///
 /// # Example
@@ -237,19 +319,19 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn collect<'a, C, P, O>(pat: P, min: usize) -> RegexCollect<C, P, O>
+pub fn collect<'a, C, P, T>(pat: P, min: usize) -> RegexCollect<C, P, T>
 where
     P: Regex<C>,
-    O: FromIterator<P::Ret>,
+    T: FromIterator<P::Ret>,
     C: Context<'a> + Match<C>,
 {
     RegexCollect::new(pat).at_least(min)
 }
 
-pub fn re_map<'a, C, P, F, I, O>(pat: P, func: F) -> RegexMap<C, P, F, O>
+pub fn re_map<'a, C, P, F, O>(pat: P, func: F) -> RegexMap<C, P, F, O>
 where
-    F: MapSingle<I, O>,
-    P: Regex<C, Ret = I>,
+    P: Regex<C>,
+    F: MapSingle<P::Ret, O>,
     C: Context<'a> + Match<C>,
 {
     RegexMap::new(pat, func)

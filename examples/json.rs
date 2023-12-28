@@ -35,7 +35,7 @@ impl JsonParser {
     }
 
     pub fn parser<'a: 'b, 'b>(
-        regex: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
+        ctor: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
     ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
         move |ctx| {
             let ws = u8::is_ascii_whitespace.repeat_full();
@@ -62,7 +62,7 @@ impl JsonParser {
             let bool_f = re::slice(b"false").map(|_| Ok(JsonZero::Bool(false)));
             let null = re::slice(b"null").map(|_| Ok(JsonZero::Null));
 
-            let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(regex.clone())))));
+            let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
             let ele = ele.pad(ws).padded(ws);
 
             let key = re!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
@@ -74,7 +74,7 @@ impl JsonParser {
                 .quote(b"{", b"}")
                 .map(|v| Ok(JsonZero::Object(v)));
 
-            let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(regex.clone())))));
+            let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
             let ele = ele.pad(ws).padded(ws);
 
             let array = ele.sep(b",").quote(b"[", b"]");
