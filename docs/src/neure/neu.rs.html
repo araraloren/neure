@@ -1054,7 +1054,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = vec![&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;];
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1085,7 +1085,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = (Bound::Included(&amp;&#39;a&#39;), Bound::Excluded(&amp;&#39;g&#39;));
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1111,7 +1111,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = (Bound::Included(&#39;a&#39;), Bound::Excluded(&#39;g&#39;));
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1136,7 +1136,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = &amp;&#39;a&#39; .. &amp;&#39;g&#39;;
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1161,7 +1161,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = &#39;a&#39; .. &#39;g&#39;;
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1186,7 +1186,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let from = &amp;&#39;a&#39; ..;
 ///     let from = re!((from){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1211,7 +1211,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let from = &#39;a&#39; ..;
 ///     let from = re!((from){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1236,7 +1236,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let full = ..;
 ///     let full = re!((full){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1261,7 +1261,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = &amp;&#39;a&#39; ..= &amp;&#39;f&#39;;
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1286,7 +1286,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = &#39;a&#39; ..= &#39;f&#39;;
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1311,7 +1311,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = .. &amp;&#39;g&#39;;
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1336,7 +1336,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = .. &#39;g&#39;;
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1361,7 +1361,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = ..= &amp;&#39;f&#39;;
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1386,7 +1386,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = ..= &#39;f&#39;;
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
@@ -1551,7 +1551,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let digit = neu::digit(10);
 ///     let hex = neu::digit(16);
 ///

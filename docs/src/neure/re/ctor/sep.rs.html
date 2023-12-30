@@ -691,7 +691,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let ele = neu::digit(10).repeat_times::&lt;2&gt;();
 ///     let sep = &quot;:&quot;;
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
@@ -867,7 +867,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     #[derive(Debug, PartialEq, PartialOrd)]
 ///     pub struct Tp&lt;&#39;a&gt;(&amp;&#39;a str);
 ///
@@ -1106,7 +1106,7 @@
 /// # use neure::{prelude::*, re::map::FromStr};
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let digit = neu::digit(10).repeat_one_more();
 ///     let val = digit.map(FromStr::&lt;i64&gt;::new());
 ///     let vals = val.sep_collect::&lt;_, _, Vec&lt;i64&gt;&gt;(&quot;,&quot;.ws());

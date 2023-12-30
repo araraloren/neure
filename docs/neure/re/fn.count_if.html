@@ -6,8 +6,7 @@
     U: <a class="trait" href="../neu/trait.Neu.html" title="trait neure::neu::Neu">Neu</a>&lt;C::<a class="associatedtype" href="../ctx/trait.Context.html#associatedtype.Item" title="type neure::ctx::Context::Item">Item</a>&gt;,
     F: <a class="trait" href="../neu/trait.NeuCond.html" title="trait neure::neu::NeuCond">NeuCond</a>&lt;'a, C&gt;,</span></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Match the given <code>Neu</code> M ..= N times.</p>
 <h2 id="example"><a href="#example">Example</a></h2>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>website = re::count_if::&lt;<span class="number">0</span>, { usize::MAX }, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>&gt;(
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>website = re::count_if::&lt;<span class="number">0</span>, { usize::MAX }, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>&gt;(
         (<span class="string">&#39;a&#39;</span>..<span class="string">&#39;{&#39;</span>).or(<span class="string">&#39;.&#39;</span>),
         |ctx: <span class="kw-2">&amp;</span>CharsCtx, pair: <span class="kw-2">&amp;</span>(usize, char)| {
             <span class="prelude-val">Ok</span>(pair.<span class="number">1 </span>!= <span class="string">&#39;.&#39;

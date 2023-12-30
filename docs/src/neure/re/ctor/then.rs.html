@@ -389,7 +389,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
 ///     let str = str.quote(&quot;\&quot;&quot;, &quot;\&quot;&quot;).map(Ok);
 ///     let int = neu::digit(10).repeat_one_more();
@@ -544,7 +544,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let val = neu::ascii_alphabetic().repeat_one_more().ws();
 ///     let tuple = val.if_then(&quot;,&quot;.ws(), val).quote(&quot;(&quot;, &quot;)&quot;);
 ///
