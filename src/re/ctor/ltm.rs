@@ -6,6 +6,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -45,6 +46,8 @@ pub struct LongestTokenMatch<C, L, R> {
     right: R,
     marker: PhantomData<C>,
 }
+
+def_not!(LongestTokenMatch<C, L, R>);
 
 impl<C, L, R> Debug for LongestTokenMatch<C, L, R>
 where

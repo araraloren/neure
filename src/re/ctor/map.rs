@@ -5,6 +5,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::map::MapSingle;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -76,7 +77,7 @@ use crate::re::Regex;
 ///
 ///     assert_eq!(id, 777);
 ///
-///     let (span, id) = CharsCtx::new("777").map(&num, |v: &str, span: Span| {
+///     let (span, id) = CharsCtx::new("777").map_with(&num, |v: &str, span: Span| {
 ///         Ok((span, v.parse::<i32>().map_err(|_| Error::Uid(0))?))
 ///     })?;
 ///
@@ -92,6 +93,8 @@ pub struct Map<C, P, F, O> {
     mapper: F,
     marker: PhantomData<(C, O)>,
 }
+
+def_not!(Map<C, P, F, O>);
 
 impl<C, P, F, O> Debug for Map<C, P, F, O>
 where

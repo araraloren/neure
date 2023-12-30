@@ -2,6 +2,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -12,6 +13,8 @@ pub type DynamicRegexHandler<'a, C, R> = Box<dyn Fn(&mut C) -> Result<R, Error> 
 pub struct DynamicRegex<'a, C, R> {
     inner: DynamicRegexHandler<'a, C, R>,
 }
+
+def_not!(DynamicRegex<'a, C, R>);
 
 impl<'a, C, R> DynamicRegex<'a, C, R> {
     pub fn new(inner: DynamicRegexHandler<'a, C, R>) -> Self {

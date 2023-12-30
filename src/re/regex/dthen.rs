@@ -8,6 +8,7 @@ use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::ctor::Map;
+use crate::re::def_not;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
@@ -20,6 +21,8 @@ pub struct DynamicCreateRegexThen<C, P, F> {
     func: F,
     marker: PhantomData<C>,
 }
+
+def_not!(DynamicCreateRegexThen<C, P, F>);
 
 impl<C, P, F> Debug for DynamicCreateRegexThen<C, P, F>
 where

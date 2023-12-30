@@ -7,6 +7,7 @@ use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -49,6 +50,8 @@ pub struct Quote<C, P, L, R> {
     right: R,
     marker: PhantomData<C>,
 }
+
+def_not!(Quote<C, P, L, R>);
 
 impl<C, P, L, R> Debug for Quote<C, P, L, R>
 where

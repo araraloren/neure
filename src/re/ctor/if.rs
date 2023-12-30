@@ -6,6 +6,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -50,6 +51,8 @@ pub struct IfRegex<C, P, I, E> {
     r#else: E,
     marker: PhantomData<C>,
 }
+
+def_not!(IfRegex<C, P, I, E>);
 
 impl<C, P, I, E> Debug for IfRegex<C, P, I, E>
 where

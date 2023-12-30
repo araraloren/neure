@@ -7,6 +7,7 @@ use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -43,6 +44,8 @@ pub struct Collect<C, P, O, V> {
     min: usize,
     marker: PhantomData<(O, V, C)>,
 }
+
+def_not!(Collect<C, P, O, V>);
 
 impl<C, P, O, V> Debug for Collect<C, P, O, V>
 where

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctx::Context;
@@ -7,13 +8,28 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Regex;
 
+use super::def_not;
 use super::trace;
 use super::Ctor;
 use super::Extract;
 use super::Handler;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NullRegex<R>(PhantomData<R>);
+
+def_not!(NullRegex<R>);
+
+impl<R> Debug for NullRegex<R> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("NullRegex").field(&self.0).finish()
+    }
+}
+
+impl<R> Clone for NullRegex<R> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
 
 impl<R> NullRegex<R> {
     pub fn new() -> Self {

@@ -9,9 +9,13 @@ use crate::re::Regex;
 
 use std::cell::Cell;
 use std::cell::RefCell;
+use std::fmt::Debug;
+use std::marker::PhantomData;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
+
+use super::def_not;
 
 pub trait RegexIntoOp<'a, C>
 where
@@ -94,13 +98,35 @@ where
     }
 }
 
-use std::marker::PhantomData;
-
 // into_box
-#[derive(Debug, Clone)]
 pub struct BoxedRegex<C, T> {
     inner: Box<T>,
     marker: PhantomData<C>,
+}
+
+def_not!(BoxedRegex<C, T>);
+
+impl<C, T> Debug for BoxedRegex<C, T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BoxedRegex")
+            .field("inner", &self.inner)
+            .finish()
+    }
+}
+
+impl<C, T> Clone for BoxedRegex<C, T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            marker: self.marker,
+        }
+    }
 }
 
 impl<C, T> BoxedRegex<C, T> {

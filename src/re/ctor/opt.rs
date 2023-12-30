@@ -7,6 +7,7 @@ use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -43,6 +44,8 @@ pub struct OptionPat<C, P> {
     pat: P,
     marker: PhantomData<C>,
 }
+
+def_not!(OptionPat<C, P>);
 
 impl<C, P> Debug for OptionPat<C, P>
 where

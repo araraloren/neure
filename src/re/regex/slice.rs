@@ -2,6 +2,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -17,6 +18,8 @@ use crate::re::Regex;
 pub struct RegexSlice<'a, T> {
     val: &'a [T],
 }
+
+def_not!(RegexSlice<'a, T>);
 
 impl<'a, T> RegexSlice<'a, T> {
     pub fn new(val: &'a [T]) -> Self {
@@ -71,6 +74,8 @@ where
 pub struct RegexString<'a> {
     val: &'a str,
 }
+
+def_not!(RegexString<'a>);
 
 impl<'a> RegexString<'a> {
     pub fn new(val: &'a str) -> Self {

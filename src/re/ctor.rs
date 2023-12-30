@@ -35,8 +35,8 @@ pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
 pub use self::or::Or;
-pub use self::pad::PadUnit;
-pub use self::pad::PaddedUnit;
+pub use self::pad::Pad;
+pub use self::pad::Padded;
 pub use self::pat::Pattern;
 pub use self::quote::Quote;
 pub use self::r#if::branch;
@@ -420,7 +420,7 @@ where
 
     fn sep_once<S, R>(self, sep: S, right: R) -> SepOnce<C, Self, S, R>;
 
-    fn sep_collect<S, O, T>(self, sep: S) -> SepCollect<C, Self, S, O, T>;
+    fn sep_collect<S, O, V>(self, sep: S) -> SepCollect<C, Self, S, O, V>;
 
     fn or<P>(self, pat: P) -> Or<C, Self, P>;
 
@@ -438,11 +438,11 @@ where
     where
         I: Fn(&C) -> Result<bool, Error>;
 
-    fn pad<T>(self, tail: T) -> PadUnit<C, Self, T>;
+    fn pad<T>(self, tail: T) -> Pad<C, Self, T>;
 
-    fn padded<T>(self, tail: T) -> PaddedUnit<C, Self, T>;
+    fn padded<T>(self, tail: T) -> Padded<C, Self, T>;
 
-    fn ws(self) -> PadUnit<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    fn ws(self) -> Pad<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>;
 }
@@ -856,8 +856,8 @@ where
     /// # }
     /// ```
     ///
-    fn pad<P>(self, pat: P) -> PadUnit<C, Self, P> {
-        PadUnit::new(self, pat)
+    fn pad<P>(self, pat: P) -> Pad<C, Self, P> {
+        Pad::new(self, pat)
     }
 
     ///  
@@ -893,8 +893,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn padded<P>(self, pat: P) -> PaddedUnit<C, Self, P> {
-        PaddedUnit::new(self, pat)
+    fn padded<P>(self, pat: P) -> Padded<C, Self, P> {
+        Padded::new(self, pat)
     }
 
     /// A shortcut for matching trailing ascii spaces.
@@ -915,10 +915,10 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn ws(self) -> PadUnit<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    fn ws(self) -> Pad<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>,
     {
-        PadUnit::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
+        Pad::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
     }
 }

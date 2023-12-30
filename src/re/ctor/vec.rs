@@ -6,6 +6,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -13,8 +14,30 @@ use crate::re::Regex;
 
 use super::Ctor;
 
+///
+/// Iterate over the vector and match the regex against the [`Context`].
+///
+/// # Ctor
+///
+/// Return the result of first regex that matches.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let tuple = re::vector(["a".into_dyn_box(), "b".into_dyn_box(), "c".into_dyn_box()]);
+///
+///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone)]
 pub struct Vector<T>(Vec<T>);
+
+def_not!(Vector<T>);
 
 impl<T> Vector<T> {
     pub fn new(val: Vec<T>) -> Self {
@@ -90,8 +113,37 @@ where
     }
 }
 
+///
+/// Iterate over the vector and match the regex against the [`Context`].
+///
+/// # Ctor
+///
+/// Return a pair of result and the value of first pair that matches.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+///     pub enum Kind {
+///         A,
+///         B,
+///         C,
+///     }
+///     let vec = re::pair_vector([("a", Kind::A), ("b", Kind::B), ("c", Kind::C)]);
+///
+///     assert_eq!(CharsCtx::new("cab").ctor(&vec)?, ("c", Kind::C));
+///
+///     Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone)]
 pub struct PairVector<K, V>(Vec<(K, V)>);
+
+def_not!(PairVector<K, V>);
 
 impl<K, V> PairVector<K, V> {
     pub fn new(val: Vec<(K, V)>) -> Self {
@@ -113,14 +165,14 @@ impl<K, V> DerefMut for PairVector<K, V> {
     }
 }
 
-impl<'a, C, K, V, M> Ctor<'a, C, M, V> for PairVector<K, V>
+impl<'a, C, K, M, O, V> Ctor<'a, C, M, (O, V)> for PairVector<K, V>
 where
     V: Clone,
-    K: Regex<C, Ret = Span>,
+    K: Ctor<'a, C, M, O>,
     C: Context<'a> + Match<C>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -129,13 +181,13 @@ where
         let beg = g.beg();
 
         for (regex, value) in self.0.iter() {
-            let ret = trace!("pair_vec", beg, g.try_mat(regex));
+            let ret = trace!("pair_vec", beg, regex.constrct(g.ctx(), func));
 
             if ret.is_ok() {
-                let _ = func.invoke(A::extract(g.ctx(), &ret?)?)?;
-
                 trace!("pair_vec", beg -> g.end(), true);
-                return Ok(value.clone());
+                return Ok((ret?, value.clone()));
+            } else {
+                g.reset();
             }
         }
         Err(Error::PairVec)

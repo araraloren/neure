@@ -5,6 +5,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -42,6 +43,8 @@ pub struct Pattern<C, P> {
     pat: P,
     marker: PhantomData<C>,
 }
+
+def_not!(Pattern<C, P>);
 
 impl<C, P> Debug for Pattern<C, P>
 where

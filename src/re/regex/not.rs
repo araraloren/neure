@@ -4,6 +4,7 @@ use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -25,6 +26,8 @@ impl<T> RegexNot<T> {
         Self { val }
     }
 }
+
+def_not!(RegexNot<T>);
 
 impl<'a, C, O, T> Ctor<'a, C, O, O> for RegexNot<T>
 where

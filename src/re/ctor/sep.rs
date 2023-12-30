@@ -8,6 +8,7 @@ use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
+use crate::re::def_not;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
@@ -51,6 +52,8 @@ pub struct SepOnce<C, L, S, R> {
     right: R,
     marker: PhantomData<C>,
 }
+
+def_not!(SepOnce<C, L, S, R>);
 
 impl<C, L, S, R> Debug for SepOnce<C, L, S, R>
 where
@@ -231,6 +234,8 @@ pub struct Separate<C, P, S> {
     min: usize,
     marker: PhantomData<C>,
 }
+
+def_not!(Separate<C, P, S>);
 
 impl<C, P, S> Debug for Separate<C, P, S>
 where
@@ -430,7 +435,7 @@ where
 ///
 /// # Ctor
 ///
-/// It will return a `T` that can constructed from `P`'s match results
+/// It will return a `V` that can constructed from `P`'s match results
 /// using [`from_iter`](std::iter::FromIterator::from_iter).
 ///
 /// # Notice
@@ -456,15 +461,17 @@ where
 /// # }
 /// ```
 #[derive(Default, Copy)]
-pub struct SepCollect<C, P, S, O, T> {
+pub struct SepCollect<C, P, S, O, V> {
     pat: P,
     sep: S,
     skip: bool,
     min: usize,
-    marker: PhantomData<(C, O, T)>,
+    marker: PhantomData<(C, O, V)>,
 }
 
-impl<C, P, S, O, T> Debug for SepCollect<C, P, S, O, T>
+def_not!(SepCollect<C, P, S, O, V>);
+
+impl<C, P, S, O, V> Debug for SepCollect<C, P, S, O, V>
 where
     P: Debug,
     S: Debug,
@@ -479,7 +486,7 @@ where
     }
 }
 
-impl<C, P, S, O, T> Clone for SepCollect<C, P, S, O, T>
+impl<C, P, S, O, V> Clone for SepCollect<C, P, S, O, V>
 where
     P: Clone,
     S: Clone,
@@ -495,7 +502,7 @@ where
     }
 }
 
-impl<C, P, S, O, T> SepCollect<C, P, S, O, T> {
+impl<C, P, S, O, V> SepCollect<C, P, S, O, V> {
     pub fn new(pat: P, sep: S) -> Self {
         Self {
             pat,
@@ -561,15 +568,15 @@ impl<C, P, S, O, T> SepCollect<C, P, S, O, T> {
     }
 }
 
-impl<'a, C, S, P, M, O, T> Ctor<'a, C, M, T> for SepCollect<C, P, S, O, T>
+impl<'a, C, S, P, M, O, V> Ctor<'a, C, M, V> for SepCollect<C, P, S, O, V>
 where
-    T: FromIterator<O>,
+    V: FromIterator<O>,
     P: Ctor<'a, C, M, O>,
     S: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<T, Error>
+    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
     where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -581,7 +588,7 @@ where
         let range: CRange<usize> = (self.min..).into();
         let ret = {
             trace_v!("sep_collect", range, beg, ());
-            T::from_iter(std::iter::from_fn(|| {
+            V::from_iter(std::iter::from_fn(|| {
                 self.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
                     let sep_ret =
                         trace_v!("sep_collect", range, beg @ "sep", g.ctx().try_mat(&self.sep));
@@ -610,7 +617,7 @@ where
     }
 }
 
-impl<'a, C, S, P, O, T> Regex<C> for SepCollect<C, P, S, O, T>
+impl<'a, C, S, P, O, V> Regex<C> for SepCollect<C, P, S, O, V>
 where
     S: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,

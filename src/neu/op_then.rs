@@ -56,6 +56,18 @@ where
     marker: PhantomData<(C, T)>,
 }
 
+impl<C, L, R, T, I> std::ops::Not for NeureThen<C, L, R, T, I>
+where
+    L: Neu<T>,
+    R: Neu<T>,
+{
+    type Output = crate::re::regex::RegexNot<Self>;
+
+    fn not(self) -> Self::Output {
+        crate::re::not(self)
+    }
+}
+
 impl<C, L, R, T, I> Debug for NeureThen<C, L, R, T, I>
 where
     I: Debug,

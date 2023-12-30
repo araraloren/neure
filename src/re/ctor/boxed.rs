@@ -5,6 +5,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -15,6 +16,8 @@ pub struct BoxedCtor<C, T> {
     inner: Box<T>,
     marker: PhantomData<C>,
 }
+
+def_not!(BoxedCtor<C, T>);
 
 impl<C, T> Debug for BoxedCtor<C, T>
 where

@@ -7,6 +7,7 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::ctor::Map;
+use crate::re::def_not;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
@@ -45,6 +46,8 @@ pub struct DynamicCreateCtorThen<C, P, F> {
     func: F,
     marker: PhantomData<C>,
 }
+
+def_not!(DynamicCreateCtorThen<C, P, F>);
 
 impl<C, P, F> Debug for DynamicCreateCtorThen<C, P, F>
 where

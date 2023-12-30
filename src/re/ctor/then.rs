@@ -8,6 +8,7 @@ use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::ctor::Map;
+use crate::re::def_not;
 use crate::re::map::Select0;
 use crate::re::map::Select1;
 use crate::re::map::SelectEq;
@@ -49,6 +50,8 @@ pub struct Then<C, L, R> {
     right: R,
     marker: PhantomData<C>,
 }
+
+def_not!(Then<C, L, R>);
 
 impl<C, L, R> Debug for Then<C, L, R>
 where
@@ -202,6 +205,8 @@ pub struct IfThen<C, L, I, R> {
     right: R,
     marker: PhantomData<C>,
 }
+
+def_not!(IfThen<C, L, I, R>);
 
 impl<C, L, I, R> Debug for IfThen<C, L, I, R>
 where

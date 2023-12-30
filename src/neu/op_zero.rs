@@ -52,6 +52,17 @@ where
     marker: PhantomData<(C, T)>,
 }
 
+impl<C, U, T, I> std::ops::Not for NeureZeroOne<C, U, T, I>
+where
+    U: Neu<T>,
+{
+    type Output = crate::re::regex::RegexNot<Self>;
+
+    fn not(self) -> Self::Output {
+        crate::re::not(self)
+    }
+}
+
 impl<C, U, T, I> Debug for NeureZeroOne<C, U, T, I>
 where
     I: Debug,
@@ -201,6 +212,17 @@ where
     unit: U,
     cond: I,
     marker: PhantomData<(C, T)>,
+}
+
+impl<C, U, T, I> std::ops::Not for NeureZeroMore<C, U, T, I>
+where
+    U: Neu<T>,
+{
+    type Output = crate::re::regex::RegexNot<Self>;
+
+    fn not(self) -> Self::Output {
+        crate::re::not(self)
+    }
 }
 
 impl<C, U, T, I> Debug for NeureZeroMore<C, U, T, I>

@@ -2,6 +2,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -12,6 +13,8 @@ pub type DynamicCtorHandler<'a, C, O> = Box<dyn Fn(&mut C) -> Result<O, Error> +
 pub struct DynamicCtor<'a, C, O> {
     inner: DynamicCtorHandler<'a, C, O>,
 }
+
+def_not!(DynamicCtor<'a, C, O>);
 
 impl<'a, C, O> DynamicCtor<'a, C, O> {
     pub fn new(inner: DynamicCtorHandler<'a, C, O>) -> Self {

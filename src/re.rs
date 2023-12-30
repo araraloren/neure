@@ -22,36 +22,25 @@ pub use self::ctor::ConstructOp;
 pub use self::ctor::Ctor;
 pub use self::ctor::DynamicCreateCtorThenHelper;
 pub use self::ctor::DynamicCtorHelper;
+pub use self::ctor::PairVector;
 pub use self::ctor::RecursiveCtor;
 pub use self::ctor::RecursiveCtorSync;
+pub use self::ctor::Vector;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
-pub use self::regex::collect;
 pub use self::regex::into_dyn_regex;
-pub use self::regex::ltm;
-pub use self::regex::or;
-pub use self::regex::quote;
-pub use self::regex::re_map;
-pub use self::regex::repeat;
-pub use self::regex::sep;
-pub use self::regex::sep_collect;
-pub use self::regex::sep_once;
-pub use self::regex::then;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
-
-use self::ctor::PairVector;
-use self::ctor::Vector;
-use self::regex::RegexConsume;
-use self::regex::RegexConsumeAll;
-use self::regex::RegexEnd;
-use self::regex::RegexNot;
-use self::regex::RegexSlice;
-use self::regex::RegexStart;
-use self::regex::RegexString;
+pub use self::regex::RegexConsume;
+pub use self::regex::RegexConsumeAll;
+pub use self::regex::RegexEnd;
+pub use self::regex::RegexNot;
+pub use self::regex::RegexSlice;
+pub use self::regex::RegexStart;
+pub use self::regex::RegexString;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -649,7 +638,8 @@ pub fn null<R>() -> NullRegex<R> {
 }
 
 ///
-/// Return a regex which reverse the result of `re`.
+/// Return a regex that reverses the result of `re`.
+/// It will return zero-length [`Span`] when matches.
 ///
 /// # Example
 ///
@@ -669,12 +659,76 @@ pub fn not<T>(re: T) -> RegexNot<T> {
     RegexNot::new(re)
 }
 
-pub fn vector<T>(val: Vec<T>) -> Vector<T> {
-    Vector::new(val)
+/// Iterate over the vector and match the regex against the [`Context`].
+/// It will return the result of first regex that matches.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     let ty = neu::ascii_alphabetic().repeat_one_more();
+///     let id = neu::ascii_alphabetic().repeat_one_more();
+///     let var = ty.sep_once("", id);
+///     let ptr = ty.sep_once("*", id);
+///     let r#ref = ty.sep_once("&", id);
+///     let vec = re::vector([var, ptr, r#ref]);
+///     let sp = neu::whitespace().repeat_full();
+///
+///     assert_eq!(CharsCtx::new("int a").ignore(sp).ctor(&vec)?, ("int", "a"));
+///     assert_eq!(CharsCtx::new("int *a").ignore(sp).ctor(&vec)?, ("int", "a"));
+///     assert_eq!(CharsCtx::new("int &a").ignore(sp).ctor(&vec)?, ("int", "a"));
+///     Ok(())
+/// # }
+/// ```
+pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
+    Vector::new(val.into_iter().collect())
 }
 
-pub fn pair_vector<K, V>(val: Vec<(K, V)>) -> PairVector<K, V> {
-    PairVector::new(val)
+/// Iterate over the vector and match the regex against the [`Context`].
+/// It will return the value of first pair that matches.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+///     color_eyre::install()?;
+///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+///     pub enum C {
+///         Var,
+///         Ptr,
+///         Ref,
+///     }
+///
+///     let ty = neu::ascii_alphabetic().repeat_one_more();
+///     let id = neu::ascii_alphabetic().repeat_one_more();
+///     let var = ty.sep_once("", id);
+///     let ptr = ty.sep_once("*", id);
+///     let r#ref = ty.sep_once("&", id);
+///     let vec = re::pair_vector([(var, C::Var), (ptr, C::Ptr), (r#ref, C::Ref)]);
+///     let sp = neu::whitespace().repeat_full();
+///
+///     assert_eq!(
+///         CharsCtx::new("int a").ignore(sp).ctor(&vec)?,
+///         (("int", "a"), C::Var)
+///     );
+///     assert_eq!(
+///         CharsCtx::new("int *a").ignore(sp).ctor(&vec)?,
+///         (("int", "a"), C::Ptr)
+///     );
+///     assert_eq!(
+///         CharsCtx::new("int &a").ignore(sp).ctor(&vec)?,
+///         (("int", "a"), C::Ref)
+///     );
+///     Ok(())
+/// # }
+/// ```
+pub fn pair_vector<K, V: Clone>(val: impl IntoIterator<Item = (K, V)>) -> PairVector<K, V> {
+    PairVector::new(val.into_iter().collect())
 }
 
 #[cfg(feature = "log")]
@@ -781,5 +835,36 @@ macro_rules! trace_v {
     }};
 }
 
+macro_rules! def_not {
+    (@$ty:ident [ ]  [ ]) => {
+        impl std::ops::Not for $ty {
+            type Output = $crate::re::RegexNot<Self>;
+
+            fn not(self) -> Self::Output { $crate::re::not(self) }
+        }
+    };
+    (@$ty:ident [ ]  [ $($p:ident),+ ]) => {
+        impl<$($p),+> std::ops::Not for $ty<$($p),+> {
+            type Output = $crate::re::RegexNot<Self>;
+
+            fn not(self) -> Self::Output { $crate::re::not(self) }
+        }
+    };
+    (@$ty:ident [ $($l:lifetime),+ ]  [ $($p:ident),* ]) => {
+        impl<$($l),+ , $($p),*> std::ops::Not for $ty<$($l),+ , $($p),*> {
+            type Output = $crate::re::RegexNot<Self>;
+
+            fn not(self) -> Self::Output { $crate::re::not(self) }
+        }
+    };
+    ($ty:ident) => {
+        def_not! { @$ty [ ] [ ] }
+    };
+    ($ty:ident < $($l:lifetime),* $(,)? $($p:ident),* >) => {
+        def_not! { @$ty [$($l),*] [$($p),*] }
+    };
+}
+
+pub(crate) use def_not;
 pub(crate) use trace;
 pub(crate) use trace_v;

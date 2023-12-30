@@ -9,6 +9,7 @@ use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
+use crate::re::def_not;
 use crate::re::trace_v;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -44,6 +45,8 @@ pub struct Repeat<C, P> {
     capacity: usize,
     marker: PhantomData<C>,
 }
+
+def_not!(Repeat<C, P>);
 
 impl<C, P> Debug for Repeat<C, P>
 where

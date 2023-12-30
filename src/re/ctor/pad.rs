@@ -7,6 +7,7 @@ use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -39,13 +40,15 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct PadUnit<C, P, T> {
+pub struct Pad<C, P, T> {
     pat: P,
     tail: T,
     marker: PhantomData<C>,
 }
 
-impl<C, P, T> Debug for PadUnit<C, P, T>
+def_not!(Pad<C, P, T>);
+
+impl<C, P, T> Debug for Pad<C, P, T>
 where
     P: Debug,
     T: Debug,
@@ -58,7 +61,7 @@ where
     }
 }
 
-impl<C, P, T> Clone for PadUnit<C, P, T>
+impl<C, P, T> Clone for Pad<C, P, T>
 where
     P: Clone,
     T: Clone,
@@ -72,7 +75,7 @@ where
     }
 }
 
-impl<C, P, T> PadUnit<C, P, T> {
+impl<C, P, T> Pad<C, P, T> {
     pub fn new(pat: P, tail: T) -> Self {
         Self {
             pat,
@@ -108,7 +111,7 @@ impl<C, P, T> PadUnit<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O> Ctor<'a, C, M, O> for PadUnit<C, P, T>
+impl<'a, C, P, T, M, O> Ctor<'a, C, M, O> for Pad<C, P, T>
 where
     T: Regex<C, Ret = Span>,
     P: Ctor<'a, C, M, O>,
@@ -132,7 +135,7 @@ where
     }
 }
 
-impl<'a, C, P, T> Regex<C> for PadUnit<C, P, T>
+impl<'a, C, P, T> Regex<C> for Pad<C, P, T>
 where
     T: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,
@@ -177,13 +180,15 @@ where
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct PaddedUnit<C, P, T> {
+pub struct Padded<C, P, T> {
     pat: P,
     head: T,
     marker: PhantomData<C>,
 }
 
-impl<C, P, T> Debug for PaddedUnit<C, P, T>
+def_not!(Padded<C, P, T>);
+
+impl<C, P, T> Debug for Padded<C, P, T>
 where
     P: Debug,
     T: Debug,
@@ -196,7 +201,7 @@ where
     }
 }
 
-impl<C, P, T> Clone for PaddedUnit<C, P, T>
+impl<C, P, T> Clone for Padded<C, P, T>
 where
     P: Clone,
     T: Clone,
@@ -210,7 +215,7 @@ where
     }
 }
 
-impl<C, P, T> PaddedUnit<C, P, T> {
+impl<C, P, T> Padded<C, P, T> {
     pub fn new(pat: P, tail: T) -> Self {
         Self {
             pat,
@@ -246,7 +251,7 @@ impl<C, P, T> PaddedUnit<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O> Ctor<'a, C, M, O> for PaddedUnit<C, P, T>
+impl<'a, C, P, T, M, O> Ctor<'a, C, M, O> for Padded<C, P, T>
 where
     T: Regex<C, Ret = Span>,
     P: Ctor<'a, C, M, O>,
@@ -268,7 +273,7 @@ where
     }
 }
 
-impl<'a, C, P, T> Regex<C> for PaddedUnit<C, P, T>
+impl<'a, C, P, T> Regex<C> for Padded<C, P, T>
 where
     T: Regex<C, Ret = Span>,
     P: Regex<C, Ret = Span>,

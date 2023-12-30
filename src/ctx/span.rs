@@ -6,7 +6,7 @@ use crate::ctx::Context;
 use crate::err::Error;
 use crate::re::Extract;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
     pub beg: usize,
 

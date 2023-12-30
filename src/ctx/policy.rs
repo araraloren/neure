@@ -194,16 +194,7 @@ where
         pat.constrct(self, handler)
     }
 
-    pub fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
-    where
-        P: Ctor<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
-        &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
-    {
-        self.ctor_with(pat, &mut Ok)
-    }
-
-    pub fn map<H, A, O, P>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    pub fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
         P: Regex<Self, Ret = Span>,
         H: Handler<A, Out = O, Error = Error>,
@@ -214,7 +205,16 @@ where
         handler.invoke(A::extract(self, &ret)?)
     }
 
-    pub fn map_orig<O, P>(
+    pub fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    where
+        P: Ctor<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
+        &'a <Self as Context<'a>>::Orig:
+            Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
+    {
+        self.ctor_with(pat, &mut Ok)
+    }
+
+    pub fn map<P, O>(
         &mut self,
         pat: &P,
         mut func: impl FnMut(&'a <Self as Context<'a>>::Orig) -> Result<O, Error>,
@@ -225,10 +225,18 @@ where
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
-        (func)(self.map(pat, Ok)?)
+        (func)(self.map_with(pat, Ok)?)
     }
 
-    pub fn map_span<O, P>(
+    pub fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    where
+        P: Ctor<'a, Self, Span, O>,
+        Span: Extract<'a, Self, Span, Out<'a> = Span, Error = Error>,
+    {
+        self.ctor_with(pat, &mut Ok)
+    }
+
+    pub fn map_span<P, O>(
         &mut self,
         pat: &P,
         mut func: impl FnMut(Span) -> Result<O, Error>,
@@ -237,6 +245,6 @@ where
         P: Regex<Self, Ret = Span>,
         Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
     {
-        (func)(self.map(pat, Ok)?)
+        (func)(self.map_with(pat, Ok)?)
     }
 }
