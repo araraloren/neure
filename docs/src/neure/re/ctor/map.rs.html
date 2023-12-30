@@ -195,6 +195,9 @@
 <a href="#195" id="195">195</a>
 <a href="#196" id="196">196</a>
 <a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -202,6 +205,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::MapSingle;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -273,7 +277,7 @@
 ///
 ///     assert_eq!(id, 777);
 ///
-///     let (span, id) = CharsCtx::new(&quot;777&quot;).map(&amp;num, |v: &amp;str, span: Span| {
+///     let (span, id) = CharsCtx::new(&quot;777&quot;).map_with(&amp;num, |v: &amp;str, span: Span| {
 ///         Ok((span, v.parse::&lt;i32&gt;().map_err(|_| Error::Uid(0))?))
 ///     })?;
 ///
@@ -289,6 +293,8 @@
     mapper: F,
     marker: PhantomData&lt;(C, O)&gt;,
 }
+
+<span class="macro">def_not!</span>(Map&lt;C, P, F, O&gt;);
 
 <span class="kw">impl</span>&lt;C, P, F, O&gt; Debug <span class="kw">for </span>Map&lt;C, P, F, O&gt;
 <span class="kw">where

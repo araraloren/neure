@@ -854,6 +854,74 @@
 <a href="#854" id="854">854</a>
 <a href="#855" id="855">855</a>
 <a href="#856" id="856">856</a>
+<a href="#857" id="857">857</a>
+<a href="#858" id="858">858</a>
+<a href="#859" id="859">859</a>
+<a href="#860" id="860">860</a>
+<a href="#861" id="861">861</a>
+<a href="#862" id="862">862</a>
+<a href="#863" id="863">863</a>
+<a href="#864" id="864">864</a>
+<a href="#865" id="865">865</a>
+<a href="#866" id="866">866</a>
+<a href="#867" id="867">867</a>
+<a href="#868" id="868">868</a>
+<a href="#869" id="869">869</a>
+<a href="#870" id="870">870</a>
+<a href="#871" id="871">871</a>
+<a href="#872" id="872">872</a>
+<a href="#873" id="873">873</a>
+<a href="#874" id="874">874</a>
+<a href="#875" id="875">875</a>
+<a href="#876" id="876">876</a>
+<a href="#877" id="877">877</a>
+<a href="#878" id="878">878</a>
+<a href="#879" id="879">879</a>
+<a href="#880" id="880">880</a>
+<a href="#881" id="881">881</a>
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
+<a href="#893" id="893">893</a>
+<a href="#894" id="894">894</a>
+<a href="#895" id="895">895</a>
+<a href="#896" id="896">896</a>
+<a href="#897" id="897">897</a>
+<a href="#898" id="898">898</a>
+<a href="#899" id="899">899</a>
+<a href="#900" id="900">900</a>
+<a href="#901" id="901">901</a>
+<a href="#902" id="902">902</a>
+<a href="#903" id="903">903</a>
+<a href="#904" id="904">904</a>
+<a href="#905" id="905">905</a>
+<a href="#906" id="906">906</a>
+<a href="#907" id="907">907</a>
+<a href="#908" id="908">908</a>
+<a href="#909" id="909">909</a>
+<a href="#910" id="910">910</a>
+<a href="#911" id="911">911</a>
+<a href="#912" id="912">912</a>
+<a href="#913" id="913">913</a>
+<a href="#914" id="914">914</a>
+<a href="#915" id="915">915</a>
+<a href="#916" id="916">916</a>
+<a href="#917" id="917">917</a>
+<a href="#918" id="918">918</a>
+<a href="#919" id="919">919</a>
+<a href="#920" id="920">920</a>
+<a href="#921" id="921">921</a>
+<a href="#922" id="922">922</a>
+<a href="#923" id="923">923</a>
+<a href="#924" id="924">924</a>
 </pre></div><pre class="rust"><code><span class="kw">mod </span>boxed;
 <span class="kw">mod </span>collect;
 <span class="kw">mod </span>dthen;
@@ -891,8 +959,8 @@
 <span class="kw">pub use </span><span class="self">self</span>::map::Map;
 <span class="kw">pub use </span><span class="self">self</span>::opt::OptionPat;
 <span class="kw">pub use </span><span class="self">self</span>::or::Or;
-<span class="kw">pub use </span><span class="self">self</span>::pad::PadUnit;
-<span class="kw">pub use </span><span class="self">self</span>::pad::PaddedUnit;
+<span class="kw">pub use </span><span class="self">self</span>::pad::Pad;
+<span class="kw">pub use </span><span class="self">self</span>::pad::Padded;
 <span class="kw">pub use </span><span class="self">self</span>::pat::Pattern;
 <span class="kw">pub use </span><span class="self">self</span>::quote::Quote;
 <span class="kw">pub use </span><span class="self">self</span>::r#if::branch;
@@ -1276,7 +1344,7 @@
 
     <span class="kw">fn </span>sep_once&lt;S, R&gt;(<span class="self">self</span>, sep: S, right: R) -&gt; SepOnce&lt;C, <span class="self">Self</span>, S, R&gt;;
 
-    <span class="kw">fn </span>sep_collect&lt;S, O, T&gt;(<span class="self">self</span>, sep: S) -&gt; SepCollect&lt;C, <span class="self">Self</span>, S, O, T&gt;;
+    <span class="kw">fn </span>sep_collect&lt;S, O, V&gt;(<span class="self">self</span>, sep: S) -&gt; SepCollect&lt;C, <span class="self">Self</span>, S, O, V&gt;;
 
     <span class="kw">fn </span>or&lt;P&gt;(<span class="self">self</span>, pat: P) -&gt; Or&lt;C, <span class="self">Self</span>, P&gt;;
 
@@ -1294,11 +1362,11 @@
     <span class="kw">where
         </span>I: Fn(<span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt;;
 
-    <span class="kw">fn </span>pad&lt;T&gt;(<span class="self">self</span>, tail: T) -&gt; PadUnit&lt;C, <span class="self">Self</span>, T&gt;;
+    <span class="kw">fn </span>pad&lt;T&gt;(<span class="self">self</span>, tail: T) -&gt; Pad&lt;C, <span class="self">Self</span>, T&gt;;
 
-    <span class="kw">fn </span>padded&lt;T&gt;(<span class="self">self</span>, tail: T) -&gt; PaddedUnit&lt;C, <span class="self">Self</span>, T&gt;;
+    <span class="kw">fn </span>padded&lt;T&gt;(<span class="self">self</span>, tail: T) -&gt; Padded&lt;C, <span class="self">Self</span>, T&gt;;
 
-    <span class="kw">fn </span>ws(<span class="self">self</span>) -&gt; PadUnit&lt;C, <span class="self">Self</span>, NeureZeroMore&lt;C, AsciiWhiteSpace, C::Item, NullCond&gt;&gt;
+    <span class="kw">fn </span>ws(<span class="self">self</span>) -&gt; Pad&lt;C, <span class="self">Self</span>, NeureZeroMore&lt;C, AsciiWhiteSpace, C::Item, NullCond&gt;&gt;
     <span class="kw">where
         </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Item = char&gt;;
 }
@@ -1611,6 +1679,8 @@
     }
 
     <span class="doccomment">///
+    /// Repeatedly match regex `P`, and the number of matches must meet the given range.
+    ///
     /// # Example
     ///
     /// ```
@@ -1631,11 +1701,55 @@
         Repeat::new(<span class="self">self</span>, range)
     }
 
-    <span class="kw">fn </span>collect&lt;O, V&gt;(<span class="self">self</span>) -&gt; Collect&lt;C, <span class="self">Self</span>, O, V&gt; {
+    <span class="doccomment">///
+    /// Repeatedly match the regex `P` at least [`min`](crate::re::ctor::Collect#tymethod.min) times.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
+    ///     color_eyre::install()?;
+    ///     let val = re::consume(2)
+    ///         .map(re::map::from_le_bytes::&lt;i16&gt;())
+    ///         .collect::&lt;_, Vec&lt;_&gt;&gt;();
+    ///
+    ///     assert_eq!(
+    ///         BytesCtx::new(b&quot;\x2f\0\x1f\0\x0f\0&quot;).ctor(&amp;val)?,
+    ///         vec![0x2f, 0x1f, 0x0f]
+    ///     );
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
+    </span><span class="kw">fn </span>collect&lt;O, V&gt;(<span class="self">self</span>) -&gt; Collect&lt;C, <span class="self">Self</span>, O, V&gt; {
         Collect::new(<span class="self">self</span>)
     }
 
-    <span class="kw">fn </span>r#if&lt;I, E&gt;(<span class="self">self</span>, r#if: I, r#else: E) -&gt; IfRegex&lt;C, <span class="self">Self</span>, I, E&gt;
+    <span class="doccomment">///
+    /// Construct a branch struct base on the test `I`(Fn(&amp;C) -&gt; Result&lt;bool, Error&gt;).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
+    ///     color_eyre::install()?;
+    ///     let val = &quot;file://&quot;.r#if(
+    ///         // test if it is a file url
+    ///         |ctx: &amp;CharsCtx| Ok(ctx.orig()?.starts_with(&quot;file&quot;)),
+    ///         &quot;http://&quot;,
+    ///     );
+    ///
+    ///     assert_eq!(CharsCtx::new(&quot;file://&quot;).ctor(&amp;val)?, &quot;file://&quot;);
+    ///     assert_eq!(CharsCtx::new(&quot;http://&quot;).ctor(&amp;val)?, &quot;http://&quot;);
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
+    </span><span class="kw">fn </span>r#if&lt;I, E&gt;(<span class="self">self</span>, r#if: I, r#else: E) -&gt; IfRegex&lt;C, <span class="self">Self</span>, I, E&gt;
     <span class="kw">where
         </span>I: Fn(<span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt;,
     {
@@ -1643,6 +1757,8 @@
     }
 
     <span class="doccomment">///
+    /// First try to match `P`. If the match succeeds, then try to match `T`.
+    ///
     /// # Example
     ///
     /// ```
@@ -1664,11 +1780,13 @@
     /// # }
     /// ```
     ///
-    </span><span class="kw">fn </span>pad&lt;P&gt;(<span class="self">self</span>, pat: P) -&gt; PadUnit&lt;C, <span class="self">Self</span>, P&gt; {
-        PadUnit::new(<span class="self">self</span>, pat)
+    </span><span class="kw">fn </span>pad&lt;P&gt;(<span class="self">self</span>, pat: P) -&gt; Pad&lt;C, <span class="self">Self</span>, P&gt; {
+        Pad::new(<span class="self">self</span>, pat)
     }
 
     <span class="doccomment">///  
+    /// First try to match `T`. If it succeeds, try to match `P`.
+    ///
     /// # Example
     ///
     /// ```
@@ -1699,15 +1817,33 @@
     ///     Ok(())
     /// # }
     /// ```
-    </span><span class="kw">fn </span>padded&lt;P&gt;(<span class="self">self</span>, pat: P) -&gt; PaddedUnit&lt;C, <span class="self">Self</span>, P&gt; {
-        PaddedUnit::new(<span class="self">self</span>, pat)
+    </span><span class="kw">fn </span>padded&lt;P&gt;(<span class="self">self</span>, pat: P) -&gt; Padded&lt;C, <span class="self">Self</span>, P&gt; {
+        Padded::new(<span class="self">self</span>, pat)
     }
 
-    <span class="kw">fn </span>ws(<span class="self">self</span>) -&gt; PadUnit&lt;C, <span class="self">Self</span>, NeureZeroMore&lt;C, AsciiWhiteSpace, C::Item, NullCond&gt;&gt;
+    <span class="doccomment">/// A shortcut for matching trailing ascii spaces.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
+    ///     color_eyre::install()?;
+    ///     let str = &quot;file://      &quot;;
+    ///     let val = &quot;file://&quot;.ws();
+    ///
+    ///     assert_eq!(CharsCtx::new(str).ctor(&amp;val)?, &quot;file://&quot;);
+    ///     assert_eq!(CharsCtx::new(str).try_mat(&amp;val)?, Span::new(0, 13));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
+    </span><span class="kw">fn </span>ws(<span class="self">self</span>) -&gt; Pad&lt;C, <span class="self">Self</span>, NeureZeroMore&lt;C, AsciiWhiteSpace, C::Item, NullCond&gt;&gt;
     <span class="kw">where
         </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Item = char&gt;,
     {
-        PadUnit::new(<span class="self">self</span>, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
+        Pad::new(<span class="self">self</span>, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
     }
 }
 </code></pre></div></section></main></body></html>

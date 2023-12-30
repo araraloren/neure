@@ -113,10 +113,16 @@
 <a href="#113" id="113">113</a>
 <a href="#114" id="114">114</a>
 <a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -132,6 +138,8 @@
 </span><span class="kw">pub struct </span>RegexSlice&lt;<span class="lifetime">&#39;a</span>, T&gt; {
     val: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T],
 }
+
+<span class="macro">def_not!</span>(RegexSlice&lt;<span class="lifetime">&#39;a</span>, T&gt;);
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T&gt; RegexSlice&lt;<span class="lifetime">&#39;a</span>, T&gt; {
     <span class="kw">pub fn </span>new(val: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T]) -&gt; <span class="self">Self </span>{
@@ -186,6 +194,8 @@
 </span><span class="kw">pub struct </span>RegexString&lt;<span class="lifetime">&#39;a</span>&gt; {
     val: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
 }
+
+<span class="macro">def_not!</span>(RegexString&lt;<span class="lifetime">&#39;a</span>&gt;);
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RegexString&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub fn </span>new(val: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="self">Self </span>{

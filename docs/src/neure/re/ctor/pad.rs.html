@@ -286,6 +286,11 @@
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
 <a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -295,6 +300,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -327,13 +333,15 @@
 /// # }
 /// ```
 </span><span class="attr">#[derive(Copy)]
-</span><span class="kw">pub struct </span>PadUnit&lt;C, P, T&gt; {
+</span><span class="kw">pub struct </span>Pad&lt;C, P, T&gt; {
     pat: P,
     tail: T,
     marker: PhantomData&lt;C&gt;,
 }
 
-<span class="kw">impl</span>&lt;C, P, T&gt; Debug <span class="kw">for </span>PadUnit&lt;C, P, T&gt;
+<span class="macro">def_not!</span>(Pad&lt;C, P, T&gt;);
+
+<span class="kw">impl</span>&lt;C, P, T&gt; Debug <span class="kw">for </span>Pad&lt;C, P, T&gt;
 <span class="kw">where
     </span>P: Debug,
     T: Debug,
@@ -346,7 +354,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;C, P, T&gt; Clone <span class="kw">for </span>PadUnit&lt;C, P, T&gt;
+<span class="kw">impl</span>&lt;C, P, T&gt; Clone <span class="kw">for </span>Pad&lt;C, P, T&gt;
 <span class="kw">where
     </span>P: Clone,
     T: Clone,
@@ -360,7 +368,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;C, P, T&gt; PadUnit&lt;C, P, T&gt; {
+<span class="kw">impl</span>&lt;C, P, T&gt; Pad&lt;C, P, T&gt; {
     <span class="kw">pub fn </span>new(pat: P, tail: T) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             pat,
@@ -396,7 +404,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T, M, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; <span class="kw">for </span>PadUnit&lt;C, P, T&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T, M, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; <span class="kw">for </span>Pad&lt;C, P, T&gt;
 <span class="kw">where
     </span>T: Regex&lt;C, Ret = Span&gt;,
     P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;,
@@ -420,7 +428,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T&gt; Regex&lt;C&gt; <span class="kw">for </span>PadUnit&lt;C, P, T&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T&gt; Regex&lt;C&gt; <span class="kw">for </span>Pad&lt;C, P, T&gt;
 <span class="kw">where
     </span>T: Regex&lt;C, Ret = Span&gt;,
     P: Regex&lt;C, Ret = Span&gt;,
@@ -465,13 +473,15 @@
 /// # }
 /// ```
 </span><span class="attr">#[derive(Copy)]
-</span><span class="kw">pub struct </span>PaddedUnit&lt;C, P, T&gt; {
+</span><span class="kw">pub struct </span>Padded&lt;C, P, T&gt; {
     pat: P,
     head: T,
     marker: PhantomData&lt;C&gt;,
 }
 
-<span class="kw">impl</span>&lt;C, P, T&gt; Debug <span class="kw">for </span>PaddedUnit&lt;C, P, T&gt;
+<span class="macro">def_not!</span>(Padded&lt;C, P, T&gt;);
+
+<span class="kw">impl</span>&lt;C, P, T&gt; Debug <span class="kw">for </span>Padded&lt;C, P, T&gt;
 <span class="kw">where
     </span>P: Debug,
     T: Debug,
@@ -484,7 +494,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;C, P, T&gt; Clone <span class="kw">for </span>PaddedUnit&lt;C, P, T&gt;
+<span class="kw">impl</span>&lt;C, P, T&gt; Clone <span class="kw">for </span>Padded&lt;C, P, T&gt;
 <span class="kw">where
     </span>P: Clone,
     T: Clone,
@@ -498,7 +508,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;C, P, T&gt; PaddedUnit&lt;C, P, T&gt; {
+<span class="kw">impl</span>&lt;C, P, T&gt; Padded&lt;C, P, T&gt; {
     <span class="kw">pub fn </span>new(pat: P, tail: T) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             pat,
@@ -534,7 +544,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T, M, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; <span class="kw">for </span>PaddedUnit&lt;C, P, T&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T, M, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; <span class="kw">for </span>Padded&lt;C, P, T&gt;
 <span class="kw">where
     </span>T: Regex&lt;C, Ret = Span&gt;,
     P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;,
@@ -556,7 +566,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T&gt; Regex&lt;C&gt; <span class="kw">for </span>PaddedUnit&lt;C, P, T&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, T&gt; Regex&lt;C&gt; <span class="kw">for </span>Padded&lt;C, P, T&gt;
 <span class="kw">where
     </span>T: Regex&lt;C, Ret = Span&gt;,
     P: Regex&lt;C, Ret = Span&gt;,
