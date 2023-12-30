@@ -64,12 +64,16 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::CtxGuard;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -91,6 +95,8 @@
         <span class="self">Self </span>{ val }
     }
 }
+
+<span class="macro">def_not!</span>(RegexNot&lt;T&gt;);
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, T&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexNot&lt;T&gt;
 <span class="kw">where

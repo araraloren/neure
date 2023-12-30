@@ -115,6 +115,9 @@
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -122,6 +125,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
 <span class="kw">use </span><span class="kw">crate</span>::re::Handler;
@@ -159,6 +163,8 @@
     pat: P,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(Pattern&lt;C, P&gt;);
 
 <span class="kw">impl</span>&lt;C, P&gt; Debug <span class="kw">for </span>Pattern&lt;C, P&gt;
 <span class="kw">where

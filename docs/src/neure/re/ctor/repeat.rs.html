@@ -221,6 +221,9 @@
 <a href="#221" id="221">221</a>
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 <span class="kw">use </span>std::ops::RangeBounds;
@@ -232,6 +235,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
 <span class="kw">use </span><span class="kw">crate</span>::neu::CRange;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace_v;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -267,6 +271,8 @@
     capacity: usize,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(Repeat&lt;C, P&gt;);
 
 <span class="kw">impl</span>&lt;C, P&gt; Debug <span class="kw">for </span>Repeat&lt;C, P&gt;
 <span class="kw">where
