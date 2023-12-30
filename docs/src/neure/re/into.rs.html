@@ -156,6 +156,32 @@
 <a href="#156" id="156">156</a>
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
@@ -167,9 +193,13 @@
 
 <span class="kw">use </span>std::cell::Cell;
 <span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::marker::PhantomData;
 <span class="kw">use </span>std::rc::Rc;
 <span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>std::sync::Mutex;
+
+<span class="kw">use </span><span class="kw">super</span>::def_not;
 
 <span class="kw">pub trait </span>RegexIntoOp&lt;<span class="lifetime">&#39;a</span>, C&gt;
 <span class="kw">where
@@ -252,13 +282,35 @@
     }
 }
 
-<span class="kw">use </span>std::marker::PhantomData;
-
 <span class="comment">// into_box
-</span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>BoxedRegex&lt;C, T&gt; {
     inner: Box&lt;T&gt;,
     marker: PhantomData&lt;C&gt;,
+}
+
+<span class="macro">def_not!</span>(BoxedRegex&lt;C, T&gt;);
+
+<span class="kw">impl</span>&lt;C, T&gt; Debug <span class="kw">for </span>BoxedRegex&lt;C, T&gt;
+<span class="kw">where
+    </span>T: Debug,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">&quot;BoxedRegex&quot;</span>)
+            .field(<span class="string">&quot;inner&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.inner)
+            .finish()
+    }
+}
+
+<span class="kw">impl</span>&lt;C, T&gt; Clone <span class="kw">for </span>BoxedRegex&lt;C, T&gt;
+<span class="kw">where
+    </span>T: Clone,
+{
+    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            inner: <span class="self">self</span>.inner.clone(),
+            marker: <span class="self">self</span>.marker,
+        }
+    }
 }
 
 <span class="kw">impl</span>&lt;C, T&gt; BoxedRegex&lt;C, T&gt; {

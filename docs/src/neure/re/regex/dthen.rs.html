@@ -135,6 +135,9 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -145,6 +148,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
 <span class="kw">use </span><span class="kw">crate</span>::re::ctor::Map;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select0;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select1;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::SelectEq;
@@ -157,6 +161,8 @@
     func: F,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(DynamicCreateRegexThen&lt;C, P, F&gt;);
 
 <span class="kw">impl</span>&lt;C, P, F&gt; Debug <span class="kw">for </span>DynamicCreateRegexThen&lt;C, P, F&gt;
 <span class="kw">where

@@ -176,6 +176,9 @@
 <a href="#176" id="176">176</a>
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -185,6 +188,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -227,6 +231,8 @@
     right: R,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(Quote&lt;C, P, L, R&gt;);
 
 <span class="kw">impl</span>&lt;C, P, L, R&gt; Debug <span class="kw">for </span>Quote&lt;C, P, L, R&gt;
 <span class="kw">where

@@ -92,10 +92,14 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
 <span class="kw">use </span><span class="kw">crate</span>::re::Handler;
@@ -106,6 +110,8 @@
 <span class="kw">pub struct </span>DynamicRegex&lt;<span class="lifetime">&#39;a</span>, C, R&gt; {
     inner: DynamicRegexHandler&lt;<span class="lifetime">&#39;a</span>, C, R&gt;,
 }
+
+<span class="macro">def_not!</span>(DynamicRegex&lt;<span class="lifetime">&#39;a</span>, C, R&gt;);
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, R&gt; DynamicRegex&lt;<span class="lifetime">&#39;a</span>, C, R&gt; {
     <span class="kw">pub fn </span>new(inner: DynamicRegexHandler&lt;<span class="lifetime">&#39;a</span>, C, R&gt;) -&gt; <span class="self">Self </span>{

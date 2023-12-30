@@ -351,6 +351,11 @@
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
 <a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -361,6 +366,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
 <span class="kw">use </span><span class="kw">crate</span>::re::ctor::Map;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select0;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select1;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::SelectEq;
@@ -402,6 +408,8 @@
     right: R,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(Then&lt;C, L, R&gt;);
 
 <span class="kw">impl</span>&lt;C, L, R&gt; Debug <span class="kw">for </span>Then&lt;C, L, R&gt;
 <span class="kw">where
@@ -555,6 +563,8 @@
     right: R,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(IfThen&lt;C, L, I, R&gt;);
 
 <span class="kw">impl</span>&lt;C, L, I, R&gt; Debug <span class="kw">for </span>IfThen&lt;C, L, I, R&gt;
 <span class="kw">where

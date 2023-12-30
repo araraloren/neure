@@ -648,6 +648,13 @@
 <a href="#648" id="648">648</a>
 <a href="#649" id="649">649</a>
 <a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -658,6 +665,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
 <span class="kw">use </span><span class="kw">crate</span>::neu::CRange;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select0;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select1;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::SelectEq;
@@ -701,6 +709,8 @@
     right: R,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(SepOnce&lt;C, L, S, R&gt;);
 
 <span class="kw">impl</span>&lt;C, L, S, R&gt; Debug <span class="kw">for </span>SepOnce&lt;C, L, S, R&gt;
 <span class="kw">where
@@ -881,6 +891,8 @@
     min: usize,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(Separate&lt;C, P, S&gt;);
 
 <span class="kw">impl</span>&lt;C, P, S&gt; Debug <span class="kw">for </span>Separate&lt;C, P, S&gt;
 <span class="kw">where
@@ -1080,7 +1092,7 @@
 ///
 /// # Ctor
 ///
-/// It will return a `T` that can constructed from `P`&#39;s match results
+/// It will return a `V` that can constructed from `P`&#39;s match results
 /// using [`from_iter`](std::iter::FromIterator::from_iter).
 ///
 /// # Notice
@@ -1106,15 +1118,17 @@
 /// # }
 /// ```
 </span><span class="attr">#[derive(Default, Copy)]
-</span><span class="kw">pub struct </span>SepCollect&lt;C, P, S, O, T&gt; {
+</span><span class="kw">pub struct </span>SepCollect&lt;C, P, S, O, V&gt; {
     pat: P,
     sep: S,
     skip: bool,
     min: usize,
-    marker: PhantomData&lt;(C, O, T)&gt;,
+    marker: PhantomData&lt;(C, O, V)&gt;,
 }
 
-<span class="kw">impl</span>&lt;C, P, S, O, T&gt; Debug <span class="kw">for </span>SepCollect&lt;C, P, S, O, T&gt;
+<span class="macro">def_not!</span>(SepCollect&lt;C, P, S, O, V&gt;);
+
+<span class="kw">impl</span>&lt;C, P, S, O, V&gt; Debug <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
 <span class="kw">where
     </span>P: Debug,
     S: Debug,
@@ -1129,7 +1143,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;C, P, S, O, T&gt; Clone <span class="kw">for </span>SepCollect&lt;C, P, S, O, T&gt;
+<span class="kw">impl</span>&lt;C, P, S, O, V&gt; Clone <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
 <span class="kw">where
     </span>P: Clone,
     S: Clone,
@@ -1145,7 +1159,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;C, P, S, O, T&gt; SepCollect&lt;C, P, S, O, T&gt; {
+<span class="kw">impl</span>&lt;C, P, S, O, V&gt; SepCollect&lt;C, P, S, O, V&gt; {
     <span class="kw">pub fn </span>new(pat: P, sep: S) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             pat,
@@ -1211,15 +1225,15 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, M, O, T&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, T&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, T&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, M, O, V&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, V&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
 <span class="kw">where
-    </span>T: FromIterator&lt;O&gt;,
+    </span>V: FromIterator&lt;O&gt;,
     P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;,
     S: Regex&lt;C, Ret = Span&gt;,
     C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct&lt;H, A&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;T, Error&gt;
+    </span><span class="kw">fn </span>constrct&lt;H, A&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;V, Error&gt;
     <span class="kw">where
         </span>H: Handler&lt;A, Out = M, Error = Error&gt;,
         A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
@@ -1231,7 +1245,7 @@
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
         <span class="kw">let </span>ret = {
             <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg, ());
-            T::from_iter(std::iter::from_fn(|| {
+            V::from_iter(std::iter::from_fn(|| {
                 <span class="self">self</span>.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
                     <span class="kw">let </span>sep_ret =
                         <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg @ <span class="string">&quot;sep&quot;</span>, g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep));
@@ -1260,7 +1274,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, O, T&gt; Regex&lt;C&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, T&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, O, V&gt; Regex&lt;C&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
 <span class="kw">where
     </span>S: Regex&lt;C, Ret = Span&gt;,
     P: Regex&lt;C, Ret = Span&gt;,

@@ -207,307 +207,213 @@
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
-<a href="#227" id="227">227</a>
-<a href="#228" id="228">228</a>
-<a href="#229" id="229">229</a>
-<a href="#230" id="230">230</a>
-<a href="#231" id="231">231</a>
-<a href="#232" id="232">232</a>
-<a href="#233" id="233">233</a>
-<a href="#234" id="234">234</a>
-<a href="#235" id="235">235</a>
-<a href="#236" id="236">236</a>
-<a href="#237" id="237">237</a>
-<a href="#238" id="238">238</a>
-<a href="#239" id="239">239</a>
-<a href="#240" id="240">240</a>
-<a href="#241" id="241">241</a>
-<a href="#242" id="242">242</a>
-<a href="#243" id="243">243</a>
-<a href="#244" id="244">244</a>
-<a href="#245" id="245">245</a>
-<a href="#246" id="246">246</a>
-<a href="#247" id="247">247</a>
-<a href="#248" id="248">248</a>
-<a href="#249" id="249">249</a>
-<a href="#250" id="250">250</a>
-<a href="#251" id="251">251</a>
-<a href="#252" id="252">252</a>
-<a href="#253" id="253">253</a>
-<a href="#254" id="254">254</a>
-<a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
-</pre></div><pre class="rust"><code><span class="kw">mod </span>anchor;
-<span class="kw">mod </span>collect;
-<span class="kw">mod </span>dthen;
+</pre></div><pre class="rust"><code><span class="kw">mod </span>dthen;
 <span class="kw">mod </span>dynamic;
-<span class="kw">mod </span>ltm;
-<span class="kw">mod </span>map;
 <span class="kw">mod </span>not;
-<span class="kw">mod </span>or;
-<span class="kw">mod </span>quote;
-<span class="kw">mod </span>repeat;
-<span class="kw">mod </span>sep;
 <span class="kw">mod </span>slice;
-<span class="kw">mod </span>then;
 
-<span class="kw">pub use </span><span class="self">self</span>::anchor::RegexConsume;
-<span class="kw">pub use </span><span class="self">self</span>::anchor::RegexConsumeAll;
-<span class="kw">pub use </span><span class="self">self</span>::anchor::RegexEnd;
-<span class="kw">pub use </span><span class="self">self</span>::anchor::RegexStart;
-<span class="kw">pub use </span><span class="self">self</span>::collect::RegexCollect;
 <span class="kw">pub use </span><span class="self">self</span>::dthen::DynamicCreateRegexThen;
 <span class="kw">pub use </span><span class="self">self</span>::dthen::DynamicCreateRegexThenHelper;
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::into_dyn_regex;
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::DynamicRegex;
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::DynamicRegexHandler;
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::DynamicRegexHelper;
-<span class="kw">pub use </span><span class="self">self</span>::ltm::RegexLongestTokenMatch;
-<span class="kw">pub use </span><span class="self">self</span>::map::RegexMap;
 <span class="kw">pub use </span><span class="self">self</span>::not::RegexNot;
-<span class="kw">pub use </span><span class="self">self</span>::or::RegexOr;
-<span class="kw">pub use </span><span class="self">self</span>::quote::RegexQuote;
-<span class="kw">pub use </span><span class="self">self</span>::repeat::RegexRepeat;
-<span class="kw">pub use </span><span class="self">self</span>::sep::RegexSepCollect;
-<span class="kw">pub use </span><span class="self">self</span>::sep::RegexSepOnce;
-<span class="kw">pub use </span><span class="self">self</span>::sep::RegexSeparate;
 <span class="kw">pub use </span><span class="self">self</span>::slice::RegexSlice;
 <span class="kw">pub use </span><span class="self">self</span>::slice::RegexString;
-<span class="kw">pub use </span><span class="self">self</span>::then::RegexThen;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
-<span class="kw">use </span><span class="kw">crate</span>::neu::CRange;
+<span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
+<span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
+<span class="kw">use </span><span class="kw">crate</span>::re::trace;
+<span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
+<span class="kw">use </span><span class="kw">crate</span>::re::Extract;
+<span class="kw">use </span><span class="kw">crate</span>::re::Handler;
 <span class="kw">use </span><span class="kw">crate</span>::re::Regex;
 
-<span class="kw">use </span><span class="kw">super</span>::map::MapSingle;
+<span class="doccomment">/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to 0.
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="kw">pub struct </span>RegexStart;
 
-<span class="doccomment">/// First try to match `L`. If it succeeds, then try to match `R`.
-///
-/// # Return
-///
-/// Return a tuple of result of `L` and result of `R`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
-///     let val = neu::ascii_alphabetic().repeat_one_more();
-///     let num = neu::ascii_alphanumeric().repeat_one_more();
-///     let tuple = re::regex::then(val, num);
-///
-///     assert_eq!(
-///         CharsCtx::new(&quot;abc42&quot;).try_mat_t(&amp;tuple)?,
-///         (Span::new(0, 3), Span::new(3, 2))
-///     );
-///     Ok(())
-/// # }
-/// ```
-</span><span class="kw">pub fn </span>then&lt;<span class="lifetime">&#39;a</span>, C, L, R&gt;(left: L, right: R) -&gt; RegexThen&lt;C, L, R&gt;
-<span class="kw">where
-    </span>L: Regex&lt;C&gt;,
-    R: Regex&lt;C&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-{
-    RegexThen::new(left, right)
+<span class="macro">def_not!</span>(RegexStart);
+
+<span class="kw">impl </span>RegexStart {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{}
+    }
 }
 
-<span class="doccomment">///
-/// Match `P1` or `P2`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
-///     let name = re::string(&quot;localhost&quot;);
-///     let ip = re::string(&quot;127.0.0.1&quot;);
-///     let local = name.or(ip);
-///     let local = local.then(&quot;:8080&quot;);
-///     let mut ctx = CharsCtx::new(&quot;127.0.0.1:8080&quot;);
-///
-///     assert_eq!(ctx.try_mat(&amp;local)?, Span::new(0, 14));
-///     let mut ctx = CharsCtx::new(&quot;localhost:8080&quot;);
-///
-///     assert_eq!(ctx.try_mat(&amp;local)?, Span::new(0, 14));
-///     Ok(())
-/// # }
-/// ```
-</span><span class="kw">pub fn </span>or&lt;<span class="lifetime">&#39;a</span>, C, O, L, R&gt;(left: L, right: R) -&gt; RegexOr&lt;C, L, R&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexStart
 <span class="kw">where
-    </span>O: Ret,
-    L: Regex&lt;C, Ret = O&gt;,
-    R: Regex&lt;C, Ret = O&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
-    RegexOr::new(left, right)
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>constrct&lt;H, A&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;
+    <span class="kw">where
+        </span>H: Handler&lt;A, Out = O, Error = Error&gt;,
+        A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    {
+        <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
+
+        func.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
+    }
 }
 
-<span class="kw">pub fn </span>ltm&lt;<span class="lifetime">&#39;a</span>, C, O, L, R&gt;(left: L, right: R) -&gt; RegexLongestTokenMatch&lt;C, L, R&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexStart
 <span class="kw">where
-    </span>O: Ret,
-    L: Regex&lt;C, Ret = O&gt;,
-    R: Regex&lt;C, Ret = O&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
-    RegexLongestTokenMatch::new(left, right)
+    <span class="kw">type </span>Ret = Span;
+
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>try_parse(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ret, <span class="kw">crate</span>::err::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="prelude-val">Err</span>(Error::Start);
+        <span class="kw">let </span>beg = ctx.offset();
+
+        <span class="kw">if </span>ctx.offset() == <span class="number">0 </span>{
+            ret = <span class="prelude-val">Ok</span>(&lt;Span <span class="kw">as </span>Ret&gt;::from_ctx(ctx, (<span class="number">0</span>, <span class="number">0</span>)))
+        }
+        <span class="macro">trace!</span>(<span class="string">&quot;start&quot;</span>, beg =&gt; ctx.offset(), ret)
+    }
 }
 
-<span class="doccomment">///
-/// Match the `P` enclosed by `L` and `R`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
-///     let comma = re::one(&#39;,&#39;);
-///     let digit = re::one_more(&#39;0&#39;..=&#39;9&#39;);
-///     let digit = re::sep(digit, comma, true);
-///     let array = re::quote(digit, re::one(&#39;[&#39;), re::one(&#39;]&#39;));
-///     let mut ctx = CharsCtx::new(&quot;[123,456,789]&quot;);
-///
-///     assert_eq!(
-///         ctx.try_mat_t(&amp;array)?,
-///         vec![Span::new(1, 3), Span::new(5, 3), Span::new(9, 3)]
-///     );
-///     Ok(())
-/// # }
-/// ```
-</span><span class="kw">pub fn </span>quote&lt;<span class="lifetime">&#39;a</span>, C, L, R, P&gt;(pat: P, left: L, right: R) -&gt; RegexQuote&lt;C, P, L, R&gt;
-<span class="kw">where
-    </span>P: Regex&lt;C&gt;,
-    L: Regex&lt;C&gt;,
-    R: Regex&lt;C&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-{
-    RegexQuote::new(pat, left, right)
+<span class="doccomment">/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to [`len`](crate::ctx::Context#tymethod.len).
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="kw">pub struct </span>RegexEnd;
+
+<span class="macro">def_not!</span>(RegexEnd);
+
+<span class="kw">impl </span>RegexEnd {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{}
+    }
 }
 
-<span class="kw">pub fn </span>repeat&lt;<span class="lifetime">&#39;a</span>, C, P, R&gt;(pat: P, range: R) -&gt; RegexRepeat&lt;C, P&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexEnd
 <span class="kw">where
-    </span>P: Regex&lt;C&gt;,
-    R: Into&lt;CRange&lt;usize&gt;&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
-    RegexRepeat::new(pat, range)
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>constrct&lt;H, A&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;
+    <span class="kw">where
+        </span>H: Handler&lt;A, Out = O, Error = Error&gt;,
+        A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    {
+        <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
+
+        func.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
+    }
 }
 
-<span class="doccomment">///
-/// Match the `P` terminated by `S`, return the return value of `P`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
-///     let comma = re::one(&#39;,&#39;);
-///     let digit = re::one_more(&#39;0&#39;..=&#39;9&#39;);
-///     let digit = re::sep(digit, comma, true);
-///     let mut ctx = CharsCtx::new(&quot;123,456,789&quot;);
-///
-///     assert_eq!(ctx.try_mat_t(&amp;digit)?, vec![Span::new(0, 3), Span::new(4, 3), Span::new(8, 3)]);
-///     Ok(())
-/// # }
-/// ```
-</span><span class="kw">pub fn </span>sep&lt;<span class="lifetime">&#39;a</span>, C, S, P&gt;(pat: P, sep: S, skip: bool) -&gt; RegexSeparate&lt;C, P, S&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexEnd
 <span class="kw">where
-    </span>P: Regex&lt;C&gt;,
-    S: Regex&lt;C&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
-    RegexSeparate::new(pat, sep).with_skip(skip)
+    <span class="kw">type </span>Ret = Span;
+
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>try_parse(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ret, <span class="kw">crate</span>::err::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="prelude-val">Err</span>(Error::End);
+        <span class="kw">let </span>beg = ctx.offset();
+
+        <span class="kw">if </span>ctx.len() == ctx.offset() {
+            ret = <span class="prelude-val">Ok</span>(&lt;Span <span class="kw">as </span>Ret&gt;::from_ctx(ctx, (<span class="number">0</span>, <span class="number">0</span>)));
+        }
+        <span class="macro">trace!</span>(<span class="string">&quot;start&quot;</span>, beg =&gt; ctx.offset(), ret)
+    }
 }
 
-<span class="kw">pub fn </span>sep_collect&lt;<span class="lifetime">&#39;a</span>, C, S, P, T&gt;(pat: P, sep: S, skip: bool) -&gt; RegexSepCollect&lt;C, P, S, T&gt;
-<span class="kw">where
-    </span>P: Regex&lt;C&gt;,
-    S: Regex&lt;C&gt;,
-    T: FromIterator&lt;P::Ret&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-{
-    RegexSepCollect::new(pat, sep).with_skip(skip)
+<span class="doccomment">/// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="kw">pub struct </span>RegexConsume(usize);
+
+<span class="macro">def_not!</span>(RegexConsume);
+
+<span class="kw">impl </span>RegexConsume {
+    <span class="kw">pub fn </span>new(size: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(size)
+    }
 }
 
-<span class="kw">pub fn </span>sep_once&lt;<span class="lifetime">&#39;a</span>, C, L, S, R&gt;(left: L, sep: S, right: R) -&gt; RegexSepOnce&lt;C, L, S, R&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexConsume
 <span class="kw">where
-    </span>L: Regex&lt;C&gt;,
-    S: Regex&lt;C&gt;,
-    R: Regex&lt;C&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
-    RegexSepOnce::new(left, sep, right)
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>constrct&lt;H, A&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;
+    <span class="kw">where
+        </span>H: Handler&lt;A, Out = O, Error = Error&gt;,
+        A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    {
+        <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
+
+        func.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
+    }
 }
 
-<span class="doccomment">///
-/// Match the regex `P` repeatedly, and collect the result into given type `O`.
-///
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
-///     let val = neu::ascii_alphabetic().repeat_one();
-///     let vec = re::collect::&lt;_, _, Vec&lt;_&gt;&gt;(val, 1);
-///
-///     assert_eq!(
-///         CharsCtx::new(&quot;abcdf&quot;).try_mat_t(&amp;vec)?,
-///         vec![
-///             Span::new(0, 1),
-///             Span::new(1, 1),
-///             Span::new(2, 1),
-///             Span::new(3, 1),
-///             Span::new(4, 1),
-///         ]
-///     );
-///     Ok(())
-/// # }
-/// ```
-</span><span class="kw">pub fn </span>collect&lt;<span class="lifetime">&#39;a</span>, C, P, O&gt;(pat: P, min: usize) -&gt; RegexCollect&lt;C, P, O&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexConsume
 <span class="kw">where
-    </span>P: Regex&lt;C&gt;,
-    O: FromIterator&lt;P::Ret&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
-    RegexCollect::new(pat).at_least(min)
+    <span class="kw">type </span>Ret = Span;
+
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>try_parse(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ret, <span class="kw">crate</span>::err::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="prelude-val">Err</span>(Error::Consume);
+        <span class="kw">let </span>beg = ctx.offset();
+
+        <span class="kw">if </span>ctx.len() - beg &gt;= <span class="self">self</span>.<span class="number">0 </span>{
+            ctx.inc(<span class="self">self</span>.<span class="number">0</span>);
+            ret = <span class="prelude-val">Ok</span>(Span::new(beg, <span class="self">self</span>.<span class="number">0</span>));
+        }
+        <span class="macro">trace!</span>(<span class="string">&quot;consume&quot;</span>, beg =&gt; ctx.offset(), ret)
+    }
 }
 
-<span class="kw">pub fn </span>re_map&lt;<span class="lifetime">&#39;a</span>, C, P, F, I, O&gt;(pat: P, func: F) -&gt; RegexMap&lt;C, P, F, O&gt;
+<span class="doccomment">/// Consume all remaining [`Item`](crate::ctx::Context::Item)s of the [`Context`].
+</span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="kw">pub struct </span>RegexConsumeAll;
+
+<span class="macro">def_not!</span>(RegexConsumeAll);
+
+<span class="kw">impl </span>RegexConsumeAll {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{}
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexConsumeAll
 <span class="kw">where
-    </span>F: MapSingle&lt;I, O&gt;,
-    P: Regex&lt;C, Ret = I&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
-    RegexMap::new(pat, func)
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>constrct&lt;H, A&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;
+    <span class="kw">where
+        </span>H: Handler&lt;A, Out = O, Error = Error&gt;,
+        A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    {
+        <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
+
+        func.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexConsumeAll
+<span class="kw">where
+    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
+{
+    <span class="kw">type </span>Ret = Span;
+
+    <span class="attr">#[inline(always)]
+    </span><span class="kw">fn </span>try_parse(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ret, <span class="kw">crate</span>::err::Error&gt; {
+        <span class="kw">let </span>beg = ctx.offset();
+        <span class="kw">let </span>len = ctx.len().saturating_sub(ctx.offset());
+
+        ctx.inc(len);
+        <span class="macro">trace!</span>(<span class="string">&quot;consume_all&quot;</span>, beg =&gt; ctx.offset(), <span class="prelude-val">Ok</span>(Span::new(beg, len)))
+    }
 }
 </code></pre></div></section></main></body></html>

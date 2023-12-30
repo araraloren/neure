@@ -212,6 +212,9 @@
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -221,6 +224,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
 <span class="kw">use </span><span class="kw">crate</span>::re::ctor::Map;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select0;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::Select1;
 <span class="kw">use </span><span class="kw">crate</span>::re::map::SelectEq;
@@ -259,6 +263,8 @@
     func: F,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(DynamicCreateCtorThen&lt;C, P, F&gt;);
 
 <span class="kw">impl</span>&lt;C, P, F&gt; Debug <span class="kw">for </span>DynamicCreateCtorThen&lt;C, P, F&gt;
 <span class="kw">where

@@ -192,6 +192,9 @@
 <a href="#192" id="192">192</a>
 <a href="#193" id="193">193</a>
 <a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
@@ -200,6 +203,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -244,6 +248,8 @@
     r#else: E,
     marker: PhantomData&lt;C&gt;,
 }
+
+<span class="macro">def_not!</span>(IfRegex&lt;C, P, I, E&gt;);
 
 <span class="kw">impl</span>&lt;C, P, I, E&gt; Debug <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;
 <span class="kw">where

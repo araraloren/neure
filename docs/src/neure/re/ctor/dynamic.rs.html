@@ -141,10 +141,14 @@
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::re::def_not;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
 <span class="kw">use </span><span class="kw">crate</span>::re::Handler;
@@ -155,6 +159,8 @@
 <span class="kw">pub struct </span>DynamicCtor&lt;<span class="lifetime">&#39;a</span>, C, O&gt; {
     inner: DynamicCtorHandler&lt;<span class="lifetime">&#39;a</span>, C, O&gt;,
 }
+
+<span class="macro">def_not!</span>(DynamicCtor&lt;<span class="lifetime">&#39;a</span>, C, O&gt;);
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; DynamicCtor&lt;<span class="lifetime">&#39;a</span>, C, O&gt; {
     <span class="kw">pub fn </span>new(inner: DynamicCtorHandler&lt;<span class="lifetime">&#39;a</span>, C, O&gt;) -&gt; <span class="self">Self </span>{
