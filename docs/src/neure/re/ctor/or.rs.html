@@ -194,7 +194,7 @@
 /// # use neure::{prelude::*, re::map::from_str_radix};
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     macro_rules! num {
 ///         ($s:literal) =&gt; {
 ///             neu::digit($s).repeat_one_more().map(from_str_radix($s))

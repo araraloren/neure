@@ -21,8 +21,7 @@ operator. <a href="https://doc.rust-lang.org/1.74.1/core/cmp/trait.PartialOrd.ht
     T: <a class="trait" href="../trait.Regex.html" title="trait neure::re::Regex">Regex</a>&lt;C&gt;,
     C: <a class="trait" href="../../ctx/trait.Context.html" title="trait neure::ctx::Context">Context</a>&lt;'a&gt; + <a class="trait" href="../../ctx/trait.Match.html" title="trait neure::ctx::Match">Match</a>&lt;C&gt;,</span></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.pat" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#481-483">source</a><a href="#method.pat" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.pat" class="fn">pat</a>(self) -&gt; <a class="struct" href="../ctor/struct.Pattern.html" title="struct neure::re::ctor::Pattern">Pattern</a>&lt;C, T&gt;</h4></section></summary><div class="docblock"><p>Call <a href="../../ctx/trait.Match.html#tymethod.try_mat" title="trait neure::ctx::Match"><code>.try_mat</code></a> to match regex <code>P</code>.</p>
 <h5 id="example"><a href="#example">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>digit = <span class="macro">re!</span>([<span class="string">&#39;0&#39; </span>- <span class="string">&#39;9&#39;</span>]+);
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>digit = <span class="macro">re!</span>([<span class="string">&#39;0&#39; </span>- <span class="string">&#39;9&#39;</span>]+);
     <span class="kw">let </span>digit = digit.map(|v: <span class="kw-2">&amp;</span>str| <span class="prelude-val">Ok</span>(v.parse::&lt;i64&gt;().unwrap()));
     <span class="kw">let </span>digits = digit.sep(<span class="string">&quot;,&quot;</span>.ws());
     <span class="kw">let </span>array = digits.quote(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;]&quot;</span>);
@@ -34,8 +33,7 @@ operator. <a href="https://doc.rust-lang.org/1.74.1/core/cmp/trait.PartialOrd.ht
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.opt" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#504-506">source</a><a href="#method.opt" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.opt" class="fn">opt</a>(self) -&gt; <a class="struct" href="../ctor/struct.OptionPat.html" title="struct neure::re::ctor::OptionPat">OptionPat</a>&lt;C, T&gt;</h4></section></summary><div class="docblock"><p>Match <code>P</code> and return the result wrapped by <code>Option</code>, ignoring the error.</p>
 <h5 id="example-1"><a href="#example-1">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>num = neu::digit(<span class="number">10</span>)
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>num = neu::digit(<span class="number">10</span>)
         .repeat_one_more()
         .map(re::map::from_str::&lt;usize&gt;())
         .opt();
@@ -46,8 +44,7 @@ operator. <a href="https://doc.rust-lang.org/1.74.1/core/cmp/trait.PartialOrd.ht
 </div></details><details class="toggle method-toggle" open><summary><section id="method.quote" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#530-532">source</a><a href="#method.quote" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.quote" class="fn">quote</a>&lt;L, R&gt;(self, left: L, right: R) -&gt; <a class="struct" href="../ctor/struct.Quote.html" title="struct neure::re::ctor::Quote">Quote</a>&lt;C, T, L, R&gt;</h4></section></summary><div class="docblock"><p>First try to match <code>L</code>. If it is succeeds, then try to match <code>P</code>.
 If it is succeeds, then try to match <code>R</code>.</p>
 <h5 id="example-2"><a href="#example-2">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ascii = neu::ascii().repeat_one();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>ascii = neu::ascii().repeat_one();
     <span class="kw">let </span>lit = ascii.quote(<span class="string">&quot;&#39;&quot;</span>, <span class="string">&quot;&#39;&quot;</span>);
     <span class="kw">let </span>ele = lit.sep(<span class="string">&quot;,&quot;</span>.ws());
     <span class="kw">let </span>arr = ele.quote(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;]&quot;</span>);
@@ -58,8 +55,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.sep" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#554-556">source</a><a href="#method.sep" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.sep" class="fn">sep</a>&lt;S&gt;(self, sep: S) -&gt; <a class="struct" href="../ctor/struct.Separate.html" title="struct neure::re::ctor::Separate">Separate</a>&lt;C, T, S&gt;</h4></section></summary><div class="docblock"><p>Match regex <code>P</code> as many times as possible, with S as the delimiter.</p>
 <h5 id="example-3"><a href="#example-3">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>name = <span class="macro">re!</span>([^ <span class="string">&#39;,&#39; &#39;]&#39; &#39;[&#39;</span>]+);
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>name = <span class="macro">re!</span>([^ <span class="string">&#39;,&#39; &#39;]&#39; &#39;[&#39;</span>]+);
     <span class="kw">let </span>sep = <span class="string">&#39;,&#39;</span>.repeat_one().ws();
     <span class="kw">let </span>arr = name.sep(sep);
     <span class="kw">let </span>arr = arr.quote(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;]&quot;</span>);
@@ -69,8 +65,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.sep_once" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#588-590">source</a><a href="#method.sep_once" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.sep_once" class="fn">sep_once</a>&lt;S, R&gt;(self, sep: S, right: R) -&gt; <a class="struct" href="../ctor/struct.SepOnce.html" title="struct neure::re::ctor::SepOnce">SepOnce</a>&lt;C, T, S, R&gt;</h4></section></summary><div class="docblock"><p>Match <code>L</code> and <code>R</code> separated by <code>S</code>.</p>
 <h5 id="example-4"><a href="#example-4">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>key = neu::alphabetic().repeat_one_more().ws();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>key = neu::alphabetic().repeat_one_more().ws();
     <span class="kw">let </span>val = neu::whitespace().or(<span class="string">&#39;,&#39;</span>).not().repeat_one_more().ws();
     <span class="kw">let </span>sep = <span class="string">&quot;=&gt;&quot;</span>.ws();
     <span class="kw">let </span>ele = key.sep_once(sep, val);
@@ -90,8 +85,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.sep_collect" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#625-627">source</a><a href="#method.sep_collect" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.sep_collect" class="fn">sep_collect</a>&lt;S, O, V&gt;(self, sep: S) -&gt; <a class="struct" href="../ctor/struct.SepCollect.html" title="struct neure::re::ctor::SepCollect">SepCollect</a>&lt;C, T, S, O, V&gt;</h4></section></summary><div class="docblock"><p>Match regex <code>P</code> as many times as possible, with S as the delimiter.</p>
 <h5 id="example-5"><a href="#example-5">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>key = neu::alphabetic().repeat_one_more().ws();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>key = neu::alphabetic().repeat_one_more().ws();
     <span class="kw">let </span>val = neu::whitespace().or(<span class="string">&#39;,&#39;</span>).not().repeat_one_more().ws();
     <span class="kw">let </span>sep = <span class="string">&quot;=&gt;&quot;</span>.ws();
     <span class="kw">let </span>ele = key.sep_once(sep, val);
@@ -112,8 +106,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.or" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#659-661">source</a><a href="#method.or" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.or" class="fn">or</a>&lt;P&gt;(self, pat: P) -&gt; <a class="struct" href="../ctor/struct.Or.html" title="struct neure::re::ctor::Or">Or</a>&lt;C, T, P&gt;</h4></section></summary><div class="docblock"><p>First try to match <code>L</code>, if it fails, then try to match <code>R</code>.</p>
 <h5 id="example-6"><a href="#example-6">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="attr">#[derive(Debug, PartialEq, Eq)]
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="attr">#[derive(Debug, PartialEq, Eq)]
     </span><span class="kw">pub enum </span>V&lt;<span class="lifetime">&#39;a</span>&gt; {
         S(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str),
     }
@@ -133,8 +126,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.ltm" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#686-688">source</a><a href="#method.ltm" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.ltm" class="fn">ltm</a>&lt;P&gt;(self, pat: P) -&gt; <a class="struct" href="../ctor/struct.LongestTokenMatch.html" title="struct neure::re::ctor::LongestTokenMatch">LongestTokenMatch</a>&lt;C, T, P&gt;</h4></section></summary><div class="docblock"><p>Match <code>L</code> and <code>R</code>, return the longest match result.</p>
 <h5 id="example-7"><a href="#example-7">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="attr">#[derive(Debug, PartialEq, Eq)]
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="attr">#[derive(Debug, PartialEq, Eq)]
     </span><span class="kw">pub struct </span>Val&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str);
 
     <span class="kw">let </span>val = <span class="string">&quot;v&quot;</span>.ltm(<span class="string">&quot;val&quot;</span>.ltm(<span class="string">&quot;value&quot;</span>));
@@ -147,8 +139,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.then" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#712-714">source</a><a href="#method.then" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.then" class="fn">then</a>&lt;P&gt;(self, then: P) -&gt; <a class="struct" href="../ctor/struct.Then.html" title="struct neure::re::ctor::Then">Then</a>&lt;C, T, P&gt;</h4></section></summary><div class="docblock"><p>First try to match <code>P</code>. If it succeeds, then try to match <code>T</code>.</p>
 <h5 id="example-8"><a href="#example-8">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ws = neu::whitespace().repeat_full();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>ws = neu::whitespace().repeat_full();
     <span class="kw">let </span>id = neu::ascii_alphabetic().repeat_one_more();
     <span class="kw">let </span>st = <span class="string">&quot;struct&quot;</span>.ws().then(id)._1();
     <span class="kw">let </span>en = <span class="string">&quot;enum&quot;</span>.ws().then(id)._1();
@@ -161,8 +152,7 @@ If it is succeeds, then try to match <code>R</code>.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.if_then" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#753-755">source</a><a href="#method.if_then" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.if_then" class="fn">if_then</a>&lt;I, P&gt;(self, if: I, then: P) -&gt; <a class="struct" href="../ctor/struct.IfThen.html" title="struct neure::re::ctor::IfThen">IfThen</a>&lt;C, T, I, P&gt;</h4></section></summary><div class="docblock"><p>First try to match <code>P</code>. If it succeeds, then try to match <code>I</code>.
 If it succeeds, then try to match <code>T</code>.</p>
 <h5 id="example-9"><a href="#example-9">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>sp = neu::whitespace().repeat_full();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>sp = neu::whitespace().repeat_full();
     <span class="kw">let </span>using = <span class="string">&quot;use&quot;
         </span>.sep_once(
             <span class="string">&quot;&quot;</span>,
@@ -188,8 +178,7 @@ If it succeeds, then try to match <code>T</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.repeat" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#776-778">source</a><a href="#method.repeat" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.repeat" class="fn">repeat</a>(self, range: impl <a class="trait" href="https://doc.rust-lang.org/1.74.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="../../neu/struct.CRange.html" title="struct neure::neu::CRange">CRange</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.usize.html">usize</a>&gt;&gt;) -&gt; <a class="struct" href="../ctor/struct.Repeat.html" title="struct neure::re::ctor::Repeat">Repeat</a>&lt;C, T&gt;</h4></section></summary><div class="docblock"><p>Repeatedly match regex <code>P</code>, and the number of matches must meet the given range.</p>
 <h5 id="example-10"><a href="#example-10">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>int = neu::digit(<span class="number">10</span>).repeat_one_more();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>int = neu::digit(<span class="number">10</span>).repeat_one_more();
     <span class="kw">let </span>int = int.map(re::map::from_str_radix::&lt;i32&gt;(<span class="number">10</span>));
     <span class="kw">let </span>num = int.ws().repeat(<span class="number">3</span>..<span class="number">5</span>);
     <span class="kw">let </span><span class="kw-2">mut </span>ctx = CharsCtx::new(<span class="string">r#&quot;1 2 3 4&quot;#</span>);
@@ -198,8 +187,7 @@ If it succeeds, then try to match <code>T</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.collect" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#802-804">source</a><a href="#method.collect" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.collect" class="fn">collect</a>&lt;O, V&gt;(self) -&gt; <a class="struct" href="../ctor/struct.Collect.html" title="struct neure::re::ctor::Collect">Collect</a>&lt;C, T, O, V&gt;</h4></section></summary><div class="docblock"><p>Repeatedly match the regex <code>P</code> at least <a href="../ctor/struct.Collect.html#tymethod.min" title="struct neure::re::ctor::Collect"><code>min</code></a> times.</p>
 <h5 id="example-11"><a href="#example-11">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>val = re::consume(<span class="number">2</span>)
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>val = re::consume(<span class="number">2</span>)
         .map(re::map::from_le_bytes::&lt;i16&gt;())
         .collect::&lt;<span class="kw">_</span>, Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
@@ -212,8 +200,7 @@ If it succeeds, then try to match <code>T</code>.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.if" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#828-833">source</a><a href="#method.if" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.if" class="fn">if</a>&lt;I, E&gt;(self, if: I, else: E) -&gt; <a class="struct" href="../ctor/struct.IfRegex.html" title="struct neure::re::ctor::IfRegex">IfRegex</a>&lt;C, T, I, E&gt;<span class="where fmt-newline">where
     I: <a class="trait" href="https://doc.rust-lang.org/1.74.1/core/ops/function/trait.Fn.html" title="trait core::ops::function::Fn">Fn</a>(<a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.reference.html">&amp;C</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.74.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.bool.html">bool</a>, <a class="enum" href="../../err/enum.Error.html" title="enum neure::err::Error">Error</a>&gt;,</span></h4></section></summary><div class="docblock"><p>Construct a branch struct base on the test <code>I</code>(Fn(&amp;C) -&gt; Result&lt;bool, Error&gt;).</p>
 <h5 id="example-12"><a href="#example-12">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>val = <span class="string">&quot;file://&quot;</span>.r#if(
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>val = <span class="string">&quot;file://&quot;</span>.r#if(
         <span class="comment">// test if it is a file url
         </span>|ctx: <span class="kw-2">&amp;</span>CharsCtx| <span class="prelude-val">Ok</span>(ctx.orig()<span class="question-mark">?</span>.starts_with(<span class="string">&quot;file&quot;</span>)),
         <span class="string">&quot;http://&quot;</span>,
@@ -225,8 +212,7 @@ If it succeeds, then try to match <code>T</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.pad" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#859-861">source</a><a href="#method.pad" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.pad" class="fn">pad</a>&lt;P&gt;(self, pat: P) -&gt; <a class="struct" href="../ctor/struct.Pad.html" title="struct neure::re::ctor::Pad">Pad</a>&lt;C, T, P&gt;</h4></section></summary><div class="docblock"><p>First try to match <code>P</code>. If the match succeeds, then try to match <code>T</code>.</p>
 <h5 id="example-13"><a href="#example-13">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>sep = <span class="macro">neu!</span>([<span class="string">&#39;，&#39; &#39;;&#39;</span>]);
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>sep = <span class="macro">neu!</span>([<span class="string">&#39;，&#39; &#39;;&#39;</span>]);
     <span class="kw">let </span>end = <span class="macro">neu!</span>([<span class="string">&#39;。&#39; &#39;？&#39; &#39;！&#39;</span>]);
     <span class="kw">let </span>word = sep.or(end).not().repeat_one_more();
     <span class="kw">let </span>sent = word.sep(sep.repeat_one().ws()).pad(end.repeat_one());
@@ -239,8 +225,7 @@ If it succeeds, then try to match <code>T</code>.</p>
     <span class="prelude-val">Ok</span>(())</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.padded" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#896-898">source</a><a href="#method.padded" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.padded" class="fn">padded</a>&lt;P&gt;(self, pat: P) -&gt; <a class="struct" href="../ctor/struct.Padded.html" title="struct neure::re::ctor::Padded">Padded</a>&lt;C, T, P&gt;</h4></section></summary><div class="docblock"><p>First try to match <code>T</code>. If it succeeds, try to match <code>P</code>.</p>
 <h5 id="example-14"><a href="#example-14">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>num = neu::digit(<span class="number">10</span>).repeat_times::&lt;<span class="number">2</span>&gt;();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>num = neu::digit(<span class="number">10</span>).repeat_times::&lt;<span class="number">2</span>&gt;();
     <span class="kw">let </span>time = num.sep_once(<span class="string">&quot;:&quot;</span>, num);
     <span class="kw">let </span>time = time.quote(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;]&quot;</span>).ws();
     <span class="kw">let </span>star = <span class="string">&#39;*&#39;</span>.repeat_times::&lt;<span class="number">3</span>&gt;().ws();
@@ -266,8 +251,7 @@ If it succeeds, then try to match <code>T</code>.</p>
 ) -&gt; <a class="struct" href="../ctor/struct.Pad.html" title="struct neure::re::ctor::Pad">Pad</a>&lt;C, T, <a class="struct" href="../../neu/struct.NeureZeroMore.html" title="struct neure::neu::NeureZeroMore">NeureZeroMore</a>&lt;C, <a class="struct" href="../../neu/struct.AsciiWhiteSpace.html" title="struct neure::neu::AsciiWhiteSpace">AsciiWhiteSpace</a>, &lt;C as <a class="trait" href="../../ctx/trait.Context.html" title="trait neure::ctx::Context">Context</a>&lt;'a&gt;&gt;::<a class="associatedtype" href="../../ctx/trait.Context.html#associatedtype.Item" title="type neure::ctx::Context::Item">Item</a>, <a class="struct" href="../../neu/struct.NullCond.html" title="struct neure::neu::NullCond">NullCond</a>&gt;&gt;<span class="where fmt-newline">where
     C: <a class="trait" href="../../ctx/trait.Context.html" title="trait neure::ctx::Context">Context</a>&lt;'a, Item = <a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.char.html">char</a>&gt;,</span></h4></section></summary><div class="docblock"><p>A shortcut for matching trailing ascii spaces.</p>
 <h5 id="example-15"><a href="#example-15">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>str = <span class="string">&quot;file://      &quot;</span>;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>str = <span class="string">&quot;file://      &quot;</span>;
     <span class="kw">let </span>val = <span class="string">&quot;file://&quot;</span>.ws();
 
     <span class="macro">assert_eq!</span>(CharsCtx::new(str).ctor(<span class="kw-2">&amp;</span>val)<span class="question-mark">?</span>, <span class="string">&quot;file://&quot;</span>);
@@ -277,8 +261,7 @@ If it succeeds, then try to match <code>T</code>.</p>
 </div></details><section id="method.map" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor.rs.html#455-457">source</a><a href="#method.map" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.ConstructOp.html#tymethod.map" class="fn">map</a>&lt;F, O&gt;(self, func: F) -&gt; <a class="struct" href="../ctor/struct.Map.html" title="struct neure::re::ctor::Map">Map</a>&lt;C, T, F, O&gt;</h4></section></div></details><details class="toggle implementors-toggle"><summary><section id="impl-DynamicCreateCtorThenHelper%3C'a,+C%3E-for-RegexConsume" class="impl"><a class="src rightside" href="../../../src/neure/re/ctor/dthen.rs.html#172-217">source</a><a href="#impl-DynamicCreateCtorThenHelper%3C'a,+C%3E-for-RegexConsume" class="anchor">§</a><h3 class="code-header">impl&lt;'a, C, T&gt; <a class="trait" href="../ctor/trait.DynamicCreateCtorThenHelper.html" title="trait neure::re::ctor::DynamicCreateCtorThenHelper">DynamicCreateCtorThenHelper</a>&lt;'a, C&gt; for T<span class="where fmt-newline">where
     C: <a class="trait" href="../../ctx/trait.Context.html" title="trait neure::ctx::Context">Context</a>&lt;'a&gt; + <a class="trait" href="../../ctx/trait.Match.html" title="trait neure::ctx::Match">Match</a>&lt;C&gt;,</span></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.dyn_then_ctor" class="method trait-impl"><a class="src rightside" href="../../../src/neure/re/ctor/dthen.rs.html#214-216">source</a><a href="#method.dyn_then_ctor" class="anchor">§</a><h4 class="code-header">fn <a href="../ctor/trait.DynamicCreateCtorThenHelper.html#tymethod.dyn_then_ctor" class="fn">dyn_then_ctor</a>&lt;F&gt;(self, func: F) -&gt; <a class="struct" href="../ctor/struct.DynamicCreateCtorThen.html" title="struct neure::re::ctor::DynamicCreateCtorThen">DynamicCreateCtorThen</a>&lt;C, T, F&gt;</h4></section></summary><div class="docblock"><p>Construct a new regex with <code>Ctor</code> implementation based on previous result.</p>
 <h5 id="example-16"><a href="#example-16">Example</a></h5>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>num = u8::is_ascii_digit
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>num = u8::is_ascii_digit
         .repeat_one()
         .map(|v: <span class="kw-2">&amp;</span>[u8]| String::from_utf8(v.to_vec()).map_err(|<span class="kw">_</span>| Error::Uid(<span class="number">0</span>)))
         .map(re::map::from_str::&lt;usize&gt;());

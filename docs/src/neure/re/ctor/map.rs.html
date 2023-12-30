@@ -221,7 +221,7 @@
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::&lt;3&gt;()
 ///         // map &amp;str to String
@@ -245,7 +245,7 @@
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::&lt;3&gt;()
 ///         // map &amp;str to String
@@ -270,7 +270,7 @@
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let num = neu::digit(10).repeat_times::&lt;3&gt;();
 ///     let id =
 ///         CharsCtx::new(&quot;777&quot;).map(&amp;num, |v: &amp;str| v.parse::&lt;i32&gt;().map_err(|_| Error::Uid(0)))?;
