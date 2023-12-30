@@ -2,8 +2,7 @@
     N: <a class="trait" href="../neu/trait.Neu.html" title="trait neure::neu::Neu">Neu</a>&lt;C::<a class="associatedtype" href="../ctx/trait.Context.html#associatedtype.Item" title="type neure::ctx::Context::Item">Item</a>&gt;,
     C: <a class="trait" href="../ctx/trait.Context.html" title="trait neure::ctx::Context">Context</a>&lt;'a&gt;,</span></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Match at least one item.</p>
 <h2 id="example"><a href="#example">Example</a></h2>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="kw">let </span>num = re::one_more(<span class="string">&#39;0&#39;</span>..=<span class="string">&#39;9&#39;</span>);
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="kw">let </span>num = re::one_more(<span class="string">&#39;0&#39;</span>..=<span class="string">&#39;9&#39;</span>);
     <span class="kw">let </span><span class="kw-2">mut </span>ctx = CharsCtx::new(<span class="string">&quot;2048mb&quot;</span>);
 
     <span class="macro">assert_eq!</span>(ctx.try_mat(<span class="kw-2">&amp;</span>num)<span class="question-mark">?</span>, Span::new(<span class="number">0</span>, <span class="number">4</span>));

@@ -3,8 +3,7 @@
 ) -&gt; <a class="type" href="type.RecursiveCtor.html" title="type neure::re::ctor::RecursiveCtor">RecursiveCtor</a>&lt;'b, C, O&gt;<span class="where fmt-newline">where
     C: <a class="trait" href="../../ctx/trait.Context.html" title="trait neure::ctx::Context">Context</a>&lt;'a&gt;,
     I: <a class="trait" href="https://doc.rust-lang.org/1.74.1/core/ops/function/trait.Fn.html" title="trait core::ops::function::Fn">Fn</a>(<a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.reference.html">&amp;mut C</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.74.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;O, <a class="enum" href="../../err/enum.Error.html" title="enum neure::err::Error">Error</a>&gt; + 'b,</span></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="example"><a href="#example">Example</a></h2>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="attr">#[derive(Debug, PartialEq, Eq)]
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="attr">#[derive(Debug, PartialEq, Eq)]
     </span><span class="kw">enum </span>Xml {
         Element { name: String, child: Vec&lt;Xml&gt; },
         Enclosed(String),

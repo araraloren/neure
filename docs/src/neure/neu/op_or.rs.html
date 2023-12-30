@@ -150,7 +150,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let aorb = &#39;a&#39;.or(&#39;b&#39;).repeat::&lt;1, 2&gt;();
 ///     let mut ctx = CharsCtx::new(&quot;abc&quot;);
 ///
@@ -265,7 +265,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let re = u8::is_ascii_hexdigit.or(b&#39;g&#39;.or(b&#39;G&#39;)).repeat_times::&lt;4&gt;();
 ///     let re = re.padded(b&quot;0x&quot;);
 ///

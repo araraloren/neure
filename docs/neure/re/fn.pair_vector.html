@@ -3,8 +3,7 @@
 ) -&gt; <a class="struct" href="ctor/struct.PairVector.html" title="struct neure::re::ctor::PairVector">PairVector</a>&lt;K, V&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Iterate over the vector and match the regex against the <a href="../ctx/trait.Context.html" title="trait neure::ctx::Context"><code>Context</code></a>.
 It will return the value of first pair that matches.</p>
 <h2 id="example"><a href="#example">Example</a></h2>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    color_eyre::install()<span class="question-mark">?</span>;
-    <span class="attr">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>    <span class="attr">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
     </span><span class="kw">pub enum </span>C {
         Var,
         Ptr,

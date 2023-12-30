@@ -248,7 +248,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let tuple = re::vector([&quot;a&quot;.into_dyn_box(), &quot;b&quot;.into_dyn_box(), &quot;c&quot;.into_dyn_box()]);
 ///
 ///     assert_eq!(CharsCtx::new(&quot;abc&quot;).ctor_span(&amp;tuple)?, Span::new(0, 1));
@@ -347,7 +347,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum Kind {
 ///         A,

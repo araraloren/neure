@@ -127,7 +127,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let not_digit = neu::digit(10).not().repeat::&lt;1, 3&gt;();
 ///     let mut ctx = CharsCtx::new(&quot;cc9&quot;);
 ///
@@ -218,7 +218,7 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let item = neu::not(u8::is_ascii_uppercase);
 ///     let str = item.repeat_range(6..);
 ///     let mut ctx = BytesCtx::new(br#&quot;abcedfgABCEE&quot;#);

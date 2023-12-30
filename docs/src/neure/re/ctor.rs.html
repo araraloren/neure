@@ -1248,7 +1248,7 @@
 /// # };
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     #[derive(Debug, PartialEq, Eq)]
 ///     enum Xml {
 ///         Element { name: String, child: Vec&lt;Xml&gt; },
@@ -1389,7 +1389,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let digit = re!([&#39;0&#39; - &#39;9&#39;]+);
     ///     let digit = digit.map(|v: &amp;str| Ok(v.parse::&lt;i64&gt;().unwrap()));
     ///     let digits = digit.sep(&quot;,&quot;.ws());
@@ -1414,7 +1414,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let num = neu::digit(10)
     ///         .repeat_one_more()
     ///         .map(re::map::from_str::&lt;usize&gt;())
@@ -1439,7 +1439,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let ascii = neu::ascii().repeat_one();
     ///     let lit = ascii.quote(&quot;&#39;&quot;, &quot;&#39;&quot;);
     ///     let ele = lit.sep(&quot;,&quot;.ws());
@@ -1464,7 +1464,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let name = re!([^ &#39;,&#39; &#39;]&#39; &#39;[&#39;]+);
     ///     let sep = &#39;,&#39;.repeat_one().ws();
     ///     let arr = name.sep(sep);
@@ -1488,7 +1488,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let key = neu::alphabetic().repeat_one_more().ws();
     ///     let val = neu::whitespace().or(&#39;,&#39;).not().repeat_one_more().ws();
     ///     let sep = &quot;=&gt;&quot;.ws();
@@ -1524,7 +1524,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let key = neu::alphabetic().repeat_one_more().ws();
     ///     let val = neu::whitespace().or(&#39;,&#39;).not().repeat_one_more().ws();
     ///     let sep = &quot;=&gt;&quot;.ws();
@@ -1559,7 +1559,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     #[derive(Debug, PartialEq, Eq)]
     ///     pub enum V&lt;&#39;a&gt; {
     ///         S(&amp;&#39;a str),
@@ -1593,7 +1593,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     #[derive(Debug, PartialEq, Eq)]
     ///     pub struct Val&lt;&#39;a&gt;(&amp;&#39;a str);
     ///
@@ -1620,7 +1620,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let ws = neu::whitespace().repeat_full();
     ///     let id = neu::ascii_alphabetic().repeat_one_more();
     ///     let st = &quot;struct&quot;.ws().then(id)._1();
@@ -1647,7 +1647,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let sp = neu::whitespace().repeat_full();
     ///     let using = &quot;use&quot;
     ///         .sep_once(
@@ -1687,7 +1687,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let int = neu::digit(10).repeat_one_more();
     ///     let int = int.map(re::map::from_str_radix::&lt;i32&gt;(10));
     ///     let num = int.ws().repeat(3..5);
@@ -1710,7 +1710,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let val = re::consume(2)
     ///         .map(re::map::from_le_bytes::&lt;i16&gt;())
     ///         .collect::&lt;_, Vec&lt;_&gt;&gt;();
@@ -1736,7 +1736,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let val = &quot;file://&quot;.r#if(
     ///         // test if it is a file url
     ///         |ctx: &amp;CharsCtx| Ok(ctx.orig()?.starts_with(&quot;file&quot;)),
@@ -1765,7 +1765,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let sep = neu!([&#39;，&#39; &#39;;&#39;]);
     ///     let end = neu!([&#39;。&#39; &#39;？&#39; &#39;！&#39;]);
     ///     let word = sep.or(end).not().repeat_one_more();
@@ -1793,7 +1793,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let num = neu::digit(10).repeat_times::&lt;2&gt;();
     ///     let time = num.sep_once(&quot;:&quot;, num);
     ///     let time = time.quote(&quot;[&quot;, &quot;]&quot;).ws();
@@ -1829,7 +1829,7 @@
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let str = &quot;file://      &quot;;
     ///     let val = &quot;file://&quot;.ws();
     ///
