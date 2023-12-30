@@ -11,7 +11,7 @@ use super::Neu;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let large_than = |c: &char| *c > '7';
 ///     let digit = neu::digit(10).and(large_than).repeat::<1, 3>();
 ///     let mut ctx = CharsCtx::new("899");
@@ -127,7 +127,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     const BEG: u8 = 'a' as u8 - 1;
 ///     const END: u8 = 'z' as u8 + 1;
 ///

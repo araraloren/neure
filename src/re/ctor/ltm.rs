@@ -27,7 +27,7 @@ use crate::trace_log;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let dec = neu::digit(10).repeat_one_more();
 ///     let hex = neu::digit(16).repeat_one_more();
 ///     let dec = dec.map(re::map::from_str_radix::<i32>(10));

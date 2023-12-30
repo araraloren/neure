@@ -31,7 +31,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
 ///     let str = str.quote("\"", "\"").map(Ok);
 ///     let int = neu::digit(10).repeat_one_more();
@@ -186,7 +186,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let val = neu::ascii_alphabetic().repeat_one_more().ws();
 ///     let tuple = val.if_then(",".ws(), val).quote("(", ")");
 ///

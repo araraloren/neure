@@ -29,7 +29,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let char = neu::any().repeat_one();
 ///     let num = char.ws().repeat(1..);
 ///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);

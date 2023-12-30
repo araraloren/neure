@@ -11,7 +11,7 @@ use super::Neu;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let not_digit = neu::digit(10).not().repeat::<1, 3>();
 ///     let mut ctx = CharsCtx::new("cc9");
 ///
@@ -102,7 +102,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let item = neu::not(u8::is_ascii_uppercase);
 ///     let str = item.repeat_range(6..);
 ///     let mut ctx = BytesCtx::new(br#"abcedfgABCEE"#);

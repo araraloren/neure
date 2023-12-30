@@ -28,7 +28,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let digit = neu::digit(10).repeat_full();
 ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
 ///     let str = re!([^ '"']+).quote("\"", "\"");

@@ -31,7 +31,7 @@ use super::NeuCond;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let re = b'+'
 ///         .or(b'-')
 ///         .then(u8::is_ascii_hexdigit)

@@ -34,7 +34,7 @@ use super::NeuCond;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat::<1, 6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -51,7 +51,7 @@ use super::NeuCond;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_full();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -68,7 +68,7 @@ use super::NeuCond;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_to::<6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -85,7 +85,7 @@ use super::NeuCond;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_from::<1>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -257,7 +257,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_range(1..7);
 ///     let mut ctx = CharsCtx::new("aabbccgg");

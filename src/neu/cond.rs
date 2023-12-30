@@ -32,7 +32,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::not(b'"')
 ///         .repeat_one_more()
 ///         // avoid match escape sequence
@@ -141,7 +141,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let escape = b'\\'.then(b'"');
 ///     let str = neu::not(b'"')
 ///         .repeat_one_more()

@@ -26,7 +26,7 @@ use crate::re::Regex;
 /// # use neure::{prelude::*, re::map::from_str_radix};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     macro_rules! num {
 ///         ($s:literal) => {
 ///             neu::digit($s).repeat_one_more().map(from_str_radix($s))

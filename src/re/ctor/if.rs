@@ -26,7 +26,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let re1 = "google".sep_once(".", "com".or("is")).pat();
 ///     let re2 = "google"
 ///         .sep_once(".", "co".sep_once(".", "kr".or("jp")))

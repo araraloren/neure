@@ -11,7 +11,7 @@ use super::Neu;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let aorb = 'a'.or('b').repeat::<1, 2>();
 ///     let mut ctx = CharsCtx::new("abc");
 ///
@@ -126,7 +126,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let re = u8::is_ascii_hexdigit.or(b'g'.or(b'G')).repeat_times::<4>();
 ///     let re = re.padded(b"0x");
 ///

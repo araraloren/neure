@@ -32,7 +32,7 @@ use super::NeuCond;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_zero_one();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -194,7 +194,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_zero_more();
 ///     let mut ctx = CharsCtx::new("aabbccgg");

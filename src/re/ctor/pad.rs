@@ -27,7 +27,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.pad("://");
 ///     let domain = neu::alphabetic().repeat_one_more();
@@ -167,7 +167,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.pad("://");
 ///     let domain = neu::alphabetic().repeat_one_more();

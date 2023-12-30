@@ -21,7 +21,7 @@ use crate::re::Regex;
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::<3>()
 ///         // map &str to String
@@ -45,7 +45,7 @@ use crate::re::Regex;
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic()
 ///         .repeat_times::<3>()
 ///         // map &str to String
@@ -70,7 +70,7 @@ use crate::re::Regex;
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let num = neu::digit(10).repeat_times::<3>();
 ///     let id =
 ///         CharsCtx::new("777").map(&num, |v: &str| v.parse::<i32>().map_err(|_| Error::Uid(0)))?;

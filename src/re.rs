@@ -292,7 +292,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let sign = re::one('+');
 ///     let num = re::one_more('0'..='9');
 ///     let mut ctx = CharsCtx::new("+2077");
@@ -323,7 +323,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let sign = re::zero_one('+');
 ///     let num = re::one_more('0'..='9');
 ///     let mut ctx = CharsCtx::new("+2077");
@@ -355,7 +355,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let num = re::zero_more('0'..='9');
 ///     let mut ctx = CharsCtx::new("2048mb");
 ///
@@ -385,7 +385,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let num = re::one_more('0'..='9');
 ///     let mut ctx = CharsCtx::new("2048mb");
 ///
@@ -414,7 +414,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let website = re::count::<0, { usize::MAX }, _, _>(('a'..'{'));
 ///     let mut ctx = CharsCtx::new("example.com");
 ///
@@ -443,7 +443,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let website = re::count_if::<0, { usize::MAX }, _, _, _>(
 ///         ('a'..'{').or('.'),
 ///         |ctx: &CharsCtx, pair: &(usize, char)| {
@@ -484,7 +484,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let pos = re::start();
 ///     let rust = re::string("rust");
 ///     let year = neu::digit(10).repeat_times::<4>();
@@ -510,7 +510,7 @@ pub fn start() -> RegexStart {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let rust = re::string("rust");
 ///     let year = neu::digit(10).repeat_times::<4>();
 ///     let end = re::end();
@@ -536,7 +536,7 @@ pub fn end() -> RegexEnd {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let rust = re::string("rust");
 ///     let mut ctx = CharsCtx::new("rust2023");
 ///
@@ -558,7 +558,7 @@ pub fn string(lit: &str) -> RegexString<'_> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let head = re::slice(&[0xff, 0xff]);
 ///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
 ///
@@ -580,7 +580,7 @@ pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let null = re::consume(6);
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
@@ -602,7 +602,7 @@ pub fn consume(len: usize) -> RegexConsume {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let str = re::string("aabb");
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
@@ -624,7 +624,7 @@ pub fn consume_all() -> RegexConsumeAll {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let null = re::null();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
@@ -647,7 +647,7 @@ pub fn null<R>() -> NullRegex<R> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let re = re::not("]]]");
 ///     let mut ctx = CharsCtx::new("[123,456,789]");
 ///
@@ -668,7 +668,7 @@ pub fn not<T>(re: T) -> RegexNot<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let ty = neu::ascii_alphabetic().repeat_one_more();
 ///     let id = neu::ascii_alphabetic().repeat_one_more();
 ///     let var = ty.sep_once("", id);
@@ -696,7 +696,7 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum C {
 ///         Var,

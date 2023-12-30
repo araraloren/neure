@@ -251,7 +251,7 @@ impl<'a, T: PartialEq + MayDebug> Neu<T> for &'a [T] {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -282,7 +282,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = (Bound::Included(&'a'), Bound::Excluded(&'g'));
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -308,7 +308,7 @@ impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -333,7 +333,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = &'a' .. &'g';
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -358,7 +358,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a' .. 'g';
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -383,7 +383,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let from = &'a' ..;
 ///     let from = re!((from){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -408,7 +408,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let from = 'a' ..;
 ///     let from = re!((from){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -433,7 +433,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let full = ..;
 ///     let full = re!((full){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -458,7 +458,7 @@ impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = &'a' ..= &'f';
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -483,7 +483,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let hex = 'a' ..= 'f';
 ///     let hex = re!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -508,7 +508,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = .. &'g';
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -533,7 +533,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = .. 'g';
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -558,7 +558,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = ..= &'f';
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -583,7 +583,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let to = ..= 'f';
 ///     let to = re!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -748,7 +748,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let digit = neu::digit(10);
 ///     let hex = neu::digit(16);
 ///

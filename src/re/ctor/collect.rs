@@ -29,7 +29,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let re = b'+'.repeat_one().collect::<_, Vec<_>>();
 ///
 ///     assert!(BytesCtx::new(b"---A").ctor(&re).is_err());

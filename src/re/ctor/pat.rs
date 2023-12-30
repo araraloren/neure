@@ -24,7 +24,7 @@ use crate::re::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let abc = "abc";
 ///     let com = "com";
 ///     let website = abc.sep_once(".", com);

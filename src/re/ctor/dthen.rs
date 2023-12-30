@@ -30,7 +30,7 @@ use crate::re::Regex;
 /// # use neure::{prelude::*, re::DynamicCreateCtorThenHelper};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let len = re::consume(2).map(re::map::from_le_bytes::<i16>());
 ///     let data = len.dyn_then_ctor(|v: &i16| Ok(re::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
@@ -183,7 +183,7 @@ where
     /// # use neure::{err::Error, prelude::*, re::DynamicCreateCtorThenHelper};
     /// #
     /// # fn main() -> color_eyre::Result<()> {
-    ///     color_eyre::install()?;
+    /// #     color_eyre::install()?;
     ///     let num = u8::is_ascii_digit
     ///         .repeat_one()
     ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))

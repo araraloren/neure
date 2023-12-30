@@ -73,7 +73,7 @@ where
 /// # use neure::{err::Error, prelude::*, re::RecursiveCtor};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     pub fn parser<'a: 'b, 'b>(
 ///         ctor: RecursiveCtor<'b, BytesCtx<'a>, &'a [u8]>,
 ///     ) -> impl Fn(&mut BytesCtx<'a>) -> Result<&'a [u8], Error> + 'b {
@@ -105,7 +105,7 @@ where
 /// # use neure::{err::Error, prelude::*};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
-///     color_eyre::install()?;
+/// #     color_eyre::install()?;
 ///     let num = u8::is_ascii_digit
 ///         .repeat_one()
 ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
