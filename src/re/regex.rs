@@ -25,7 +25,7 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
-/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`](crate::ctx::Context) is equal to 0.
+/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to 0.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexStart;
 
@@ -71,7 +71,7 @@ where
     }
 }
 
-/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`](crate::ctx::Context) is equal to [`len`](crate::ctx::Context#tymethod.len).
+/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to [`len`](crate::ctx::Context#tymethod.len).
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexEnd;
 
