@@ -864,11 +864,14 @@
 <a href="#864" id="864">864</a>
 <a href="#865" id="865">865</a>
 <a href="#866" id="866">866</a>
+<a href="#867" id="867">867</a>
+<a href="#868" id="868">868</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 </span><span class="kw">pub mod </span>ctx;
 <span class="kw">pub mod </span>err;
 <span class="kw">pub mod </span>iter;
 <span class="kw">pub mod </span>r#macro;
+<span class="kw">pub mod </span>map;
 <span class="kw">pub mod </span>neu;
 <span class="kw">pub mod </span>re;
 <span class="kw">pub mod </span>span;
@@ -907,6 +910,7 @@
     <span class="kw">pub use </span><span class="kw">crate</span>::ctx::RegexCtx;
     <span class="kw">pub use </span><span class="kw">crate</span>::ctx::Ret;
     <span class="kw">pub use </span><span class="kw">crate</span>::ctx::Span;
+    <span class="kw">pub use </span><span class="kw">crate</span>::map;
     <span class="kw">pub use </span><span class="kw">crate</span>::neu;
     <span class="kw">pub use </span><span class="kw">crate</span>::neu::Condition;
     <span class="kw">pub use </span><span class="kw">crate</span>::neu::Neu;

@@ -214,8 +214,8 @@
 /// #     color_eyre::install()?;
 ///     let dec = neu::digit(10).repeat_one_more();
 ///     let hex = neu::digit(16).repeat_one_more();
-///     let dec = dec.map(re::map::from_str_radix::&lt;i32&gt;(10));
-///     let hex = hex.map(re::map::from_str_radix(16));
+///     let dec = dec.map(map::from_str_radix::&lt;i32&gt;(10));
+///     let hex = hex.map(map::from_str_radix(16));
 ///     let num = dec.ltm(hex);
 ///     let val = num.sep(&quot;,&quot;.ws()).quote(&quot;{&quot;, &quot;}&quot;);
 ///     let mut ctx = CharsCtx::new(r#&quot;{12, E1, A8, 88, 2F}&quot;#);

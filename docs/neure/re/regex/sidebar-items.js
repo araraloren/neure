@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["into_dyn_regex"],"struct":["DynamicCreateRegexThen","DynamicRegex","RegexConsume","RegexConsumeAll","RegexEnd","RegexNot","RegexSlice","RegexStart","RegexString"],"trait":["DynamicCreateRegexThenHelper","DynamicRegexHelper"],"type":["DynamicRegexHandler"]};
+window.SIDEBAR_ITEMS = {"fn":["into_dyn_regex"],"struct":["AnchorEnd","AnchorStart","Consume","ConsumeAll","DynamicCreateRegexThen","DynamicRegex","LitSlice","LitString","RegexNot"],"trait":["DynamicCreateRegexThenHelper","DynamicRegexHelper"],"type":["DynamicRegexHandler"]};

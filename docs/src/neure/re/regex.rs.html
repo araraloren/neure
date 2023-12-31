@@ -209,8 +209,8 @@
 <a href="#209" id="209">209</a>
 </pre></div><pre class="rust"><code><span class="kw">mod </span>dthen;
 <span class="kw">mod </span>dynamic;
+<span class="kw">mod </span>literal;
 <span class="kw">mod </span>not;
-<span class="kw">mod </span>slice;
 
 <span class="kw">pub use </span><span class="self">self</span>::dthen::DynamicCreateRegexThen;
 <span class="kw">pub use </span><span class="self">self</span>::dthen::DynamicCreateRegexThenHelper;
@@ -218,9 +218,9 @@
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::DynamicRegex;
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::DynamicRegexHandler;
 <span class="kw">pub use </span><span class="self">self</span>::dynamic::DynamicRegexHelper;
+<span class="kw">pub use </span><span class="self">self</span>::literal::LitSlice;
+<span class="kw">pub use </span><span class="self">self</span>::literal::LitString;
 <span class="kw">pub use </span><span class="self">self</span>::not::RegexNot;
-<span class="kw">pub use </span><span class="self">self</span>::slice::RegexSlice;
-<span class="kw">pub use </span><span class="self">self</span>::slice::RegexString;
 
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
@@ -236,17 +236,17 @@
 
 <span class="doccomment">/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to 0.
 </span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-</span><span class="kw">pub struct </span>RegexStart;
+</span><span class="kw">pub struct </span>AnchorStart;
 
-<span class="macro">def_not!</span>(RegexStart);
+<span class="macro">def_not!</span>(AnchorStart);
 
-<span class="kw">impl </span>RegexStart {
+<span class="kw">impl </span>AnchorStart {
     <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{}
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexStart
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>AnchorStart
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
@@ -262,7 +262,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexStart
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>AnchorStart
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
@@ -282,17 +282,17 @@
 
 <span class="doccomment">/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to [`len`](crate::ctx::Context#tymethod.len).
 </span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-</span><span class="kw">pub struct </span>RegexEnd;
+</span><span class="kw">pub struct </span>AnchorEnd;
 
-<span class="macro">def_not!</span>(RegexEnd);
+<span class="macro">def_not!</span>(AnchorEnd);
 
-<span class="kw">impl </span>RegexEnd {
+<span class="kw">impl </span>AnchorEnd {
     <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{}
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexEnd
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>AnchorEnd
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
@@ -308,7 +308,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexEnd
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>AnchorEnd
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
@@ -328,17 +328,17 @@
 
 <span class="doccomment">/// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
 </span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-</span><span class="kw">pub struct </span>RegexConsume(usize);
+</span><span class="kw">pub struct </span>Consume(usize);
 
-<span class="macro">def_not!</span>(RegexConsume);
+<span class="macro">def_not!</span>(Consume);
 
-<span class="kw">impl </span>RegexConsume {
+<span class="kw">impl </span>Consume {
     <span class="kw">pub fn </span>new(size: usize) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>(size)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexConsume
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>Consume
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
@@ -354,7 +354,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexConsume
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>Consume
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
@@ -375,17 +375,17 @@
 
 <span class="doccomment">/// Consume all remaining [`Item`](crate::ctx::Context::Item)s of the [`Context`].
 </span><span class="attr">#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-</span><span class="kw">pub struct </span>RegexConsumeAll;
+</span><span class="kw">pub struct </span>ConsumeAll;
 
-<span class="macro">def_not!</span>(RegexConsumeAll);
+<span class="macro">def_not!</span>(ConsumeAll);
 
-<span class="kw">impl </span>RegexConsumeAll {
+<span class="kw">impl </span>ConsumeAll {
     <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{}
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>RegexConsumeAll
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O&gt; <span class="kw">for </span>ConsumeAll
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
 {
@@ -401,7 +401,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>RegexConsumeAll
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Regex&lt;C&gt; <span class="kw">for </span>ConsumeAll
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
