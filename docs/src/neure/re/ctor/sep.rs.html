@@ -664,11 +664,11 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::map::Select0;
+<span class="kw">use </span><span class="kw">crate</span>::map::Select1;
+<span class="kw">use </span><span class="kw">crate</span>::map::SelectEq;
 <span class="kw">use </span><span class="kw">crate</span>::neu::CRange;
 <span class="kw">use </span><span class="kw">crate</span>::re::def_not;
-<span class="kw">use </span><span class="kw">crate</span>::re::map::Select0;
-<span class="kw">use </span><span class="kw">crate</span>::re::map::Select1;
-<span class="kw">use </span><span class="kw">crate</span>::re::map::SelectEq;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace_v;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
@@ -1103,7 +1103,7 @@
 /// # Example
 ///
 /// ```
-/// # use neure::{prelude::*, re::map::FromStr};
+/// # use neure::{prelude::*, map::FromStr};
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;

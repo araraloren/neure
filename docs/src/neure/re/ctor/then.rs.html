@@ -365,11 +365,11 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Ret;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Span;
 <span class="kw">use </span><span class="kw">crate</span>::err::Error;
+<span class="kw">use </span><span class="kw">crate</span>::map::Select0;
+<span class="kw">use </span><span class="kw">crate</span>::map::Select1;
+<span class="kw">use </span><span class="kw">crate</span>::map::SelectEq;
 <span class="kw">use </span><span class="kw">crate</span>::re::ctor::Map;
 <span class="kw">use </span><span class="kw">crate</span>::re::def_not;
-<span class="kw">use </span><span class="kw">crate</span>::re::map::Select0;
-<span class="kw">use </span><span class="kw">crate</span>::re::map::Select1;
-<span class="kw">use </span><span class="kw">crate</span>::re::map::SelectEq;
 <span class="kw">use </span><span class="kw">crate</span>::re::trace;
 <span class="kw">use </span><span class="kw">crate</span>::re::Ctor;
 <span class="kw">use </span><span class="kw">crate</span>::re::Extract;
@@ -393,7 +393,7 @@
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
 ///     let str = str.quote(&quot;\&quot;&quot;, &quot;\&quot;&quot;).map(Ok);
 ///     let int = neu::digit(10).repeat_one_more();
-///     let int = int.map(re::map::from_str_radix::&lt;i32&gt;(10));
+///     let int = int.map(map::from_str_radix::&lt;i32&gt;(10));
 ///     let tuple = str.ws().then(&quot;,&quot;.ws())._0().then(int.ws());
 ///     let tuple = tuple.quote(&quot;(&quot;, &quot;)&quot;);
 ///     let mut ctx = CharsCtx::new(r#&quot;(&quot;Galaxy&quot;, 42)&quot;#);
