@@ -1,3 +1,4 @@
+mod array;
 mod boxed;
 mod collect;
 mod dthen;
@@ -12,6 +13,7 @@ mod pat;
 mod quote;
 mod repeat;
 mod sep;
+mod slice;
 mod then;
 mod vec;
 
@@ -21,6 +23,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+pub use self::array::Array;
+pub use self::array::PairArray;
 pub use self::boxed::into_boxed_ctor;
 pub use self::boxed::BoxedCtor;
 pub use self::boxed::BoxedCtorHelper;
@@ -45,6 +49,8 @@ pub use self::repeat::Repeat;
 pub use self::sep::SepCollect;
 pub use self::sep::SepOnce;
 pub use self::sep::Separate;
+pub use self::slice::PairSlice;
+pub use self::slice::Slice;
 pub use self::then::IfThen;
 pub use self::then::Then;
 pub use self::vec::PairVector;

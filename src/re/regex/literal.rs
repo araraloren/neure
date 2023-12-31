@@ -15,19 +15,19 @@ use crate::re::Regex;
 ///
 /// Return a [`Span`] as match result.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct RegexSlice<'a, T> {
+pub struct LitSlice<'a, T> {
     val: &'a [T],
 }
 
-def_not!(RegexSlice<'a, T>);
+def_not!(LitSlice<'a, T>);
 
-impl<'a, T> RegexSlice<'a, T> {
+impl<'a, T> LitSlice<'a, T> {
     pub fn new(val: &'a [T]) -> Self {
         Self { val }
     }
 }
 
-impl<'a, 'b, C, O, T> Ctor<'a, C, O, O> for RegexSlice<'b, T>
+impl<'a, 'b, C, O, T> Ctor<'a, C, O, O> for LitSlice<'b, T>
 where
     T: PartialOrd + 'a,
     C: Context<'a, Orig = [T]> + Match<C>,
@@ -44,7 +44,7 @@ where
     }
 }
 
-impl<'a, 'b, C, T> Regex<C> for RegexSlice<'b, T>
+impl<'a, 'b, C, T> Regex<C> for LitSlice<'b, T>
 where
     T: PartialOrd + 'a,
     C: Context<'a, Orig = [T]>,
@@ -71,19 +71,19 @@ where
 ///
 /// Return a [`Span`] as match result.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct RegexString<'a> {
+pub struct LitString<'a> {
     val: &'a str,
 }
 
-def_not!(RegexString<'a>);
+def_not!(LitString<'a>);
 
-impl<'a> RegexString<'a> {
+impl<'a> LitString<'a> {
     pub fn new(val: &'a str) -> Self {
         Self { val }
     }
 }
 
-impl<'a, 'b, C, O> Ctor<'a, C, O, O> for RegexString<'b>
+impl<'a, 'b, C, O> Ctor<'a, C, O, O> for LitString<'b>
 where
     C: Context<'a, Orig = str> + Match<C>,
 {
@@ -99,7 +99,7 @@ where
     }
 }
 
-impl<'a, 'b, C> Regex<C> for RegexString<'b>
+impl<'a, 'b, C> Regex<C> for LitString<'b>
 where
     C: Context<'a, Orig = str>,
 {

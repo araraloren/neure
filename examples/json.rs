@@ -58,9 +58,9 @@ impl JsonParser {
             let str = str_val.quote(b"\"", b"\"");
             let str = str.map(|v| Ok(JsonZero::Str(v)));
 
-            let bool_t = re::slice(b"true").map(|_| Ok(JsonZero::Bool(true)));
-            let bool_f = re::slice(b"false").map(|_| Ok(JsonZero::Bool(false)));
-            let null = re::slice(b"null").map(|_| Ok(JsonZero::Null));
+            let bool_t = re::lit_slice(b"true").map(|_| Ok(JsonZero::Bool(true)));
+            let bool_f = re::lit_slice(b"false").map(|_| Ok(JsonZero::Bool(false)));
+            let null = re::lit_slice(b"null").map(|_| Ok(JsonZero::Null));
 
             let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
             let ele = ele.pad(ws).padded(ws);

@@ -16,14 +16,18 @@ pub use self::ctor::into_boxed_ctor;
 pub use self::ctor::into_dyn_ctor;
 pub use self::ctor::rec_parser;
 pub use self::ctor::rec_parser_sync;
+pub use self::ctor::Array;
 pub use self::ctor::BoxedCtorHelper;
 pub use self::ctor::ConstructOp;
 pub use self::ctor::Ctor;
 pub use self::ctor::DynamicCreateCtorThenHelper;
 pub use self::ctor::DynamicCtorHelper;
+pub use self::ctor::PairArray;
+pub use self::ctor::PairSlice;
 pub use self::ctor::PairVector;
 pub use self::ctor::RecursiveCtor;
 pub use self::ctor::RecursiveCtorSync;
+pub use self::ctor::Slice;
 pub use self::ctor::Vector;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
@@ -31,15 +35,15 @@ pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
 pub use self::regex::into_dyn_regex;
+pub use self::regex::AnchorEnd;
+pub use self::regex::AnchorStart;
+pub use self::regex::Consume;
+pub use self::regex::ConsumeAll;
 pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRegexHelper;
-pub use self::regex::RegexConsume;
-pub use self::regex::RegexConsumeAll;
-pub use self::regex::RegexEnd;
+pub use self::regex::LitSlice;
+pub use self::regex::LitString;
 pub use self::regex::RegexNot;
-pub use self::regex::RegexSlice;
-pub use self::regex::RegexStart;
-pub use self::regex::RegexString;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -123,7 +127,7 @@ where
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::re::slice(self);
+        let pattern = crate::re::lit_slice(self);
         pattern.try_parse(ctx)
     }
 }
@@ -136,7 +140,7 @@ where
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::re::slice(self.as_slice());
+        let pattern = crate::re::lit_slice(self.as_slice());
         pattern.try_parse(ctx)
     }
 }
@@ -149,7 +153,7 @@ where
 
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        let pattern = crate::re::slice(self.as_slice());
+        let pattern = crate::re::lit_slice(self.as_slice());
         pattern.try_parse(ctx)
     }
 }
@@ -496,8 +500,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn start() -> RegexStart {
-    RegexStart::new()
+pub fn start() -> AnchorStart {
+    AnchorStart::new()
 }
 
 ///
@@ -522,8 +526,8 @@ pub fn start() -> RegexStart {
 ///     Ok(())
 /// # }
 /// ```
-pub fn end() -> RegexEnd {
-    RegexEnd::new()
+pub fn end() -> AnchorEnd {
+    AnchorEnd::new()
 }
 
 ///
@@ -544,8 +548,8 @@ pub fn end() -> RegexEnd {
 ///     Ok(())
 /// # }
 /// ```
-pub fn string(lit: &str) -> RegexString<'_> {
-    RegexString::new(lit)
+pub fn string(lit: &str) -> LitString<'_> {
+    LitString::new(lit)
 }
 
 ///
@@ -558,7 +562,7 @@ pub fn string(lit: &str) -> RegexString<'_> {
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let head = re::slice(&[0xff, 0xff]);
+///     let head = re::lit_slice(&[0xff, 0xff]);
 ///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
 ///
 ///     assert_eq!(ctx.try_mat(&head)?, Span::new(0, 2));
@@ -566,8 +570,8 @@ pub fn string(lit: &str) -> RegexString<'_> {
 ///     Ok(())
 /// # }
 /// ```
-pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
-    RegexSlice::new(lit)
+pub fn lit_slice<T>(lit: &[T]) -> LitSlice<'_, T> {
+    LitSlice::new(lit)
 }
 
 ///
@@ -588,8 +592,8 @@ pub fn slice<T>(lit: &[T]) -> RegexSlice<'_, T> {
 ///     Ok(())
 /// # }
 /// ```
-pub fn consume(len: usize) -> RegexConsume {
-    RegexConsume::new(len)
+pub fn consume(len: usize) -> Consume {
+    Consume::new(len)
 }
 
 ///
@@ -610,8 +614,8 @@ pub fn consume(len: usize) -> RegexConsume {
 ///     Ok(())
 /// # }
 /// ```
-pub fn consume_all() -> RegexConsumeAll {
-    RegexConsumeAll::new()
+pub fn consume_all() -> ConsumeAll {
+    ConsumeAll::new()
 }
 
 ///
@@ -728,6 +732,22 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 /// ```
 pub fn pair_vector<K, V: Clone>(val: impl IntoIterator<Item = (K, V)>) -> PairVector<K, V> {
     PairVector::new(val.into_iter().collect())
+}
+
+pub fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
+    Array::new(val)
+}
+
+pub fn slice<const N: usize, T>(val: &[T; N]) -> Slice<'_, N, T> {
+    Slice::new(val)
+}
+
+pub fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> {
+    PairArray::new(val)
+}
+
+pub fn pair_slice<const N: usize, K, V>(val: &[(K, V); N]) -> PairSlice<'_, N, K, V> {
+    PairSlice::new(val)
 }
 
 #[cfg(feature = "log")]

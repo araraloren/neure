@@ -1,7 +1,7 @@
 mod dthen;
 mod dynamic;
+mod literal;
 mod not;
-mod slice;
 
 pub use self::dthen::DynamicCreateRegexThen;
 pub use self::dthen::DynamicCreateRegexThenHelper;
@@ -9,9 +9,9 @@ pub use self::dynamic::into_dyn_regex;
 pub use self::dynamic::DynamicRegex;
 pub use self::dynamic::DynamicRegexHandler;
 pub use self::dynamic::DynamicRegexHelper;
+pub use self::literal::LitSlice;
+pub use self::literal::LitString;
 pub use self::not::RegexNot;
-pub use self::slice::RegexSlice;
-pub use self::slice::RegexString;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -27,17 +27,17 @@ use crate::re::Regex;
 
 /// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to 0.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RegexStart;
+pub struct AnchorStart;
 
-def_not!(RegexStart);
+def_not!(AnchorStart);
 
-impl RegexStart {
+impl AnchorStart {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl<'a, C, O> Ctor<'a, C, O, O> for RegexStart
+impl<'a, C, O> Ctor<'a, C, O, O> for AnchorStart
 where
     C: Context<'a> + Match<C>,
 {
@@ -53,7 +53,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for RegexStart
+impl<'a, C> Regex<C> for AnchorStart
 where
     C: Context<'a>,
 {
@@ -73,17 +73,17 @@ where
 
 /// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to [`len`](crate::ctx::Context#tymethod.len).
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RegexEnd;
+pub struct AnchorEnd;
 
-def_not!(RegexEnd);
+def_not!(AnchorEnd);
 
-impl RegexEnd {
+impl AnchorEnd {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl<'a, C, O> Ctor<'a, C, O, O> for RegexEnd
+impl<'a, C, O> Ctor<'a, C, O, O> for AnchorEnd
 where
     C: Context<'a> + Match<C>,
 {
@@ -99,7 +99,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for RegexEnd
+impl<'a, C> Regex<C> for AnchorEnd
 where
     C: Context<'a>,
 {
@@ -119,17 +119,17 @@ where
 
 /// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RegexConsume(usize);
+pub struct Consume(usize);
 
-def_not!(RegexConsume);
+def_not!(Consume);
 
-impl RegexConsume {
+impl Consume {
     pub fn new(size: usize) -> Self {
         Self(size)
     }
 }
 
-impl<'a, C, O> Ctor<'a, C, O, O> for RegexConsume
+impl<'a, C, O> Ctor<'a, C, O, O> for Consume
 where
     C: Context<'a> + Match<C>,
 {
@@ -145,7 +145,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for RegexConsume
+impl<'a, C> Regex<C> for Consume
 where
     C: Context<'a>,
 {
@@ -166,17 +166,17 @@ where
 
 /// Consume all remaining [`Item`](crate::ctx::Context::Item)s of the [`Context`].
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RegexConsumeAll;
+pub struct ConsumeAll;
 
-def_not!(RegexConsumeAll);
+def_not!(ConsumeAll);
 
-impl RegexConsumeAll {
+impl ConsumeAll {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl<'a, C, O> Ctor<'a, C, O, O> for RegexConsumeAll
+impl<'a, C, O> Ctor<'a, C, O, O> for ConsumeAll
 where
     C: Context<'a> + Match<C>,
 {
@@ -192,7 +192,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for RegexConsumeAll
+impl<'a, C> Regex<C> for ConsumeAll
 where
     C: Context<'a>,
 {
