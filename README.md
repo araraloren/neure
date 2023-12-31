@@ -2,42 +2,85 @@
 
 A fast little combinational parsing library
 
-## Performance
+## Why neure
 
-`rel` is mean release, `fat` is mean release with lto=fat
+* Better performance
 
-![img](https://github.com/araraloren/neure/blob/e1965e572d7d88406d962a33569c1cfd175296bf/performance.png)
+* Fewer dependencies
 
-See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
+* Faster compilation
 
 ## Example
 
+For more, reference [`examples`](https://github.com/araraloren/neure/tree/main/examples)
+
+### Example 1
+
 ```rust
-use neure::*;
+use neure::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let digit = neure!(['0' - '9']+); // match digit from 0 to 9 more than once
-    let mut storer = SpanStorer::new(1);
-    let mut ctx = CharsCtx::default().with_str("2023rust");
+    let year = re!(['0' - '9']+); // match digit from 0 to 9 more than once
+    let year = year.map(map::from_str::<i32>()); // map it to i32
+    let name = neu::ascii_alphabetic().repeat_one_more(); // match ascii alphabetic
+    let mut ctx = CharsCtx::new("2024rust");
 
-    ctx.try_cap(0, &mut storer, digit)?;
-    assert_eq!(storer.spans(0)?, &vec![Span { beg: 0, len: 4 }]);
-
+    // .then construct a tuple
+    assert_eq!(ctx.ctor(&year.then(name))?, (2024, "rust"));
     Ok(())
 }
+
 ```
 
-## Performance match between crate `regex`
+### Code comparation between crate `regex`
 
 ```rust
-use ::regex::Regex;
-use neure::{span::SpanStorer, *};
+mod neure_ {
+    use neure::prelude::*;
 
-thread_local! {
-    static REGEX: Regex = Regex::new(r"^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$").unwrap();
+    fn parser(str: &str) -> Result<(), neure::err::Error> {
+        let mut ctx = RegexCtx::new(str);
+        let alpha = neu::range('a'..='z');
+        let num = neu::digit(10);
+        let name = neu!((alpha, num, '_', '.', '+', '-')).repeat_one_more();
+        let domain = alpha.or(num).or('.').or('-').repeat_to::<256>().set_cond(
+            |ctx: &CharsCtx, item: &(usize, char)| {
+                // stop at last '.'
+                Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
+            },
+        );
+        let email = re::start()
+            .then(name)
+            .then("@")
+            .then(domain)
+            .then(".")
+            .then(neu!((alpha, '.')).repeat::<2, 6>())
+            .then(re::end());
+
+        ctx.try_mat(&email)?;
+        Ok(())
+    }
+
+    pub fn parse(tests: &[&str], results: &[bool]) {
+        for (test, result) in tests.iter().zip(results.iter()) {
+            assert_eq!(parser(test).is_ok(), *result, "test = {}", test);
+        }
+    }
 }
 
-pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+mod regex_ {
+    use regex::Regex;
+
+    pub fn parse(re: &Regex, tests: &[&str], results: &[bool]) {
+        for (test, result) in tests.iter().zip(results.iter()) {
+            assert_eq!(re.is_match(test), *result);
+        }
+    }
+}
+
+fn main() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+
     let test_cases = [
         "plainaddress",
         "#@%^%#$@#$@#.com",
@@ -50,87 +93,16 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "firstname.lastname@example.com",
         "email@subdomain.example.com",
     ];
+    let results = [
+        false, false, false, false, false, false, false, true, true, true,
+    ];
+    let re: regex::Regex =
+        regex::Regex::new(r"^([a-z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$").unwrap();
 
-    let letter = regex!(['a' - 'z']);
-    let number = regex!(['0' - '9']);
-    let under_score = regex!('_');
-    let dot = regex!('.');
-    let plus = regex!('+');
-    let minus = regex!('-');
-    let at = neure!('@');
-    let prefix = neure!((group!(&letter, &number, &under_score, &dot, &plus, &minus))+);
-    let start = neure::start();
-    let domain = neure::count_if::<0, { usize::MAX }, _>(
-        group!(&letter, &number, &dot, &minus),
-        |ctx: &CharsCtx, char| {
-            if char.1 == '.' {
-                // don't match dot if we don't have more dot
-                if let Ok(str) = ctx.orig_at(ctx.offset() + char.0 + 1) {
-                    return str.find('.').is_some();
-                }
-            }
-            true
-        },
-    );
-    let postfix = neure!((group!(&letter, &dot)){2,6});
-    let dot = neure!('.');
-    let end = neure::end();
-    let mut storer = SpanStorer::new(3);
-    let parser = |storer: &mut SpanStorer, str| -> Result<(), neure::err::Error> {
-        let mut ctx = CharsCtx::new(str);
+    regex_::parse(&re, &test_cases, &results);
+    neure_::parse(&test_cases, &results);
 
-        ctx.try_mat(&start)?;
-        ctx.try_cap(0, storer, &prefix)?;
-        ctx.try_mat(&at)?;
-        ctx.try_cap(1, storer, &domain)?;
-        ctx.try_mat(&dot)?;
-        ctx.try_cap(2, storer, &postfix)?;
-        ctx.try_mat(&end)?;
-        Ok(())
-    };
-
-    measure(1000, 1000, || {
-        let mut count = 0;
-        test_cases.iter().for_each(|test| {
-            parser(&mut storer, test).is_ok().then(|| count += 1);
-        });
-        count
-    });
-    let mut locs = REGEX.try_with(|re| re.capture_locations()).unwrap();
-
-    measure(1000, 1000, || {
-        let mut count = 0;
-        test_cases.iter().for_each(|test| {
-            REGEX
-                .try_with(|regex| {
-                    regex
-                        .captures_read(&mut locs, test)
-                        .is_some()
-                        .then(|| count += 1);
-                })
-                .unwrap();
-        });
-        count
-    });
     Ok(())
-}
-
-pub fn measure(n: usize, size: usize, mut f: impl FnMut() -> i32) {
-    use std::time::Instant;
-
-    let start = Instant::now();
-    let mut sum = 0;
-    for _ in 0..n {
-        sum += f();
-    }
-    let time = start.elapsed();
-    println!(
-        "Size = {size}, Cost time {} with test {} times: {} --> {}",
-        time.as_secs_f64(),
-        n,
-        time.as_secs_f64() / n as f64,
-        sum,
-    );
 }
 ```
 

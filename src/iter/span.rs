@@ -1,7 +1,9 @@
-use crate::{index::IndexBySpan, span::Span};
+use super::IndexBySpan;
+
+use crate::ctx::Span;
 
 #[derive(Debug, Clone, Copy)]
-pub struct SpanIterator<'a, 'b, T: ?Sized> {
+pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
     cur: usize,
 
     value: &'a T,
@@ -9,7 +11,7 @@ pub struct SpanIterator<'a, 'b, T: ?Sized> {
     spans: &'b Vec<Span>,
 }
 
-impl<'a, 'b, T: ?Sized> SpanIterator<'a, 'b, T> {
+impl<'a, 'b, T: ?Sized> IteratorBySpan<'a, 'b, T> {
     pub fn new(str: &'a T, spans: &'b Vec<Span>) -> Self {
         Self {
             value: str,
@@ -19,7 +21,7 @@ impl<'a, 'b, T: ?Sized> SpanIterator<'a, 'b, T> {
     }
 }
 
-impl<'a, 'b, T> Iterator for SpanIterator<'a, 'b, T>
+impl<'a, 'b, T> Iterator for IteratorBySpan<'a, 'b, T>
 where
     T: ?Sized + IndexBySpan,
 {
@@ -37,38 +39,32 @@ where
     }
 }
 
-impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for SpanIterator<'a, 'b, T> {}
+impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'a, 'b, T> {}
 
 #[derive(Debug, Clone)]
-pub struct BytesIndices<'a> {
+pub struct SpanIterator<'a> {
     offset: usize,
 
-    bytes: &'a [u8],
+    spans: &'a Vec<Span>,
 }
 
-impl<'a> BytesIndices<'a> {
-    pub fn new(bytes: &'a [u8]) -> Self {
-        Self { offset: 0, bytes }
+impl<'a> SpanIterator<'a> {
+    pub fn new(spans: &'a Vec<Span>) -> Self {
+        Self { offset: 0, spans }
     }
 }
 
-impl<'a> Iterator for BytesIndices<'a> {
-    type Item = (usize, u8);
+impl<'a> Iterator for SpanIterator<'a> {
+    type Item = Span;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.offset < self.bytes.len() {
-            let offset = self.offset;
+        let offset = self.offset;
 
+        if offset < self.spans.len() {
             self.offset += 1;
-            Some((offset, self.bytes[offset]))
+            self.spans.get(offset).copied()
         } else {
             None
         }
     }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.bytes.len(), Some(self.bytes.len()))
-    }
 }
-
-impl<'a> ExactSizeIterator for BytesIndices<'a> {}

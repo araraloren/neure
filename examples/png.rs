@@ -1,45 +1,41 @@
-use neure::*;
+use neure::err::Error;
+use neure::prelude::*;
 use std::{cell::RefCell, process::exit};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    if let Some(file) = std::env::args().skip(1).next() {
-        let head: &'static [u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
-        let bytes = std::fs::read(file)?;
-        let head = neure::bytes(head);
-        let int32 = neure::consume(4);
-        let int8 = neure::consume(1);
-        let mut ctx = BytesCtx::new(&bytes);
-        let mut storer = SpanStorer::default().with_capacity(5);
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
 
-        if ctx.try_cap(0, &mut storer, &head).is_err() {
+    // png reference http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
+    if let Some(file) = std::env::args().skip(1).next() {
+        let head: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
+        let bytes = std::fs::read(file)?;
+        let as_u32 = |dat: &[u8]| {
+            assert_eq!(dat.len(), 4);
+            Ok(u32::from_be_bytes([dat[0], dat[1], dat[2], dat[3]]))
+        };
+        let as_u8 = |dat: &[u8]| {
+            assert_eq!(dat.len(), 1);
+            char::from_u32(u8::from_be_bytes([dat[0]]) as u32).ok_or(Error::Other)
+        };
+        let uint32 = re::consume(4).map(as_u32);
+        let uint8 = re::consume(1).map(as_u8);
+        let mut ctx = RegexCtx::new(bytes.as_slice());
+
+        if let Ok(_) = ctx.ctor(&head) {
+            println!("Matching the head, the file seems like a png file");
+        } else {
             println!("Not a png file");
             exit(1)
-        } else {
-            println!("Matching the head, the file seems like a png file");
         }
         for idx in 0.. {
-            if ctx.cap(1, &mut storer, &int32) {
-                let length = storer.slice(&bytes, 1, idx)?;
-                let length = i32::from_be_bytes([length[0], length[1], length[2], length[3]]);
-                let data = neure::consume(length as usize);
-                let crc_offset_beg = ctx.offset();
-
-                println!("In trunk {idx}: length = {length}");
-                ctx.try_cap(2, &mut storer, &int8)?;
-                ctx.try_cap(2, &mut storer, &int8)?;
-                ctx.try_cap(2, &mut storer, &int8)?;
-                ctx.try_cap(2, &mut storer, &int8)?;
-
-                let type_code = storer.slice_iter(&bytes, 2)?;
-                let mut type_code = type_code.skip(idx * 4);
-                let ancillary = u8::from_be_bytes([type_code.next().unwrap()[0]]);
-                let ancillary = char::from_u32(ancillary as u32).unwrap();
-                let private = u8::from_be_bytes([type_code.next().unwrap()[0]]);
-                let private = char::from_u32(private as u32).unwrap();
-                let reserved = u8::from_be_bytes([type_code.next().unwrap()[0]]);
-                let reserved = char::from_u32(reserved as u32).unwrap();
-                let safe_copy = u8::from_be_bytes([type_code.next().unwrap()[0]]);
-                let safe_copy = char::from_u32(safe_copy as u32).unwrap();
+            if let Ok(length) = ctx.ctor(&uint32) {
+                let crc_beg = ctx.offset();
+                let ancillary = ctx.ctor(&uint8)?;
+                let private = ctx.ctor(&uint8)?;
+                let reserved = ctx.ctor(&uint8)?;
+                let safe_copy = ctx.ctor(&uint8)?;
 
                 println!(
                     "In trunk {idx}: ancillary = `{}`, bit 5 = {}: {}",
@@ -76,13 +72,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "safe to copy"
                     }
                 );
-                println!("skip data data = {:?}", ctx.try_cap(3, &mut storer, &data)?);
-                let crc_data = &bytes[crc_offset_beg..ctx.offset()];
+                let data = re::consume(length as usize);
 
-                ctx.try_cap(4, &mut storer, &int32)?;
-                let crc_value = storer.slice(&bytes, 4, idx)?;
-                let crc_value =
-                    u32::from_be_bytes([crc_value[0], crc_value[1], crc_value[2], crc_value[3]]);
+                println!("In trunk {idx}: data length = {length}");
+                println!("skip data length = {}", ctx.ctor(&data)?.len());
+
+                let crc_data = ctx.orig_sub(crc_beg, ctx.offset() - crc_beg)?;
+                let crc_value = ctx.ctor(&uint32)?;
 
                 println!(
                     "Checking the crc value = {}",

@@ -1,50 +1,26 @@
-use crate::{err::Error, index::IndexBySpan, iter::SpanIterator};
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Span {
-    pub beg: usize,
-
-    pub len: usize,
-}
-
-pub trait SpanStore {
-    fn len(&self) -> usize;
-
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    fn reset(&mut self) -> &mut Self;
-
-    fn contain(&self, span_id: usize) -> bool;
-
-    fn add_span(&mut self, span_id: usize, span: Span) -> &mut Self;
-
-    fn spans(&self, span_id: usize) -> Result<&Vec<Span>, Error>;
-
-    fn spans_mut(&mut self, id: usize) -> Result<&mut Vec<Span>, Error>;
-
-    fn span(&self, span_id: usize, index: usize) -> Result<&Span, Error> {
-        self.spans(span_id)
-            .and_then(|v| v.get(index).ok_or(Error::SpanIndex))
-    }
-
-    fn span_mut(&mut self, span_id: usize, index: usize) -> Result<&mut Span, Error> {
-        self.spans_mut(span_id)
-            .and_then(|v| v.get_mut(index).ok_or(Error::SpanIndex))
-    }
-}
+use crate::ctx::Context;
+use crate::ctx::Match;
+use crate::ctx::Span;
+use crate::err::Error;
+use crate::iter::IndexBySpan;
+use crate::iter::IteratorBySpan;
+use crate::iter::SpanIterator;
+use crate::re::Regex;
 
 #[derive(Debug, Clone, Default)]
-pub struct SpanStorer {
+pub struct SimpleStorer {
     spans: Vec<Vec<Span>>,
 }
 
-impl SpanStorer {
+impl SimpleStorer {
     pub fn new(capacity: usize) -> Self {
         Self {
             spans: vec![vec![]; capacity],
         }
+    }
+
+    pub fn new_with(spans: Vec<Vec<Span>>) -> Self {
+        Self { spans }
     }
 
     pub fn with_capacity(mut self, capacity: usize) -> Self {
@@ -52,79 +28,88 @@ impl SpanStorer {
         self
     }
 
-    pub fn substr<'a>(&self, str: &'a str, id: usize, index: usize) -> Result<&'a str, Error> {
-        let span = self.span(id, index)?;
-
-        str.get(span.beg..(span.beg + span.len))
-            .ok_or(Error::IndexBySpan)
+    pub fn len(&self) -> usize {
+        self.spans.len()
     }
 
-    pub fn substrs<'a>(&self, str: &'a str, id: usize) -> Result<SpanIterator<'a, '_, str>, Error>
-    where
-        Self: Sized,
-    {
-        Ok(SpanIterator::new(str, self.spans(id)?))
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
-    pub fn slice<'a, T: IndexBySpan + ?Sized>(
+    pub fn reset(&mut self) -> &mut Self {
+        self.spans.iter_mut().for_each(|v| v.clear());
+        self
+    }
+}
+
+impl SimpleStorer {
+    pub fn contain(&self, id: usize) -> bool {
+        self.spans.get(id).map(|v| !v.is_empty()).unwrap_or(false)
+    }
+
+    pub fn add_span(&mut self, id: usize, span: Span) -> &mut Self {
+        self.spans[id].push(span);
+        self
+    }
+
+    pub fn clr_span(&mut self, id: usize) -> &mut Self {
+        if let Some(v) = self.spans.get_mut(id) {
+            v.clear()
+        };
+        self
+    }
+
+    pub fn span(&self, id: usize, index: usize) -> Option<&Span> {
+        self.spans.get(id).and_then(|v| v.get(index))
+    }
+
+    pub fn spans(&self, id: usize) -> Option<&Vec<Span>> {
+        self.spans
+            .get(id)
+            .and_then(|v| if v.is_empty() { None } else { Some(v) })
+    }
+
+    pub fn spans_iter(&self, id: usize) -> Option<SpanIterator<'_>> {
+        self.spans(id).map(SpanIterator::new)
+    }
+}
+
+impl SimpleStorer {
+    pub fn slice<'a, T>(
         &self,
         value: &'a T,
         id: usize,
         index: usize,
-    ) -> Result<&'a <T as IndexBySpan>::Output, Error> {
+    ) -> Option<&'a <T as IndexBySpan>::Output>
+    where
+        T: IndexBySpan + ?Sized,
+    {
         let span = self.span(id, index)?;
 
-        value.get_by_span(span).ok_or(Error::IndexBySpan)
+        value.get_by_span(span)
     }
 
-    pub fn slice_iter<'a, T: IndexBySpan + ?Sized>(
-        &self,
-        str: &'a T,
-        span_id: usize,
-    ) -> Result<SpanIterator<'a, '_, T>, Error> {
-        Ok(SpanIterator::new(str, self.spans(span_id)?))
+    pub fn slice_iter<'a, T>(&self, str: &'a T, id: usize) -> Option<IteratorBySpan<'a, '_, T>>
+    where
+        T: IndexBySpan + ?Sized,
+    {
+        Some(IteratorBySpan::new(str, self.spans(id)?))
     }
 }
 
-impl SpanStore for SpanStorer {
-    fn len(&self) -> usize {
-        self.spans.len()
-    }
+impl SimpleStorer {
+    pub fn try_cap<'a, C, P: Regex<C, Ret = Span>>(
+        &mut self,
+        id: usize,
+        ctx: &mut C,
+        pat: &P,
+    ) -> Result<P::Ret, Error>
+    where
+        C: Context<'a> + Match<C>,
+    {
+        let ret = ctx.try_mat(pat)?;
 
-    fn add_span(&mut self, span_id: usize, span: Span) -> &mut Self {
-        self.spans[span_id].push(span);
-        self
-    }
-
-    fn reset(&mut self) -> &mut Self {
-        self.spans.iter_mut().for_each(|v| v.clear());
-        self
-    }
-
-    fn contain(&self, span_id: usize) -> bool {
-        self.spans
-            .get(span_id)
-            .map(|v| !v.is_empty())
-            .unwrap_or(false)
-    }
-
-    fn spans(&self, span_id: usize) -> Result<&Vec<Span>, Error> {
-        let span = &self.spans[span_id];
-
-        if !span.is_empty() {
-            Ok(span)
-        } else {
-            Err(Error::SpanID)
-        }
-    }
-
-    fn spans_mut(&mut self, span_id: usize) -> Result<&mut Vec<Span>, crate::err::Error> {
-        let span = &mut self.spans[span_id];
-
-        if !span.is_empty() {
-            Ok(span)
-        } else {
-            Err(Error::SpanID)
-        }
+        self.add_span(id, ret);
+        Ok(ret)
     }
 }
