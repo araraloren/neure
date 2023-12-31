@@ -76,7 +76,7 @@ mod color_neure {
     fn parser(str: &str) -> Result<Color, Box<dyn std::error::Error>> {
         let pound = re!('#');
         let hex = re!((('0' .. ':'), ('A' .. 'G')){2}); // better performance than ..=
-        let hex = hex.map(re::map::from_str_radix::<u8>(16));
+        let hex = hex.map(map::from_str_radix::<u8>(16));
         let mut ctx = RegexCtx::new(str);
 
         ctx.try_mat(&pound)?;

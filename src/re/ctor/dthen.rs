@@ -6,11 +6,11 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::map::Select0;
+use crate::map::Select1;
+use crate::map::SelectEq;
 use crate::re::ctor::Map;
 use crate::re::def_not;
-use crate::re::map::Select0;
-use crate::re::map::Select1;
-use crate::re::map::SelectEq;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
@@ -31,7 +31,7 @@ use crate::re::Regex;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let len = re::consume(2).map(re::map::from_le_bytes::<i16>());
+///     let len = re::consume(2).map(map::from_le_bytes::<i16>());
 ///     let data = len.dyn_then_ctor(|v: &i16| Ok(re::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
 ///
@@ -187,7 +187,7 @@ where
     ///     let num = u8::is_ascii_digit
     ///         .repeat_one()
     ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
-    ///         .map(re::map::from_str::<usize>());
+    ///         .map(map::from_str::<usize>());
     ///     let num = num.clone().sep_once(b",", num);
     ///     let re = num.dyn_then_ctor(|a: &(usize, usize)| {
     ///         // leave the a's type empty cause rustc reject compile

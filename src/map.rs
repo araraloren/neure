@@ -212,7 +212,7 @@ where
 
 macro_rules! impl_from_str_radix {
     ($int:ty) => {
-        impl $crate::re::map::TryFromStrRadix for $int {
+        impl $crate::map::TryFromStrRadix for $int {
             #[inline(always)]
             fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
                 <$int>::from_str_radix(src, radix)

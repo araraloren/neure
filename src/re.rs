@@ -3,7 +3,6 @@ mod into;
 mod null;
 
 pub mod ctor;
-pub mod map;
 pub mod regex;
 
 use std::cell::Cell;

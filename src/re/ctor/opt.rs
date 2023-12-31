@@ -30,7 +30,7 @@ use crate::re::Regex;
 /// #     color_eyre::install()?;
 ///     let num = neu::digit(10)
 ///         .repeat_one_more()
-///         .map(re::map::from_str())
+///         .map(map::from_str())
 ///         .opt();
 ///
 ///     assert_eq!(CharsCtx::new("8922").ctor(&num)?, Some(8922i32));

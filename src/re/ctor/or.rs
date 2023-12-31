@@ -23,7 +23,7 @@ use crate::re::Regex;
 /// # Example
 ///
 /// ```
-/// # use neure::{prelude::*, re::map::from_str_radix};
+/// # use neure::{prelude::*, map::from_str_radix};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;

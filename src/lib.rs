@@ -3,6 +3,7 @@ pub mod ctx;
 pub mod err;
 pub mod iter;
 pub mod r#macro;
+pub mod map;
 pub mod neu;
 pub mod re;
 pub mod span;
@@ -41,6 +42,7 @@ pub mod prelude {
     pub use crate::ctx::RegexCtx;
     pub use crate::ctx::Ret;
     pub use crate::ctx::Span;
+    pub use crate::map;
     pub use crate::neu;
     pub use crate::neu::Condition;
     pub use crate::neu::Neu;

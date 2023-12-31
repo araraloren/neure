@@ -12,6 +12,7 @@ use super::Span;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
+use crate::map::MapSingle;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -285,14 +286,14 @@ where
     pub fn map<P, O>(
         &mut self,
         pat: &P,
-        mut func: impl FnMut(&'a <Self as Context<'a>>::Orig) -> Result<O, Error>,
+        mapper: impl MapSingle<&'a <Self as Context<'a>>::Orig, O>,
     ) -> Result<O, Error>
     where
         P: Regex<Self, Ret = Span>,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
-        (func)(self.map_with(pat, Ok)?)
+        mapper.map_to(self.map_with(pat, Ok)?)
     }
 
     pub fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
@@ -303,15 +304,11 @@ where
         self.ctor_with(pat, &mut Ok)
     }
 
-    pub fn map_span<P, O>(
-        &mut self,
-        pat: &P,
-        mut func: impl FnMut(Span) -> Result<O, Error>,
-    ) -> Result<O, Error>
+    pub fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>
     where
         P: Regex<Self, Ret = Span>,
         Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
     {
-        (func)(self.map_with(pat, Ok)?)
+        mapper.map_to(self.map_with(pat, Ok)?)
     }
 }

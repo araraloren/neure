@@ -493,7 +493,7 @@ where
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10)
     ///         .repeat_one_more()
-    ///         .map(re::map::from_str::<usize>())
+    ///         .map(map::from_str::<usize>())
     ///         .opt();
     ///
     ///     assert_eq!(CharsCtx::new("foo").ctor(&num)?, None);
@@ -765,7 +765,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let int = neu::digit(10).repeat_one_more();
-    ///     let int = int.map(re::map::from_str_radix::<i32>(10));
+    ///     let int = int.map(map::from_str_radix::<i32>(10));
     ///     let num = int.ws().repeat(3..5);
     ///     let mut ctx = CharsCtx::new(r#"1 2 3 4"#);
     ///
@@ -788,7 +788,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let val = re::consume(2)
-    ///         .map(re::map::from_le_bytes::<i16>())
+    ///         .map(map::from_le_bytes::<i16>())
     ///         .collect::<_, Vec<_>>();
     ///
     ///     assert_eq!(

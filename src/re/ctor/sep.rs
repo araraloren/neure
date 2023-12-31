@@ -7,11 +7,11 @@ use crate::ctx::Match;
 use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::map::Select0;
+use crate::map::Select1;
+use crate::map::SelectEq;
 use crate::neu::CRange;
 use crate::re::def_not;
-use crate::re::map::Select0;
-use crate::re::map::Select1;
-use crate::re::map::SelectEq;
 use crate::re::trace;
 use crate::re::trace_v;
 use crate::re::Ctor;
@@ -446,7 +446,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use neure::{prelude::*, re::map::FromStr};
+/// # use neure::{prelude::*, map::FromStr};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;

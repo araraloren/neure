@@ -2,30 +2,37 @@
 
 A fast little combinational parsing library
 
-## Performance
+## Why neure
 
-`rel` is mean release, `fat` is mean release with lto=fat
+* Better performance
 
-![img](https://github.com/araraloren/neure/blob/e1965e572d7d88406d962a33569c1cfd175296bf/performance.png)
+* Fewer dependencies
 
-See [`examples`](https://github.com/araraloren/neure/tree/main/examples)
+* Faster compilation
 
 ## Example
+
+For more, reference [`examples`](https://github.com/araraloren/neure/tree/main/examples)
+
+### Example 1
 
 ```rust
 use neure::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let digit = re!(['0' - '9']+); // match digit from 0 to 9 more than once
-    let mut ctx = CharsCtx::new("2023rust");
+    let year = re!(['0' - '9']+); // match digit from 0 to 9 more than once
+    let year = year.map(map::from_str::<i32>()); // map it to i32
+    let name = neu::ascii_alphabetic().repeat_one_more(); // match ascii alphabetic
+    let mut ctx = CharsCtx::new("2024rust");
 
-    assert_eq!(ctx.map(&digit, |v: &str| Ok(v.parse::<u64>()))??, 2023);
-
+    // .then construct a tuple
+    assert_eq!(ctx.ctor(&year.then(name))?, (2024, "rust"));
     Ok(())
 }
+
 ```
 
-## Code comparation between crate `regex`
+### Code comparation between crate `regex`
 
 ```rust
 mod neure_ {
@@ -38,6 +45,7 @@ mod neure_ {
         let name = neu!((alpha, num, '_', '.', '+', '-')).repeat_one_more();
         let domain = alpha.or(num).or('.').or('-').repeat_to::<256>().set_cond(
             |ctx: &CharsCtx, item: &(usize, char)| {
+                // stop at last '.'
                 Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
             },
         );

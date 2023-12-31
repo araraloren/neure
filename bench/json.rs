@@ -76,7 +76,7 @@ mod neure_json {
                 let num = num
                     .pat()
                     .map(to_str)
-                    .map(re::map::from_str::<f64>())
+                    .map(map::from_str::<f64>())
                     .map(|v| Ok(Json::Num(v)));
 
                 let escape = b'\r'.or(b'\t').or(b'\n').or(b'\\').or(b'\"');
@@ -91,7 +91,7 @@ mod neure_json {
                     .pat();
                 let str = str_val
                     .map(to_str)
-                    .map(re::map::from_str::<String>())
+                    .map(map::from_str::<String>())
                     .map(|v| Ok(Json::Str(v)))
                     .quote(b"\"", b"\"");
 
@@ -105,7 +105,7 @@ mod neure_json {
 
                 let key = re!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+)
                     .map(to_str)
-                    .map(re::map::from_str::<String>())
+                    .map(map::from_str::<String>())
                     .quote(b"\"", b"\"");
                 let key = key.pad(ws).padded(ws);
                 let obj = key.sep_once(b":", ele.clone());

@@ -109,7 +109,7 @@ where
 ///     let num = u8::is_ascii_digit
 ///         .repeat_one()
 ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
-///         .map(re::map::from_str::<usize>());
+///         .map(map::from_str::<usize>());
 ///     let num = num.clone().sep_once(b",", num);
 ///     let re = re::ctor::into_dyn_ctor(|ctx: &mut BytesCtx| ctx.ctor(&num));
 ///
