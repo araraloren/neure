@@ -922,7 +922,14 @@
 <a href="#922" id="922">922</a>
 <a href="#923" id="923">923</a>
 <a href="#924" id="924">924</a>
-</pre></div><pre class="rust"><code><span class="kw">mod </span>boxed;
+<a href="#925" id="925">925</a>
+<a href="#926" id="926">926</a>
+<a href="#927" id="927">927</a>
+<a href="#928" id="928">928</a>
+<a href="#929" id="929">929</a>
+<a href="#930" id="930">930</a>
+</pre></div><pre class="rust"><code><span class="kw">mod </span>array;
+<span class="kw">mod </span>boxed;
 <span class="kw">mod </span>collect;
 <span class="kw">mod </span>dthen;
 <span class="kw">mod </span>dynamic;
@@ -936,6 +943,7 @@
 <span class="kw">mod </span>quote;
 <span class="kw">mod </span>repeat;
 <span class="kw">mod </span>sep;
+<span class="kw">mod </span>slice;
 <span class="kw">mod </span>then;
 <span class="kw">mod </span>vec;
 
@@ -945,6 +953,8 @@
 <span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>std::sync::Mutex;
 
+<span class="kw">pub use </span><span class="self">self</span>::array::Array;
+<span class="kw">pub use </span><span class="self">self</span>::array::PairArray;
 <span class="kw">pub use </span><span class="self">self</span>::boxed::into_boxed_ctor;
 <span class="kw">pub use </span><span class="self">self</span>::boxed::BoxedCtor;
 <span class="kw">pub use </span><span class="self">self</span>::boxed::BoxedCtorHelper;
@@ -969,6 +979,8 @@
 <span class="kw">pub use </span><span class="self">self</span>::sep::SepCollect;
 <span class="kw">pub use </span><span class="self">self</span>::sep::SepOnce;
 <span class="kw">pub use </span><span class="self">self</span>::sep::Separate;
+<span class="kw">pub use </span><span class="self">self</span>::slice::PairSlice;
+<span class="kw">pub use </span><span class="self">self</span>::slice::Slice;
 <span class="kw">pub use </span><span class="self">self</span>::then::IfThen;
 <span class="kw">pub use </span><span class="self">self</span>::then::Then;
 <span class="kw">pub use </span><span class="self">self</span>::vec::PairVector;
@@ -1417,7 +1429,7 @@
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10)
     ///         .repeat_one_more()
-    ///         .map(re::map::from_str::&lt;usize&gt;())
+    ///         .map(map::from_str::&lt;usize&gt;())
     ///         .opt();
     ///
     ///     assert_eq!(CharsCtx::new(&quot;foo&quot;).ctor(&amp;num)?, None);
@@ -1689,7 +1701,7 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let int = neu::digit(10).repeat_one_more();
-    ///     let int = int.map(re::map::from_str_radix::&lt;i32&gt;(10));
+    ///     let int = int.map(map::from_str_radix::&lt;i32&gt;(10));
     ///     let num = int.ws().repeat(3..5);
     ///     let mut ctx = CharsCtx::new(r#&quot;1 2 3 4&quot;#);
     ///
@@ -1712,7 +1724,7 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let val = re::consume(2)
-    ///         .map(re::map::from_le_bytes::&lt;i16&gt;())
+    ///         .map(map::from_le_bytes::&lt;i16&gt;())
     ///         .collect::&lt;_, Vec&lt;_&gt;&gt;();
     ///
     ///     assert_eq!(
