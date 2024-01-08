@@ -29,17 +29,15 @@ impl<T> RegexNot<T> {
 
 def_not!(RegexNot<T>);
 
-impl<'a, C, O, T> Ctor<'a, C, O, O> for RegexNot<T>
+impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for RegexNot<T>
 where
     T: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
         func.invoke(A::extract(ctx, &ret)?)

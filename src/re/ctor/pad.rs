@@ -111,17 +111,18 @@ impl<C, P, T> Pad<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O> Ctor<'a, C, M, O> for Pad<C, P, T>
+impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Pad<C, P, T>
 where
     T: Regex<C, Ret = Span>,
-    P: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
@@ -251,17 +252,18 @@ impl<C, P, T> Padded<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O> Ctor<'a, C, M, O> for Padded<C, P, T>
+impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Padded<C, P, T>
 where
     T: Regex<C, Ret = Span>,
-    P: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

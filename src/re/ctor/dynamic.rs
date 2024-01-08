@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -8,39 +10,40 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
-pub type DynamicCtorHandler<'a, C, O> = Box<dyn Fn(&mut C) -> Result<O, Error> + 'a>;
+pub type DynamicCtorHandler<'a, 'b, C, M, O, H, A> = Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>;
 
-pub struct DynamicCtor<'a, C, O> {
-    inner: DynamicCtorHandler<'a, C, O>,
+#[derive(Clone)]
+pub struct DynamicCtor<'a, 'b, C, M, O, H, A> {
+    inner: DynamicCtorHandler<'a, 'b, C, M, O, H, A>,
 }
 
-def_not!(DynamicCtor<'a, C, O>);
+def_not!(DynamicCtor<'a, 'b, C, M, O, H, A>);
 
-impl<'a, C, O> DynamicCtor<'a, C, O> {
-    pub fn new(inner: DynamicCtorHandler<'a, C, O>) -> Self {
+impl<'a, 'b, C, M, O, H, A> DynamicCtor<'a, 'b, C, M, O, H, A> {
+    pub fn new(inner: DynamicCtorHandler<'a, 'b, C, M, O, H, A>) -> Self {
         Self { inner }
     }
 
-    pub fn with_inner(mut self, inner: DynamicCtorHandler<'a, C, O>) -> Self {
+    pub fn with_inner(mut self, inner: DynamicCtorHandler<'a, 'b, C, M, O, H, A>) -> Self {
         self.inner = inner;
         self
     }
 
-    pub fn inner(&self) -> &DynamicCtorHandler<'a, C, O> {
+    pub fn inner(&self) -> &DynamicCtorHandler<'a, 'b, C, M, O, H, A> {
         &self.inner
     }
 
-    pub fn inner_mut(&mut self) -> &mut DynamicCtorHandler<'a, C, O> {
+    pub fn inner_mut(&mut self) -> &mut DynamicCtorHandler<'a, 'b, C, M, O, H, A> {
         &mut self.inner
     }
 
-    pub fn set_inner(&mut self, inner: DynamicCtorHandler<'a, C, O>) -> &mut Self {
+    pub fn set_inner(&mut self, inner: DynamicCtorHandler<'a, 'b, C, M, O, H, A>) -> &mut Self {
         self.inner = inner;
         self
     }
 }
 
-impl<'a, C, R> Regex<C> for DynamicCtor<'a, C, R> {
+impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicCtor<'a, 'b, C, M, O, H, A> {
     type Ret = Span;
 
     fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
@@ -48,17 +51,68 @@ impl<'a, C, R> Regex<C> for DynamicCtor<'a, C, R> {
     }
 }
 
-impl<'a, 'b, C, M, O> Ctor<'a, C, M, O> for DynamicCtor<'b, C, O>
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicCtor<'a, 'b, C, M, O, H, A>
 where
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, _: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
-        (self.inner)(ctx)
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        self.inner.constrct(ctx, handler)
+    }
+}
+
+pub type DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A> =
+    Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>;
+
+pub struct DynamicCtorSync<'a, 'b, C, M, O, H, A> {
+    inner: DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A>,
+}
+
+def_not!(DynamicCtorSync<'a, 'b, C, M, O, H, A>);
+
+impl<'a, 'b, C, M, O, H, A> DynamicCtorSync<'a, 'b, C, M, O, H, A> {
+    pub fn new(inner: DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A>) -> Self {
+        Self { inner }
+    }
+
+    pub fn with_inner(mut self, inner: DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A>) -> Self {
+        self.inner = inner;
+        self
+    }
+
+    pub fn inner(&self) -> &DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A> {
+        &self.inner
+    }
+
+    pub fn inner_mut(&mut self) -> &mut DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A> {
+        &mut self.inner
+    }
+
+    pub fn set_inner(&mut self, inner: DynamicCtorHandlerSync<'a, 'b, C, M, O, H, A>) -> &mut Self {
+        self.inner = inner;
+        self
+    }
+}
+
+impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicCtorSync<'a, 'b, C, M, O, H, A> {
+    type Ret = Span;
+
+    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+        unreachable!("Dynamic invoke not support `Regex` trait")
+    }
+}
+
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicCtorSync<'a, 'b, C, M, O, H, A>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+{
+    #[inline(always)]
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        self.inner.constrct(ctx, handler)
     }
 }
 
@@ -119,28 +173,54 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn into_dyn_ctor<'a, 'b, C, O>(
-    invoke: impl Fn(&mut C) -> Result<O, Error> + 'b,
-) -> DynamicCtor<'b, C, O>
+pub fn into_dyn_ctor<'a, 'b, C, M, O, H, A>(
+    invoke: impl Ctor<'a, C, M, O, H, A> + 'b,
+) -> DynamicCtor<'a, 'b, C, M, O, H, A>
 where
     C: Context<'a>,
 {
-    DynamicCtor::new(Box::new(invoke))
+    DynamicCtor::new(Rc::new(invoke))
 }
 
-pub trait DynamicCtorHelper<'a, 'b, C, O>
+pub fn into_dyn_ctor_sync<'a, 'b, C, M, O, H, A>(
+    invoke: impl Ctor<'a, C, M, O, H, A> + Send + 'b,
+) -> DynamicCtorSync<'a, 'b, C, M, O, H, A>
 where
     C: Context<'a>,
 {
-    fn into_dyn_ctor(self) -> DynamicCtor<'b, C, O>;
+    DynamicCtorSync::new(Box::new(invoke))
 }
 
-impl<'a, 'b, C, O, T> DynamicCtorHelper<'a, 'b, C, O> for T
+pub trait DynamicCtorHelper<'a, 'b, C, M, O, H, A>
 where
     C: Context<'a>,
-    T: Fn(&mut C) -> Result<O, Error> + 'b,
 {
-    fn into_dyn_ctor(self) -> DynamicCtor<'b, C, O> {
-        DynamicCtor::new(Box::new(self))
+    fn into_dyn_ctor(self) -> DynamicCtor<'a, 'b, C, M, O, H, A>;
+}
+
+impl<'a, 'b, C, O, M, T, H, A> DynamicCtorHelper<'a, 'b, C, M, O, H, A> for T
+where
+    C: Context<'a>,
+    T: Ctor<'a, C, M, O, H, A> + 'b,
+{
+    fn into_dyn_ctor(self) -> DynamicCtor<'a, 'b, C, M, O, H, A> {
+        DynamicCtor::new(Rc::new(self))
+    }
+}
+
+pub trait DynamicCtorHelperSync<'a, 'b, C, M, O, H, A>
+where
+    C: Context<'a>,
+{
+    fn into_dyn_ctor_sync(self) -> DynamicCtorSync<'a, 'b, C, M, O, H, A>;
+}
+
+impl<'a, 'b, C, O, M, T, H, A> DynamicCtorHelperSync<'a, 'b, C, M, O, H, A> for T
+where
+    C: Context<'a>,
+    T: Ctor<'a, C, M, O, H, A> + Send + 'b,
+{
+    fn into_dyn_ctor_sync(self) -> DynamicCtorSync<'a, 'b, C, M, O, H, A> {
+        DynamicCtorSync::new(Box::new(self))
     }
 }

@@ -80,17 +80,16 @@ where
     }
 }
 
-impl<'a, C, M, O, T> Ctor<'a, C, M, O> for BoxedCtor<C, T>
+impl<'a, C, M, O, T, H, A> Ctor<'a, C, M, O, H, A> for BoxedCtor<C, T>
 where
-    T: Ctor<'a, C, M, O>,
+    T: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
+ {
         self.inner.constrct(ctx, handler)
     }
 }
@@ -119,15 +118,15 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn into_boxed_ctor<'a, C, M, O, I>(invoke: I) -> BoxedCtor<C, I>
+pub fn into_boxed_ctor<'a, C, M, O, I, H, A>(invoke: I) -> BoxedCtor<C, I>
 where
-    I: Ctor<'a, C, M, O>,
+    I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
 {
     BoxedCtor::new(Box::new(invoke))
 }
 
-pub trait BoxedCtorHelper<'a, C, M, O>
+pub trait BoxedCtorHelper<'a, C, M, O, H, A>
 where
     C: Context<'a> + Match<C>,
 {
@@ -136,9 +135,9 @@ where
         Self: Sized;
 }
 
-impl<'a, C, M, O, I> BoxedCtorHelper<'a, C, M, O> for I
+impl<'a, C, M, O, I, H, A> BoxedCtorHelper<'a, C, M, O, H, A> for I
 where
-    I: Ctor<'a, C, M, O>,
+    I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
 {
     fn into_boxed_ctor(self) -> BoxedCtor<C, Self>

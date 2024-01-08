@@ -58,16 +58,17 @@ impl<'a, const N: usize, T> Deref for Slice<'a, N, T> {
     }
 }
 
-impl<'a, 'b, const N: usize, C, T, M, O> Ctor<'a, C, M, O> for Slice<'b, N, T>
+impl<'a, 'b, const N: usize, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Slice<'b, N, T>
 where
-    T: Ctor<'a, C, M, O>,
+    T: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
@@ -165,17 +166,18 @@ impl<'a, const N: usize, K, V> Deref for PairSlice<'a, N, K, V> {
     }
 }
 
-impl<'a, 'b, const N: usize, C, K, M, O, V> Ctor<'a, C, M, (O, V)> for PairSlice<'b, N, K, V>
+impl<'a, 'b, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A> for PairSlice<'b, N, K, V>
 where
     V: Clone,
-    K: Ctor<'a, C, M, O>,
+    K: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

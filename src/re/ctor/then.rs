@@ -128,18 +128,16 @@ impl<C, L, R> Then<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for Then<C, L, R>
+impl<'a, C, L, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A> for Then<C, L, R>
 where
-    L: Ctor<'a, C, M, O1>,
-    R: Ctor<'a, C, M, O2>,
+    L: Ctor<'a, C, M, O1, H, A>,
+    R: Ctor<'a, C, M, O2, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("then", beg @ "left", self.left.constrct(g.ctx(), func).map(|ret1| {
@@ -301,19 +299,17 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
     }
 }
 
-impl<'a, C, L, I, R, M, O1, O2> Ctor<'a, C, M, (O1, Option<O2>)> for IfThen<C, L, I, R>
+impl<'a, C, L, I, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, Option<O2>), H, A> for IfThen<C, L, I, R>
 where
-    L: Ctor<'a, C, M, O1>,
-    R: Ctor<'a, C, M, O2>,
+    L: Ctor<'a, C, M, O1, H, A>,
+    R: Ctor<'a, C, M, O2, H, A>,
     I: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let r_l = trace!("if_then", beg @ "left", self.left.constrct(g.ctx(), func));

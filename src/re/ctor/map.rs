@@ -170,17 +170,18 @@ impl<C, P, F, O> Map<C, P, F, O> {
     }
 }
 
-impl<'a, C, M, O, V, P, F> Ctor<'a, C, M, V> for Map<C, P, F, O>
+impl<'a, C, M, O, V, P, F, H, A> Ctor<'a, C, M, V, H, A> for Map<C, P, F, O>
 where
-    P: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
     F: MapSingle<O, V>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    
+        
     {
         self.mapper.map_to(self.pat.constrct(ctx, func)?)
     }

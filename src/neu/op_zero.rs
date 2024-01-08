@@ -131,19 +131,17 @@ where
     }
 }
 
-impl<'a, U, C, O, I> Ctor<'a, C, O, O> for NeureZeroOne<C, U, C::Item, I>
+impl<'a, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureZeroOne<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("neu_zero_one", beg, g.try_mat(self));
@@ -293,19 +291,17 @@ where
     }
 }
 
-impl<'a, U, C, O, I> Ctor<'a, C, O, O> for NeureZeroMore<C, U, C::Item, I>
+impl<'a, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureZeroMore<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("neu_zero_more", beg, g.try_mat(self));

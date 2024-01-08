@@ -156,18 +156,19 @@ where
     }
 }
 
-impl<'a, L, R, C, O, I> Ctor<'a, C, O, O> for NeureThen<C, L, R, C::Item, I>
+impl<'a, L, R, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureThen<C, L, R, C::Item, I>
 where
     L: Neu<C::Item>,
     R: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
+    H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

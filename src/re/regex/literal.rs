@@ -27,17 +27,15 @@ impl<'a, T> LitSlice<'a, T> {
     }
 }
 
-impl<'a, 'b, C, O, T> Ctor<'a, C, O, O> for LitSlice<'b, T>
+impl<'a, 'b, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for LitSlice<'b, T>
 where
     T: PartialOrd + 'a,
     C: Context<'a, Orig = [T]> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
         func.invoke(A::extract(ctx, &ret)?)
@@ -83,16 +81,14 @@ impl<'a> LitString<'a> {
     }
 }
 
-impl<'a, 'b, C, O> Ctor<'a, C, O, O> for LitString<'b>
+impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for LitString<'b>
 where
     C: Context<'a, Orig = str> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
         func.invoke(A::extract(ctx, &ret)?)

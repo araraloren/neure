@@ -152,16 +152,17 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O> Ctor<'a, C, M, Vec<O>> for Repeat<C, P>
+impl<'a, C, P, M, O, H, A> Ctor<'a, C, M, Vec<O>, H, A> for Repeat<C, P>
 where
-    P: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

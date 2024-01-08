@@ -112,17 +112,18 @@ impl<C, L, R> LongestTokenMatch<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O> Ctor<'a, C, M, O> for LongestTokenMatch<C, L, R>
+impl<'a, C, L, R, M, O, H, A> Ctor<'a, C, M, O, H, A> for LongestTokenMatch<C, L, R>
 where
-    L: Ctor<'a, C, M, O>,
-    R: Ctor<'a, C, M, O>,
+    L: Ctor<'a, C, M, O, H, A>,
+    R: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

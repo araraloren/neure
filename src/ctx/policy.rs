@@ -10,6 +10,7 @@ use crate::map::MapSingle;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
+use crate::re::SingleHandler;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
@@ -188,7 +189,7 @@ where
 {
     pub fn ctor_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, M, O>,
+        P: Ctor<'a, Self, M, O, H, A>,
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
     {
@@ -208,11 +209,18 @@ where
 
     pub fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, &'a <Self as Context<'a>>::Orig, O>,
+        P: Ctor<
+            'a,
+            Self,
+            &'a <Self as Context<'a>>::Orig,
+            O,
+            SingleHandler<&'a <Self as Context<'a>>::Orig>,
+            &'a <Self as Context<'a>>::Orig,
+        >,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
     {
-        self.ctor_with(pat, &mut Ok)
+        self.ctor_with(pat, &mut SingleHandler::default())
     }
 
     pub fn map<P, O>(
@@ -231,10 +239,10 @@ where
 
     pub fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, Span, O>,
+        P: Ctor<'a, Self, Span, O, SingleHandler<Span>, Span>,
         Span: Extract<'a, Self, Span, Out<'a> = Span, Error = Error>,
     {
-        self.ctor_with(pat, &mut Ok)
+        self.ctor_with(pat, &mut SingleHandler::default())
     }
 
     pub fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>

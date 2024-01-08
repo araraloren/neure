@@ -53,16 +53,14 @@ where
     }
 }
 
-impl<'a, C, O> Ctor<'a, C, O, O> for NullRegex<Span>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for NullRegex<Span>
 where
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-    {
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let beg = ctx.offset();
         let ret = ctx.try_mat(self);
 

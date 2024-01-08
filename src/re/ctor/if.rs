@@ -135,18 +135,19 @@ impl<C, P, I, E> IfRegex<C, P, I, E> {
     }
 }
 
-impl<'a, C, P, I, E, M, O> Ctor<'a, C, M, O> for IfRegex<C, P, I, E>
+impl<'a, C, P, I, E, M, O, H, A> Ctor<'a, C, M, O, H, A> for IfRegex<C, P, I, E>
 where
-    P: Ctor<'a, C, M, O>,
-    E: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
+    E: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

@@ -109,17 +109,18 @@ impl<C, P, O, V> Collect<C, P, O, V> {
     }
 }
 
-impl<'a, C, P, M, O, V> Ctor<'a, C, M, V> for Collect<C, P, O, V>
+impl<'a, C, P, M, O, V, H, A> Ctor<'a, C, M, V, H, A> for Collect<C, P, O, V>
 where
     V: FromIterator<O>,
-    P: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;

@@ -134,18 +134,19 @@ impl<C, P, L, R> Quote<C, P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P, M, O> Ctor<'a, C, M, O> for Quote<C, P, L, R>
+impl<'a, C, L, R, P, M, O, H, A> Ctor<'a, C, M, O, H, A> for Quote<C, P, L, R>
 where
     L: Regex<C, Ret = Span>,
     R: Regex<C, Ret = Span>,
-    P: Ctor<'a, C, M, O>,
+    P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

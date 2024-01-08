@@ -31,6 +31,7 @@ pub use self::ctor::Slice;
 pub use self::ctor::Vector;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
+pub use self::extract::SingleHandler;
 pub use self::into::BoxedRegex;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;

@@ -176,18 +176,19 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, O, I> Ctor<'a, C, O, O>
+impl<'a, const M: usize, const N: usize, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A>
     for NeureRepeat<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
+    H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    where
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
@@ -359,17 +360,18 @@ where
     }
 }
 
-impl<'a, U, C, M, I> Ctor<'a, C, M, M> for NeureRepeatRange<C, U, I>
+impl<'a, U, C, M, I, H, A> Ctor<'a, C, M, M, H, A> for NeureRepeatRange<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<M, Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();

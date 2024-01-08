@@ -124,18 +124,19 @@ impl<C, P, F> DynamicCreateCtorThen<C, P, F> {
     }
 }
 
-impl<'a, C, P, F, T, M, O1, O2> Ctor<'a, C, M, (O1, O2)> for DynamicCreateCtorThen<C, P, F>
+impl<'a, C, P, F, T, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A> for DynamicCreateCtorThen<C, P, F>
 where
-    P: Ctor<'a, C, M, O1>,
-    T: Ctor<'a, C, M, O2>,
+    P: Ctor<'a, C, M, O1, H, A>,
+    T: Ctor<'a, C, M, O2, H, A>,
     C: Context<'a> + Match<C>,
     F: Fn(&O1) -> Result<T, Error>,
+    H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct<H, A>(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
-    where
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error>
+    
+        
     {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
