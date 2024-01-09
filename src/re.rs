@@ -1,6 +1,7 @@
 mod extract;
 mod into;
 mod null;
+mod wrap;
 
 pub mod ctor;
 pub mod regex;
@@ -12,12 +13,10 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 pub use self::ctor::branch;
-pub use self::ctor::into_boxed_ctor;
 pub use self::ctor::into_dyn_ctor;
 pub use self::ctor::rec_parser;
 pub use self::ctor::rec_parser_sync;
 pub use self::ctor::Array;
-pub use self::ctor::BoxedCtorHelper;
 pub use self::ctor::ConstructOp;
 pub use self::ctor::Ctor;
 pub use self::ctor::DynamicCreateCtorThenHelper;
@@ -32,19 +31,23 @@ pub use self::ctor::Vector;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
 pub use self::extract::SingleHandler;
-pub use self::into::BoxedRegex;
+pub use self::into::ConstructIntoOp;
 pub use self::into::RegexIntoOp;
 pub use self::null::NullRegex;
-pub use self::regex::into_dyn_regex;
 pub use self::regex::AnchorEnd;
 pub use self::regex::AnchorStart;
+pub use self::regex::BoxedRegex;
 pub use self::regex::Consume;
 pub use self::regex::ConsumeAll;
+pub use self::regex::DynamicArcRegex;
+pub use self::regex::DynamicBoxedRegex;
 pub use self::regex::DynamicCreateRegexThenHelper;
-pub use self::regex::DynamicRegexHelper;
+pub use self::regex::DynamicRcRegex;
 pub use self::regex::LitSlice;
 pub use self::regex::LitString;
 pub use self::regex::RegexNot;
+pub use self::wrap::Wrapped;
+pub use self::wrap::WrappedTy;
 
 use crate::ctx::Context;
 use crate::ctx::Match;

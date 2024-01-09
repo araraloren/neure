@@ -176,13 +176,10 @@ where
     F: MapSingle<O, V>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
         self.mapper.map_to(self.pat.constrct(ctx, func)?)
     }
 }

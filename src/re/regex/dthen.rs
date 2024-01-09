@@ -126,7 +126,7 @@ where
     Self: Sized,
     C: Context<'a> + Match<C>,
 {
-    fn dyn_then_re<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F>;
+    fn dyn_then_regex<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F>;
 }
 
 impl<'a, C, T> DynamicCreateRegexThenHelper<'a, C> for T
@@ -134,7 +134,7 @@ where
     Self: Sized,
     C: Context<'a> + Match<C>,
 {
-    fn dyn_then_re<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F> {
+    fn dyn_then_regex<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F> {
         DynamicCreateRegexThen::new(self, func)
     }
 }

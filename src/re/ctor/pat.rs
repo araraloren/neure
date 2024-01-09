@@ -94,13 +94,10 @@ where
     P: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(&self.pat)?;
 
         func.invoke(A::extract(ctx, &ret)?)

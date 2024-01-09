@@ -25,9 +25,7 @@ use std::sync::Mutex;
 
 pub use self::array::Array;
 pub use self::array::PairArray;
-pub use self::boxed::into_boxed_ctor;
 pub use self::boxed::BoxedCtor;
-pub use self::boxed::BoxedCtorHelper;
 pub use self::collect::Collect;
 pub use self::dthen::DynamicCreateCtorThen;
 pub use self::dthen::DynamicCreateCtorThenHelper;
