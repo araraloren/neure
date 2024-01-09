@@ -29,14 +29,10 @@ pub use self::boxed::BoxedCtor;
 pub use self::collect::Collect;
 pub use self::dthen::DynamicCreateCtorThen;
 pub use self::dthen::DynamicCreateCtorThenHelper;
-pub use self::dynamic::into_dyn_ctor;
-pub use self::dynamic::into_dyn_ctor_sync;
-pub use self::dynamic::DynamicCtor;
-pub use self::dynamic::DynamicCtorHandler;
-pub use self::dynamic::DynamicCtorHandlerSync;
-pub use self::dynamic::DynamicCtorHelper;
-pub use self::dynamic::DynamicCtorHelperSync;
-pub use self::dynamic::DynamicCtorSync;
+pub use self::dynamic::DynamicArcCtor;
+pub use self::dynamic::DynamicBoxedCtor;
+pub use self::dynamic::DynamicBoxedCtorSync;
+pub use self::dynamic::DynamicRcCtor;
 pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
@@ -69,6 +65,9 @@ use crate::neu::NullCond;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
+
+use super::ConstructIntoOp;
+use super::WrappedTy;
 
 pub trait Ctor<'a, C, M, O, H, A>
 where
@@ -279,10 +278,10 @@ where
 }
 
 pub type RecursiveCtor<'a, 'b, C, M, O, H, A> =
-    Rc<RefCell<Option<DynamicCtor<'a, 'b, C, M, O, H, A>>>>;
+    Rc<RefCell<Option<WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>>>>;
 
 pub type RecursiveCtorSync<'a, 'b, C, M, O, H, A> =
-    Arc<Mutex<Option<DynamicCtorSync<'a, 'b, C, M, O, H, A>>>>;
+    Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>>>>;
 
 ///
 /// # Example
@@ -355,7 +354,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.borrow_mut() = Some(into_dyn_ctor(ctor));
+    *r_ctor.borrow_mut() = Some(ConstructIntoOp::into_dyn_box(ctor));
     r_ctor
 }
 
@@ -370,7 +369,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.lock().unwrap() = Some(into_dyn_ctor_sync(ctor));
+    *r_ctor.lock().unwrap() = Some(ConstructIntoOp::into_dyn_box_sync(ctor));
     r_ctor
 }
 
