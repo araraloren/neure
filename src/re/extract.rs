@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use crate::ctx::Context;
 use crate::ctx::Ret;
 use crate::err::Error;
@@ -122,28 +120,10 @@ impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for String {
     }
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct SingleHandler<T>(PhantomData<T>);
+#[derive(Debug, Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Pass;
 
-impl<T> SingleHandler<T> {
-    pub fn new() -> Self {
-        Self(PhantomData)
-    }
-}
-
-impl<T> Clone for SingleHandler<T> {
-    fn clone(&self) -> Self {
-        Self(self.0)
-    }
-}
-
-impl<T> Default for SingleHandler<T> {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
-
-impl<T> Handler<T> for SingleHandler<T> {
+impl<T> Handler<T> for Pass {
     type Out = T;
 
     type Error = Error;

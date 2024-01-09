@@ -13,14 +13,14 @@ static JSON: &'static [u8] = include_bytes!("samples/sample.json");
 use neure::err::Error;
 use neure::neu::range;
 use neure::prelude::*;
-use neure::re::RecursiveCtor;
+use neure::re::RecursiveCtorWith;
 
 #[derive(Debug, Default)]
 pub struct JsonParser;
 
 impl JsonParser {
     pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
-        let parser = re::rec_parser(Self::parser);
+        let parser = re::rec_parser_with(Self::parser);
         let mut ctx = BytesCtx::new(pat);
 
         ctx.ctor(&parser)
@@ -35,7 +35,7 @@ impl JsonParser {
     }
 
     pub fn parser<'a: 'b, 'b>(
-        ctor: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
+        ctor: RecursiveCtorWith<'b, BytesCtx<'a>, JsonZero<'a>>,
     ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
         move |ctx| {
             let ws = u8::is_ascii_whitespace.repeat_full();

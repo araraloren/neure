@@ -74,11 +74,11 @@ where
     }
 }
 
-impl<'a, C, O, H, A, I> Ctor<'a, C, O, O, H, A> for WrappedTy<I>
+impl<'a, C, M, O, H, A, I> Ctor<'a, C, M, O, H, A> for WrappedTy<I>
 where
     C: Context<'a> + Match<C>,
-    I: Ctor<'a, C, O, O, H, A>,
-    H: Handler<A, Out = O, Error = Error>,
+    I: Ctor<'a, C, M, O, H, A>,
+    H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]

@@ -1,4 +1,5 @@
 use crate::ctx::Context;
+use crate::ctx::Match;
 use crate::re::BoxedRegex;
 use crate::re::Regex;
 
@@ -108,7 +109,7 @@ where
 
 pub trait ConstructIntoOp<'a, C, M, O, H, A>
 where
-    C: Context<'a>,
+    C: Context<'a> + Match<C>,
     Self: Sized,
 {
     fn into_box(self) -> WrappedTy<BoxedCtor<C, Self>>;
@@ -142,7 +143,7 @@ where
 
 impl<'a, C, M, O, H, A, T> ConstructIntoOp<'a, C, M, O, H, A> for T
 where
-    C: Context<'a>,
+    C: Context<'a> + Match<C>,
     T: Ctor<'a, C, M, O, H, A>,
 {
     ///

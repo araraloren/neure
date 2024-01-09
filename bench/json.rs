@@ -45,7 +45,7 @@ mod neure_json {
 
     use neure::err::Error;
     use neure::prelude::*;
-    use neure::re::RecursiveCtor;
+    use neure::re::RecursiveCtorWith;
 
     use super::Json;
 
@@ -58,14 +58,14 @@ mod neure_json {
 
     impl JsonParser {
         pub fn parse(pat: &[u8]) -> Result<Json, Error> {
-            let parser = re::rec_parser(Self::parser);
+            let parser = re::rec_parser_with(Self::parser);
             let mut ctx = BytesCtx::new(pat);
 
             ctx.ctor(&parser)
         }
 
         pub fn parser<'a: 'b, 'b>(
-            ctor: RecursiveCtor<'b, BytesCtx<'a>, Json>,
+            ctor: RecursiveCtorWith<'b, BytesCtx<'a>, Json>,
         ) -> impl Fn(&mut BytesCtx<'a>) -> Result<Json, Error> + 'b {
             move |ctx| {
                 let ws = u8::is_ascii_whitespace.repeat_full();
@@ -123,7 +123,7 @@ mod neure_json {
 mod neure_json_zero {
     use neure::err::Error;
     use neure::prelude::*;
-    use neure::re::RecursiveCtor;
+    use neure::re::RecursiveCtorWith;
 
     use super::JsonZero;
 
@@ -132,7 +132,7 @@ mod neure_json_zero {
 
     impl JsonParser {
         pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
-            let parser = re::rec_parser(Self::parser);
+            let parser = re::rec_parser_with(Self::parser);
             let mut ctx = BytesCtx::new(pat);
 
             ctx.ctor(&parser)
@@ -147,7 +147,7 @@ mod neure_json_zero {
         }
 
         pub fn parser<'a: 'b, 'b>(
-            ctor: RecursiveCtor<'b, BytesCtx<'a>, JsonZero<'a>>,
+            ctor: RecursiveCtorWith<'b, BytesCtx<'a>, JsonZero<'a>>,
         ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
             move |ctx| {
                 let ws = u8::is_ascii_whitespace.repeat_full();

@@ -67,6 +67,7 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 use super::ConstructIntoOp;
+use super::Pass;
 use super::WrappedTy;
 
 pub trait Ctor<'a, C, M, O, H, A>
@@ -277,11 +278,16 @@ where
     }
 }
 
-pub type RecursiveCtor<'a, 'b, C, M, O, H, A> =
+pub type RecursiveCtorWith<'a, 'b, C, M, O, H, A> =
     Rc<RefCell<Option<WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>>>>;
 
-pub type RecursiveCtorSync<'a, 'b, C, M, O, H, A> =
+pub type RecursiveCtorWithSync<'a, 'b, C, M, O, H, A> =
     Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>>>>;
+
+pub type RecursiveCtor<'a, C, M, O> = RecursiveCtorWith<'a, 'static, C, M, O, Pass, M>;
+
+pub type RecursiveCtorSync<'a, C, M, O> =
+    Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'static, C, M, O, Pass, M>>>>>;
 
 ///
 /// # Example
@@ -343,14 +349,14 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O, H, A> =
 ///     Ok(())
 /// # }
 /// ```
-pub fn rec_parser<'a, 'b, C, M, O, I, H, A>(
-    handler: impl Fn(RecursiveCtor<'a, 'b, C, M, O, H, A>) -> I,
-) -> RecursiveCtor<'a, 'b, C, M, O, H, A>
+pub fn rec_parser_with<'a, 'b, C, M, O, H, A, I>(
+    handler: impl Fn(RecursiveCtorWith<'a, 'b, C, M, O, H, A>) -> I,
+) -> RecursiveCtorWith<'a, 'b, C, M, O, H, A>
 where
-    C: Context<'a>,
+    C: Context<'a> + Match<C>,
     I: Ctor<'a, C, M, O, H, A> + 'b,
 {
-    let r_ctor: RecursiveCtor<'a, 'b, C, M, O, H, A> = Rc::new(RefCell::new(None));
+    let r_ctor: RecursiveCtorWith<'a, 'b, C, M, O, H, A> = Rc::new(RefCell::new(None));
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
@@ -358,14 +364,44 @@ where
     r_ctor
 }
 
-pub fn rec_parser_sync<'a, 'b, C, M, O, I, H, A>(
-    handler: impl Fn(RecursiveCtorSync<'a, 'b, C, M, O, H, A>) -> I,
-) -> RecursiveCtorSync<'a, 'b, C, M, O, H, A>
+pub fn rec_parser<'a, C, M, O, I>(
+    handler: impl Fn(RecursiveCtor<'a, C, M, O>) -> I,
+) -> RecursiveCtor<'a, C, M, O>
 where
-    C: Context<'a>,
+    C: Context<'a> + Match<C>,
+    I: Ctor<'a, C, M, O, Pass, M> + 'static,
+{
+    let r_ctor: RecursiveCtor<'a, C, M, O> = Rc::new(RefCell::new(None));
+    let r_ctor_clone = r_ctor.clone();
+    let ctor = handler(r_ctor_clone);
+
+    *r_ctor.borrow_mut() = Some(ConstructIntoOp::into_dyn_box(ctor));
+    r_ctor
+}
+
+pub fn rec_parser_with_sync<'a, 'b, C, M, O, I, H, A>(
+    handler: impl Fn(RecursiveCtorWithSync<'a, 'b, C, M, O, H, A>) -> I,
+) -> RecursiveCtorWithSync<'a, 'b, C, M, O, H, A>
+where
+    C: Context<'a> + Match<C>,
     I: Ctor<'a, C, M, O, H, A> + Send + 'b,
 {
-    let r_ctor: RecursiveCtorSync<'a, 'b, C, M, O, H, A> = Arc::new(Mutex::new(None));
+    let r_ctor: RecursiveCtorWithSync<'a, 'b, C, M, O, H, A> = Arc::new(Mutex::new(None));
+    let r_ctor_clone = r_ctor.clone();
+    let ctor = handler(r_ctor_clone);
+
+    *r_ctor.lock().unwrap() = Some(ConstructIntoOp::into_dyn_box_sync(ctor));
+    r_ctor
+}
+
+pub fn rec_parser_sync<'a, 'b, C, M, O, I>(
+    handler: impl Fn(RecursiveCtorSync<'a, C, M, O>) -> I,
+) -> RecursiveCtorSync<'a, C, M, O>
+where
+    C: Context<'a> + Match<C>,
+    I: Ctor<'a, C, M, O, Pass, M> + Send + 'static,
+{
+    let r_ctor: RecursiveCtorSync<'a, C, M, O> = Arc::new(Mutex::new(None));
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
