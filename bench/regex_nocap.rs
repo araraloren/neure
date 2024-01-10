@@ -23,11 +23,8 @@ fn bench_color(c: &mut Criterion) {
     c.bench_function("email of regex no capture", {
         move |b| {
             b.iter(|| {
-                black_box(email_regex::parse(
-                    black_box(&re),
-                    black_box(&test_cases),
-                    black_box(&results),
-                ))
+                email_regex::parse(black_box(&re), black_box(&test_cases), black_box(&results));
+                black_box(())
             })
         }
     });
@@ -35,10 +32,8 @@ fn bench_color(c: &mut Criterion) {
     c.bench_function("email of neure no capture", {
         move |b| {
             b.iter(|| {
-                black_box(email_neure::parse(
-                    black_box(&test_cases),
-                    black_box(&results),
-                ))
+                email_neure::parse(black_box(&test_cases), black_box(&results));
+                black_box(())
             })
         }
     });

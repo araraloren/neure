@@ -37,7 +37,7 @@ where
 
     fn into_mutex_regex(self) -> WrappedTy<Mutex<Self>>;
 
-    fn into_dyn_box_regex<'b>(self) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_regex<'b>(self) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
         Self: Regex<C> + 'b;
 
@@ -79,7 +79,7 @@ where
         WrappedTy::new(Mutex::new(self))
     }
 
-    fn into_dyn_box_regex<'b>(self) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_regex<'b>(self) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
         Self: Regex<C> + 'b,
     {
@@ -124,11 +124,11 @@ where
 
     fn into_mutex(self) -> WrappedTy<Mutex<Self>>;
 
-    fn into_dyn_box<'b>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn<'b>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
     where
         Self: 'b;
 
-    fn into_dyn_box_sync<'b>(self) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
+    fn into_dyn_sync<'b>(self) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
     where
         Self: Send + 'b;
 
@@ -162,7 +162,7 @@ where
     ///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
     ///         .pat()
     ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
-    ///         .into_boxed_ctor();
+    ///         .into_box();
     ///
     ///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, "+AE00");
     ///     assert!(BytesCtx::new(b"-GH66").ctor(&re).is_err());
@@ -194,7 +194,27 @@ where
         WrappedTy::new(Mutex::new(self))
     }
 
-    fn into_dyn_box<'b>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
+    /// # Example 2
+    ///
+    /// ```
+    /// # use neure::{err::Error, prelude::*};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    /// #     color_eyre::install()?;
+    ///     let num = u8::is_ascii_digit
+    ///         .repeat_one()
+    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+    ///         .map(map::from_str::<usize>());
+    ///     let num = num.clone().sep_once(b",", num);
+    ///     let re = re::ctor::into_dyn_ctor(|ctx: &mut BytesCtx| ctx.ctor(&num));
+    ///
+    ///     assert_eq!(BytesCtx::new(b"3,0").ctor(&re)?, (3, 0));
+    ///     assert_eq!(BytesCtx::new(b"2,1").ctor(&re)?, (2, 1));
+    ///     assert_eq!(BytesCtx::new(b"0,3").ctor(&re)?, (0, 3));
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn into_dyn<'b>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
     where
         Self: 'b,
     {
@@ -203,7 +223,7 @@ where
         }
     }
 
-    fn into_dyn_box_sync<'b>(self) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
+    fn into_dyn_sync<'b>(self) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
     where
         Self: Send + 'b,
     {

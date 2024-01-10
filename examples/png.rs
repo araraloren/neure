@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     // png reference http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
-    if let Some(file) = std::env::args().skip(1).next() {
+    if let Some(file) = std::env::args().nth(1) {
         let head: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
         let bytes = std::fs::read(file)?;
         let as_u32 = |dat: &[u8]| {
@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let uint8 = re::consume(1).map(as_u8);
         let mut ctx = RegexCtx::new(bytes.as_slice());
 
-        if let Ok(_) = ctx.ctor(&head) {
+        if ctx.ctor(&head).is_ok() {
             println!("Matching the head, the file seems like a png file");
         } else {
             println!("Not a png file");
@@ -111,7 +111,7 @@ pub fn initialize_crc_table() {
                             if c & 1 == 1 {
                                 c = 0xedb88320u32 ^ (c >> 1);
                             } else {
-                                c = c >> 1;
+                                c >>= 1;
                             }
                         }
                         table[n as usize] = c;

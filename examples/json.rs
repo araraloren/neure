@@ -8,36 +8,18 @@ pub enum JsonZero<'a> {
     Object(Vec<(&'a [u8], JsonZero<'a>)>),
 }
 
-static JSON: &'static [u8] = include_bytes!("samples/sample.json");
+static JSON: &[u8] = include_bytes!("samples/sample.json");
 
 use neure::err::Error;
 use neure::neu::range;
 use neure::prelude::*;
-use neure::re::RecursiveCtorWith;
 
 #[derive(Debug, Default)]
 pub struct JsonParser;
 
 impl JsonParser {
-    pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
-        let parser = re::rec_parser_with(Self::parser);
-        let mut ctx = BytesCtx::new(pat);
-
-        ctx.ctor(&parser)
-    }
-
-    pub fn to_digit<'a>(val: &[u8]) -> Result<JsonZero<'a>, Error> {
-        std::str::from_utf8(val)
-            .map_err(|_| Error::Other)?
-            .parse::<f64>()
-            .map_err(|_| Error::Other)
-            .map(JsonZero::Num)
-    }
-
-    pub fn parser<'a: 'b, 'b>(
-        ctor: RecursiveCtorWith<'b, BytesCtx<'a>, JsonZero<'a>>,
-    ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
-        move |ctx| {
+    pub fn parse(pat: &[u8]) -> Result<JsonZero<'_>, Error> {
+        let parser = re::rec_parser_with(|ctor| {
             let ws = u8::is_ascii_whitespace.repeat_full();
             let sign = neu!((b'+', b'-')).repeat_zero_one();
             let digit = range(b'0'..=b'9').repeat_one_more();
@@ -80,8 +62,19 @@ impl JsonParser {
             let array = ele.sep(b",").quote(b"[", b"]");
             let array = array.map(|v| Ok(JsonZero::Array(v)));
 
-            ctx.ctor(&obj.or(array))
-        }
+            obj.or(array)
+        });
+        let mut ctx = BytesCtx::new(pat);
+
+        ctx.ctor(&parser)
+    }
+
+    pub fn to_digit<'a>(val: &[u8]) -> Result<JsonZero<'a>, Error> {
+        std::str::from_utf8(val)
+            .map_err(|_| Error::Other)?
+            .parse::<f64>()
+            .map_err(|_| Error::Other)
+            .map(JsonZero::Num)
     }
 }
 
@@ -89,5 +82,5 @@ pub fn main() {
     tracing_subscriber::fmt::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
-    dbg!(JsonParser::parse(&JSON).unwrap());
+    dbg!(JsonParser::parse(JSON).unwrap());
 }

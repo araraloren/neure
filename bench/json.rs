@@ -20,7 +20,7 @@ pub enum JsonZero<'a> {
     Object(Vec<(&'a [u8], JsonZero<'a>)>),
 }
 
-static JSON: &'static [u8] = include_bytes!("../examples/samples/sample.json");
+static JSON: &[u8] = include_bytes!("../examples/samples/sample.json");
 
 fn bench_json(c: &mut Criterion) {
     c.bench_function("json neure", {
@@ -45,7 +45,6 @@ mod neure_json {
 
     use neure::err::Error;
     use neure::prelude::*;
-    use neure::re::RecursiveCtorWith;
 
     use super::Json;
 
@@ -58,16 +57,7 @@ mod neure_json {
 
     impl JsonParser {
         pub fn parse(pat: &[u8]) -> Result<Json, Error> {
-            let parser = re::rec_parser_with(Self::parser);
-            let mut ctx = BytesCtx::new(pat);
-
-            ctx.ctor(&parser)
-        }
-
-        pub fn parser<'a: 'b, 'b>(
-            ctor: RecursiveCtorWith<'b, BytesCtx<'a>, Json>,
-        ) -> impl Fn(&mut BytesCtx<'a>) -> Result<Json, Error> + 'b {
-            move |ctx| {
+            let parser = re::rec_parser_with(|ctor| {
                 let ws = u8::is_ascii_whitespace.repeat_full();
                 let sign = b'+'.or(b'-').repeat_zero_one();
                 let digit = neu::range(b'0'..=b'9').repeat_one_more();
@@ -114,8 +104,11 @@ mod neure_json {
                 let array = ele.sep(b",").quote(b"[", b"]");
                 let array = array.map(|v| Ok(Json::Array(v)));
 
-                ctx.ctor(&obj.or(array))
-            }
+                obj.or(array)
+            });
+            let mut ctx = BytesCtx::new(pat);
+
+            ctx.ctor(&parser)
         }
     }
 }
@@ -123,7 +116,6 @@ mod neure_json {
 mod neure_json_zero {
     use neure::err::Error;
     use neure::prelude::*;
-    use neure::re::RecursiveCtorWith;
 
     use super::JsonZero;
 
@@ -132,24 +124,7 @@ mod neure_json_zero {
 
     impl JsonParser {
         pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
-            let parser = re::rec_parser_with(Self::parser);
-            let mut ctx = BytesCtx::new(pat);
-
-            ctx.ctor(&parser)
-        }
-
-        pub fn to_digit<'a>(val: &[u8]) -> Result<JsonZero<'a>, Error> {
-            std::str::from_utf8(val)
-                .map_err(|_| Error::Other)?
-                .parse::<f64>()
-                .map_err(|_| Error::Other)
-                .map(JsonZero::Num)
-        }
-
-        pub fn parser<'a: 'b, 'b>(
-            ctor: RecursiveCtorWith<'b, BytesCtx<'a>, JsonZero<'a>>,
-        ) -> impl Fn(&mut BytesCtx<'a>) -> Result<JsonZero<'a>, Error> + 'b {
-            move |ctx| {
+            let parser = re::rec_parser_with(|ctor| {
                 let ws = u8::is_ascii_whitespace.repeat_full();
                 let sign = re!((b'+', b'-'){0,1});
                 let digit = neu::range(b'0'..=b'9').repeat_one_more();
@@ -190,8 +165,19 @@ mod neure_json_zero {
                 let array = ele.sep(b",").quote(b"[", b"]");
                 let array = array.map(|v| Ok(JsonZero::Array(v)));
 
-                ctx.ctor(&obj.or(array))
-            }
+                obj.or(array)
+            });
+            let mut ctx = BytesCtx::new(pat);
+
+            ctx.ctor(&parser)
+        }
+
+        pub fn to_digit<'a>(val: &[u8]) -> Result<JsonZero<'a>, Error> {
+            std::str::from_utf8(val)
+                .map_err(|_| Error::Other)?
+                .parse::<f64>()
+                .map_err(|_| Error::Other)
+                .map(JsonZero::Num)
         }
     }
 }

@@ -28,7 +28,7 @@ use super::Ctor;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let tuple = re::vector(["a".into_dyn_box(), "b".into_dyn_box(), "c".into_dyn_box()]);
+///     let tuple = re::vector(["a".into_dyn_regex(), "b".into_dyn_regex(), "c".into_dyn_regex()]);
 ///
 ///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
 ///     Ok(())
