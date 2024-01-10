@@ -83,7 +83,7 @@ where
 {
     #[inline(always)]
     fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        self.value.constrct(ctx, handler)
+        Ctor::constrct(&self.value, ctx, handler)
     }
 }
 
@@ -121,9 +121,11 @@ macro_rules! self_wrap {
 }
 
 self_wrap!(std::rc::Rc<T>);
-self_wrap!(std::rc::Weak<T>);
+
 self_wrap!(std::cell::Cell<T>);
+
 self_wrap!(std::cell::RefCell<T>);
+
 self_wrap!(std::sync::Arc<T>);
+
 self_wrap!(std::sync::Mutex<T>);
-self_wrap!(std::sync::RwLock<T>);

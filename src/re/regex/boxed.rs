@@ -9,32 +9,13 @@ use crate::re::Regex;
 use crate::re::Wrapped;
 
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
-pub struct BoxedRegex<C, T> {
+#[derive(Debug, Clone)]
+pub struct BoxedRegex<T> {
     inner: Box<T>,
-    marker: PhantomData<C>,
 }
 
-impl<C, T: Debug> Debug for BoxedRegex<C, T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("BoxedRegex")
-            .field("inner", &self.inner)
-            .field("marker", &self.marker)
-            .finish()
-    }
-}
-
-impl<C, T: Clone> Clone for BoxedRegex<C, T> {
-    fn clone(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            marker: self.marker,
-        }
-    }
-}
-
-impl<C, T> Regex<C> for BoxedRegex<C, T>
+impl<C, T> Regex<C> for BoxedRegex<T>
 where
     T: Regex<C>,
 {
@@ -45,7 +26,7 @@ where
     }
 }
 
-impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for BoxedRegex<C, T>
+impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for BoxedRegex<T>
 where
     T: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
@@ -59,13 +40,12 @@ where
     }
 }
 
-impl<C, T> Wrapped for BoxedRegex<C, T> {
+impl<T> Wrapped for BoxedRegex<T> {
     type Inner = T;
 
     fn wrap(inner: Self::Inner) -> Self {
         Self {
             inner: Box::new(inner),
-            marker: PhantomData,
         }
     }
 
