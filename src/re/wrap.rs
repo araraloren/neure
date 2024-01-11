@@ -10,7 +10,7 @@ use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
-#[derive(Default)]
+#[derive(Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WrappedTy<I> {
     pub(crate) value: I,
 }

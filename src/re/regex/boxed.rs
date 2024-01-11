@@ -15,6 +15,14 @@ pub struct BoxedRegex<T> {
     inner: Box<T>,
 }
 
+impl<T> BoxedRegex<T> {
+    pub fn new(val: T) -> Self {
+        Self {
+            inner: Box::new(val),
+        }
+    }
+}
+
 impl<C, T> Regex<C> for BoxedRegex<T>
 where
     T: Regex<C>,
@@ -41,19 +49,17 @@ where
 }
 
 impl<T> Wrapped for BoxedRegex<T> {
-    type Inner = T;
+    type Inner = Box<T>;
 
     fn wrap(inner: Self::Inner) -> Self {
-        Self {
-            inner: Box::new(inner),
-        }
+        Self { inner }
     }
 
     fn inner(&self) -> &Self::Inner {
-        self.inner.as_ref()
+        &self.inner
     }
 
     fn inner_mut(&mut self) -> &mut Self::Inner {
-        self.inner.as_mut()
+        &mut self.inner
     }
 }

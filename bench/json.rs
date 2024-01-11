@@ -41,8 +41,6 @@ criterion_group!(
 criterion_main!(benches);
 
 mod neure_json {
-    use std::rc::Rc;
-
     use neure::err::Error;
     use neure::prelude::*;
 
@@ -67,7 +65,8 @@ mod neure_json {
                     .pat()
                     .map(to_str)
                     .map(map::from_str::<f64>())
-                    .map(|v| Ok(Json::Num(v)));
+                    .map(|v| Ok(Json::Num(v)))
+                    .into_dyn();
 
                 let escape = b'\r'.or(b'\t').or(b'\n').or(b'\\').or(b'\"');
                 let escape = b'\\'.then(escape);
@@ -83,15 +82,15 @@ mod neure_json {
                     .map(to_str)
                     .map(map::from_str::<String>())
                     .map(|v| Ok(Json::Str(v)))
-                    .quote(b"\"", b"\"");
+                    .quote(b"\"", b"\"")
+                    .into_dyn();
 
                 let bool_t = re::lit_slice(b"true").map(|_| Ok(Json::Bool(true)));
                 let bool_f = re::lit_slice(b"false").map(|_| Ok(Json::Bool(false)));
                 let null = re::lit_slice(b"null").map(|_| Ok(Json::Null));
 
                 let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
-                let ele = ele.pad(ws).padded(ws);
-                let ele = Rc::new(ele);
+                let ele = ele.pad(ws).padded(ws).into_rc();
 
                 let key = re!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+)
                     .map(to_str)
@@ -100,6 +99,7 @@ mod neure_json {
                 let key = key.pad(ws).padded(ws);
                 let obj = key.sep_once(b":", ele.clone());
                 let obj = obj.sep(b",").quote(b"{", b"}").map(|v| Ok(Json::Object(v)));
+                let obj = obj.into_dyn();
 
                 let array = ele.sep(b",").quote(b"[", b"]");
                 let array = array.map(|v| Ok(Json::Array(v)));
@@ -130,7 +130,7 @@ mod neure_json_zero {
                 let digit = neu::range(b'0'..=b'9').repeat_one_more();
                 let dec = b".".then(digit).pat();
                 let num = sign.then(digit).then(dec.or(re::null()));
-                let num = num.pat().map(&Self::to_digit);
+                let num = num.pat().into_dyn().map(&Self::to_digit);
 
                 let escape = neu!((b'\r', b'\t', b'\n', b'\\', b'\"'));
                 let escape = b'\\'.then(escape);
@@ -142,7 +142,7 @@ mod neure_json_zero {
                     .or(escape)
                     .repeat(0..)
                     .pat();
-                let str = str_val.quote(b"\"", b"\"");
+                let str = str_val.quote(b"\"", b"\"").into_dyn();
                 let str = str.map(|v| Ok(JsonZero::Str(v)));
 
                 let bool_t = re::lit_slice(b"true").map(|_| Ok(JsonZero::Bool(true)));
@@ -150,8 +150,7 @@ mod neure_json_zero {
                 let null = re::lit_slice(b"null").map(|_| Ok(JsonZero::Null));
 
                 let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
-                let ele = ele.pad(ws).padded(ws);
-                let ele = std::rc::Rc::new(ele);
+                let ele = ele.pad(ws).padded(ws).into_rc();
 
                 let key = re!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
                 let key = key.quote(b"\"", b"\"");
@@ -160,9 +159,10 @@ mod neure_json_zero {
                 let obj = obj
                     .sep(b",")
                     .quote(b"{", b"}")
+                    .into_dyn()
                     .map(|v| Ok(JsonZero::Object(v)));
 
-                let array = ele.sep(b",").quote(b"[", b"]");
+                let array = ele.sep(b",").quote(b"[", b"]").into_dyn();
                 let array = array.map(|v| Ok(JsonZero::Array(v)));
 
                 obj.or(array)

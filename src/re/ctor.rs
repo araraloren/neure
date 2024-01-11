@@ -274,6 +274,39 @@ where
     }
 }
 
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A>>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+{
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::constrct(self.as_ref(), ctx, handler)
+    }
+}
+
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A>>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+{
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::constrct(self.as_ref(), ctx, handler)
+    }
+}
+
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A>>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+{
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::constrct(self.as_ref(), ctx, handler)
+    }
+}
+
 pub trait ConstructOp<'a, C>
 where
     Self: Sized,

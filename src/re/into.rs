@@ -60,7 +60,9 @@ where
 
 impl<T> RegexIntoOp for T {
     fn into_box_regex(self) -> WrappedTy<BoxedRegex<Self>> {
-        WrappedTy::new(self)
+        WrappedTy {
+            value: BoxedRegex::new(self),
+        }
     }
 
     fn into_rc_regex(self) -> WrappedTy<Rc<Self>> {
@@ -193,6 +195,33 @@ where
         WrappedTy::new(Box::new(self))
     }
 
+    ///
+    /// Return a type that wrap `Ctor` with `Rc`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let year = char::is_ascii_digit.repeat_times::<4>();
+    ///     let num = char::is_ascii_digit.repeat_times::<2>();
+    ///     let date = year.sep_once("-", num.sep_once("-", num)).into_rc();
+    ///     let time = num.sep_once(":", num.sep_once(":", num));
+    ///     let datetime = date.clone().sep_once(" ", time);
+    ///
+    ///     assert_eq!(
+    ///         CharsCtx::new("2024-01-08").ctor(&date)?,
+    ///         ("2024", ("01", "08"))
+    ///     );
+    ///     assert_eq!(
+    ///         CharsCtx::new("2024-01-08 10:01:13").ctor(&datetime)?,
+    ///         (("2024", ("01", "08")), ("10", ("01", "13")))
+    ///     );
+    ///     Ok(())
+    /// # }
+    /// ```
     fn into_rc(self) -> WrappedTy<Rc<Self>> {
         WrappedTy::new(Rc::new(self))
     }

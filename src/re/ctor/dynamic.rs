@@ -42,7 +42,7 @@ where
 {
     #[inline(always)]
     fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        self.inner.constrct(ctx, handler)
+        Ctor::constrct(self.inner.as_ref(), ctx, handler)
     }
 }
 
@@ -145,7 +145,7 @@ where
 {
     #[inline(always)]
     fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        self.inner.constrct(ctx, handler)
+        Ctor::constrct(self.inner.as_ref(), ctx, handler)
     }
 }
 
@@ -197,7 +197,7 @@ where
 {
     #[inline(always)]
     fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        self.inner.constrct(ctx, handler)
+        Ctor::constrct(self.inner.as_ref(), ctx, handler)
     }
 }
 
