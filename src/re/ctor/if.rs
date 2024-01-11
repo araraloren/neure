@@ -142,13 +142,10 @@ where
     C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
     H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("if", beg, (self.r#if)(g.ctx())?);

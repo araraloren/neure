@@ -157,13 +157,10 @@ where
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut res = Vec::with_capacity(self.capacity);

@@ -163,13 +163,10 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
     H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("neu_then", beg, g.try_mat(self));

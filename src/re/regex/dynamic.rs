@@ -1,46 +1,29 @@
+use std::rc::Rc;
+use std::sync::Arc;
+
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::def_not;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
+use crate::re::Wrapped;
 
-pub type DynamicRegexHandler<'a, C, R> = Box<dyn Fn(&mut C) -> Result<R, Error> + 'a>;
-
-pub struct DynamicRegex<'a, C, R> {
-    inner: DynamicRegexHandler<'a, C, R>,
+pub struct DynamicBoxedRegex<'a, C, R> {
+    inner: Box<dyn Regex<C, Ret = R> + 'a>,
 }
 
-def_not!(DynamicRegex<'a, C, R>);
-
-impl<'a, C, R> DynamicRegex<'a, C, R> {
-    pub fn new(inner: DynamicRegexHandler<'a, C, R>) -> Self {
-        Self { inner }
-    }
-
-    pub fn with_inner(mut self, inner: DynamicRegexHandler<'a, C, R>) -> Self {
-        self.inner = inner;
-        self
-    }
-
-    pub fn inner(&self) -> &DynamicRegexHandler<'a, C, R> {
-        &self.inner
-    }
-
-    pub fn inner_mut(&mut self) -> &mut DynamicRegexHandler<'a, C, R> {
-        &mut self.inner
-    }
-
-    pub fn set_inner(&mut self, inner: DynamicRegexHandler<'a, C, R>) -> &mut Self {
-        self.inner = inner;
-        self
+impl<'a, C, R> DynamicBoxedRegex<'a, C, R> {
+    pub fn new(inner: impl Regex<C, Ret = R> + 'a) -> Self {
+        Self {
+            inner: Box::new(inner),
+        }
     }
 }
 
-impl<'a, C, R> Regex<C> for DynamicRegex<'a, C, R> {
+impl<'a, C, R> Regex<C> for DynamicBoxedRegex<'a, C, R> {
     type Ret = R;
 
     #[inline(always)]
@@ -49,7 +32,7 @@ impl<'a, C, R> Regex<C> for DynamicRegex<'a, C, R> {
     }
 }
 
-impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicRegex<'b, C, Span>
+impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicBoxedRegex<'b, C, Span>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
@@ -57,39 +40,126 @@ where
 {
     #[inline(always)]
     fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat_t(&self.inner)?;
+        let ret = ctx.try_mat_t(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
     }
 }
 
-pub fn into_dyn_regex<'a, 'b, C, R>(
-    invoke: impl Fn(&mut C) -> Result<R, Error> + 'b,
-) -> DynamicRegex<'b, C, R>
-where
-    C: Context<'a>,
-{
-    DynamicRegex::new(Box::new(invoke))
+impl<'a, C, R> Wrapped for DynamicBoxedRegex<'a, C, R> {
+    type Inner = Box<dyn Regex<C, Ret = R> + 'a>;
+
+    fn wrap(inner: Self::Inner) -> Self {
+        Self { inner }
+    }
+
+    fn inner(&self) -> &Self::Inner {
+        &self.inner
+    }
+
+    fn inner_mut(&mut self) -> &mut Self::Inner {
+        &mut self.inner
+    }
 }
 
-pub trait DynamicRegexHelper<'a, 'b, C, R>
-where
-    C: Context<'a>,
-{
-    fn into_dyn_regex(self) -> DynamicRegex<'b, C, R>
-    where
-        Self: Sized;
+pub struct DynamicArcRegex<'a, C, R> {
+    inner: Arc<dyn Regex<C, Ret = R> + 'a>,
 }
 
-impl<'a, 'b, C, R, T> DynamicRegexHelper<'a, 'b, C, R> for T
+impl<'a, C, R> DynamicArcRegex<'a, C, R> {
+    pub fn new(inner: impl Regex<C, Ret = R> + 'a) -> Self {
+        Self {
+            inner: Arc::new(inner),
+        }
+    }
+}
+
+impl<'a, C, R> Regex<C> for DynamicArcRegex<'a, C, R> {
+    type Ret = R;
+
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        self.inner.try_parse(ctx)
+    }
+}
+
+impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicArcRegex<'b, C, Span>
 where
     C: Context<'a> + Match<C>,
-    T: Fn(&mut C) -> Result<R, Error> + 'b,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
-    fn into_dyn_regex(self) -> DynamicRegex<'b, C, R>
-    where
-        Self: Sized,
-    {
-        DynamicRegex::new(Box::new(self))
+    #[inline(always)]
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        let ret = ctx.try_mat_t(self.inner.as_ref())?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, C, R> Wrapped for DynamicArcRegex<'a, C, R> {
+    type Inner = Arc<dyn Regex<C, Ret = R> + 'a>;
+
+    fn wrap(inner: Self::Inner) -> Self {
+        Self { inner }
+    }
+
+    fn inner(&self) -> &Self::Inner {
+        &self.inner
+    }
+
+    fn inner_mut(&mut self) -> &mut Self::Inner {
+        &mut self.inner
+    }
+}
+
+pub struct DynamicRcRegex<'a, C, R> {
+    inner: Rc<dyn Regex<C, Ret = R> + 'a>,
+}
+
+impl<'a, C, R> DynamicRcRegex<'a, C, R> {
+    pub fn new(inner: impl Regex<C, Ret = R> + 'a) -> Self {
+        Self {
+            inner: Rc::new(inner),
+        }
+    }
+}
+
+impl<'a, C, R> Regex<C> for DynamicRcRegex<'a, C, R> {
+    type Ret = R;
+
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        self.inner.try_parse(ctx)
+    }
+}
+
+impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicRcRegex<'b, C, Span>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+{
+    #[inline(always)]
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        let ret = ctx.try_mat_t(self.inner.as_ref())?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
+    }
+}
+
+impl<'a, C, R> Wrapped for DynamicRcRegex<'a, C, R> {
+    type Inner = Rc<dyn Regex<C, Ret = R> + 'a>;
+
+    fn wrap(inner: Self::Inner) -> Self {
+        Self { inner }
+    }
+
+    fn inner(&self) -> &Self::Inner {
+        &self.inner
+    }
+
+    fn inner_mut(&mut self) -> &mut Self::Inner {
+        &mut self.inner
     }
 }

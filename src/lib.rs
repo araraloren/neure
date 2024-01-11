@@ -50,6 +50,7 @@ pub mod prelude {
     pub use crate::neu::NeuCond;
     pub use crate::neu::NeuOp;
     pub use crate::re;
+    pub use crate::re::ConstructIntoOp;
     pub use crate::re::ConstructOp;
     pub use crate::re::Regex;
     pub use crate::re::RegexIntoOp;

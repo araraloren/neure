@@ -1,182 +1,306 @@
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::ctx::Span;
-use crate::err::Error;
-use crate::re::Ctor;
-use crate::re::Extract;
-use crate::re::Handler;
+use crate::re::BoxedRegex;
 use crate::re::Regex;
 
 use std::cell::Cell;
 use std::cell::RefCell;
-use std::fmt::Debug;
-use std::marker::PhantomData;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use super::def_not;
+use super::ctor::BoxedCtor;
+use super::ctor::DynamicArcCtor;
+use super::ctor::DynamicBoxedCtor;
+use super::ctor::DynamicRcCtor;
+use super::Ctor;
+use super::DynamicArcRegex;
+use super::DynamicBoxedCtorSync;
+use super::DynamicBoxedRegex;
+use super::DynamicRcRegex;
+use super::WrappedTy;
 
-pub trait RegexIntoOp<'a, C>
+pub trait RegexIntoOp
 where
-    C: Context<'a>,
     Self: Sized,
 {
-    fn into_box(self) -> BoxedRegex<C, Self>;
+    fn into_box_regex(self) -> WrappedTy<BoxedRegex<Self>>;
 
-    fn into_rc(self) -> Rc<Self>;
+    fn into_rc_regex(self) -> WrappedTy<Rc<Self>>;
 
-    fn into_arc(self) -> Arc<Self>;
+    fn into_arc_regex(self) -> WrappedTy<Arc<Self>>;
 
-    fn into_cell(self) -> Cell<Self>;
+    fn into_cell_regex(self) -> WrappedTy<Cell<Self>>;
 
-    fn into_refcell(self) -> RefCell<Self>;
+    fn into_refcell_regex(self) -> WrappedTy<RefCell<Self>>;
 
-    fn into_mutex(self) -> Mutex<Self>;
+    fn into_mutex_regex(self) -> WrappedTy<Mutex<Self>>;
 
-    fn into_dyn_box<'b>(self) -> Box<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'b>
+    fn into_dyn_regex<'a, 'b, C>(
+        self,
+    ) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
+        C: Context<'a>,
         Self: Regex<C> + 'b;
 
-    fn into_dyn_arc<'b>(self) -> Arc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'b>
+    fn into_dyn_arc_regex<'a, 'b, C>(
+        self,
+    ) -> WrappedTy<DynamicArcRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
+        C: Context<'a>,
         Self: Regex<C> + 'b;
 
-    fn into_dyn_rc<'b>(self) -> Rc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'b>
+    fn into_dyn_rc_regex<'a, 'b, C>(
+        self,
+    ) -> WrappedTy<DynamicRcRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
+        C: Context<'a>,
         Self: Regex<C> + 'b;
 }
 
-impl<'a, C, T> RegexIntoOp<'a, C> for T
-where
-    T: Regex<C>,
-    C: Context<'a>,
-{
-    fn into_box(self) -> BoxedRegex<C, Self> {
-        BoxedRegex::new(Box::new(self))
+impl<T> RegexIntoOp for T {
+    fn into_box_regex(self) -> WrappedTy<BoxedRegex<Self>> {
+        WrappedTy {
+            value: BoxedRegex::new(self),
+        }
     }
 
-    fn into_rc(self) -> Rc<Self> {
-        Rc::new(self)
+    fn into_rc_regex(self) -> WrappedTy<Rc<Self>> {
+        WrappedTy::new(Rc::new(self))
     }
 
-    fn into_arc(self) -> Arc<Self> {
-        Arc::new(self)
+    fn into_arc_regex(self) -> WrappedTy<Arc<Self>> {
+        WrappedTy::new(Arc::new(self))
     }
 
-    fn into_cell(self) -> Cell<Self> {
-        Cell::new(self)
+    fn into_cell_regex(self) -> WrappedTy<Cell<Self>> {
+        WrappedTy::new(Cell::new(self))
     }
 
-    fn into_refcell(self) -> RefCell<Self> {
-        RefCell::new(self)
+    fn into_refcell_regex(self) -> WrappedTy<RefCell<Self>> {
+        WrappedTy::new(RefCell::new(self))
     }
 
-    fn into_mutex(self) -> Mutex<Self> {
-        Mutex::new(self)
+    fn into_mutex_regex(self) -> WrappedTy<Mutex<Self>> {
+        WrappedTy::new(Mutex::new(self))
     }
 
-    fn into_dyn_box<'b>(self) -> Box<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'b>
+    fn into_dyn_regex<'a, 'b, C>(
+        self,
+    ) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
+        C: Context<'a>,
         Self: Regex<C> + 'b,
     {
-        Box::new(self)
+        WrappedTy {
+            value: DynamicBoxedRegex::new(self),
+        }
     }
 
-    fn into_dyn_arc<'b>(self) -> Arc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'b>
+    fn into_dyn_arc_regex<'a, 'b, C>(
+        self,
+    ) -> WrappedTy<DynamicArcRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
+        C: Context<'a>,
         Self: Regex<C> + 'b,
     {
-        Arc::new(self)
+        WrappedTy {
+            value: DynamicArcRegex::new(self),
+        }
     }
 
-    fn into_dyn_rc<'b>(self) -> Rc<dyn Regex<C, Ret = <Self as Regex<C>>::Ret> + 'b>
+    fn into_dyn_rc_regex<'a, 'b, C>(
+        self,
+    ) -> WrappedTy<DynamicRcRegex<'b, C, <Self as Regex<C>>::Ret>>
     where
+        C: Context<'a>,
         Self: Regex<C> + 'b,
     {
-        Rc::new(self)
-    }
-}
-
-// into_box
-pub struct BoxedRegex<C, T> {
-    inner: Box<T>,
-    marker: PhantomData<C>,
-}
-
-def_not!(BoxedRegex<C, T>);
-
-impl<C, T> Debug for BoxedRegex<C, T>
-where
-    T: Debug,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("BoxedRegex")
-            .field("inner", &self.inner)
-            .finish()
-    }
-}
-
-impl<C, T> Clone for BoxedRegex<C, T>
-where
-    T: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            marker: self.marker,
+        WrappedTy {
+            value: DynamicRcRegex::new(self),
         }
     }
 }
 
-impl<C, T> BoxedRegex<C, T> {
-    pub fn new(inner: Box<T>) -> Self {
-        Self {
-            inner,
-            marker: PhantomData,
+pub trait ConstructIntoOp
+where
+    Self: Sized,
+{
+    fn into_box(self) -> WrappedTy<BoxedCtor<Self>>;
+
+    fn into_rc(self) -> WrappedTy<Rc<Self>>;
+
+    fn into_arc(self) -> WrappedTy<Arc<Self>>;
+
+    fn into_cell(self) -> WrappedTy<Cell<Self>>;
+
+    fn into_refcell(self) -> WrappedTy<RefCell<Self>>;
+
+    fn into_mutex(self) -> WrappedTy<Mutex<Self>>;
+
+    fn into_dyn<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + 'b;
+
+    fn into_dyn_sync<'a, 'b, C, M, O, H, A>(
+        self,
+    ) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + Send + 'b;
+
+    fn into_dyn_arc<'a, 'b, C, M, O, H, A>(
+        self,
+    ) -> WrappedTy<DynamicArcCtor<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + 'b;
+
+    fn into_dyn_rc<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicRcCtor<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + 'b;
+}
+
+impl<T> ConstructIntoOp for T
+where
+    Self: Sized,
+{
+    ///
+    /// Return a type that wraps `Ctor` with Box.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::{err::Error, prelude::*};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    /// #   color_eyre::install()?;
+    ///     let re = b'+'
+    ///         .or(b'-')
+    ///         .then(u8::is_ascii_hexdigit)
+    ///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
+    ///         .pat()
+    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+    ///         .into_box();
+    ///
+    ///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, "+AE00");
+    ///     assert!(BytesCtx::new(b"-GH66").ctor(&re).is_err());
+    ///     assert_eq!(BytesCtx::new(b"-83FD").ctor(&re)?, "-83FD");
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn into_box(self) -> WrappedTy<BoxedCtor<Self>> {
+        WrappedTy::new(Box::new(self))
+    }
+
+    ///
+    /// Return a type that wrap `Ctor` with `Rc`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let year = char::is_ascii_digit.repeat_times::<4>();
+    ///     let num = char::is_ascii_digit.repeat_times::<2>();
+    ///     let date = year.sep_once("-", num.sep_once("-", num)).into_rc();
+    ///     let time = num.sep_once(":", num.sep_once(":", num));
+    ///     let datetime = date.clone().sep_once(" ", time);
+    ///
+    ///     assert_eq!(
+    ///         CharsCtx::new("2024-01-08").ctor(&date)?,
+    ///         ("2024", ("01", "08"))
+    ///     );
+    ///     assert_eq!(
+    ///         CharsCtx::new("2024-01-08 10:01:13").ctor(&datetime)?,
+    ///         (("2024", ("01", "08")), ("10", ("01", "13")))
+    ///     );
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn into_rc(self) -> WrappedTy<Rc<Self>> {
+        WrappedTy::new(Rc::new(self))
+    }
+
+    fn into_arc(self) -> WrappedTy<Arc<Self>> {
+        WrappedTy::new(Arc::new(self))
+    }
+
+    fn into_cell(self) -> WrappedTy<Cell<Self>> {
+        WrappedTy::new(Cell::new(self))
+    }
+
+    fn into_refcell(self) -> WrappedTy<RefCell<Self>> {
+        WrappedTy::new(RefCell::new(self))
+    }
+
+    fn into_mutex(self) -> WrappedTy<Mutex<Self>> {
+        WrappedTy::new(Mutex::new(self))
+    }
+
+    /// # Example 2
+    ///
+    /// ```
+    /// # use neure::{err::Error, prelude::*};
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    ///     color_eyre::install()?;
+    ///     let num = u8::is_ascii_digit
+    ///         .repeat_one()
+    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+    ///         .map(map::from_str::<usize>());
+    ///     let num = num.clone().sep_once(b",", num);
+    ///     let re = num.into_dyn();
+    ///
+    ///     assert_eq!(BytesCtx::new(b"3,0").ctor(&re)?, (3, 0));
+    ///     assert_eq!(BytesCtx::new(b"2,1").ctor(&re)?, (2, 1));
+    ///     assert_eq!(BytesCtx::new(b"0,3").ctor(&re)?, (0, 3));
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn into_dyn<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + 'b,
+    {
+        WrappedTy {
+            value: DynamicBoxedCtor::new(self),
         }
     }
 
-    pub fn with_inner(mut self, inner: Box<T>) -> Self {
-        self.inner = inner;
-        self
+    fn into_dyn_sync<'a, 'b, C, M, O, H, A>(
+        self,
+    ) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + Send + 'b,
+    {
+        WrappedTy {
+            value: DynamicBoxedCtorSync::new(self),
+        }
     }
 
-    pub fn inner(&self) -> &T {
-        &self.inner
+    fn into_dyn_arc<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicArcCtor<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + 'b,
+    {
+        WrappedTy {
+            value: DynamicArcCtor::new(self),
+        }
     }
 
-    pub fn inner_mut(&mut self) -> &mut Box<T> {
-        &mut self.inner
-    }
-
-    pub fn set_inner(&mut self, inner: Box<T>) -> &mut Self {
-        self.inner = inner;
-        self
-    }
-}
-
-impl<C, T> Regex<C> for BoxedRegex<C, T>
-where
-    T: Regex<C>,
-{
-    type Ret = <T as Regex<C>>::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
-        self.inner.try_parse(ctx)
-    }
-}
-
-impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for BoxedRegex<C, T>
-where
-    T: Regex<C, Ret = Span>,
-    C: Context<'a> + Match<C>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
-{
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat(self)?;
-
-        handler.invoke(A::extract(ctx, &ret)?)
+    fn into_dyn_rc<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicRcCtor<'a, 'b, C, M, O, H, A>>
+    where
+        C: Context<'a> + Match<C>,
+        Self: Ctor<'a, C, M, O, H, A> + 'b,
+    {
+        WrappedTy {
+            value: DynamicRcCtor::new(self),
+        }
     }
 }

@@ -16,7 +16,7 @@ use crate::map::MapSingle;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::SingleHandler;
+use crate::re::Pass;
 use crate::span::SimpleStorer;
 use crate::trace_log;
 
@@ -282,13 +282,13 @@ where
             Self,
             &'a <Self as Context<'a>>::Orig,
             O,
-            SingleHandler<&'a <Self as Context<'a>>::Orig>,
+            Pass,
             &'a <Self as Context<'a>>::Orig,
         >,
         &'a <Self as Context<'a>>::Orig:
             Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
     {
-        self.ctor_with(pat, &mut SingleHandler::default())
+        self.ctor_with(pat, &mut Pass)
     }
 
     pub fn map<P, O>(
@@ -306,10 +306,10 @@ where
 
     pub fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, Span, O, SingleHandler<Span>, Span>,
+        P: Ctor<'a, Self, Span, O, Pass, Span>,
         Span: Extract<'a, Self, Span, Out<'a> = Span, Error = Error>,
     {
-        self.ctor_with(pat, &mut SingleHandler::default())
+        self.ctor_with(pat, &mut Pass)
     }
 
     pub fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>

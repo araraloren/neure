@@ -18,11 +18,21 @@ fn bench_color(c: &mut Criterion) {
     let color_str = "#2F14DF";
 
     c.bench_function("color of nom", {
-        move |b| b.iter(|| black_box(color_nom::parse(black_box(color_str))))
+        move |b| {
+            b.iter(|| {
+                color_nom::parse(black_box(color_str));
+                black_box(())
+            })
+        }
     });
 
     c.bench_function("color of neure", {
-        move |b| b.iter(|| black_box(color_neure::parse(black_box(color_str))))
+        move |b| {
+            b.iter(|| {
+                color_neure::parse(black_box(color_str));
+                black_box(())
+            })
+        }
     });
 }
 
@@ -42,7 +52,7 @@ mod color_nom {
     }
 
     fn is_hex_digit(c: char) -> bool {
-        c.is_digit(16)
+        c.is_ascii_hexdigit()
     }
 
     fn hex_primary(input: &str) -> IResult<&str, u8> {

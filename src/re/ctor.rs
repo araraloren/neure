@@ -25,20 +25,14 @@ use std::sync::Mutex;
 
 pub use self::array::Array;
 pub use self::array::PairArray;
-pub use self::boxed::into_boxed_ctor;
 pub use self::boxed::BoxedCtor;
-pub use self::boxed::BoxedCtorHelper;
 pub use self::collect::Collect;
 pub use self::dthen::DynamicCreateCtorThen;
 pub use self::dthen::DynamicCreateCtorThenHelper;
-pub use self::dynamic::into_dyn_ctor;
-pub use self::dynamic::into_dyn_ctor_sync;
-pub use self::dynamic::DynamicCtor;
-pub use self::dynamic::DynamicCtorHandler;
-pub use self::dynamic::DynamicCtorHandlerSync;
-pub use self::dynamic::DynamicCtorHelper;
-pub use self::dynamic::DynamicCtorHelperSync;
-pub use self::dynamic::DynamicCtorSync;
+pub use self::dynamic::DynamicArcCtor;
+pub use self::dynamic::DynamicBoxedCtor;
+pub use self::dynamic::DynamicBoxedCtorSync;
+pub use self::dynamic::DynamicRcCtor;
 pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
@@ -280,100 +274,37 @@ where
     }
 }
 
-pub type RecursiveCtor<'a, 'b, C, M, O, H, A> =
-    Rc<RefCell<Option<DynamicCtor<'a, 'b, C, M, O, H, A>>>>;
-
-pub type RecursiveCtorSync<'a, 'b, C, M, O, H, A> =
-    Arc<Mutex<Option<DynamicCtorSync<'a, 'b, C, M, O, H, A>>>>;
-
-///
-/// # Example
-///
-/// ```
-/// # use neure::{
-/// #     err::Error,
-/// #     prelude::*,
-/// #     re::{rec_parser, RecursiveCtor},
-/// # };
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     #[derive(Debug, PartialEq, Eq)]
-///     enum Xml {
-///         Element { name: String, child: Vec<Xml> },
-///         Enclosed(String),
-///     }
-///
-///     pub fn parser<'a: 'b, 'b>(
-///         ctor: RecursiveCtor<'b, CharsCtx<'a>, Vec<Xml>>,
-///     ) -> impl Fn(&mut CharsCtx<'a>) -> Result<Vec<Xml>, Error> + 'b {
-///         move |ctx| {
-///             let alpha = neu::alphabetic()
-///                 .repeat_full()
-///                 .map(|v: &str| Ok(v.to_string()));
-///             let s = alpha.quote("<", ">");
-///             let e = alpha.quote("</", ">");
-///             let c = alpha.quote("<", "/>").map(|v| Ok(Xml::Enclosed(v)));
-///             let m = |((l, c), r): ((String, Vec<Xml>), String)| {
-///                 if l != r {
-///                     Err(Error::Uid(0))
-///                 } else {
-///                     Ok(Xml::Element { name: l, child: c })
-///                 }
-///             };
-///
-///             ctx.ctor(&s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..))
-///         }
-///     }
-///     let xml = rec_parser(parser);
-///     let ret = CharsCtx::new("<language><rust><linux/></rust><cpp><windows/></cpp></language>")
-///         .ctor(&xml)?;
-///     let chk = vec![Xml::Element {
-///         name: "language".to_owned(),
-///         child: vec![
-///             Xml::Element {
-///                 name: "rust".to_owned(),
-///                 child: vec![Xml::Enclosed("linux".to_owned())],
-///             },
-///             Xml::Element {
-///                 name: "cpp".to_owned(),
-///                 child: vec![Xml::Enclosed("windows".to_owned())],
-///             },
-///         ],
-///     }];
-///
-///     assert_eq!(ret, chk);
-///     Ok(())
-/// # }
-/// ```
-pub fn rec_parser<'a, 'b, C, M, O, I, H, A>(
-    handler: impl Fn(RecursiveCtor<'a, 'b, C, M, O, H, A>) -> I,
-) -> RecursiveCtor<'a, 'b, C, M, O, H, A>
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A>>
 where
-    C: Context<'a>,
-    I: Ctor<'a, C, M, O, H, A> + 'b,
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
-    let r_ctor: RecursiveCtor<'a, 'b, C, M, O, H, A> = Rc::new(RefCell::new(None));
-    let r_ctor_clone = r_ctor.clone();
-    let ctor = handler(r_ctor_clone);
-
-    *r_ctor.borrow_mut() = Some(into_dyn_ctor(ctor));
-    r_ctor
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::constrct(self.as_ref(), ctx, handler)
+    }
 }
 
-pub fn rec_parser_sync<'a, 'b, C, M, O, I, H, A>(
-    handler: impl Fn(RecursiveCtorSync<'a, 'b, C, M, O, H, A>) -> I,
-) -> RecursiveCtorSync<'a, 'b, C, M, O, H, A>
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A>>
 where
-    C: Context<'a>,
-    I: Ctor<'a, C, M, O, H, A> + Send + 'b,
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
-    let r_ctor: RecursiveCtorSync<'a, 'b, C, M, O, H, A> = Arc::new(Mutex::new(None));
-    let r_ctor_clone = r_ctor.clone();
-    let ctor = handler(r_ctor_clone);
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::constrct(self.as_ref(), ctx, handler)
+    }
+}
 
-    *r_ctor.lock().unwrap() = Some(into_dyn_ctor_sync(ctor));
-    r_ctor
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A>>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+{
+    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::constrct(self.as_ref(), ctx, handler)
+    }
 }
 
 pub trait ConstructOp<'a, C>

@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -10,43 +8,48 @@ use crate::re::Handler;
 use crate::re::Regex;
 use crate::re::Wrapped;
 
-// into_box
+use std::fmt::Debug;
+
 #[derive(Debug, Clone)]
-pub struct BoxedCtor<I> {
-    inner: Box<I>,
+pub struct BoxedRegex<T> {
+    inner: Box<T>,
 }
 
-impl<I> BoxedCtor<I> {
-    pub fn new(inner: I) -> Self {
+impl<T> BoxedRegex<T> {
+    pub fn new(val: T) -> Self {
         Self {
-            inner: Box::new(inner),
+            inner: Box::new(val),
         }
     }
 }
 
-impl<I, C> Regex<C> for BoxedCtor<I> {
-    type Ret = Span;
+impl<C, T> Regex<C> for BoxedRegex<T>
+where
+    T: Regex<C>,
+{
+    type Ret = <T as Regex<C>>::Ret;
 
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
-        unreachable!("Boxed invoke not support `Regex` trait")
+    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+        self.inner.try_parse(ctx)
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for BoxedCtor<I>
+impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for BoxedRegex<T>
 where
-    I: Ctor<'a, C, M, O, H, A>,
+    T: Regex<C, Ret = Span>,
     C: Context<'a> + Match<C>,
-    H: Handler<A, Out = M, Error = Error>,
+    H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
-    #[inline(always)]
     fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        Ctor::constrct(self.inner.as_ref(), ctx, handler)
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(A::extract(ctx, &ret)?)
     }
 }
 
-impl<I> Wrapped for BoxedCtor<I> {
-    type Inner = Box<I>;
+impl<T> Wrapped for BoxedRegex<T> {
+    type Inner = Box<T>;
 
     fn wrap(inner: Self::Inner) -> Self {
         Self { inner }

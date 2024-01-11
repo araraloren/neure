@@ -63,13 +63,10 @@ where
     T: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
@@ -166,19 +163,17 @@ impl<'a, const N: usize, K, V> Deref for PairSlice<'a, N, K, V> {
     }
 }
 
-impl<'a, 'b, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A> for PairSlice<'b, N, K, V>
+impl<'a, 'b, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A>
+    for PairSlice<'b, N, K, V>
 where
     V: Clone,
     K: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error>
-    
-        
-    {
+    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
