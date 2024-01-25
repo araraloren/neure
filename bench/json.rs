@@ -49,7 +49,7 @@ mod neure_json {
     #[derive(Debug, Default)]
     pub struct JsonParser;
 
-    pub fn to_str<'a>(val: &'a [u8]) -> Result<&'a str, Error> {
+    pub fn to_str(val: &[u8]) -> Result<&str, Error> {
         std::str::from_utf8(val).map_err(|_| Error::Other)
     }
 
@@ -123,7 +123,7 @@ mod neure_json_zero {
     pub struct JsonParser;
 
     impl JsonParser {
-        pub fn parse<'a>(pat: &'a [u8]) -> Result<JsonZero<'a>, Error> {
+        pub fn parse(pat: &[u8]) -> Result<JsonZero<'_>, Error> {
             let parser = re::rec_parser_with(|ctor| {
                 let ws = u8::is_ascii_whitespace.repeat_full();
                 let sign = re!((b'+', b'-'){0,1});

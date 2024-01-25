@@ -1,4 +1,4 @@
-use std::{borrow::Cow, marker::PhantomData, num::ParseIntError};
+use std::{borrow::Cow, marker::PhantomData, mem::size_of, num::ParseIntError};
 
 use crate::err::Error;
 
@@ -365,6 +365,10 @@ impl<T> FromLeBytes<T> {
     pub fn new() -> Self {
         Self(PhantomData)
     }
+
+    pub const fn size(&self) -> usize {
+        size_of::<T>()
+    }
 }
 
 impl<T> Clone for FromLeBytes<T> {
@@ -385,6 +389,10 @@ pub struct FromBeBytes<T>(PhantomData<T>);
 impl<T> FromBeBytes<T> {
     pub fn new() -> Self {
         Self(PhantomData)
+    }
+
+    pub const fn size(&self) -> usize {
+        size_of::<T>()
     }
 }
 
