@@ -3,6 +3,10 @@ use std::{borrow::Cow, marker::PhantomData, mem::size_of, num::ParseIntError};
 use crate::err::Error;
 
 pub trait MapSingle<I, O> {
+    fn size(&self) -> usize {
+        size_of::<O>()
+    }
+
     fn map_to(&self, val: I) -> Result<O, Error>;
 }
 
@@ -412,6 +416,7 @@ macro_rules! impl_from_bytes {
     (le $ty:ty, $size:literal) => {
         impl<'a> MapSingle<&'a [u8], $ty> for FromLeBytes<$ty> {
             fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+                debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
                     .next()
@@ -424,6 +429,7 @@ macro_rules! impl_from_bytes {
     (be $ty:ty, $size:literal) => {
         impl<'a> MapSingle<&'a [u8], $ty> for FromBeBytes<$ty> {
             fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+                debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
                     .next()
