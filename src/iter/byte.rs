@@ -29,7 +29,9 @@ where
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.bytes.len(), Some(self.bytes.len()))
+        let size = self.bytes.len() - self.offset;
+
+        (size, Some(size))
     }
 }
 

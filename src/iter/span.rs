@@ -35,7 +35,9 @@ where
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.spans.len(), Some(self.spans.len()))
+        let size = self.spans.len() - self.cur;
+
+        (size, Some(size))
     }
 }
 
