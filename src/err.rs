@@ -57,6 +57,8 @@ pub enum Error {
 
     FromBeBytes,
 
+    FromNeBytes,
+
     Other,
 
     Uid(usize),
@@ -94,6 +96,7 @@ impl Display for Error {
             Error::Utf8Error => write!(f, "In (`FromUtf8`): catch `Utf8Error` or `FromUtf8Error`"),
             Error::FromLeBytes => write!(f, "In (`FromLeBytes`): need more bytes for given type"),
             Error::FromBeBytes => write!(f, "In (`FromBeBytes`): need more bytes for given type"),
+            Error::FromNeBytes => write!(f, "In (`FromNeBytes`): need more bytes for given type"),
             Error::Other => write!(f, "Error::Other"),
             Error::Uid(id) => write!(f, "Got error(id = {id})"),
         }

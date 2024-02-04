@@ -412,6 +412,31 @@ impl<T> Default for FromBeBytes<T> {
     }
 }
 
+#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FromNeBytes<T>(PhantomData<T>);
+
+impl<T> FromNeBytes<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+
+    pub const fn size(&self) -> usize {
+        size_of::<T>()
+    }
+}
+
+impl<T> Clone for FromNeBytes<T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<T> Default for FromNeBytes<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 macro_rules! impl_from_bytes {
     (le $ty:ty, $size:literal) => {
         impl<'a> MapSingle<&'a [u8], $ty> for FromLeBytes<$ty> {
@@ -436,6 +461,19 @@ macro_rules! impl_from_bytes {
                     .ok_or_else(|| Error::FromBeBytes)
                     .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromBeBytes))??;
                 Ok(<$ty>::from_be_bytes(*bytes))
+            }
+        }
+    };
+    (ne $ty:ty, $size:literal) => {
+        impl<'a> MapSingle<&'a [u8], $ty> for FromNeBytes<$ty> {
+            fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+                debug_assert_eq!($size, self.size());
+                let bytes = val
+                    .chunks_exact($size)
+                    .next()
+                    .ok_or_else(|| Error::FromNeBytes)
+                    .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromNeBytes))??;
+                Ok(<$ty>::from_ne_bytes(*bytes))
             }
         }
     };
@@ -469,13 +507,69 @@ impl_from_bytes!(be i128, 16);
 impl_from_bytes!(be u128, 16);
 impl_from_bytes!(be isize, 8);
 impl_from_bytes!(be usize, 8);
+impl_from_bytes!(ne i8, 1);
+impl_from_bytes!(ne u8, 1);
+impl_from_bytes!(ne i16, 2);
+impl_from_bytes!(ne u16, 2);
+impl_from_bytes!(ne i32, 4);
+impl_from_bytes!(ne u32, 4);
+impl_from_bytes!(ne i64, 8);
+impl_from_bytes!(ne u64, 8);
+impl_from_bytes!(ne f32, 4);
+impl_from_bytes!(ne f64, 8);
+impl_from_bytes!(ne i128, 16);
+impl_from_bytes!(ne u128, 16);
+impl_from_bytes!(ne isize, 8);
+impl_from_bytes!(ne usize, 8);
 
+///
+/// Map an integer value from its memory representation as a byte array in little endianness.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let data = [0x01, 0x02, 0x03, 0x04];
+///     let parser = re::consume(4).map(map::from_le_bytes::<i32>());
+///
+///     assert_eq!(BytesCtx::new(&data).ctor(&parser)?, 0x04030201);
+///
+///     Ok(())
+/// # }
+/// ```
 #[inline(always)]
 pub fn from_le_bytes<T>() -> FromLeBytes<T> {
     FromLeBytes::default()
 }
 
+///
+/// Map an integer value from its memory representation as a byte array in bigger endianness.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let data = [0x01, 0x02, 0x03, 0x04];
+///     let parser = re::consume(4).map(map::from_be_bytes::<i32>());
+///
+///     assert_eq!(BytesCtx::new(&data).ctor(&parser)?, 0x01020304);
+///
+///     Ok(())
+/// # }
+/// ```
 #[inline(always)]
 pub fn from_be_bytes<T>() -> FromBeBytes<T> {
     FromBeBytes::default()
+}
+
+///
+/// Map an integer value from its memory representation as a byte array in native endianness.
+///
+#[inline(always)]
+pub fn from_ne_bytes<T>() -> FromNeBytes<T> {
+    FromNeBytes::default()
 }
