@@ -19,10 +19,10 @@ pub type RecursiveCtorWith<'a, 'b, C, M, O, H, A> =
 pub type RecursiveCtorWithSync<'a, 'b, C, M, O, H, A> =
     Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>>>>;
 
-pub type RecursiveCtor<'a, C, M, O> = RecursiveCtorWith<'a, 'static, C, M, O, Pass, M>;
+pub type RecursiveCtor<'a, 'b, C, M, O> = RecursiveCtorWith<'a, 'b, C, M, O, Pass, M>;
 
-pub type RecursiveCtorSync<'a, C, M, O> =
-    Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'static, C, M, O, Pass, M>>>>>;
+pub type RecursiveCtorSync<'a, 'b, C, M, O> =
+    Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, Pass, M>>>>>;
 
 ///
 /// # Example
@@ -119,14 +119,14 @@ where
 /// # }
 /// ```
 ///
-pub fn rec_parser<'a, C, M, O, I>(
-    mut handler: impl FnMut(RecursiveCtor<'a, C, M, O>) -> I,
-) -> RecursiveCtor<'a, C, M, O>
+pub fn rec_parser<'a, 'b, C, M, O, I>(
+    mut handler: impl FnMut(RecursiveCtor<'a, 'b, C, M, O>) -> I,
+) -> RecursiveCtor<'a, 'b, C, M, O>
 where
     C: Context<'a> + Match<C>,
-    I: Ctor<'a, C, M, O, Pass, M> + 'static,
+    I: Ctor<'a, C, M, O, Pass, M> + 'b,
 {
-    let r_ctor: RecursiveCtor<'a, C, M, O> = Rc::new(RefCell::new(None));
+    let r_ctor: RecursiveCtor<'a, 'b, C, M, O> = Rc::new(RefCell::new(None));
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
@@ -150,13 +150,13 @@ where
 }
 
 pub fn rec_parser_sync<'a, 'b, C, M, O, I>(
-    mut handler: impl FnMut(RecursiveCtorSync<'a, C, M, O>) -> I,
-) -> RecursiveCtorSync<'a, C, M, O>
+    mut handler: impl FnMut(RecursiveCtorSync<'a, 'b, C, M, O>) -> I,
+) -> RecursiveCtorSync<'a, 'b, C, M, O>
 where
     C: Context<'a> + Match<C>,
-    I: Ctor<'a, C, M, O, Pass, M> + Send + 'static,
+    I: Ctor<'a, C, M, O, Pass, M> + Send + 'b,
 {
-    let r_ctor: RecursiveCtorSync<'a, C, M, O> = Arc::new(Mutex::new(None));
+    let r_ctor: RecursiveCtorSync<'a, 'b, C, M, O> = Arc::new(Mutex::new(None));
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
@@ -174,18 +174,10 @@ where
 
     type Ctor<'a, 'b, C, M, O, H, A>;
 
-    fn build_with<'b, M, O, I, F>(func: F) -> Self::Ctor<'ctx, 'b, Ctx, M, O, Self::H, Self::A>
+    fn build<'b, M, O, I, F>(func: F) -> Self::Ctor<'ctx, 'b, Ctx, M, O, Self::H, Self::A>
     where
         F: FnMut(Self::Ctor<'ctx, 'b, Ctx, M, O, Self::H, Self::A>) -> I,
         I: Ctor<'ctx, Ctx, M, O, Self::H, Self::A> + 'b;
-
-    fn build<M, O, I, F>(func: F) -> Self::Ctor<'ctx, 'static, Ctx, M, O, Self::H, Self::A>
-    where
-        F: FnMut(Self::Ctor<'ctx, 'static, Ctx, M, O, Self::H, Self::A>) -> I,
-        I: Ctor<'ctx, Ctx, M, O, Self::H, Self::A> + 'static,
-    {
-        Self::build_with(func)
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -202,7 +194,7 @@ where
 
     type Ctor<'a, 'b, C, M, O, H, A> = RecursiveCtorWith<'a, 'b, C, M, O, H, A>;
 
-    fn build_with<'b, M, O, I, F>(func: F) -> Self::Ctor<'ctx, 'b, Ctx, M, O, Self::H, Self::A>
+    fn build<'b, M, O, I, F>(func: F) -> Self::Ctor<'ctx, 'b, Ctx, M, O, Self::H, Self::A>
     where
         F: FnMut(Self::Ctor<'ctx, 'b, Ctx, M, O, Self::H, Self::A>) -> I,
         I: Ctor<'ctx, Ctx, M, O, Self::H, Self::A> + 'b,

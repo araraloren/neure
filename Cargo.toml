@@ -1,6 +1,6 @@
 [package]
 name = "neure"
-version = "0.5.2"
+version = "0.5.3"
 authors = ["araraloren <blackcatoverwall@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -14,8 +14,8 @@ lto = true
 codegen-units = 1
 
 [dev-dependencies]
-regex = "^1.0"
-nom = "^7.1"
+regex = "1.0"
+nom = "7.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 color-eyre = "0.5"
 criterion = "0.5"
