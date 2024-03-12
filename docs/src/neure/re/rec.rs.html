@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/rec.rs`."><title>rec.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/rec.rs`."><title>rec.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -249,14 +250,6 @@
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
 <a href="#251" id="251">251</a>
-<a href="#252" id="252">252</a>
-<a href="#253" id="253">253</a>
-<a href="#254" id="254">254</a>
-<a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
-<a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::cell::RefCell;
 <span class="kw">use </span>std::rc::Rc;
 <span class="kw">use </span>std::sync::Arc;
@@ -272,16 +265,16 @@
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Context;
 <span class="kw">use </span><span class="kw">crate</span>::ctx::Match;
 
-<span class="kw">pub type </span>RecursiveCtorWith&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt; =
-    Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;WrappedTy&lt;DynamicBoxedCtor&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;&gt;&gt;&gt;&gt;;
+<span class="kw">pub type </span>RecursiveCtorWith&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt; =
+    Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;WrappedTy&lt;DynamicBoxedCtor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;&gt;&gt;&gt;&gt;;
 
-<span class="kw">pub type </span>RecursiveCtorWithSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt; =
-    Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;WrappedTy&lt;DynamicBoxedCtorSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;&gt;&gt;&gt;&gt;;
+<span class="kw">pub type </span>RecursiveCtorWithSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt; =
+    Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;WrappedTy&lt;DynamicBoxedCtorSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;&gt;&gt;&gt;&gt;;
 
-<span class="kw">pub type </span>RecursiveCtor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; = RecursiveCtorWith&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;static</span>, C, M, O, Pass, M&gt;;
+<span class="kw">pub type </span>RecursiveCtor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt; = RecursiveCtorWith&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, Pass, M&gt;;
 
-<span class="kw">pub type </span>RecursiveCtorSync&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; =
-    Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;WrappedTy&lt;DynamicBoxedCtorSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;static</span>, C, M, O, Pass, M&gt;&gt;&gt;&gt;&gt;;
+<span class="kw">pub type </span>RecursiveCtorSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt; =
+    Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;WrappedTy&lt;DynamicBoxedCtorSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, Pass, M&gt;&gt;&gt;&gt;&gt;;
 
 <span class="doccomment">///
 /// # Example
@@ -301,9 +294,9 @@
 ///         let alpha = neu::alphabetic()
 ///             .repeat_full()
 ///             .map(|v: &amp;str| Ok(v.to_string()));
-///         let s = alpha.quote(&quot;&lt;&quot;, &quot;&gt;&quot;);
-///         let e = alpha.quote(&quot;&lt;/&quot;, &quot;&gt;&quot;);
-///         let c = alpha.quote(&quot;&lt;&quot;, &quot;/&gt;&quot;).map(|v| Ok(Xml::Enclosed(v)));
+///         let s = alpha.quote("&lt;", "&gt;");
+///         let e = alpha.quote("&lt;/", "&gt;");
+///         let c = alpha.quote("&lt;", "/&gt;").map(|v| Ok(Xml::Enclosed(v)));
 ///         let m = |((l, c), r): ((String, Vec&lt;Xml&gt;), String)| {
 ///             if l != r {
 ///                 Err(Error::Uid(0))
@@ -314,18 +307,18 @@
 ///
 ///         s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..)
 ///     });
-///     let ret = CharsCtx::new(&quot;&lt;language&gt;&lt;rust&gt;&lt;linux/&gt;&lt;/rust&gt;&lt;cpp&gt;&lt;windows/&gt;&lt;/cpp&gt;&lt;/language&gt;&quot;)
+///     let ret = CharsCtx::new("&lt;language&gt;&lt;rust&gt;&lt;linux/&gt;&lt;/rust&gt;&lt;cpp&gt;&lt;windows/&gt;&lt;/cpp&gt;&lt;/language&gt;")
 ///         .ctor(&amp;xml)?;
 ///     let chk = vec![Xml::Element {
-///         name: &quot;language&quot;.to_owned(),
+///         name: "language".to_owned(),
 ///         child: vec![
 ///             Xml::Element {
-///                 name: &quot;rust&quot;.to_owned(),
-///                 child: vec![Xml::Enclosed(&quot;linux&quot;.to_owned())],
+///                 name: "rust".to_owned(),
+///                 child: vec![Xml::Enclosed("linux".to_owned())],
 ///             },
 ///             Xml::Element {
-///                 name: &quot;cpp&quot;.to_owned(),
-///                 child: vec![Xml::Enclosed(&quot;windows&quot;.to_owned())],
+///                 name: "cpp".to_owned(),
+///                 child: vec![Xml::Enclosed("windows".to_owned())],
 ///             },
 ///         ],
 ///     }];
@@ -334,14 +327,14 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="kw">pub fn </span>rec_parser_with&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A, I&gt;(
-    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtorWith&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;) -&gt; I,
-) -&gt; RecursiveCtorWith&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;
+</span><span class="kw">pub fn </span>rec_parser_with&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A, I&gt;(
+    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtorWith&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;) -&gt; I,
+) -&gt; RecursiveCtorWith&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-    I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; + <span class="lifetime">&#39;b</span>,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
+    I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; + <span class="lifetime">'b</span>,
 {
-    <span class="kw">let </span>r_ctor: RecursiveCtorWith&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt; = Rc::new(RefCell::new(<span class="prelude-val">None</span>));
+    <span class="kw">let </span>r_ctor: RecursiveCtorWith&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt; = Rc::new(RefCell::new(<span class="prelude-val">None</span>));
     <span class="kw">let </span>r_ctor_clone = r_ctor.clone();
     <span class="kw">let </span>ctor = handler(r_ctor_clone);
 
@@ -351,7 +344,7 @@
 
 <span class="doccomment">///
 /// For use in recursive parsers,
-/// it will construct a type that implements `Ctor&lt;&#39;_, C, M, O&gt;`
+/// it will construct a type that implements `Ctor&lt;'_, C, M, O&gt;`
 /// from a closure(`Fn(&amp;mut C) -&gt; Result&lt;O, Error&gt;`).
 ///
 /// # Example
@@ -367,25 +360,25 @@
 ///
 ///         ctor.clone()
 ///             .or(re)
-///             .quote(b&quot;{&quot;, b&quot;}&quot;)
-///             .or(ctor.clone().or(re).quote(b&quot;[&quot;, b&quot;]&quot;))
+///             .quote(b"{", b"}")
+///             .or(ctor.clone().or(re).quote(b"[", b"]"))
 ///     });
 ///
-///     assert_eq!(BytesCtx::new(b&quot;[a]&quot;).ctor(&amp;parser)?, b&quot;a&quot;);
-///     assert_eq!(BytesCtx::new(b&quot;{{[[{[{b}]}]]}}&quot;).ctor(&amp;parser)?, b&quot;b&quot;);
-///     assert_eq!(BytesCtx::new(b&quot;[{{{[c]}}}]&quot;).ctor(&amp;parser)?, b&quot;c&quot;);
+///     assert_eq!(BytesCtx::new(b"[a]").ctor(&amp;parser)?, b"a");
+///     assert_eq!(BytesCtx::new(b"{{[[{[{b}]}]]}}").ctor(&amp;parser)?, b"b");
+///     assert_eq!(BytesCtx::new(b"[{{{[c]}}}]").ctor(&amp;parser)?, b"c");
 ///     Ok(())
 /// # }
 /// ```
 ///
-</span><span class="kw">pub fn </span>rec_parser&lt;<span class="lifetime">&#39;a</span>, C, M, O, I&gt;(
-    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;) -&gt; I,
-) -&gt; RecursiveCtor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;
+</span><span class="kw">pub fn </span>rec_parser&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, I&gt;(
+    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt;) -&gt; I,
+) -&gt; RecursiveCtor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-    I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, Pass, M&gt; + <span class="lifetime">&#39;static</span>,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
+    I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, Pass, M&gt; + <span class="lifetime">'b</span>,
 {
-    <span class="kw">let </span>r_ctor: RecursiveCtor&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; = Rc::new(RefCell::new(<span class="prelude-val">None</span>));
+    <span class="kw">let </span>r_ctor: RecursiveCtor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt; = Rc::new(RefCell::new(<span class="prelude-val">None</span>));
     <span class="kw">let </span>r_ctor_clone = r_ctor.clone();
     <span class="kw">let </span>ctor = handler(r_ctor_clone);
 
@@ -393,14 +386,14 @@
     r_ctor
 }
 
-<span class="kw">pub fn </span>rec_parser_with_sync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, I, H, A&gt;(
-    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtorWithSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;) -&gt; I,
-) -&gt; RecursiveCtorWithSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;
+<span class="kw">pub fn </span>rec_parser_with_sync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, I, H, A&gt;(
+    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtorWithSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;) -&gt; I,
+) -&gt; RecursiveCtorWithSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-    I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; + Send + <span class="lifetime">&#39;b</span>,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
+    I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; + Send + <span class="lifetime">'b</span>,
 {
-    <span class="kw">let </span>r_ctor: RecursiveCtorWithSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt; = Arc::new(Mutex::new(<span class="prelude-val">None</span>));
+    <span class="kw">let </span>r_ctor: RecursiveCtorWithSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt; = Arc::new(Mutex::new(<span class="prelude-val">None</span>));
     <span class="kw">let </span>r_ctor_clone = r_ctor.clone();
     <span class="kw">let </span>ctor = handler(r_ctor_clone);
 
@@ -408,14 +401,14 @@
     r_ctor
 }
 
-<span class="kw">pub fn </span>rec_parser_sync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, I&gt;(
-    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtorSync&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;) -&gt; I,
-) -&gt; RecursiveCtorSync&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt;
+<span class="kw">pub fn </span>rec_parser_sync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, I&gt;(
+    <span class="kw-2">mut </span>handler: <span class="kw">impl </span>FnMut(RecursiveCtorSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt;) -&gt; I,
+) -&gt; RecursiveCtorSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
-    I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, Pass, M&gt; + Send + <span class="lifetime">&#39;static</span>,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
+    I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, Pass, M&gt; + Send + <span class="lifetime">'b</span>,
 {
-    <span class="kw">let </span>r_ctor: RecursiveCtorSync&lt;<span class="lifetime">&#39;a</span>, C, M, O&gt; = Arc::new(Mutex::new(<span class="prelude-val">None</span>));
+    <span class="kw">let </span>r_ctor: RecursiveCtorSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O&gt; = Arc::new(Mutex::new(<span class="prelude-val">None</span>));
     <span class="kw">let </span>r_ctor_clone = r_ctor.clone();
     <span class="kw">let </span>ctor = handler(r_ctor_clone);
 
@@ -423,72 +416,64 @@
     r_ctor
 }
 
-<span class="kw">pub trait </span>RecursiveParser&lt;<span class="lifetime">&#39;ctx</span>, Ctx&gt;
+<span class="kw">pub trait </span>RecursiveParser&lt;<span class="lifetime">'ctx</span>, Ctx&gt;
 <span class="kw">where
-    </span>Ctx: Context&lt;<span class="lifetime">&#39;ctx</span>&gt;,
+    </span>Ctx: Context&lt;<span class="lifetime">'ctx</span>&gt;,
 {
     <span class="kw">type </span>H;
 
     <span class="kw">type </span>A;
 
-    <span class="kw">type </span>Ctor&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;;
+    <span class="kw">type </span>Ctor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;;
 
-    <span class="kw">fn </span>build_with&lt;<span class="lifetime">&#39;b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
+    <span class="kw">fn </span>build&lt;<span class="lifetime">'b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
     <span class="kw">where
-        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
-        I: Ctor&lt;<span class="lifetime">&#39;ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + <span class="lifetime">&#39;b</span>;
-
-    <span class="kw">fn </span>build&lt;M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;static</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
-    <span class="kw">where
-        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;static</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
-        I: Ctor&lt;<span class="lifetime">&#39;ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + <span class="lifetime">&#39;static</span>,
-    {
-        <span class="self">Self</span>::build_with(func)
-    }
+        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
+        I: Ctor&lt;<span class="lifetime">'ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + <span class="lifetime">'b</span>;
 }
 
 <span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>RecParser;
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;ctx</span>, Ctx&gt; RecursiveParser&lt;<span class="lifetime">&#39;ctx</span>, Ctx&gt; <span class="kw">for </span>RecParser
+<span class="kw">impl</span>&lt;<span class="lifetime">'ctx</span>, Ctx&gt; RecursiveParser&lt;<span class="lifetime">'ctx</span>, Ctx&gt; <span class="kw">for </span>RecParser
 <span class="kw">where
-    </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;ctx </span>Ctx::Orig: <span class="lifetime">&#39;ctx</span>,
-    Ctx: Context&lt;<span class="lifetime">&#39;ctx</span>&gt; + Match&lt;Ctx&gt;,
+    </span><span class="kw-2">&amp;</span><span class="lifetime">'ctx </span>Ctx::Orig: <span class="lifetime">'ctx</span>,
+    Ctx: Context&lt;<span class="lifetime">'ctx</span>&gt; + Match&lt;Ctx&gt;,
 {
     <span class="kw">type </span>H = Pass;
 
-    <span class="kw">type </span>A = <span class="kw-2">&amp;</span><span class="lifetime">&#39;ctx </span>Ctx::Orig;
+    <span class="kw">type </span>A = <span class="kw-2">&amp;</span><span class="lifetime">'ctx </span>Ctx::Orig;
 
-    <span class="kw">type </span>Ctor&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt; = RecursiveCtorWith&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;;
+    <span class="kw">type </span>Ctor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt; = RecursiveCtorWith&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;;
 
-    <span class="kw">fn </span>build_with&lt;<span class="lifetime">&#39;b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
+    <span class="kw">fn </span>build&lt;<span class="lifetime">'b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
     <span class="kw">where
-        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
-        I: Ctor&lt;<span class="lifetime">&#39;ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + <span class="lifetime">&#39;b</span>,
+        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
+        I: Ctor&lt;<span class="lifetime">'ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + <span class="lifetime">'b</span>,
     {
         rec_parser_with(func)
     }
 }
 
-<span class="kw">pub trait </span>RecursiveParserSync&lt;<span class="lifetime">&#39;ctx</span>, Ctx&gt;
+<span class="kw">pub trait </span>RecursiveParserSync&lt;<span class="lifetime">'ctx</span>, Ctx&gt;
 <span class="kw">where
-    </span>Ctx: Context&lt;<span class="lifetime">&#39;ctx</span>&gt;,
+    </span>Ctx: Context&lt;<span class="lifetime">'ctx</span>&gt;,
 {
     <span class="kw">type </span>H;
 
     <span class="kw">type </span>A;
 
-    <span class="kw">type </span>Ctor&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;;
+    <span class="kw">type </span>Ctor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;;
 
-    <span class="kw">fn </span>build_with&lt;<span class="lifetime">&#39;b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
+    <span class="kw">fn </span>build_with&lt;<span class="lifetime">'b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
     <span class="kw">where
-        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
-        I: Ctor&lt;<span class="lifetime">&#39;ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + Send + <span class="lifetime">&#39;b</span>;
+        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
+        I: Ctor&lt;<span class="lifetime">'ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + Send + <span class="lifetime">'b</span>;
 
-    <span class="kw">fn </span>build&lt;M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;static</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
+    <span class="kw">fn </span>build&lt;M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'static</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
     <span class="kw">where
-        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;static</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
-        I: Ctor&lt;<span class="lifetime">&#39;ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + Send + <span class="lifetime">&#39;static</span>,
+        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'static</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
+        I: Ctor&lt;<span class="lifetime">'ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + Send + <span class="lifetime">'static</span>,
     {
         <span class="self">Self</span>::build_with(func)
     }
@@ -497,21 +482,21 @@
 <span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>RecParserSync;
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;ctx</span>, Ctx&gt; RecursiveParserSync&lt;<span class="lifetime">&#39;ctx</span>, Ctx&gt; <span class="kw">for </span>RecParserSync
+<span class="kw">impl</span>&lt;<span class="lifetime">'ctx</span>, Ctx&gt; RecursiveParserSync&lt;<span class="lifetime">'ctx</span>, Ctx&gt; <span class="kw">for </span>RecParserSync
 <span class="kw">where
-    </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;ctx </span>Ctx::Orig: <span class="lifetime">&#39;ctx</span>,
-    Ctx: Context&lt;<span class="lifetime">&#39;ctx</span>&gt; + Match&lt;Ctx&gt;,
+    </span><span class="kw-2">&amp;</span><span class="lifetime">'ctx </span>Ctx::Orig: <span class="lifetime">'ctx</span>,
+    Ctx: Context&lt;<span class="lifetime">'ctx</span>&gt; + Match&lt;Ctx&gt;,
 {
     <span class="kw">type </span>H = Pass;
 
-    <span class="kw">type </span>A = <span class="kw-2">&amp;</span><span class="lifetime">&#39;ctx </span>Ctx::Orig;
+    <span class="kw">type </span>A = <span class="kw-2">&amp;</span><span class="lifetime">'ctx </span>Ctx::Orig;
 
-    <span class="kw">type </span>Ctor&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt; = RecursiveCtorWithSync&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, C, M, O, H, A&gt;;
+    <span class="kw">type </span>Ctor&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt; = RecursiveCtorWithSync&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>, C, M, O, H, A&gt;;
 
-    <span class="kw">fn </span>build_with&lt;<span class="lifetime">&#39;b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
+    <span class="kw">fn </span>build_with&lt;<span class="lifetime">'b</span>, M, O, I, F&gt;(func: F) -&gt; <span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;
     <span class="kw">where
-        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">&#39;ctx</span>, <span class="lifetime">&#39;b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
-        I: Ctor&lt;<span class="lifetime">&#39;ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + Send + <span class="lifetime">&#39;b</span>,
+        </span>F: FnMut(<span class="self">Self</span>::Ctor&lt;<span class="lifetime">'ctx</span>, <span class="lifetime">'b</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt;) -&gt; I,
+        I: Ctor&lt;<span class="lifetime">'ctx</span>, Ctx, M, O, <span class="self">Self</span>::H, <span class="self">Self</span>::A&gt; + Send + <span class="lifetime">'b</span>,
     {
         rec_parser_with_sync(func)
     }

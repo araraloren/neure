@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor.rs`."><title>ctor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor.rs`."><title>ctor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -894,16 +895,16 @@
 <span class="kw">use </span><span class="kw">crate</span>::re::Handler;
 <span class="kw">use </span><span class="kw">crate</span>::re::Regex;
 
-<span class="kw">pub trait </span>Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;
+<span class="kw">pub trait </span>Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;;
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A, F&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>F
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, H, A, F&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>F
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     F: Fn(<span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
@@ -911,11 +912,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span>Box&lt;<span class="kw">dyn </span>Regex&lt;C, Ret = Span&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span>Box&lt;<span class="kw">dyn </span>Regex&lt;C, Ret = Span&gt;&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -924,11 +925,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>str
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>str
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = str&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = str&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -937,11 +938,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span>String
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span>String
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = str&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = str&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.as_str())<span class="question-mark">?</span>;
@@ -950,11 +951,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>String
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>String
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = str&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = str&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.as_str())<span class="question-mark">?</span>;
@@ -963,11 +964,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>[u8]
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>[u8]
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -976,11 +977,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="kw">const </span>N: usize, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>[u8; N]
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="kw">const </span>N: usize, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>[u8; N]
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -989,11 +990,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="kw">const </span>N: usize, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span>[u8; N]
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="kw">const </span>N: usize, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span>[u8; N]
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -1002,11 +1003,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span>Vec&lt;u8&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span>Vec&lt;u8&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -1015,11 +1016,11 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>Vec&lt;u8&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, O, O, H, A&gt; <span class="kw">for </span><span class="kw-2">&amp;</span>Vec&lt;u8&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>, Orig = [u8]&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = O, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
@@ -1028,48 +1029,48 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;I&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;I&gt;
 <span class="kw">where
-    </span>I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="self">self</span>.as_ref().ok_or(Error::Option)<span class="question-mark">?</span>, ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>RefCell&lt;I&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>RefCell&lt;I&gt;
 <span class="kw">where
-    </span>I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="kw-2">&amp;*</span><span class="self">self</span>.borrow(), ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Cell&lt;I&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Cell&lt;I&gt;
 <span class="kw">where
-    </span>I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; + Copy,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; + Copy,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="kw-2">&amp;</span><span class="self">self</span>.get(), ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Mutex&lt;I&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Mutex&lt;I&gt;
 <span class="kw">where
-    </span>I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = <span class="self">self</span>.lock().map_err(|<span class="kw">_</span>| Error::LockMutex)<span class="question-mark">?</span>;
@@ -1078,67 +1079,67 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Arc&lt;I&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Arc&lt;I&gt;
 <span class="kw">where
-    </span>I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Rc&lt;I&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, I, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Rc&lt;I&gt;
 <span class="kw">where
-    </span>I: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>I: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Box&lt;<span class="kw">dyn </span>Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Box&lt;<span class="kw">dyn </span>Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Arc&lt;<span class="kw">dyn </span>Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Arc&lt;<span class="kw">dyn </span>Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Rc&lt;<span class="kw">dyn </span>Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>Rc&lt;<span class="kw">dyn </span>Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
-<span class="kw">pub trait </span>ConstructOp&lt;<span class="lifetime">&#39;a</span>, C&gt;
+<span class="kw">pub trait </span>ConstructOp&lt;<span class="lifetime">'a</span>, C&gt;
 <span class="kw">where
     </span><span class="self">Self</span>: Sized,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">fn </span>map&lt;F, O&gt;(<span class="self">self</span>, f: F) -&gt; Map&lt;C, <span class="self">Self</span>, F, O&gt;;
 
@@ -1176,13 +1177,13 @@
 
     <span class="kw">fn </span>ws(<span class="self">self</span>) -&gt; Pad&lt;C, <span class="self">Self</span>, NeureZeroMore&lt;C, AsciiWhiteSpace, C::Item, NullCond&gt;&gt;
     <span class="kw">where
-        </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Item = char&gt;;
+        </span>C: Context&lt;<span class="lifetime">'a</span>, Item = char&gt;;
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, T&gt; ConstructOp&lt;<span class="lifetime">&#39;a</span>, C&gt; <span class="kw">for </span>T
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, T&gt; ConstructOp&lt;<span class="lifetime">'a</span>, C&gt; <span class="kw">for </span>T
 <span class="kw">where
     </span>T: Regex&lt;C&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">fn </span>map&lt;F, O&gt;(<span class="self">self</span>, func: F) -&gt; Map&lt;C, <span class="self">Self</span>, F, O&gt; {
         Map::new(<span class="self">self</span>, func)
@@ -1198,14 +1199,14 @@
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
-    ///     let digit = re!([&#39;0&#39; - &#39;9&#39;]+);
+    ///     let digit = re!(['0' - '9']+);
     ///     let digit = digit.map(|v: &amp;str| Ok(v.parse::&lt;i64&gt;().unwrap()));
-    ///     let digits = digit.sep(&quot;,&quot;.ws());
-    ///     let array = digits.quote(&quot;[&quot;, &quot;]&quot;);
-    ///     let mut ctx = CharsCtx::new(&quot;[2, 4, 8, 16, 42]&quot;);
+    ///     let digits = digit.sep(",".ws());
+    ///     let array = digits.quote("[", "]");
+    ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
     ///
     ///     assert_eq!(ctx.ctor(&amp;array)?, vec![2, 4, 8, 16, 42]);
-    ///     assert_eq!(ctx.reset().ctor(&amp;array.pat())?, &quot;[2, 4, 8, 16, 42]&quot;);
+    ///     assert_eq!(ctx.reset().ctor(&amp;array.pat())?, "[2, 4, 8, 16, 42]");
     ///
     ///     Ok(())
     /// # }
@@ -1228,8 +1229,8 @@
     ///         .map(map::from_str::&lt;usize&gt;())
     ///         .opt();
     ///
-    ///     assert_eq!(CharsCtx::new(&quot;foo&quot;).ctor(&amp;num)?, None);
-    ///     assert_eq!(CharsCtx::new(&quot;955&quot;).ctor(&amp;num)?, Some(955));
+    ///     assert_eq!(CharsCtx::new("foo").ctor(&amp;num)?, None);
+    ///     assert_eq!(CharsCtx::new("955").ctor(&amp;num)?, Some(955));
     ///     Ok(())
     /// # }
     /// ```
@@ -1249,12 +1250,12 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let ascii = neu::ascii().repeat_one();
-    ///     let lit = ascii.quote(&quot;&#39;&quot;, &quot;&#39;&quot;);
-    ///     let ele = lit.sep(&quot;,&quot;.ws());
-    ///     let arr = ele.quote(&quot;[&quot;, &quot;]&quot;);
-    ///     let mut ctx = CharsCtx::new(&quot;[&#39;a&#39;, &#39;c&#39;, &#39;d&#39;, &#39;f&#39;]&quot;);
+    ///     let lit = ascii.quote("'", "'");
+    ///     let ele = lit.sep(",".ws());
+    ///     let arr = ele.quote("[", "]");
+    ///     let mut ctx = CharsCtx::new("['a', 'c', 'd', 'f']");
     ///
-    ///     assert_eq!(ctx.ctor(&amp;arr)?, [&quot;a&quot;, &quot;c&quot;, &quot;d&quot;, &quot;f&quot;]);
+    ///     assert_eq!(ctx.ctor(&amp;arr)?, ["a", "c", "d", "f"]);
     ///
     ///     Ok(())
     /// # }
@@ -1273,13 +1274,13 @@
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
-    ///     let name = re!([^ &#39;,&#39; &#39;]&#39; &#39;[&#39;]+);
-    ///     let sep = &#39;,&#39;.repeat_one().ws();
+    ///     let name = re!([^ ',' ']' '[']+);
+    ///     let sep = ','.repeat_one().ws();
     ///     let arr = name.sep(sep);
-    ///     let arr = arr.quote(&quot;[&quot;, &quot;]&quot;);
-    ///     let mut ctx = CharsCtx::new(r#&quot;[c, rust, java, c++]&quot;#);
+    ///     let arr = arr.quote("[", "]");
+    ///     let mut ctx = CharsCtx::new(r#"[c, rust, java, c++]"#);
     ///
-    ///     assert_eq!(ctx.ctor(&amp;arr)?, vec![&quot;c&quot;, &quot;rust&quot;, &quot;java&quot;, &quot;c++&quot;]);
+    ///     assert_eq!(ctx.ctor(&amp;arr)?, vec!["c", "rust", "java", "c++"]);
     ///     Ok(())
     /// # }
     /// ```
@@ -1298,21 +1299,21 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let key = neu::alphabetic().repeat_one_more().ws();
-    ///     let val = neu::whitespace().or(&#39;,&#39;).not().repeat_one_more().ws();
-    ///     let sep = &quot;=&gt;&quot;.ws();
+    ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
+    ///     let sep = "=&gt;".ws();
     ///     let ele = key.sep_once(sep, val);
-    ///     let hash = ele.sep(&quot;,&quot;.ws()).quote(&quot;{&quot;.ws(), &quot;}&quot;);
+    ///     let hash = ele.sep(",".ws()).quote("{".ws(), "}");
     ///     let mut ctx = CharsCtx::new(
-    ///         r#&quot;{
+    ///         r#"{
     ///         c =&gt; c11,
     ///         cpp =&gt; c++23,
     ///         rust =&gt; 2021,
-    ///     }&quot;#,
+    ///     }"#,
     ///     );
     ///
     ///     assert_eq!(
     ///         ctx.ctor(&amp;hash)?,
-    ///         [(&quot;c&quot;, &quot;c11&quot;), (&quot;cpp&quot;, &quot;c++23&quot;), (&quot;rust&quot;, &quot;2021&quot;)]
+    ///         [("c", "c11"), ("cpp", "c++23"), ("rust", "2021")]
     ///     );
     ///     Ok(())
     /// # }
@@ -1334,23 +1335,23 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let key = neu::alphabetic().repeat_one_more().ws();
-    ///     let val = neu::whitespace().or(&#39;,&#39;).not().repeat_one_more().ws();
-    ///     let sep = &quot;=&gt;&quot;.ws();
+    ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
+    ///     let sep = "=&gt;".ws();
     ///     let ele = key.sep_once(sep, val);
-    ///     let hash = ele.sep_collect(&quot;,&quot;.ws()).quote(&quot;{&quot;.ws(), &quot;}&quot;);
+    ///     let hash = ele.sep_collect(",".ws()).quote("{".ws(), "}");
     ///     let mut ctx = CharsCtx::new(
-    ///         r#&quot;{
+    ///         r#"{
     ///         c =&gt; c11,
     ///         cpp =&gt; c++23,
     ///         rust =&gt; 2021,
-    ///     }&quot;#,
+    ///     }"#,
     ///     );
     ///
     ///     let hash: HashMap&lt;&amp;str, &amp;str&gt; = ctx.ctor(&amp;hash)?;
     ///
-    ///     assert_eq!(hash.get(&quot;c&quot;), Some(&amp;&quot;c11&quot;));
-    ///     assert_eq!(hash.get(&quot;cpp&quot;), Some(&amp;&quot;c++23&quot;));
-    ///     assert_eq!(hash.get(&quot;rust&quot;), Some(&amp;&quot;2021&quot;));
+    ///     assert_eq!(hash.get("c"), Some(&amp;"c11"));
+    ///     assert_eq!(hash.get("cpp"), Some(&amp;"c++23"));
+    ///     assert_eq!(hash.get("rust"), Some(&amp;"2021"));
     ///     Ok(())
     /// # }
     /// ```
@@ -1369,21 +1370,21 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     #[derive(Debug, PartialEq, Eq)]
-    ///     pub enum V&lt;&#39;a&gt; {
-    ///         S(&amp;&#39;a str),
+    ///     pub enum V&lt;'a&gt; {
+    ///         S(&amp;'a str),
     ///     }
     ///
-    ///     let cond = neu::re_cond(re::not(&quot;\\\&quot;&quot;));
-    ///     let str = re!([^ &#39;&quot;&#39; ]+).set_cond(cond).or(&quot;\\\&quot;&quot;).repeat(1..).pat();
-    ///     let str = str.quote(&quot;\&quot;&quot;, &quot;\&quot;&quot;);
+    ///     let cond = neu::re_cond(re::not("\\\""));
+    ///     let str = re!([^ '"' ]+).set_cond(cond).or("\\\"").repeat(1..).pat();
+    ///     let str = str.quote("\"", "\"");
     ///     let str = str.map(|v| Ok(V::S(v)));
-    ///     let vals = str.sep(&quot;,&quot;.ws());
-    ///     let text = r#&quot;&quot;lily\&quot;&quot;, &quot;lilei&quot;, &quot;lucy&quot;&quot;#;
+    ///     let vals = str.sep(",".ws());
+    ///     let text = r#""lily\"", "lilei", "lucy""#;
     ///     let mut ctx = CharsCtx::new(text);
     ///
     ///     assert_eq!(
     ///         ctx.ctor(&amp;vals)?,
-    ///         [V::S(&quot;lily\\\&quot;&quot;), V::S(&quot;lilei&quot;), V::S(&quot;lucy&quot;)]
+    ///         [V::S("lily\\\""), V::S("lilei"), V::S("lucy")]
     ///     );
     ///     Ok(())
     /// # }
@@ -1403,15 +1404,15 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     #[derive(Debug, PartialEq, Eq)]
-    ///     pub struct Val&lt;&#39;a&gt;(&amp;&#39;a str);
+    ///     pub struct Val&lt;'a&gt;(&amp;'a str);
     ///
-    ///     let val = &quot;v&quot;.ltm(&quot;val&quot;.ltm(&quot;value&quot;));
+    ///     let val = "v".ltm("val".ltm("value"));
     ///     let val = val.map(|v| Ok(Val(v)));
-    ///     let val = val.sep(&quot;,&quot;.ws());
-    ///     let val = val.quote(&quot;{&quot;, &quot;}&quot;);
-    ///     let mut ctx = CharsCtx::new(r#&quot;{val, v, value}&quot;#);
+    ///     let val = val.sep(",".ws());
+    ///     let val = val.quote("{", "}");
+    ///     let mut ctx = CharsCtx::new(r#"{val, v, value}"#);
     ///
-    ///     assert_eq!(ctx.ctor(&amp;val)?, [Val(&quot;val&quot;), Val(&quot;v&quot;), Val(&quot;value&quot;)]);
+    ///     assert_eq!(ctx.ctor(&amp;val)?, [Val("val"), Val("v"), Val("value")]);
     ///     Ok(())
     /// # }
     /// ```
@@ -1431,13 +1432,13 @@
     /// #     color_eyre::install()?;
     ///     let ws = neu::whitespace().repeat_full();
     ///     let id = neu::ascii_alphabetic().repeat_one_more();
-    ///     let st = &quot;struct&quot;.ws().then(id)._1();
-    ///     let en = &quot;enum&quot;.ws().then(id)._1();
+    ///     let st = "struct".ws().then(id)._1();
+    ///     let en = "enum".ws().then(id)._1();
     ///     let ty = st.or(en);
-    ///     let ty = ty.ws().then(ws.quote(&quot;{&quot;, &quot;}&quot;))._0();
-    ///     let mut ctx = CharsCtx::new(r#&quot;struct widget { }&quot;#);
+    ///     let ty = ty.ws().then(ws.quote("{", "}"))._0();
+    ///     let mut ctx = CharsCtx::new(r#"struct widget { }"#);
     ///
-    ///     assert_eq!(ctx.ctor(&amp;ty)?, &quot;widget&quot;);
+    ///     assert_eq!(ctx.ctor(&amp;ty)?, "widget");
     ///     Ok(())
     /// # }
     /// ```
@@ -1457,24 +1458,24 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let sp = neu::whitespace().repeat_full();
-    ///     let using = &quot;use&quot;
+    ///     let using = "use"
     ///         .sep_once(
-    ///             &quot;&quot;,
+    ///             "",
     ///             neu::ascii_alphanumeric()
-    ///                 .or(&#39;*&#39;)
-    ///                 .or(&#39;_&#39;)
+    ///                 .or('*')
+    ///                 .or('_')
     ///                 .repeat_one_more()
-    ///                 .sep(&quot;::&quot;),
+    ///                 .sep("::"),
     ///         )
     ///         ._1()
-    ///         .if_then(&quot;as&quot;, neu::ascii_alphanumeric().repeat_one_more());
+    ///         .if_then("as", neu::ascii_alphanumeric().repeat_one_more());
     ///
     ///     for (str, res) in [
     ///         (
-    ///             &quot;use neure::prelude::*&quot;,
-    ///             (vec![&quot;neure&quot;, &quot;prelude&quot;, &quot;*&quot;], None),
+    ///             "use neure::prelude::*",
+    ///             (vec!["neure", "prelude", "*"], None),
     ///         ),
-    ///         (&quot;use neure as regex&quot;, (vec![&quot;neure&quot;], Some(&quot;regex&quot;))),
+    ///         ("use neure as regex", (vec!["neure"], Some("regex"))),
     ///     ] {
     ///         assert_eq!(CharsCtx::new(str).ignore(sp).ctor(&amp;using)?, res);
     ///     }
@@ -1499,7 +1500,7 @@
     ///     let int = neu::digit(10).repeat_one_more();
     ///     let int = int.map(map::from_str_radix::&lt;i32&gt;(10));
     ///     let num = int.ws().repeat(3..5);
-    ///     let mut ctx = CharsCtx::new(r#&quot;1 2 3 4&quot;#);
+    ///     let mut ctx = CharsCtx::new(r#"1 2 3 4"#);
     ///
     ///     assert_eq!(ctx.ctor(&amp;num)?, [1, 2, 3, 4]);
     ///     Ok(())
@@ -1524,7 +1525,7 @@
     ///         .collect::&lt;_, Vec&lt;_&gt;&gt;();
     ///
     ///     assert_eq!(
-    ///         BytesCtx::new(b&quot;\x2f\0\x1f\0\x0f\0&quot;).ctor(&amp;val)?,
+    ///         BytesCtx::new(b"\x2f\0\x1f\0\x0f\0").ctor(&amp;val)?,
     ///         vec![0x2f, 0x1f, 0x0f]
     ///     );
     ///
@@ -1545,14 +1546,14 @@
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
-    ///     let val = &quot;file://&quot;.r#if(
+    ///     let val = "file://".r#if(
     ///         // test if it is a file url
-    ///         |ctx: &amp;CharsCtx| Ok(ctx.orig()?.starts_with(&quot;file&quot;)),
-    ///         &quot;http://&quot;,
+    ///         |ctx: &amp;CharsCtx| Ok(ctx.orig()?.starts_with("file")),
+    ///         "http://",
     ///     );
     ///
-    ///     assert_eq!(CharsCtx::new(&quot;file://&quot;).ctor(&amp;val)?, &quot;file://&quot;);
-    ///     assert_eq!(CharsCtx::new(&quot;http://&quot;).ctor(&amp;val)?, &quot;http://&quot;);
+    ///     assert_eq!(CharsCtx::new("file://").ctor(&amp;val)?, "file://");
+    ///     assert_eq!(CharsCtx::new("http://").ctor(&amp;val)?, "http://");
     ///
     ///     Ok(())
     /// # }
@@ -1574,13 +1575,13 @@
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
-    ///     let sep = neu!([&#39;，&#39; &#39;;&#39;]);
-    ///     let end = neu!([&#39;。&#39; &#39;？&#39; &#39;！&#39;]);
+    ///     let sep = neu!(['，' ';']);
+    ///     let end = neu!(['。' '？' '！']);
     ///     let word = sep.or(end).not().repeat_one_more();
     ///     let sent = word.sep(sep.repeat_one().ws()).pad(end.repeat_one());
     ///     let sent = sent.repeat(1..);
     ///     let mut ctx = CharsCtx::new(
-    ///         r#&quot;暖日晴风初破冻。柳眼眉腮，已觉春心动。酒意诗情谁与共。泪融残粉花钿重。乍试夹衫金缕缝。山枕斜敧，枕损钗头凤。独抱浓愁无好梦。夜阑犹剪灯花弄。&quot;#,
+    ///         r#"暖日晴风初破冻。柳眼眉腮，已觉春心动。酒意诗情谁与共。泪融残粉花钿重。乍试夹衫金缕缝。山枕斜敧，枕损钗头凤。独抱浓愁无好梦。夜阑犹剪灯花弄。"#,
     ///     );
     ///
     ///     assert_eq!(ctx.ctor(&amp;sent)?.len(), 8);
@@ -1603,25 +1604,25 @@
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10).repeat_times::&lt;2&gt;();
-    ///     let time = num.sep_once(&quot;:&quot;, num);
-    ///     let time = time.quote(&quot;[&quot;, &quot;]&quot;).ws();
-    ///     let star = &#39;*&#39;.repeat_times::&lt;3&gt;().ws();
+    ///     let time = num.sep_once(":", num);
+    ///     let time = time.quote("[", "]").ws();
+    ///     let star = '*'.repeat_times::&lt;3&gt;().ws();
     ///     let name = neu::whitespace().not().repeat_one_more().ws();
-    ///     let status = &quot;left&quot;.or(&quot;joined&quot;).ws();
+    ///     let status = "left".or("joined").ws();
     ///     let record = name.padded(star).then(status);
     ///     let record = time.then(record).repeat(1..);
     ///     let mut ctx = CharsCtx::new(
-    ///         r#&quot;[20:59] *** jpn left
+    ///         r#"[20:59] *** jpn left
     ///         [21:00] *** jpn joined
     ///         [21:06] *** guifa left
-    ///         [21:07] *** guifa joined&quot;#,
+    ///         [21:07] *** guifa joined"#,
     ///     );
     ///     let records = ctx.ctor(&amp;record)?;
     ///
-    ///     assert_eq!(records[0], ((&quot;20&quot;, &quot;59&quot;), (&quot;jpn&quot;, &quot;left&quot;)));
-    ///     assert_eq!(records[1], ((&quot;21&quot;, &quot;00&quot;), (&quot;jpn&quot;, &quot;joined&quot;)));
-    ///     assert_eq!(records[2], ((&quot;21&quot;, &quot;06&quot;), (&quot;guifa&quot;, &quot;left&quot;)));
-    ///     assert_eq!(records[3], ((&quot;21&quot;, &quot;07&quot;), (&quot;guifa&quot;, &quot;joined&quot;)));
+    ///     assert_eq!(records[0], (("20", "59"), ("jpn", "left")));
+    ///     assert_eq!(records[1], (("21", "00"), ("jpn", "joined")));
+    ///     assert_eq!(records[2], (("21", "06"), ("guifa", "left")));
+    ///     assert_eq!(records[3], (("21", "07"), ("guifa", "joined")));
     ///     Ok(())
     /// # }
     /// ```
@@ -1638,10 +1639,10 @@
     /// #
     /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
     /// #     color_eyre::install()?;
-    ///     let str = &quot;file://      &quot;;
-    ///     let val = &quot;file://&quot;.ws();
+    ///     let str = "file://      ";
+    ///     let val = "file://".ws();
     ///
-    ///     assert_eq!(CharsCtx::new(str).ctor(&amp;val)?, &quot;file://&quot;);
+    ///     assert_eq!(CharsCtx::new(str).ctor(&amp;val)?, "file://");
     ///     assert_eq!(CharsCtx::new(str).try_mat(&amp;val)?, Span::new(0, 13));
     ///
     ///     Ok(())
@@ -1649,7 +1650,7 @@
     /// ```
     </span><span class="kw">fn </span>ws(<span class="self">self</span>) -&gt; Pad&lt;C, <span class="self">Self</span>, NeureZeroMore&lt;C, AsciiWhiteSpace, C::Item, NullCond&gt;&gt;
     <span class="kw">where
-        </span>C: Context&lt;<span class="lifetime">&#39;a</span>, Item = char&gt;,
+        </span>C: Context&lt;<span class="lifetime">'a</span>, Item = char&gt;,
     {
         Pad::new(<span class="self">self</span>, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
     }

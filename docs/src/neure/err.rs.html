@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/err.rs`."><title>err.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/err.rs`."><title>err.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -99,6 +100,9 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Display;
 
 <span class="attr">#[non_exhaustive]
@@ -158,6 +162,8 @@
 
     FromBeBytes,
 
+    FromNeBytes,
+
     Other,
 
     Uid(usize),
@@ -166,37 +172,38 @@
 <span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
 
 <span class="kw">impl </span>Display <span class="kw">for </span>Error {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            Error::Null =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Error::Null&quot;</span>),
-            Error::Not =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`not`): got error when invoke regex&quot;</span>),
-            Error::Consume =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`consume`): need more data&quot;</span>),
-            Error::Slice =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`slice`): bytes not equal&quot;</span>),
-            Error::String =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`string`): string not equal&quot;</span>),
-            Error::End =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`end`): offset is not at the ending&quot;</span>),
-            Error::Start =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`start`): offset is not at the begining&quot;</span>),
-            Error::LockMutex =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Can not lock mutex for regex&quot;</span>),
-            Error::Option =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`Option`): unexcepted `None` value&quot;</span>),
-            Error::FromStr =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`FromStr`): got error in `from_str_radix`&quot;</span>),
-            Error::TryInto =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`MapTryInto`): got error in `TryInto::try_into`&quot;</span>),
-            Error::SelectEq =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`SelectEq`): tuple.0 and tuple.1 not equal&quot;</span>),
-            Error::SepCollect =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`SepCollect`): need more data&quot;</span>),
-            Error::Collect =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`Collect`): need more data&quot;</span>),
-            Error::Separate =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`Separate`): need more data&quot;</span>),
-            Error::RegexRepeat =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`RegexRepeat`): need more data&quot;</span>),
-            Error::NeuRepeatRange =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`NeuRepeatRange`): need more data&quot;</span>),
-            Error::NeuRepeat =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`NeuRepeat`): need more data&quot;</span>),
-            Error::NeuOneMore =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`NeuOneMore`): need more data&quot;</span>),
-            Error::NeuOne =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`NeuOne`): need more data&quot;</span>),
-            Error::NeuThen =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`NeuThen`): need more data&quot;</span>),
-            Error::Vec =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`Vec`): all match failed&quot;</span>),
-            Error::PairVec =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`Hash`): all match failed&quot;</span>),
-            Error::OriginOutOfBound =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Offset out of bound&quot;</span>),
-            Error::Utf8Error =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`FromUtf8`): catch `Utf8Error` or `FromUtf8Error`&quot;</span>),
-            Error::FromLeBytes =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`FromLeBytes`): need more bytes for given type&quot;</span>),
-            Error::FromBeBytes =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;In (`FromBeBytes`): need more bytes for given type&quot;</span>),
-            Error::Other =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Error::Other&quot;</span>),
-            Error::Uid(id) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Got error(id = {id})&quot;</span>),
+            Error::Null =&gt; <span class="macro">write!</span>(f, <span class="string">"Error::Null"</span>),
+            Error::Not =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`not`): got error when invoke regex"</span>),
+            Error::Consume =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`consume`): need more data"</span>),
+            Error::Slice =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`slice`): bytes not equal"</span>),
+            Error::String =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`string`): string not equal"</span>),
+            Error::End =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`end`): offset is not at the ending"</span>),
+            Error::Start =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`start`): offset is not at the begining"</span>),
+            Error::LockMutex =&gt; <span class="macro">write!</span>(f, <span class="string">"Can not lock mutex for regex"</span>),
+            Error::Option =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`Option`): unexcepted `None` value"</span>),
+            Error::FromStr =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`FromStr`): got error in `from_str_radix`"</span>),
+            Error::TryInto =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`MapTryInto`): got error in `TryInto::try_into`"</span>),
+            Error::SelectEq =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`SelectEq`): tuple.0 and tuple.1 not equal"</span>),
+            Error::SepCollect =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`SepCollect`): need more data"</span>),
+            Error::Collect =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`Collect`): need more data"</span>),
+            Error::Separate =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`Separate`): need more data"</span>),
+            Error::RegexRepeat =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`RegexRepeat`): need more data"</span>),
+            Error::NeuRepeatRange =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`NeuRepeatRange`): need more data"</span>),
+            Error::NeuRepeat =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`NeuRepeat`): need more data"</span>),
+            Error::NeuOneMore =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`NeuOneMore`): need more data"</span>),
+            Error::NeuOne =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`NeuOne`): need more data"</span>),
+            Error::NeuThen =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`NeuThen`): need more data"</span>),
+            Error::Vec =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`Vec`): all match failed"</span>),
+            Error::PairVec =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`Hash`): all match failed"</span>),
+            Error::OriginOutOfBound =&gt; <span class="macro">write!</span>(f, <span class="string">"Offset out of bound"</span>),
+            Error::Utf8Error =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`FromUtf8`): catch `Utf8Error` or `FromUtf8Error`"</span>),
+            Error::FromLeBytes =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`FromLeBytes`): need more bytes for given type"</span>),
+            Error::FromBeBytes =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`FromBeBytes`): need more bytes for given type"</span>),
+            Error::FromNeBytes =&gt; <span class="macro">write!</span>(f, <span class="string">"In (`FromNeBytes`): need more bytes for given type"</span>),
+            Error::Other =&gt; <span class="macro">write!</span>(f, <span class="string">"Error::Other"</span>),
+            Error::Uid(id) =&gt; <span class="macro">write!</span>(f, <span class="string">"Got error(id = {id})"</span>),
         }
     }
 }

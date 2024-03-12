@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/neu.rs`."><title>neu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/neu.rs`."><title>neu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -906,7 +907,7 @@
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;func&quot;</span>, <span class="string">&quot;func&quot;</span>, other, (<span class="self">self</span>)(other))
+        <span class="macro">trace_u!</span>(<span class="string">"func"</span>, <span class="string">"func"</span>, other, (<span class="self">self</span>)(other))
     }
 }
 
@@ -917,7 +918,7 @@
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;char&quot;</span>, <span class="self">self</span>, other, <span class="self">self </span>== other)
+        <span class="macro">trace_u!</span>(<span class="string">"char"</span>, <span class="self">self</span>, other, <span class="self">self </span>== other)
     }
 }
 
@@ -928,7 +929,7 @@
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;u8&quot;</span>, <span class="self">self</span>, other, <span class="self">self </span>== other)
+        <span class="macro">trace_u!</span>(<span class="string">"u8"</span>, <span class="self">self</span>, other, <span class="self">self </span>== other)
     }
 }
 
@@ -963,7 +964,7 @@
     <span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
         <span class="kw">let </span>ret = <span class="self">self
             </span>.lock()
-            .expect(<span class="string">&quot;Oops ?! Can not unwrap mutex for regex ...&quot;</span>);
+            .expect(<span class="string">"Oops ?! Can not unwrap mutex for regex ..."</span>);
 
         Neu::is_match(<span class="kw-2">&amp;*</span>ret, other)
     }
@@ -1007,9 +1008,9 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() {
-///   let arr = [&#39;a&#39;, &#39;c&#39;, &#39;f&#39;, &#39;e&#39;];
-///   let mut ctx1 = CharsCtx::new(&quot;aaffeeeaccc&quot;);
-///   let mut ctx2 = CharsCtx::new(&quot;acdde&quot;);
+///   let arr = ['a', 'c', 'f', 'e'];
+///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
+///   let mut ctx2 = CharsCtx::new("acdde");
 ///
 ///   assert_eq!(ctx1.try_mat(&amp;arr.repeat_range(2..6)).unwrap(), Span::new(0, 5));
 ///   assert_eq!(ctx2.try_mat(&amp;arr.repeat_range(2..6)).unwrap(), Span::new(0, 2));
@@ -1018,7 +1019,7 @@
 </span><span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize, T: PartialEq + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>[T; N] {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;array&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"array"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1030,19 +1031,19 @@
 /// # use neure::prelude::*;
 /// #
 /// # fn main() {
-///   let arr = &amp;[b&#39;a&#39;, b&#39;c&#39;, b&#39;f&#39;, b&#39;e&#39;] as &amp;[u8];
+///   let arr = &amp;[b'a', b'c', b'f', b'e'] as &amp;[u8];
 ///   let arr = Neu2Re::repeat_range(arr, 2..6);
-///   let mut ctx1 = BytesCtx::new(b&quot;aaffeeeaccc&quot;);
-///   let mut ctx2 = BytesCtx::new(b&quot;acdde&quot;);
+///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
+///   let mut ctx2 = BytesCtx::new(b"acdde");
 ///
 ///   assert_eq!(ctx1.try_mat(&amp;arr).unwrap(), Span::new(0, 5));
 ///   assert_eq!(ctx2.try_mat(&amp;arr).unwrap(), Span::new(0, 2));
 /// # }
 /// ```
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: PartialEq + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T] {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: PartialEq + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>[T] {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;slice&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"slice"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1055,13 +1056,13 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = vec![&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;];
+///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
-///     let mut ctx = CharsCtx::new(&quot;0xbbb&quot;);
+///     let mut ctx = CharsCtx::new("0xbbb");
 ///
 ///     assert!(ctx.try_mat(&amp;hex).is_err());
 ///
@@ -1071,7 +1072,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialEq + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>Vec&lt;T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;vector&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"vector"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1086,19 +1087,19 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = (Bound::Included(&amp;&#39;a&#39;), Bound::Excluded(&amp;&#39;g&#39;));
+///     let hex = (Bound::Included(&amp;'a'), Bound::Excluded(&amp;'g'));
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: <span class="lifetime">&#39;a </span>+ <span class="question-mark">?</span>Sized + PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>(Bound&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T&gt;, Bound&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T&gt;) {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: <span class="lifetime">'a </span>+ <span class="question-mark">?</span>Sized + PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>(Bound&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>T&gt;, Bound&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>T&gt;) {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;bound(&amp;T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"bound(&amp;T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1112,9 +1113,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = (Bound::Included(&#39;a&#39;), Bound::Excluded(&#39;g&#39;));
+///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
@@ -1124,7 +1125,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>(Bound&lt;T&gt;, Bound&lt;T&gt;) {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;bound(T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"bound(T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1137,9 +1138,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = &amp;&#39;a&#39; .. &amp;&#39;g&#39;;
+///     let hex = &amp;'a' .. &amp;'g';
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
@@ -1149,7 +1150,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::Range&lt;<span class="kw-2">&amp;</span>T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range(&amp;T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
+        <span class="macro">trace_u!</span>(<span class="string">"range(&amp;T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
     }
 }
 
@@ -1162,9 +1163,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = &#39;a&#39; .. &#39;g&#39;;
+///     let hex = 'a' .. 'g';
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
@@ -1174,7 +1175,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::Range&lt;T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range(T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"range(T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1187,9 +1188,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let from = &amp;&#39;a&#39; ..;
+///     let from = &amp;'a' ..;
 ///     let from = re!((from){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;from)?, Span::new(0, 6));
 ///
@@ -1199,7 +1200,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeFrom&lt;<span class="kw-2">&amp;</span>T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_from(&amp;T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_from(&amp;T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
     }
 }
 
@@ -1212,9 +1213,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let from = &#39;a&#39; ..;
+///     let from = 'a' ..;
 ///     let from = re!((from){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;from)?, Span::new(0, 6));
 ///
@@ -1224,7 +1225,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeFrom&lt;T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_from(T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_from(T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1239,7 +1240,7 @@
 /// #     color_eyre::install()?;
 ///     let full = ..;
 ///     let full = re!((full){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;full)?, Span::new(0, 6));
 ///
@@ -1249,7 +1250,7 @@
 </span><span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeFull {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_full&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_full"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
     }
 }
 
@@ -1262,9 +1263,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = &amp;&#39;a&#39; ..= &amp;&#39;f&#39;;
+///     let hex = &amp;'a' ..= &amp;'f';
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
@@ -1274,7 +1275,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeInclusive&lt;<span class="kw-2">&amp;</span>T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_inclusive(&amp;T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_inclusive(&amp;T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
     }
 }
 
@@ -1287,9 +1288,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let hex = &#39;a&#39; ..= &#39;f&#39;;
+///     let hex = 'a' ..= 'f';
 ///     let hex = re!((hex){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;hex)?, Span::new(0, 6));
 ///
@@ -1299,7 +1300,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeInclusive&lt;T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_inclusive(T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_inclusive(T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1312,9 +1313,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let to = .. &amp;&#39;g&#39;;
+///     let to = .. &amp;'g';
 ///     let to = re!((to){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;to)?, Span::new(0, 6));
 ///
@@ -1324,7 +1325,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeTo&lt;<span class="kw-2">&amp;</span>T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_to(&amp;T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_to(&amp;T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
     }
 }
 
@@ -1337,9 +1338,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let to = .. &#39;g&#39;;
+///     let to = .. 'g';
 ///     let to = re!((to){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;to)?, Span::new(0, 6));
 ///
@@ -1349,7 +1350,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeTo&lt;T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_to(T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_to(T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1362,9 +1363,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let to = ..= &amp;&#39;f&#39;;
+///     let to = ..= &amp;'f';
 ///     let to = re!((to){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;to)?, Span::new(0, 6));
 ///
@@ -1374,7 +1375,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeToInclusive&lt;<span class="kw-2">&amp;</span>T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_to_inclusive(&amp;T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_to_inclusive(&amp;T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(<span class="kw-2">&amp;</span>other))
     }
 }
 
@@ -1387,9 +1388,9 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let to = ..= &#39;f&#39;;
+///     let to = ..= 'f';
 ///     let to = re!((to){1,6});
-///     let mut ctx = CharsCtx::new(&quot;aabbccgg&quot;);
+///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;to)?, Span::new(0, 6));
 ///
@@ -1399,7 +1400,7 @@
 </span><span class="kw">impl</span>&lt;T: PartialOrd + MayDebug&gt; Neu&lt;T&gt; <span class="kw">for </span>std::ops::RangeToInclusive&lt;T&gt; {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>T) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;range_to_inclusive(T)&quot;</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
+        <span class="macro">trace_u!</span>(<span class="string">"range_to_inclusive(T)"</span>, <span class="self">self</span>, other, <span class="self">self</span>.contains(other))
     }
 }
 
@@ -1448,22 +1449,22 @@
 }
 
 <span class="attr">#[inline(always)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>length_of&lt;<span class="lifetime">&#39;a</span>, C: Context&lt;<span class="lifetime">&#39;a</span>&gt;&gt;(offset: usize, ctx: <span class="kw-2">&amp;</span>C, next: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; usize {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>length_of&lt;<span class="lifetime">'a</span>, C: Context&lt;<span class="lifetime">'a</span>&gt;&gt;(offset: usize, ctx: <span class="kw-2">&amp;</span>C, next: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; usize {
     <span class="kw">let </span>next_offset = next.unwrap_or(ctx.len() - ctx.offset());
     next_offset - offset
 }
 
 <span class="attr">#[inline(always)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ret_and_inc&lt;<span class="lifetime">&#39;a</span>, C: Context&lt;<span class="lifetime">&#39;a</span>&gt;, R: Ret&gt;(ctx: <span class="kw-2">&amp;mut </span>C, count: usize, len: usize) -&gt; R {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ret_and_inc&lt;<span class="lifetime">'a</span>, C: Context&lt;<span class="lifetime">'a</span>&gt;, R: Ret&gt;(ctx: <span class="kw-2">&amp;mut </span>C, count: usize, len: usize) -&gt; R {
     <span class="kw">let </span>ret = R::from_ctx(ctx, (count, len));
 
     ctx.inc(len);
     ret
 }
 
-<span class="kw">pub trait </span>Neu2Re&lt;<span class="lifetime">&#39;a</span>, C&gt;
+<span class="kw">pub trait </span>Neu2Re&lt;<span class="lifetime">'a</span>, C&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt;,
     <span class="self">Self</span>: Sized + Neu&lt;C::Item&gt;,
 {
     <span class="kw">fn </span>then&lt;R&gt;(<span class="self">self</span>, unit: R) -&gt; NeureThen&lt;C, <span class="self">Self</span>, R, C::Item, NullCond&gt;
@@ -1491,9 +1492,9 @@
     <span class="kw">fn </span>repeat_range(<span class="self">self</span>, range: <span class="kw">impl </span>Into&lt;CRange&lt;usize&gt;&gt;) -&gt; NeureRepeatRange&lt;C, <span class="self">Self</span>, NullCond&gt;;
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, U&gt; Neu2Re&lt;<span class="lifetime">&#39;a</span>, C&gt; <span class="kw">for </span>U
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, U&gt; Neu2Re&lt;<span class="lifetime">'a</span>, C&gt; <span class="kw">for </span>U
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt;,
     <span class="self">Self</span>: Sized + Neu&lt;C::Item&gt;,
 {
     <span class="kw">fn </span>then&lt;R&gt;(<span class="self">self</span>, unit: R) -&gt; NeureThen&lt;C, <span class="self">Self</span>, R, C::Item, NullCond&gt;
@@ -1556,21 +1557,21 @@
 ///     let hex = neu::digit(16);
 ///
 ///     let tests = [
-///         (&quot;99EF&quot;, Some(Span::new(0, 2))),
-///         (&quot;0x99EF&quot;, Some(Span::new(0, 6))),
-///         (&quot;099EF&quot;, Some(Span::new(0, 3))),
-///         (&quot;9899&quot;, Some(Span::new(0, 4))),
-///         (&quot;x99EF&quot;, None),
+///         ("99EF", Some(Span::new(0, 2))),
+///         ("0x99EF", Some(Span::new(0, 6))),
+///         ("099EF", Some(Span::new(0, 3))),
+///         ("9899", Some(Span::new(0, 4))),
+///         ("x99EF", None),
 ///     ];
 ///
 ///     for test in tests {
 ///         // `may` is not reuseable
-///         let num = neu::may(&#39;0&#39;, neu::may(&#39;x&#39;, hex).or(neu::none())).or(digit);
+///         let num = neu::may('0', neu::may('x', hex).or(neu::none())).or(digit);
 ///         let num = re!((num){1,6});
 ///         let mut ctx = CharsCtx::new(test.0);
 ///
 ///         if let Some(span) = test.1 {
-///             assert_eq!(ctx.try_mat(&amp;num)?, span, &quot;at {}&quot;, test.0);
+///             assert_eq!(ctx.try_mat(&amp;num)?, span, "at {}", test.0);
 ///         } else {
 ///             assert!(ctx.try_mat(&amp;num).is_err());
 ///         }
@@ -1598,7 +1599,7 @@
 <span class="macro">macro_rules! </span>trace_u {
     (<span class="macro-nonterminal">$name</span>:literal, <span class="macro-nonterminal">$self</span>:expr, <span class="macro-nonterminal">$other</span>:ident, <span class="macro-nonterminal">$ret</span>:expr) =&gt; {{
         <span class="kw">let </span>ret = <span class="macro-nonterminal">$ret</span>;
-        <span class="macro-nonterminal">$</span><span class="macro">crate::trace_log!</span>(<span class="string">&quot;{:?} -&gt; u`{}-{:?}` -&gt; {}&quot;</span>, <span class="macro-nonterminal">$other</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$self</span>, ret);
+        <span class="macro-nonterminal">$</span><span class="macro">crate::trace_log!</span>(<span class="string">"{:?} -&gt; u`{}-{:?}` -&gt; {}"</span>, <span class="macro-nonterminal">$other</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$self</span>, ret);
         ret
     }};
 }

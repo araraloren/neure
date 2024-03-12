@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor/sep.rs`."><title>sep.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor/sep.rs`."><title>sep.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -687,12 +688,12 @@
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
 ///     let ele = neu::digit(10).repeat_times::&lt;2&gt;();
-///     let sep = &quot;:&quot;;
+///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
 ///     let time = time.map(|((h, m), s)| Ok((h, m, s)));
-///     let mut ctx = CharsCtx::new(&quot;20:31:42&quot;);
+///     let mut ctx = CharsCtx::new("20:31:42");
 ///
-///     assert_eq!(ctx.ctor(&amp;time)?, (&quot;20&quot;, &quot;31&quot;, &quot;42&quot;));
+///     assert_eq!(ctx.ctor(&amp;time)?, ("20", "31", "42"));
 ///     Ok(())
 /// # }
 /// ```
@@ -712,11 +713,11 @@
     S: Debug,
     R: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
-        f.debug_struct(<span class="string">&quot;SepOnce&quot;</span>)
-            .field(<span class="string">&quot;left&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.left)
-            .field(<span class="string">&quot;sep&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.sep)
-            .field(<span class="string">&quot;right&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.right)
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">"SepOnce"</span>)
+            .field(<span class="string">"left"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.left)
+            .field(<span class="string">"sep"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.sep)
+            .field(<span class="string">"right"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.right)
             .finish()
     }
 }
@@ -799,36 +800,36 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, L, S, R, M, O1, O2, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, (O1, O2), H, A&gt; <span class="kw">for </span>SepOnce&lt;C, L, S, R&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, L, S, R, M, O1, O2, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, (O1, O2), H, A&gt; <span class="kw">for </span>SepOnce&lt;C, L, S, R&gt;
 <span class="kw">where
-    </span>L: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O1, H, A&gt;,
-    R: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O2, H, A&gt;,
+    </span>L: Ctor&lt;<span class="lifetime">'a</span>, C, M, O1, H, A&gt;,
+    R: Ctor&lt;<span class="lifetime">'a</span>, C, M, O2, H, A&gt;,
     S: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O1, O2), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>r = <span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg @ <span class="string">&quot;left&quot;</span>, <span class="self">self</span>.left.constrct(g.ctx(), func));
+        <span class="kw">let </span>r = <span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.constrct(g.ctx(), func));
         <span class="kw">let </span>r = g.process_ret(r)<span class="question-mark">?</span>;
-        <span class="kw">let _ </span>= <span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg @ <span class="string">&quot;sep&quot;</span>,  g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep)<span class="question-mark">?</span>);
-        <span class="kw">let </span>l = <span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg @ <span class="string">&quot;right&quot;</span>, <span class="self">self</span>.right.constrct(g.ctx(), func));
+        <span class="kw">let _ </span>= <span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg @ <span class="string">"sep"</span>,  g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep)<span class="question-mark">?</span>);
+        <span class="kw">let </span>l = <span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.constrct(g.ctx(), func));
         <span class="kw">let </span>l = g.process_ret(l)<span class="question-mark">?</span>;
 
-        <span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg =&gt; g.end(), <span class="bool-val">true</span>);
+        <span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg =&gt; g.end(), <span class="bool-val">true</span>);
         <span class="prelude-val">Ok</span>((r, l))
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, L, S, R&gt; Regex&lt;C&gt; <span class="kw">for </span>SepOnce&lt;C, L, S, R&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, L, S, R&gt; Regex&lt;C&gt; <span class="kw">for </span>SepOnce&lt;C, L, S, R&gt;
 <span class="kw">where
     </span>S: Regex&lt;C, Ret = Span&gt;,
     L: Regex&lt;C, Ret = Span&gt;,
     R: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">type </span>Ret = Span;
 
@@ -838,11 +839,11 @@
         <span class="kw">let </span><span class="kw-2">mut </span>span = &lt;Span <span class="kw">as </span>Ret&gt;::from_ctx(g.ctx(), (<span class="number">0</span>, <span class="number">0</span>));
         <span class="kw">let </span>beg = g.beg();
 
-        span.add_assign(<span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg @ <span class="string">&quot;left&quot;</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.left)<span class="question-mark">?</span>));
-        span.add_assign(<span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg @ <span class="string">&quot;sep&quot;</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep)<span class="question-mark">?</span>));
-        span.add_assign(<span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg @ <span class="string">&quot;right&quot;</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.right)<span class="question-mark">?</span>));
+        span.add_assign(<span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg @ <span class="string">"left"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.left)<span class="question-mark">?</span>));
+        span.add_assign(<span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg @ <span class="string">"sep"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep)<span class="question-mark">?</span>));
+        span.add_assign(<span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg @ <span class="string">"right"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.right)<span class="question-mark">?</span>));
 
-        <span class="macro">trace!</span>(<span class="string">&quot;sep_once&quot;</span>, beg =&gt; g.end(), <span class="prelude-val">Ok</span>(span))
+        <span class="macro">trace!</span>(<span class="string">"sep_once"</span>, beg =&gt; g.end(), <span class="prelude-val">Ok</span>(span))
     }
 }
 
@@ -851,7 +852,7 @@
 ///
 /// # Ctor
 ///
-/// It will return a [`Vec`] of `P`&#39;s match results.
+/// It will return a [`Vec`] of `P`'s match results.
 ///
 /// # Example
 ///
@@ -861,15 +862,15 @@
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
 ///     #[derive(Debug, PartialEq, PartialOrd)]
-///     pub struct Tp&lt;&#39;a&gt;(&amp;&#39;a str);
+///     pub struct Tp&lt;'a&gt;(&amp;'a str);
 ///
 ///     let ascii = neu::alphabetic().repeat_one_more();
 ///     let ty = ascii.map(|v| Ok(Tp(v)));
-///     let ele = ty.sep(&quot;,&quot;.ws());
-///     let arr = ele.quote(&quot;&lt;&quot;, &quot;&gt;&quot;);
-///     let mut ctx = CharsCtx::new(&quot;&lt;A, B, Len, Size&gt;&quot;);
+///     let ele = ty.sep(",".ws());
+///     let arr = ele.quote("&lt;", "&gt;");
+///     let mut ctx = CharsCtx::new("&lt;A, B, Len, Size&gt;");
 ///
-///     assert_eq!(ctx.ctor(&amp;arr)?, [Tp(&quot;A&quot;), Tp(&quot;B&quot;), Tp(&quot;Len&quot;), Tp(&quot;Size&quot;)]);
+///     assert_eq!(ctx.ctor(&amp;arr)?, [Tp("A"), Tp("B"), Tp("Len"), Tp("Size")]);
 ///
 ///     Ok(())
 /// # }
@@ -891,13 +892,13 @@
     </span>P: Debug,
     S: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
-        f.debug_struct(<span class="string">&quot;Separate&quot;</span>)
-            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
-            .field(<span class="string">&quot;sep&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.sep)
-            .field(<span class="string">&quot;skip&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.skip)
-            .field(<span class="string">&quot;capacity&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.capacity)
-            .field(<span class="string">&quot;min&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.min)
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">"Separate"</span>)
+            .field(<span class="string">"pat"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">"sep"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.sep)
+            .field(<span class="string">"skip"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.skip)
+            .field(<span class="string">"capacity"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.capacity)
+            .field(<span class="string">"min"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.min)
             .finish()
     }
 }
@@ -1000,13 +1001,13 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, M, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, Vec&lt;O&gt;, H, A&gt; <span class="kw">for </span>Separate&lt;C, P, S&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, S, P, M, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, Vec&lt;O&gt;, H, A&gt; <span class="kw">for </span>Separate&lt;C, P, S&gt;
 <span class="kw">where
-    </span>P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
+    </span>P: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
     S: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;O&gt;, Error&gt; {
@@ -1015,9 +1016,9 @@
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
 
-        <span class="macro">trace_v!</span>(<span class="string">&quot;separate&quot;</span>, range, beg, ());
+        <span class="macro">trace_v!</span>(<span class="string">"separate"</span>, range, beg, ());
         <span class="kw">while let </span><span class="prelude-val">Ok</span>(ret) = <span class="self">self</span>.pat.constrct(g.ctx(), func) {
-            <span class="kw">let </span>sep_ret = <span class="macro">trace_v!</span>(<span class="string">&quot;separate&quot;</span>, range, beg @ <span class="string">&quot;sep&quot;</span>, g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep));
+            <span class="kw">let </span>sep_ret = <span class="macro">trace_v!</span>(<span class="string">"separate"</span>, range, beg @ <span class="string">"sep"</span>, g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep));
 
             <span class="kw">if </span>sep_ret.is_ok() || <span class="self">self</span>.skip {
                 res.push(ret);
@@ -1033,16 +1034,16 @@
             <span class="prelude-val">Err</span>(Error::Separate)
         });
 
-        <span class="macro">trace_v!</span>(<span class="string">&quot;separate&quot;</span>, range, beg -&gt; g.end(), ret.is_ok(), len);
+        <span class="macro">trace_v!</span>(<span class="string">"separate"</span>, range, beg -&gt; g.end(), ret.is_ok(), len);
         ret
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P&gt; Regex&lt;C&gt; <span class="kw">for </span>Separate&lt;C, P, S&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, S, P&gt; Regex&lt;C&gt; <span class="kw">for </span>Separate&lt;C, P, S&gt;
 <span class="kw">where
     </span>S: Regex&lt;C, Ret = Span&gt;,
     P: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">type </span>Ret = Span;
 
@@ -1055,7 +1056,7 @@
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
 
-        <span class="macro">trace_v!</span>(<span class="string">&quot;separate&quot;</span>, range, beg, ());
+        <span class="macro">trace_v!</span>(<span class="string">"separate"</span>, range, beg, ());
         <span class="kw">while let </span><span class="prelude-val">Ok</span>(ret) = g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.pat) {
             <span class="kw">let </span>sep_ret = g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep);
 
@@ -1073,7 +1074,7 @@
         <span class="kw">if </span>cnt &gt;= <span class="self">self</span>.min {
             ret = <span class="prelude-val">Ok</span>(span);
         }
-        <span class="macro">trace_v!</span>(<span class="string">&quot;separate&quot;</span>, range, beg =&gt; g.end(), g.process_ret(ret), cnt )
+        <span class="macro">trace_v!</span>(<span class="string">"separate"</span>, range, beg =&gt; g.end(), g.process_ret(ret), cnt )
     }
 }
 
@@ -1082,7 +1083,7 @@
 ///
 /// # Ctor
 ///
-/// It will return a `V` that can constructed from `P`&#39;s match results
+/// It will return a `V` that can constructed from `P`'s match results
 /// using [`from_iter`](std::iter::FromIterator::from_iter).
 ///
 /// # Notice
@@ -1099,9 +1100,9 @@
 /// #     color_eyre::install()?;
 ///     let digit = neu::digit(10).repeat_one_more();
 ///     let val = digit.map(FromStr::&lt;i64&gt;::new());
-///     let vals = val.sep_collect::&lt;_, _, Vec&lt;i64&gt;&gt;(&quot;,&quot;.ws());
-///     let array = vals.quote(&quot;[&quot;, &quot;]&quot;);
-///     let mut ctx = CharsCtx::new(&quot;[18, 24, 42, 58, 69]&quot;);
+///     let vals = val.sep_collect::&lt;_, _, Vec&lt;i64&gt;&gt;(",".ws());
+///     let array = vals.quote("[", "]");
+///     let mut ctx = CharsCtx::new("[18, 24, 42, 58, 69]");
 ///
 ///     assert_eq!(ctx.ctor(&amp;array)?, [18, 24, 42, 58, 69]);
 ///     Ok(())
@@ -1123,12 +1124,12 @@
     </span>P: Debug,
     S: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
-        f.debug_struct(<span class="string">&quot;SepCollect&quot;</span>)
-            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
-            .field(<span class="string">&quot;sep&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.sep)
-            .field(<span class="string">&quot;skip&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.skip)
-            .field(<span class="string">&quot;min&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.min)
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">"SepCollect"</span>)
+            .field(<span class="string">"pat"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">"sep"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.sep)
+            .field(<span class="string">"skip"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.skip)
+            .field(<span class="string">"min"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.min)
             .finish()
     }
 }
@@ -1215,14 +1216,14 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, M, O, V, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, V, H, A&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, S, P, M, O, V, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, V, H, A&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
 <span class="kw">where
     </span>V: FromIterator&lt;O&gt;,
-    P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
+    P: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
     S: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;V, Error&gt; {
@@ -1232,11 +1233,11 @@
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
         <span class="kw">let </span>ret = {
-            <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg, ());
+            <span class="macro">trace_v!</span>(<span class="string">"sep_collect"</span>, range, beg, ());
             V::from_iter(std::iter::from_fn(|| {
                 <span class="self">self</span>.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
                     <span class="kw">let </span>sep_ret =
-                        <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg @ <span class="string">&quot;sep&quot;</span>, g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep));
+                        <span class="macro">trace_v!</span>(<span class="string">"sep_collect"</span>, range, beg @ <span class="string">"sep"</span>, g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep));
 
                     <span class="kw">if </span>!end {
                         <span class="kw">if </span>sep_ret.is_err() {
@@ -1257,16 +1258,16 @@
             <span class="prelude-val">Err</span>(Error::SepCollect)
         });
 
-        <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg -&gt; g.end(), ret.is_ok(), cnt);
+        <span class="macro">trace_v!</span>(<span class="string">"sep_collect"</span>, range, beg -&gt; g.end(), ret.is_ok(), cnt);
         ret
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, S, P, O, V&gt; Regex&lt;C&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, S, P, O, V&gt; Regex&lt;C&gt; <span class="kw">for </span>SepCollect&lt;C, P, S, O, V&gt;
 <span class="kw">where
     </span>S: Regex&lt;C, Ret = Span&gt;,
     P: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">type </span>Ret = Span;
 
@@ -1279,7 +1280,7 @@
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>range: CRange&lt;usize&gt; = (<span class="self">self</span>.min..).into();
 
-        <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg, ());
+        <span class="macro">trace_v!</span>(<span class="string">"sep_collect"</span>, range, beg, ());
         <span class="kw">while let </span><span class="prelude-val">Ok</span>(ret) = g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.pat) {
             <span class="kw">let </span>sep_ret = g.ctx().try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.sep);
 
@@ -1297,7 +1298,7 @@
         <span class="kw">if </span>cnt &gt;= <span class="self">self</span>.min {
             ret = <span class="prelude-val">Ok</span>(span);
         }
-        <span class="macro">trace_v!</span>(<span class="string">&quot;sep_collect&quot;</span>, range, beg =&gt; g.end(), g.process_ret(ret), cnt)
+        <span class="macro">trace_v!</span>(<span class="string">"sep_collect"</span>, range, beg =&gt; g.end(), g.process_ret(ret), cnt)
     }
 }
 </code></pre></div></section></main></body></html>
