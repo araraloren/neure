@@ -12,7 +12,7 @@ A fast little combinational parsing library
 
 ## Example
 
-For more, reference [`examples`](https://github.com/araraloren/neure/tree/main/examples)
+For more, reference [`examples`](https://docs.rs/crate/neure/latest/source/examples/)
 
 ### Example 1
 
