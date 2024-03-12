@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/neu/units.rs`."><title>units.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/neu/units.rs`."><title>units.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -897,7 +898,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Alphabetic {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;alphabetic&quot;</span>, <span class="self">self</span>, other, other.is_alphabetic())
+        <span class="macro">trace_u!</span>(<span class="string">"alphabetic"</span>, <span class="self">self</span>, other, other.is_alphabetic())
     }
 }
 
@@ -913,7 +914,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let alpha = alphabetic();
 ///     let alpha = alpha.repeat_times::&lt;1&gt;();
-///     let mut ctx = CharsCtx::new(&quot;a💝abcd&quot;);
+///     let mut ctx = CharsCtx::new("a💝abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;alpha)?, Span::new(0, 1));
 ///     assert!(ctx.try_mat(&amp;alpha).is_err());
@@ -936,7 +937,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Alphanumeric {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;alphanumeric&quot;</span>, <span class="self">self</span>, other, other.is_alphanumeric())
+        <span class="macro">trace_u!</span>(<span class="string">"alphanumeric"</span>, <span class="self">self</span>, other, other.is_alphanumeric())
     }
 }
 
@@ -952,7 +953,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let alphanumeric = alphanumeric();
 ///     let alphanumeric = alphanumeric.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;①7Kوf&quot;);
+///     let mut ctx = CharsCtx::new("①7Kوf");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;alphanumeric)?, Span::new(0, 4));
 ///     assert_eq!(ctx.try_mat(&amp;alphanumeric)?, Span::new(4, 3));
@@ -976,14 +977,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Ascii {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii&quot;</span>, <span class="self">self</span>, other, other.is_ascii())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii"</span>, <span class="self">self</span>, other, other.is_ascii())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>Ascii {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii&quot;</span>, <span class="self">self</span>, other, other.is_ascii())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii"</span>, <span class="self">self</span>, other, other.is_ascii())
     }
 }
 
@@ -999,7 +1000,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii = ascii();
 ///     let ascii = ascii.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;ab❤e&quot;);
+///     let mut ctx = CharsCtx::new("ab❤e");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii).is_err());
@@ -1022,14 +1023,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiAlphabetic {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_alphabetic&quot;</span>, <span class="self">self</span>, other, other.is_ascii_alphabetic())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_alphabetic"</span>, <span class="self">self</span>, other, other.is_ascii_alphabetic())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiAlphabetic {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_alphabetic&quot;</span>, <span class="self">self</span>, other, other.is_ascii_alphabetic())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_alphabetic"</span>, <span class="self">self</span>, other, other.is_ascii_alphabetic())
     }
 }
 
@@ -1045,7 +1046,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_alphabetic = ascii_alphabetic();
 ///     let ascii_alphabetic = ascii_alphabetic.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;ab%e&quot;);
+///     let mut ctx = CharsCtx::new("ab%e");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_alphabetic)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_alphabetic).is_err());
@@ -1069,7 +1070,7 @@
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
         <span class="macro">trace_u!</span>(
-            <span class="string">&quot;ascii_alphanumeric&quot;</span>,
+            <span class="string">"ascii_alphanumeric"</span>,
             <span class="self">self</span>,
             other,
             other.is_ascii_alphanumeric()
@@ -1081,7 +1082,7 @@
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
         <span class="macro">trace_u!</span>(
-            <span class="string">&quot;ascii_alphanumeric&quot;</span>,
+            <span class="string">"ascii_alphanumeric"</span>,
             <span class="self">self</span>,
             other,
             other.is_ascii_alphanumeric()
@@ -1101,7 +1102,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_alphanumeric = ascii_alphanumeric();
 ///     let ascii_alphanumeric = ascii_alphanumeric.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;8a%e&quot;);
+///     let mut ctx = CharsCtx::new("8a%e");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_alphanumeric)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_alphanumeric).is_err());
@@ -1124,14 +1125,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiControl {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_control&quot;</span>, <span class="self">self</span>, other, other.is_ascii_control())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_control"</span>, <span class="self">self</span>, other, other.is_ascii_control())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiControl {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_control&quot;</span>, <span class="self">self</span>, other, other.is_ascii_control())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_control"</span>, <span class="self">self</span>, other, other.is_ascii_control())
     }
 }
 
@@ -1147,7 +1148,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_control = ascii_control();
 ///     let ascii_control = ascii_control.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;\r\n%e&quot;);
+///     let mut ctx = CharsCtx::new("\r\n%e");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_control)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_control).is_err());
@@ -1170,14 +1171,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiDigit {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_digit&quot;</span>, <span class="self">self</span>, other, other.is_ascii_digit())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_digit"</span>, <span class="self">self</span>, other, other.is_ascii_digit())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiDigit {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_digit&quot;</span>, <span class="self">self</span>, other, other.is_ascii_digit())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_digit"</span>, <span class="self">self</span>, other, other.is_ascii_digit())
     }
 }
 
@@ -1193,7 +1194,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_digit = ascii_digit();
 ///     let ascii_digit = ascii_digit.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;90fe&quot;);
+///     let mut ctx = CharsCtx::new("90fe");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_digit)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_digit).is_err());
@@ -1216,14 +1217,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiGraphic {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_graphic&quot;</span>, <span class="self">self</span>, other, other.is_ascii_graphic())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_graphic"</span>, <span class="self">self</span>, other, other.is_ascii_graphic())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiGraphic {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_graphic&quot;</span>, <span class="self">self</span>, other, other.is_ascii_graphic())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_graphic"</span>, <span class="self">self</span>, other, other.is_ascii_graphic())
     }
 }
 
@@ -1239,7 +1240,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_graphic = ascii_graphic();
 ///     let ascii_graphic = ascii_graphic.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;a%\r\n&quot;);
+///     let mut ctx = CharsCtx::new("a%\r\n");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_graphic)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_graphic).is_err());
@@ -1262,14 +1263,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiHexDigit {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_hexdigit&quot;</span>, <span class="self">self</span>, other, other.is_ascii_hexdigit())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_hexdigit"</span>, <span class="self">self</span>, other, other.is_ascii_hexdigit())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiHexDigit {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_hexdigit&quot;</span>, <span class="self">self</span>, other, other.is_ascii_hexdigit())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_hexdigit"</span>, <span class="self">self</span>, other, other.is_ascii_hexdigit())
     }
 }
 
@@ -1285,7 +1286,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_hexdigit = ascii_hexdigit();
 ///     let ascii_hexdigit = ascii_hexdigit.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;9fg0&quot;);
+///     let mut ctx = CharsCtx::new("9fg0");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_hexdigit)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_hexdigit).is_err());
@@ -1308,14 +1309,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiLowercase {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_lowercase&quot;</span>, <span class="self">self</span>, other, other.is_ascii_lowercase())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_lowercase"</span>, <span class="self">self</span>, other, other.is_ascii_lowercase())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiLowercase {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_lowercase&quot;</span>, <span class="self">self</span>, other, other.is_ascii_lowercase())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_lowercase"</span>, <span class="self">self</span>, other, other.is_ascii_lowercase())
     }
 }
 
@@ -1331,7 +1332,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_lowercase = ascii_lowercase();
 ///     let ascii_lowercase = ascii_lowercase.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;efAE&quot;);
+///     let mut ctx = CharsCtx::new("efAE");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_lowercase)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_lowercase).is_err());
@@ -1355,7 +1356,7 @@
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
         <span class="macro">trace_u!</span>(
-            <span class="string">&quot;ascii_punctuation&quot;</span>,
+            <span class="string">"ascii_punctuation"</span>,
             <span class="self">self</span>,
             other,
             other.is_ascii_punctuation()
@@ -1367,7 +1368,7 @@
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
         <span class="macro">trace_u!</span>(
-            <span class="string">&quot;ascii_punctuation&quot;</span>,
+            <span class="string">"ascii_punctuation"</span>,
             <span class="self">self</span>,
             other,
             other.is_ascii_punctuation()
@@ -1387,7 +1388,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_punctuation = ascii_punctuation();
 ///     let ascii_punctuation = ascii_punctuation.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;%%\nE&quot;);
+///     let mut ctx = CharsCtx::new("%%\nE");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_punctuation)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_punctuation).is_err());
@@ -1410,14 +1411,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiUppercase {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_uppercase&quot;</span>, <span class="self">self</span>, other, other.is_ascii_uppercase())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_uppercase"</span>, <span class="self">self</span>, other, other.is_ascii_uppercase())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiUppercase {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_uppercase&quot;</span>, <span class="self">self</span>, other, other.is_ascii_uppercase())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_uppercase"</span>, <span class="self">self</span>, other, other.is_ascii_uppercase())
     }
 }
 
@@ -1433,7 +1434,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let ascii_uppercase = ascii_uppercase();
 ///     let ascii_uppercase = ascii_uppercase.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;EFef&quot;);
+///     let mut ctx = CharsCtx::new("EFef");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;ascii_uppercase)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;ascii_uppercase).is_err());
@@ -1456,14 +1457,14 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>AsciiWhiteSpace {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_whitespace&quot;</span>, <span class="self">self</span>, other, other.is_ascii_whitespace())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_whitespace"</span>, <span class="self">self</span>, other, other.is_ascii_whitespace())
     }
 }
 
 <span class="kw">impl </span>Neu&lt;u8&gt; <span class="kw">for </span>AsciiWhiteSpace {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>u8) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;ascii_whitespace&quot;</span>, <span class="self">self</span>, other, other.is_ascii_whitespace())
+        <span class="macro">trace_u!</span>(<span class="string">"ascii_whitespace"</span>, <span class="self">self</span>, other, other.is_ascii_whitespace())
     }
 }
 
@@ -1480,7 +1481,7 @@
 ///     let space = ascii_whitespace();
 ///     let space1 = space.repeat_times::&lt;1&gt;();
 ///     let space3 = space.repeat_times::&lt;3&gt;();
-///     let mut ctx = CharsCtx::new(&quot;    w\u{A0}abcd&quot;);
+///     let mut ctx = CharsCtx::new("    w\u{A0}abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;space1)?, Span::new(0, 1));
 ///     assert_eq!(ctx.try_mat(&amp;space3)?, Span::new(1, 3));
@@ -1504,7 +1505,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Control {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;control&quot;</span>, <span class="self">self</span>, other, other.is_control())
+        <span class="macro">trace_u!</span>(<span class="string">"control"</span>, <span class="self">self</span>, other, other.is_control())
     }
 }
 
@@ -1520,7 +1521,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let control = control();
 ///     let control = control.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;ef&quot;);
+///     let mut ctx = CharsCtx::new("ef");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;control)?, Span::new(0, 4));
 ///     assert!(ctx.try_mat(&amp;control).is_err());
@@ -1543,7 +1544,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Digit {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;digit&quot;</span>, <span class="self">self</span>, other, other.is_digit(<span class="self">self</span>.<span class="number">0</span>))
+        <span class="macro">trace_u!</span>(<span class="string">"digit"</span>, <span class="self">self</span>, other, other.is_digit(<span class="self">self</span>.<span class="number">0</span>))
     }
 }
 
@@ -1559,7 +1560,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let digit = digit(10);
 ///     let digit = digit.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;54aa&quot;);
+///     let mut ctx = CharsCtx::new("54aa");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;digit)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;digit).is_err());
@@ -1582,7 +1583,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Lowercase {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;lowercase&quot;</span>, <span class="self">self</span>, other, other.is_lowercase())
+        <span class="macro">trace_u!</span>(<span class="string">"lowercase"</span>, <span class="self">self</span>, other, other.is_lowercase())
     }
 }
 
@@ -1598,7 +1599,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let lowercase = lowercase();
 ///     let lowercase = lowercase.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;aδΔA&quot;);
+///     let mut ctx = CharsCtx::new("aδΔA");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;lowercase)?, Span::new(0, 3));
 ///     assert!(ctx.try_mat(&amp;lowercase).is_err());
@@ -1621,7 +1622,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Numeric {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;numeric&quot;</span>, <span class="self">self</span>, other, other.is_numeric())
+        <span class="macro">trace_u!</span>(<span class="string">"numeric"</span>, <span class="self">self</span>, other, other.is_numeric())
     }
 }
 
@@ -1637,7 +1638,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let numeric = numeric();
 ///     let numeric = numeric.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;①¾Kو&quot;);
+///     let mut ctx = CharsCtx::new("①¾Kو");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;numeric)?, Span::new(0, 5));
 ///     assert!(ctx.try_mat(&amp;numeric).is_err());
@@ -1660,7 +1661,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Uppercase {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;uppercase&quot;</span>, <span class="self">self</span>, other, other.is_uppercase())
+        <span class="macro">trace_u!</span>(<span class="string">"uppercase"</span>, <span class="self">self</span>, other, other.is_uppercase())
     }
 }
 
@@ -1676,7 +1677,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let uppercase = uppercase();
 ///     let uppercase = uppercase.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;ΔAaΔ&quot;);
+///     let mut ctx = CharsCtx::new("ΔAaΔ");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;uppercase)?, Span::new(0, 3));
 ///     assert!(ctx.try_mat(&amp;uppercase).is_err());
@@ -1699,7 +1700,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>WhiteSpace {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;whitespace&quot;</span>, <span class="self">self</span>, other, other.is_whitespace())
+        <span class="macro">trace_u!</span>(<span class="string">"whitespace"</span>, <span class="self">self</span>, other, other.is_whitespace())
     }
 }
 
@@ -1716,7 +1717,7 @@
 ///     let space = whitespace();
 ///     let space1 = space.repeat_times::&lt;1&gt;();
 ///     let space3 = space.repeat_times::&lt;3&gt;();
-///     let mut ctx = CharsCtx::new(&quot;   \u{A0}abcd&quot;);
+///     let mut ctx = CharsCtx::new("   \u{A0}abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;space1)?, Span::new(0, 1));
 ///     assert_eq!(ctx.try_mat(&amp;space3)?, Span::new(1, 4));
@@ -1740,7 +1741,7 @@
 <span class="kw">impl </span>Neu&lt;char&gt; <span class="kw">for </span>Wild {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>is_match(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>char) -&gt; bool {
-        <span class="macro">trace_u!</span>(<span class="string">&quot;wild&quot;</span>, <span class="string">&#39;\n&#39;</span>, other, other != <span class="kw-2">&amp;</span><span class="string">&#39;\n&#39;</span>)
+        <span class="macro">trace_u!</span>(<span class="string">"wild"</span>, <span class="string">'\n'</span>, other, other != <span class="kw-2">&amp;</span><span class="string">'\n'</span>)
     }
 }
 
@@ -1756,7 +1757,7 @@
 /// fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 ///     let wild = wild();
 ///     let wild = wild.repeat_times::&lt;2&gt;();
-///     let mut ctx = CharsCtx::new(&quot;aa\r\n&quot;);
+///     let mut ctx = CharsCtx::new("aa\r\n");
 ///
 ///     assert_eq!(ctx.try_mat(&amp;wild)?, Span::new(0, 2));
 ///     assert!(ctx.try_mat(&amp;wild).is_err());

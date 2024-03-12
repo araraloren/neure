@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor/dthen.rs`."><title>dthen.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor/dthen.rs`."><title>dthen.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -238,7 +239,7 @@
 ///
 /// # Ctor
 ///
-/// Return a tuple of `P`&#39;s result and new regex result.
+/// Return a tuple of `P`'s result and new regex result.
 ///
 /// # Example
 ///
@@ -249,9 +250,9 @@
 /// #     color_eyre::install()?;
 ///     let len = re::consume(2).map(map::from_le_bytes::&lt;i16&gt;());
 ///     let data = len.dyn_then_ctor(|v: &amp;i16| Ok(re::consume(*v as usize)));
-///     let ret = BytesCtx::new(b&quot;\x1f\0Hello there, where are you from?&quot;).ctor(&amp;data)?;
+///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&amp;data)?;
 ///
-///     assert_eq!(ret, (0x1f, b&quot;Hello there, where are you from&quot;.as_ref()));
+///     assert_eq!(ret, (0x1f, b"Hello there, where are you from".as_ref()));
 ///
 ///     Ok(())
 /// # }
@@ -270,10 +271,10 @@
     </span>P: Debug,
     F: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
-        f.debug_struct(<span class="string">&quot;DynamicCreateCtorThen&quot;</span>)
-            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
-            .field(<span class="string">&quot;func&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.func)
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">"DynamicCreateCtorThen"</span>)
+            .field(<span class="string">"pat"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">"func"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.func)
             .finish()
     }
 }
@@ -340,54 +341,54 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, F, T, M, O1, O2, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, (O1, O2), H, A&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, P, F, T, M, O1, O2, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, (O1, O2), H, A&gt;
     <span class="kw">for </span>DynamicCreateCtorThen&lt;C, P, F&gt;
 <span class="kw">where
-    </span>P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O1, H, A&gt;,
-    T: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O2, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>P: Ctor&lt;<span class="lifetime">'a</span>, C, M, O1, H, A&gt;,
+    T: Ctor&lt;<span class="lifetime">'a</span>, C, M, O2, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     F: Fn(<span class="kw-2">&amp;</span>O1) -&gt; <span class="prelude-ty">Result</span>&lt;T, Error&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O1, O2), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>l = <span class="macro">trace!</span>(<span class="string">&quot;dynamic_create_ctor_then&quot;</span>, beg @ <span class="string">&quot;pat&quot;</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func));
+        <span class="kw">let </span>l = <span class="macro">trace!</span>(<span class="string">"dynamic_create_ctor_then"</span>, beg @ <span class="string">"pat"</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func));
         <span class="kw">let </span>l = g.process_ret(l)<span class="question-mark">?</span>;
-        <span class="kw">let </span>r = <span class="macro">trace!</span>(<span class="string">&quot;dynamic_create_ctor_then&quot;</span>, beg @ <span class="string">&quot;dynamic ctor&quot;</span>, (<span class="self">self</span>.func)(<span class="kw-2">&amp;</span>l)<span class="question-mark">?</span>.constrct(g.ctx(), func));
+        <span class="kw">let </span>r = <span class="macro">trace!</span>(<span class="string">"dynamic_create_ctor_then"</span>, beg @ <span class="string">"dynamic ctor"</span>, (<span class="self">self</span>.func)(<span class="kw-2">&amp;</span>l)<span class="question-mark">?</span>.constrct(g.ctx(), func));
         <span class="kw">let </span>r = g.process_ret(r)<span class="question-mark">?</span>;
 
-        <span class="macro">trace!</span>(<span class="string">&quot;dynamic_create_ctor_then&quot;</span>, beg -&gt; g.end(), <span class="bool-val">true</span>);
+        <span class="macro">trace!</span>(<span class="string">"dynamic_create_ctor_then"</span>, beg -&gt; g.end(), <span class="bool-val">true</span>);
         <span class="prelude-val">Ok</span>((l, r))
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, F&gt; Regex&lt;C&gt; <span class="kw">for </span>DynamicCreateCtorThen&lt;C, P, F&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, P, F&gt; Regex&lt;C&gt; <span class="kw">for </span>DynamicCreateCtorThen&lt;C, P, F&gt;
 <span class="kw">where
     </span>P: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">type </span>Ret = P::Ret;
 
     <span class="kw">fn </span>try_parse(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ret, Error&gt; {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Can&#39;t not using DynamicThen for regex&quot;</span>)
+        <span class="macro">unimplemented!</span>(<span class="string">"Can't not using DynamicThen for regex"</span>)
     }
 }
 
-<span class="kw">pub trait </span>DynamicCreateCtorThenHelper&lt;<span class="lifetime">&#39;a</span>, C&gt;
+<span class="kw">pub trait </span>DynamicCreateCtorThenHelper&lt;<span class="lifetime">'a</span>, C&gt;
 <span class="kw">where
     </span><span class="self">Self</span>: Sized,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="kw">fn </span>dyn_then_ctor&lt;F&gt;(<span class="self">self</span>, func: F) -&gt; DynamicCreateCtorThen&lt;C, <span class="self">Self</span>, F&gt;;
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, T&gt; DynamicCreateCtorThenHelper&lt;<span class="lifetime">&#39;a</span>, C&gt; <span class="kw">for </span>T
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, T&gt; DynamicCreateCtorThenHelper&lt;<span class="lifetime">'a</span>, C&gt; <span class="kw">for </span>T
 <span class="kw">where
     </span><span class="self">Self</span>: Sized,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
 {
     <span class="doccomment">///
     /// Construct a new regex with `Ctor` implementation based on previous result.
@@ -403,24 +404,24 @@
     ///         .repeat_one()
     ///         .map(|v: &amp;[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
     ///         .map(map::from_str::&lt;usize&gt;());
-    ///     let num = num.clone().sep_once(b&quot;,&quot;, num);
+    ///     let num = num.clone().sep_once(b",", num);
     ///     let re = num.dyn_then_ctor(|a: &amp;(usize, usize)| {
-    ///         // leave the a&#39;s type empty cause rustc reject compile
-    ///         Ok(b&#39;+&#39;
+    ///         // leave the a's type empty cause rustc reject compile
+    ///         Ok(b'+'
     ///             .repeat_range(a.0..a.0 + 1)
-    ///             .then(b&#39;-&#39;.repeat_range(a.1..a.1 + 1)))
+    ///             .then(b'-'.repeat_range(a.1..a.1 + 1)))
     ///     });
     ///
     ///     assert_eq!(
-    ///         BytesCtx::new(b&quot;3,0+++&quot;).ctor(&amp;re)?,
+    ///         BytesCtx::new(b"3,0+++").ctor(&amp;re)?,
     ///         ((3, 0), ([43, 43, 43].as_slice(), [].as_slice()))
     ///     );
     ///     assert_eq!(
-    ///         BytesCtx::new(b&quot;2,1++-&quot;).ctor(&amp;re)?,
+    ///         BytesCtx::new(b"2,1++-").ctor(&amp;re)?,
     ///         ((2, 1), ([43, 43].as_slice(), [45].as_slice()))
     ///     );
     ///     assert_eq!(
-    ///         BytesCtx::new(b&quot;0,3---&quot;).ctor(&amp;re)?,
+    ///         BytesCtx::new(b"0,3---").ctor(&amp;re)?,
     ///         ((0, 3), ([].as_slice(), [45, 45, 45].as_slice()))
     ///     );
     ///     Ok(())

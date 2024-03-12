@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor/if.rs`."><title>if.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/re/ctor/if.rs`."><title>if.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="neure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -222,20 +223,20 @@
 /// #
 /// # fn main() -&gt; color_eyre::Result&lt;()&gt; {
 /// #     color_eyre::install()?;
-///     let re1 = &quot;google&quot;.sep_once(&quot;.&quot;, &quot;com&quot;.or(&quot;is&quot;)).pat();
-///     let re2 = &quot;google&quot;
-///         .sep_once(&quot;.&quot;, &quot;co&quot;.sep_once(&quot;.&quot;, &quot;kr&quot;.or(&quot;jp&quot;)))
+///     let re1 = "google".sep_once(".", "com".or("is")).pat();
+///     let re2 = "google"
+///         .sep_once(".", "co".sep_once(".", "kr".or("jp")))
 ///         .pat();
 ///     // test the `orig` before match
 ///     let re = re2.r#if(
-///         |ctx: &amp;CharsCtx| ctx.orig().map(|v| v.ends_with(&quot;jp&quot;) || v.ends_with(&quot;kr&quot;)),
+///         |ctx: &amp;CharsCtx| ctx.orig().map(|v| v.ends_with("jp") || v.ends_with("kr")),
 ///         re1,
 ///     );
 ///
-///     assert_eq!(CharsCtx::new(&quot;google.com&quot;).ctor(&amp;re)?, &quot;google.com&quot;);
-///     assert_eq!(CharsCtx::new(&quot;google.is&quot;).ctor(&amp;re)?, &quot;google.is&quot;);
-///     assert_eq!(CharsCtx::new(&quot;google.co.jp&quot;).ctor(&amp;re)?, &quot;google.co.jp&quot;);
-///     assert_eq!(CharsCtx::new(&quot;google.co.kr&quot;).ctor(&amp;re)?, &quot;google.co.kr&quot;);
+///     assert_eq!(CharsCtx::new("google.com").ctor(&amp;re)?, "google.com");
+///     assert_eq!(CharsCtx::new("google.is").ctor(&amp;re)?, "google.is");
+///     assert_eq!(CharsCtx::new("google.co.jp").ctor(&amp;re)?, "google.co.jp");
+///     assert_eq!(CharsCtx::new("google.co.kr").ctor(&amp;re)?, "google.co.kr");
 ///     Ok(())
 /// # }
 /// ```
@@ -255,11 +256,11 @@
     I: Debug,
     E: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
-        f.debug_struct(<span class="string">&quot;IfRegex&quot;</span>)
-            .field(<span class="string">&quot;pat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
-            .field(<span class="string">&quot;r#if&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.r#if)
-            .field(<span class="string">&quot;r#else&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.r#else)
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+        f.debug_struct(<span class="string">"IfRegex"</span>)
+            .field(<span class="string">"pat"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.pat)
+            .field(<span class="string">"r#if"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.r#if)
+            .field(<span class="string">"r#else"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.r#else)
             .finish()
     }
 }
@@ -330,36 +331,36 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, I, E, M, O, H, A&gt; Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt; <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, P, I, E, M, O, H, A&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;
 <span class="kw">where
-    </span>P: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    E: Ctor&lt;<span class="lifetime">&#39;a</span>, C, M, O, H, A&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>P: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    E: Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     I: Fn(<span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt;,
     H: Handler&lt;A, Out = M, Error = Error&gt;,
-    A: Extract&lt;<span class="lifetime">&#39;a</span>, C, Span, Out&lt;<span class="lifetime">&#39;a</span>&gt; = A, Error = Error&gt;,
+    A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg, (<span class="self">self</span>.r#if)(g.ctx())<span class="question-mark">?</span>);
+        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"if"</span>, beg, (<span class="self">self</span>.r#if)(g.ctx())<span class="question-mark">?</span>);
         <span class="kw">let </span>ret = <span class="kw">if </span>ret {
-            <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg @ <span class="string">&quot;true&quot;</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func))
+            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"true"</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func))
         } <span class="kw">else </span>{
-            <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg @ <span class="string">&quot;false&quot;</span>, <span class="self">self</span>.r#else.constrct(g.reset().ctx(), func))
+            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"false"</span>, <span class="self">self</span>.r#else.constrct(g.reset().ctx(), func))
         };
 
-        <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg -&gt; g.end(), ret.is_ok());
+        <span class="macro">trace!</span>(<span class="string">"if"</span>, beg -&gt; g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C, P, I, E&gt; Regex&lt;C&gt; <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, P, I, E&gt; Regex&lt;C&gt; <span class="kw">for </span>IfRegex&lt;C, P, I, E&gt;
 <span class="kw">where
     </span>P: Regex&lt;C, Ret = Span&gt;,
     E: Regex&lt;C, Ret = Span&gt;,
-    C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     I: Fn(<span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt;,
 {
     <span class="kw">type </span>Ret = P::Ret;
@@ -368,20 +369,20 @@
     </span><span class="kw">fn </span>try_parse(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Ret, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg, (<span class="self">self</span>.r#if)(g.ctx())<span class="question-mark">?</span>);
+        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"if"</span>, beg, (<span class="self">self</span>.r#if)(g.ctx())<span class="question-mark">?</span>);
         <span class="kw">let </span>ret = <span class="kw">if </span>ret {
-            <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg @ <span class="string">&quot;true&quot;</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.pat))
+            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"true"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.pat))
         } <span class="kw">else </span>{
-            <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg @ <span class="string">&quot;false&quot;</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.r#else))
+            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"false"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.r#else))
         };
 
-        <span class="macro">trace!</span>(<span class="string">&quot;if&quot;</span>, beg =&gt; g.end(), ret)
+        <span class="macro">trace!</span>(<span class="string">"if"</span>, beg =&gt; g.end(), ret)
     }
 }
 
-<span class="kw">pub fn </span>branch&lt;<span class="lifetime">&#39;a</span>, C, P, I, E&gt;(r#if: I, re: P, r#else: E) -&gt; IfRegex&lt;C, P, I, E&gt;
+<span class="kw">pub fn </span>branch&lt;<span class="lifetime">'a</span>, C, P, I, E&gt;(r#if: I, re: P, r#else: E) -&gt; IfRegex&lt;C, P, I, E&gt;
 <span class="kw">where
-    </span>C: Context&lt;<span class="lifetime">&#39;a</span>&gt; + Match&lt;C&gt;,
+    </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     E: Regex&lt;C, Ret = Span&gt;,
     P: Regex&lt;C, Ret = Span&gt;,
     I: Fn(<span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt;,
