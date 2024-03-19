@@ -286,12 +286,12 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
 
         <span class="kw">for </span>regex <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.iter() {
-            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"vector"</span>, beg, regex.constrct(g.ctx(), func));
+            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"vector"</span>, beg, regex.construct(g.ctx(), func));
 
             <span class="kw">if </span>ret.is_ok() {
                 <span class="macro">trace!</span>(<span class="string">"vector"</span>, beg -&gt; g.end(), <span class="bool-val">true</span>);
@@ -391,13 +391,13 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O, V), Error&gt;
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O, V), Error&gt;
 <span class="kw">where </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
 
         <span class="kw">for </span>(regex, value) <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.iter() {
-            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"pair_vec"</span>, beg, regex.constrct(g.ctx(), func));
+            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"pair_vec"</span>, beg, regex.construct(g.ctx(), func));
 
             <span class="kw">if </span>ret.is_ok() {
                 <span class="macro">trace!</span>(<span class="string">"pair_vec"</span>, beg -&gt; g.end(), <span class="bool-val">true</span>);

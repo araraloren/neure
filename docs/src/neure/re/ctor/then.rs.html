@@ -492,11 +492,11 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O1, O2), Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O1, O2), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"then"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.constrct(g.ctx(), func).map(|ret1| {
-            <span class="macro">trace!</span>(<span class="string">"then"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.constrct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
+        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"then"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.construct(g.ctx(), func).map(|ret1| {
+            <span class="macro">trace!</span>(<span class="string">"then"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.construct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
         }) );
         <span class="kw">let </span>ret = g.process_ret(ret)<span class="question-mark">?</span>;
 
@@ -664,14 +664,14 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O1, <span class="prelude-ty">Option</span>&lt;O2&gt;), Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O1, <span class="prelude-ty">Option</span>&lt;O2&gt;), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>r_l = <span class="macro">trace!</span>(<span class="string">"if_then"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.constrct(g.ctx(), func));
+        <span class="kw">let </span>r_l = <span class="macro">trace!</span>(<span class="string">"if_then"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.construct(g.ctx(), func));
         <span class="kw">let </span>r_l = g.process_ret(r_l)<span class="question-mark">?</span>;
         <span class="kw">let </span>r_i = <span class="macro">trace!</span>(<span class="string">"if_then"</span>, beg @ <span class="string">"if"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.r#if));
         <span class="kw">let </span>ret = <span class="kw">if </span>r_i.is_ok() {
-            <span class="kw">let </span>r_r = <span class="macro">trace!</span>(<span class="string">"if_then"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.constrct(g.ctx(), func));
+            <span class="kw">let </span>r_r = <span class="macro">trace!</span>(<span class="string">"if_then"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.construct(g.ctx(), func));
             <span class="kw">let </span>r_r = g.process_ret(r_r)<span class="question-mark">?</span>;
 
             <span class="comment">// if matched, return (01, Some(O2))

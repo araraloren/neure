@@ -899,7 +899,7 @@
 <span class="kw">where
     </span>C: Context&lt;<span class="lifetime">'a</span>&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;;
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;;
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, C, M, O, H, A, F&gt; Ctor&lt;<span class="lifetime">'a</span>, C, M, O, H, A&gt; <span class="kw">for </span>F
@@ -907,7 +907,7 @@
     </span>C: Context&lt;<span class="lifetime">'a</span>&gt; + Match&lt;C&gt;,
     F: Fn(<span class="kw-2">&amp;mut </span>C) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         (<span class="self">self</span>)(ctx)
     }
 }
@@ -918,7 +918,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -931,7 +931,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -944,7 +944,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.as_str())<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -957,7 +957,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.as_str())<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -970,7 +970,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -983,7 +983,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -996,7 +996,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -1009,7 +1009,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -1022,7 +1022,7 @@
     H: Handler&lt;A, Out = O, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = ctx.try_mat(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         handler.invoke(A::extract(ctx, <span class="kw-2">&amp;</span>ret)<span class="question-mark">?</span>)
@@ -1036,8 +1036,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="self">self</span>.as_ref().ok_or(Error::Option)<span class="question-mark">?</span>, ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="self">self</span>.as_ref().ok_or(Error::Option)<span class="question-mark">?</span>, ctx, handler)
     }
 }
 
@@ -1048,8 +1048,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="kw-2">&amp;*</span><span class="self">self</span>.borrow(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="kw-2">&amp;*</span><span class="self">self</span>.borrow(), ctx, handler)
     }
 }
 
@@ -1060,8 +1060,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="kw-2">&amp;</span><span class="self">self</span>.get(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="kw-2">&amp;</span><span class="self">self</span>.get(), ctx, handler)
     }
 }
 
@@ -1072,10 +1072,10 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>ret = <span class="self">self</span>.lock().map_err(|<span class="kw">_</span>| Error::LockMutex)<span class="question-mark">?</span>;
 
-        Ctor::constrct(<span class="kw-2">&amp;*</span>ret, ctx, handler)
+        Ctor::construct(<span class="kw-2">&amp;*</span>ret, ctx, handler)
     }
 }
 
@@ -1086,8 +1086,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
@@ -1098,8 +1098,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
@@ -1109,8 +1109,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
@@ -1120,8 +1120,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 
@@ -1131,8 +1131,8 @@
     H: Handler&lt;A, Out = M, Error = Error&gt;,
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
-    <span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        Ctor::constrct(<span class="self">self</span>.as_ref(), ctx, handler)
+    <span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, handler: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+        Ctor::construct(<span class="self">self</span>.as_ref(), ctx, handler)
     }
 }
 

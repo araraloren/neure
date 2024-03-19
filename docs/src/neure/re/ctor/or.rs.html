@@ -299,13 +299,13 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">trace!</span>(<span class="string">"or"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.constrct(g.ctx(), func));
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">trace!</span>(<span class="string">"or"</span>, beg @ <span class="string">"left"</span>, <span class="self">self</span>.left.construct(g.ctx(), func));
 
         <span class="kw">if </span>ret.is_err() {
-            ret = <span class="macro">trace!</span>(<span class="string">"or"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.constrct(g.reset().ctx(), func));
+            ret = <span class="macro">trace!</span>(<span class="string">"or"</span>, beg @ <span class="string">"right"</span>, <span class="self">self</span>.right.construct(g.reset().ctx(), func));
         }
         <span class="macro">trace!</span>(<span class="string">"or"</span>, beg -&gt; g.end(), ret.is_ok());
         g.process_ret(ret)
