@@ -410,10 +410,10 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
-        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"pad"</span>, beg @ <span class="string">"pat"</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func));
+        <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"pad"</span>, beg @ <span class="string">"pat"</span>, <span class="self">self</span>.pat.construct(g.ctx(), func));
 
         <span class="kw">if </span>ret.is_ok() {
             <span class="kw">let _ </span>= <span class="macro">trace!</span>(<span class="string">"pad"</span>, beg @ <span class="string">"tail"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.tail)<span class="question-mark">?</span>);
@@ -548,11 +548,11 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let _ </span>= <span class="macro">trace!</span>(<span class="string">"padded"</span>, beg @ <span class="string">"head"</span>, g.try_mat(<span class="kw-2">&amp;</span><span class="self">self</span>.head)<span class="question-mark">?</span>);
-        <span class="kw">let </span>r = <span class="macro">trace!</span>(<span class="string">"padded"</span>, beg @ <span class="string">"pat"</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func));
+        <span class="kw">let </span>r = <span class="macro">trace!</span>(<span class="string">"padded"</span>, beg @ <span class="string">"pat"</span>, <span class="self">self</span>.pat.construct(g.ctx(), func));
 
         <span class="macro">trace!</span>(<span class="string">"padded"</span>, beg -&gt; g.end(), r.is_ok());
         g.process_ret(r)

@@ -264,7 +264,7 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="attr">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">pub struct </span>Array&lt;<span class="kw">const </span>N: usize, T&gt;([T; N]);
 
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize, T&gt; std::ops::Not <span class="kw">for </span>Array&lt;N, T&gt; {
@@ -303,12 +303,12 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
 
         <span class="kw">for </span>regex <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.iter() {
-            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"array"</span>, beg, regex.constrct(g.ctx(), func));
+            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"array"</span>, beg, regex.construct(g.ctx(), func));
 
             <span class="kw">if </span>ret.is_ok() {
                 <span class="macro">trace!</span>(<span class="string">"array"</span>, beg -&gt; g.end(), <span class="bool-val">true</span>);
@@ -374,7 +374,7 @@
 ///     Ok(())
 /// # }
 /// ```
-</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="attr">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">pub struct </span>PairArray&lt;<span class="kw">const </span>N: usize, K, V&gt;([(K, V); N]);
 
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize, K, V&gt; std::ops::Not <span class="kw">for </span>PairArray&lt;N, K, V&gt; {
@@ -414,12 +414,12 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O, V), Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;(O, V), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
 
         <span class="kw">for </span>(regex, value) <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.iter() {
-            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"pair_array"</span>, beg, regex.constrct(g.ctx(), func));
+            <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"pair_array"</span>, beg, regex.construct(g.ctx(), func));
 
             <span class="kw">if </span>ret.is_ok() {
                 <span class="macro">trace!</span>(<span class="string">"pair_array"</span>, beg -&gt; g.end(), <span class="bool-val">true</span>);

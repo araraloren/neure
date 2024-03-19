@@ -584,7 +584,7 @@
         H: Handler&lt;A, Out = M, Error = Error&gt;,
         A: Extract&lt;<span class="lifetime">'a</span>, <span class="self">Self</span>, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
     {
-        pat.constrct(<span class="self">self</span>, handler)
+        pat.construct(<span class="self">self</span>, handler)
     }
 
     <span class="kw">pub fn </span>map_with&lt;H, A, P, O&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, pat: <span class="kw-2">&amp;</span>P, <span class="kw-2">mut </span>handler: H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;

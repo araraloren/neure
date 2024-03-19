@@ -341,14 +341,14 @@
     A: Extract&lt;<span class="lifetime">'a</span>, C, Span, Out&lt;<span class="lifetime">'a</span>&gt; = A, Error = Error&gt;,
 {
     <span class="attr">#[inline(always)]
-    </span><span class="kw">fn </span>constrct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
+    </span><span class="kw">fn </span>construct(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>C, func: <span class="kw-2">&amp;mut </span>H) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>g = CtxGuard::new(ctx);
         <span class="kw">let </span>beg = g.beg();
         <span class="kw">let </span>ret = <span class="macro">trace!</span>(<span class="string">"if"</span>, beg, (<span class="self">self</span>.r#if)(g.ctx())<span class="question-mark">?</span>);
         <span class="kw">let </span>ret = <span class="kw">if </span>ret {
-            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"true"</span>, <span class="self">self</span>.pat.constrct(g.ctx(), func))
+            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"true"</span>, <span class="self">self</span>.pat.construct(g.ctx(), func))
         } <span class="kw">else </span>{
-            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"false"</span>, <span class="self">self</span>.r#else.constrct(g.reset().ctx(), func))
+            <span class="macro">trace!</span>(<span class="string">"if"</span>, beg @ <span class="string">"false"</span>, <span class="self">self</span>.r#else.construct(g.reset().ctx(), func))
         };
 
         <span class="macro">trace!</span>(<span class="string">"if"</span>, beg -&gt; g.end(), ret.is_ok());
