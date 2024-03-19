@@ -135,12 +135,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let l = trace!("dynamic_create_ctor_then", beg @ "pat", self.pat.constrct(g.ctx(), func));
+        let l = trace!("dynamic_create_ctor_then", beg @ "pat", self.pat.construct(g.ctx(), func));
         let l = g.process_ret(l)?;
-        let r = trace!("dynamic_create_ctor_then", beg @ "dynamic ctor", (self.func)(&l)?.constrct(g.ctx(), func));
+        let r = trace!("dynamic_create_ctor_then", beg @ "dynamic ctor", (self.func)(&l)?.construct(g.ctx(), func));
         let r = g.process_ret(r)?;
 
         trace!("dynamic_create_ctor_then", beg -> g.end(), true);

@@ -186,7 +186,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let range = M..N;
@@ -366,7 +366,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace_v!("neu repeat_range", self.range, beg, g.try_mat(self));

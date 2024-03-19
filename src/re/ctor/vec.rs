@@ -67,12 +67,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
         for regex in self.0.iter() {
-            let ret = trace!("vector", beg, regex.constrct(g.ctx(), func));
+            let ret = trace!("vector", beg, regex.construct(g.ctx(), func));
 
             if ret.is_ok() {
                 trace!("vector", beg -> g.end(), true);
@@ -172,13 +172,13 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error>
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error>
 where {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
         for (regex, value) in self.0.iter() {
-            let ret = trace!("pair_vec", beg, regex.constrct(g.ctx(), func));
+            let ret = trace!("pair_vec", beg, regex.construct(g.ctx(), func));
 
             if ret.is_ok() {
                 trace!("pair_vec", beg -> g.end(), true);

@@ -118,7 +118,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut ret = Err(Error::Collect);
@@ -127,7 +127,7 @@ where
             "collect",
             beg,
             V::from_iter(std::iter::from_fn(|| {
-                match self.pat.constrct(g.ctx(), func) {
+                match self.pat.construct(g.ctx(), func) {
                     Ok(ret) => {
                         cnt += 1;
                         Some(ret)

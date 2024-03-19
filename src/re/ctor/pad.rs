@@ -120,10 +120,10 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("pad", beg @ "pat", self.pat.constrct(g.ctx(), func));
+        let ret = trace!("pad", beg @ "pat", self.pat.construct(g.ctx(), func));
 
         if ret.is_ok() {
             let _ = trace!("pad", beg @ "tail", g.try_mat(&self.tail)?);
@@ -258,11 +258,11 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let _ = trace!("padded", beg @ "head", g.try_mat(&self.head)?);
-        let r = trace!("padded", beg @ "pat", self.pat.constrct(g.ctx(), func));
+        let r = trace!("padded", beg @ "pat", self.pat.construct(g.ctx(), func));
 
         trace!("padded", beg -> g.end(), r.is_ok());
         g.process_ret(r)

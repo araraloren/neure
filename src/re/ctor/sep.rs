@@ -158,13 +158,13 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let r = trace!("sep_once", beg @ "left", self.left.constrct(g.ctx(), func));
+        let r = trace!("sep_once", beg @ "left", self.left.construct(g.ctx(), func));
         let r = g.process_ret(r)?;
         let _ = trace!("sep_once", beg @ "sep",  g.try_mat(&self.sep)?);
-        let l = trace!("sep_once", beg @ "right", self.right.constrct(g.ctx(), func));
+        let l = trace!("sep_once", beg @ "right", self.right.construct(g.ctx(), func));
         let l = g.process_ret(l)?;
 
         trace!("sep_once", beg => g.end(), true);
@@ -358,14 +358,14 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut res = Vec::with_capacity(self.capacity.max(self.min));
         let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
 
         trace_v!("separate", range, beg, ());
-        while let Ok(ret) = self.pat.constrct(g.ctx(), func) {
+        while let Ok(ret) = self.pat.construct(g.ctx(), func) {
             let sep_ret = trace_v!("separate", range, beg @ "sep", g.ctx().try_mat(&self.sep));
 
             if sep_ret.is_ok() || self.skip {
@@ -574,7 +574,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut end = false;
@@ -583,7 +583,7 @@ where
         let ret = {
             trace_v!("sep_collect", range, beg, ());
             V::from_iter(std::iter::from_fn(|| {
-                self.pat.constrct(g.ctx(), func).ok().and_then(|ret| {
+                self.pat.construct(g.ctx(), func).ok().and_then(|ret| {
                     let sep_ret =
                         trace_v!("sep_collect", range, beg @ "sep", g.ctx().try_mat(&self.sep));
 

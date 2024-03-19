@@ -144,11 +144,11 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let _ = trace!("quote", beg @ "left", g.try_mat(&self.left)?);
-        let r = trace!("quote", beg @ "pat", self.pat.constrct(g.ctx(), func));
+        let r = trace!("quote", beg @ "pat", self.pat.construct(g.ctx(), func));
         let r = g.process_ret(r)?;
         let _ = trace!("quote", beg @ "right", g.try_mat(&self.right)?);
 

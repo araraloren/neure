@@ -160,7 +160,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut res = Vec::with_capacity(self.capacity);
@@ -169,7 +169,7 @@ where
 
         trace_v!("repeat", self.range, beg, ());
         while self.is_contain(cnt) {
-            let ret = self.pat.constrct(g.ctx(), handler);
+            let ret = self.pat.construct(g.ctx(), handler);
 
             match ret {
                 Ok(ret) => {

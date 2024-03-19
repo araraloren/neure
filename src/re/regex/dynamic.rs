@@ -39,7 +39,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat_t(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
@@ -90,7 +90,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat_t(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
@@ -141,7 +141,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat_t(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)

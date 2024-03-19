@@ -41,7 +41,7 @@ where
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
         handler.invoke(A::extract(ctx, &ret)?)

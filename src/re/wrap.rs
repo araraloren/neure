@@ -82,8 +82,8 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        Ctor::constrct(&self.value, ctx, handler)
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(&self.value, ctx, handler)
     }
 }
 

@@ -35,7 +35,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
         func.invoke(A::extract(ctx, &ret)?)
@@ -88,7 +88,7 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
         func.invoke(A::extract(ctx, &ret)?)

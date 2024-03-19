@@ -145,14 +145,14 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
         let ret = if ret {
-            trace!("if", beg @ "true", self.pat.constrct(g.ctx(), func))
+            trace!("if", beg @ "true", self.pat.construct(g.ctx(), func))
         } else {
-            trace!("if", beg @ "false", self.r#else.constrct(g.reset().ctx(), func))
+            trace!("if", beg @ "false", self.r#else.construct(g.reset().ctx(), func))
         };
 
         trace!("if", beg -> g.end(), ret.is_ok());

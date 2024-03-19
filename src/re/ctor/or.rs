@@ -132,13 +132,13 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let mut ret = trace!("or", beg @ "left", self.left.constrct(g.ctx(), func));
+        let mut ret = trace!("or", beg @ "left", self.left.construct(g.ctx(), func));
 
         if ret.is_err() {
-            ret = trace!("or", beg @ "right", self.right.constrct(g.reset().ctx(), func));
+            ret = trace!("or", beg @ "right", self.right.construct(g.reset().ctx(), func));
         }
         trace!("or", beg -> g.end(), ret.is_ok());
         g.process_ret(ret)

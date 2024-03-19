@@ -137,11 +137,11 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let ret = trace!("then", beg @ "left", self.left.constrct(g.ctx(), func).map(|ret1| {
-            trace!("then", beg @ "right", self.right.constrct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
+        let ret = trace!("then", beg @ "left", self.left.construct(g.ctx(), func).map(|ret1| {
+            trace!("then", beg @ "right", self.right.construct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
         }) );
         let ret = g.process_ret(ret)?;
 
@@ -309,14 +309,14 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let r_l = trace!("if_then", beg @ "left", self.left.constrct(g.ctx(), func));
+        let r_l = trace!("if_then", beg @ "left", self.left.construct(g.ctx(), func));
         let r_l = g.process_ret(r_l)?;
         let r_i = trace!("if_then", beg @ "if", g.try_mat(&self.r#if));
         let ret = if r_i.is_ok() {
-            let r_r = trace!("if_then", beg @ "right", self.right.constrct(g.ctx(), func));
+            let r_r = trace!("if_then", beg @ "right", self.right.construct(g.ctx(), func));
             let r_r = g.process_ret(r_r)?;
 
             // if matched, return (01, Some(O2))

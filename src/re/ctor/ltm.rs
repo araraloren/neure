@@ -121,12 +121,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
-        let r_l = trace!("ltm", beg @ "left", self.left.constrct(g.ctx(), func));
+        let r_l = trace!("ltm", beg @ "left", self.left.construct(g.ctx(), func));
         let offset_l = g.end();
-        let r_r = trace!("ltm", beg @ "right", self.right.constrct(g.reset().ctx(), func));
+        let r_r = trace!("ltm", beg @ "right", self.right.construct(g.reset().ctx(), func));
         let offset_r = g.end();
         let (offset, ret) = if offset_l >= offset_r {
             (offset_l, r_l)

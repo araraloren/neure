@@ -193,7 +193,7 @@ where
         H: Handler<A, Out = M, Error = Error>,
         A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
     {
-        pat.constrct(self, handler)
+        pat.construct(self, handler)
     }
 
     pub fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>

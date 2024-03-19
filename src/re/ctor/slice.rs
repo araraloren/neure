@@ -33,7 +33,7 @@ use super::Ctor;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Slice<'a, const N: usize, T>(&'a [T; N]);
 
 impl<'a, const N: usize, T> std::ops::Not for Slice<'a, N, T> {
@@ -66,12 +66,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
         for regex in self.0.iter() {
-            let ret = trace!("array_ref", beg, regex.constrct(g.ctx(), func));
+            let ret = trace!("array_ref", beg, regex.construct(g.ctx(), func));
 
             if ret.is_ok() {
                 trace!("array_ref", beg -> g.end(), true);
@@ -138,7 +138,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct PairSlice<'a, const N: usize, K, V>(&'a [(K, V); N]);
 
 impl<'a, const N: usize, K, V> std::ops::Not for PairSlice<'a, N, K, V> {
@@ -173,12 +173,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
         for (regex, value) in self.0.iter() {
-            let ret = trace!("pair_slice", beg, regex.constrct(g.ctx(), func));
+            let ret = trace!("pair_slice", beg, regex.construct(g.ctx(), func));
 
             if ret.is_ok() {
                 trace!("pair_slice", beg -> g.end(), true);

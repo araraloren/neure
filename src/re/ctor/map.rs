@@ -179,8 +179,8 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
-        self.mapper.map_to(self.pat.constrct(ctx, func)?)
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
+        self.mapper.map_to(self.pat.construct(ctx, func)?)
     }
 }
 

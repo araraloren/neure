@@ -41,8 +41,8 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        Ctor::constrct(self.inner.as_ref(), ctx, handler)
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.inner.as_ref(), ctx, handler)
     }
 }
 
@@ -92,8 +92,8 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        self.inner.constrct(ctx, handler)
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        self.inner.construct(ctx, handler)
     }
 }
 
@@ -144,8 +144,8 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        Ctor::constrct(self.inner.as_ref(), ctx, handler)
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.inner.as_ref(), ctx, handler)
     }
 }
 
@@ -196,8 +196,8 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        Ctor::constrct(self.inner.as_ref(), ctx, handler)
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.inner.as_ref(), ctx, handler)
     }
 }
 

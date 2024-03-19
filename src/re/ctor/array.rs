@@ -34,7 +34,7 @@ use super::Ctor;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Array<const N: usize, T>([T; N]);
 
 impl<const N: usize, T> std::ops::Not for Array<N, T> {
@@ -73,12 +73,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
         for regex in self.0.iter() {
-            let ret = trace!("array", beg, regex.constrct(g.ctx(), func));
+            let ret = trace!("array", beg, regex.construct(g.ctx(), func));
 
             if ret.is_ok() {
                 trace!("array", beg -> g.end(), true);
@@ -144,7 +144,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct PairArray<const N: usize, K, V>([(K, V); N]);
 
 impl<const N: usize, K, V> std::ops::Not for PairArray<N, K, V> {
@@ -184,12 +184,12 @@ where
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
-    fn constrct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
         for (regex, value) in self.0.iter() {
-            let ret = trace!("pair_array", beg, regex.constrct(g.ctx(), func));
+            let ret = trace!("pair_array", beg, regex.construct(g.ctx(), func));
 
             if ret.is_ok() {
                 trace!("pair_array", beg -> g.end(), true);
