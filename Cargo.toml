@@ -1,6 +1,6 @@
 [package]
 name = "neure"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["araraloren <blackcatoverwall@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"

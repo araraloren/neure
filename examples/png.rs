@@ -93,7 +93,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 thread_local! {
-    static CRC_TABLE: RefCell<Option<[u32; 256]>> = RefCell::new(None);
+    static CRC_TABLE: RefCell<Option<[u32; 256]>> = const { RefCell::new(None) };
 }
 
 pub fn initialize_crc_table() {

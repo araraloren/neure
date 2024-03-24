@@ -91,9 +91,9 @@ where
 }
 
 ///
-/// For use in recursive parsers,
-/// it will construct a type that implements `Ctor<'_, C, M, O>`
-/// from a closure(`Fn(&mut C) -> Result<O, Error>`).
+/// This function will construct a [RecursiveCtor] for recursive parsing,
+/// which accepts a closure as a parameter,
+/// and the parameter of the closure is the return value of the function.
 ///
 /// # Example
 ///
@@ -149,6 +149,9 @@ where
     r_ctor
 }
 
+///
+/// Same as [`rec_parser`], but need [`Send`] or [`Sync`] for some type.
+///
 pub fn rec_parser_sync<'a, 'b, C, M, O, I>(
     mut handler: impl FnMut(RecursiveCtorSync<'a, 'b, C, M, O>) -> I,
 ) -> RecursiveCtorSync<'a, 'b, C, M, O>

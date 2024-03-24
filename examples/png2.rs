@@ -22,6 +22,10 @@ impl<T> Default for PngParser<T> {
 }
 
 impl<T> PngParser<T> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn with_capacity(size: usize) -> Self {
         Self {
             size,
@@ -29,16 +33,7 @@ impl<T> PngParser<T> {
         }
     }
 
-    pub fn parse(ctx: &mut BytesCtx) -> Result<T, Error>
-    where
-        PngParser<T>: for<'a> MapSingle<&'a [u8], T>,
-    {
-        let parser = PngParser::default();
-
-        ctx.ctor(&re::consume(parser.size()).map(parser))
-    }
-
-    pub fn parse_with(self, ctx: &mut BytesCtx) -> Result<T, Error>
+    pub fn parse(self, ctx: &mut BytesCtx) -> Result<T, Error>
     where
         Self: for<'a> MapSingle<&'a [u8], T>,
     {
@@ -54,6 +49,7 @@ where
         self.size
     }
 
+    // map all data from big endian
     fn map_to(&self, val: &'a [u8]) -> Result<T, Error> {
         from_be_bytes::<T>().map_to(val)
     }
@@ -87,14 +83,15 @@ impl<'a> MapSingle<&'a [u8], Trunk> for PngParser<Trunk> {
     }
 
     fn map_to(&self, val: &'a [u8]) -> Result<Trunk, Error> {
+        let u8_parser = PngParser::new();
         let inner_ctx = &mut BytesCtx::new(val);
-        let ancillary = PngParser::parse(inner_ctx)?;
-        let private = PngParser::parse(inner_ctx)?;
-        let reserverd = PngParser::parse(inner_ctx)?;
-        let safe_copy = PngParser::parse(inner_ctx)?;
-        let data: Data = PngParser::with_capacity(self.size).parse_with(inner_ctx)?;
+        let ancillary = u8_parser.parse(inner_ctx)?;
+        let private = u8_parser.parse(inner_ctx)?;
+        let reserverd = u8_parser.parse(inner_ctx)?;
+        let safe_copy = u8_parser.parse(inner_ctx)?;
+        let data: Data = PngParser::with_capacity(self.size).parse(inner_ctx)?;
         let crc_data = inner_ctx.orig_sub(0, inner_ctx.offset())?;
-        let crc_value: u32 = PngParser::parse(inner_ctx)?;
+        let crc_value: u32 = PngParser::new().parse(inner_ctx)?;
         let calc_value = calc_crc(crc_data);
 
         if crc_value != calc_value {
@@ -164,8 +161,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut trunks = vec![];
 
         for idx in 0.. {
-            if let Ok(length) = PngParser::<u32>::parse(ctx) {
-                let trunk: Trunk = PngParser::with_capacity(length as usize).parse_with(ctx)?;
+            if let Ok(length) = PngParser::<u32>::new().parse(ctx) {
+                // pass data length to PngParser
+                let trunk: Trunk = PngParser::with_capacity(length as usize).parse(ctx)?;
 
                 println!(
                     "In trunk {idx}: {}",
@@ -203,7 +201,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 thread_local! {
-    static CRC_TABLE: RefCell<Option<[u32; 256]>> = RefCell::new(None);
+    static CRC_TABLE: RefCell<Option<[u32; 256]>> = const { RefCell::new(None) };
 }
 
 pub fn initialize_crc_table() {
