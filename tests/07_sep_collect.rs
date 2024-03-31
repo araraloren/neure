@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn sep_collect() {
+    assert!(sep_collect_impl().is_ok());
+}
+
+fn sep_collect_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let host = '.'.or(neu::ascii_alphabetic()).repeat_one_more();
     let http = "http".sep_once("://", host);

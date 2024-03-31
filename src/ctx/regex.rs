@@ -81,6 +81,86 @@ where
         SimpleStorer::new(capacity)
     }
 
+    ///
+    /// Setting a policy(which implemented [`BPolicy`]) will invoked before any match occurs.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::ctx::CtxGuard;
+    /// # use neure::prelude::*;
+    /// # use neure::re::Extract;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    /// #   color_eyre::install()?;
+    ///
+    ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    ///     pub struct Dat<'a> {
+    ///         span: Span,
+    ///
+    ///         dat: &'a str,
+    ///     }
+    ///
+    ///     impl<'a, C: Context<'a, Orig = str>> Extract<'a, C, Span> for Dat<'a> {
+    ///         type Out<'b> = Dat<'b>;
+    ///
+    ///         type Error = neure::err::Error;
+    ///
+    ///         fn extract(ctx: &C, ret: &Span) -> std::result::Result<Self::Out<'a>, Self::Error> {
+    ///             Ok(Dat {
+    ///                 span: *ret,
+    ///                 dat: ctx.orig_sub(ret.beg, ret.len)?,
+    ///             })
+    ///         }
+    ///     }
+    ///
+    ///     // a sample data from https://adventofcode.com/2015/day/7
+    ///     const DATA: &str = r#"
+    /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    /// XXXOOOOOXXXOXXXXOXXXXOOOOOXXXOOOOOXXX
+    /// XXXOXXXOXXXOXXXXOXXXXOXXXXXXXXXOXXXXX
+    /// XXXOOOOOXXXOXXXXOXXXXOOOOOXXXXXOXXXXX
+    /// XXXOXOXXXXXOXXXXOXXXXXXXXOXXXXXOXXXXX
+    /// XXXOXXOXXXXOXXXXOXXXXXXXXOXXXXXOXXXXX
+    /// XXXOXXXOXXXOOOOOOXXXXOOOOOXXXXXOXXXXX
+    /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    /// "#;
+    ///
+    ///     // match "\n" or anything not 'X'
+    ///     let text = "\n".or('X'.not().repeat_one_more());
+    ///     let mut ctx = CharsCtx::new(DATA).with_policy(|ctx: &mut CharsCtx| {
+    ///         let mut g = CtxGuard::new(ctx);
+    ///         let ret = g.try_mat(&'X'.repeat_full());
+    ///
+    ///         g.process_ret(ret)?;
+    ///         Ok(())
+    ///     });
+    ///
+    ///     let texts: Vec<Dat> = ctx.ctor_with(&text.repeat(1..), &mut Ok)?;
+    ///     let mut off = 0;
+    ///
+    ///     // output:
+    ///     //    OOOOO   O    O    OOOOO   OOOOO
+    ///     //    O   O   O    O    O         O
+    ///     //    OOOOO   O    O    OOOOO     O
+    ///     //    O O     O    O        O     O
+    ///     //    O  O    O    O        O     O
+    ///     //    O   O   OOOOOO    OOOOO     O
+    ///     for text in texts {
+    ///         let Span { beg, len } = text.span;
+    ///         let dat = text.dat;
+    ///
+    ///         if off < beg {
+    ///             print!("{}", " ".repeat(beg - off));
+    ///             off = beg;
+    ///         }
+    ///         print!("{}", dat);
+    ///         off += len;
+    ///     }
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<Self, O>
     where
         O: BPolicy<Self>,
@@ -96,6 +176,124 @@ impl<'a, T> RegexCtx<'a, T>
 where
     T: ?Sized,
 {
+    ///
+    /// Match the given `regex` before any match.
+    ///
+    /// # Example
+    ///
+    /// A simple example ignore all the whitespace before any match.
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// # use neure::re::Extract;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    /// #   color_eyre::install()?;
+    /// #
+    ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    ///     pub struct Dat<'a> {
+    ///         span: Span,
+    ///
+    ///         dat: &'a str,
+    ///     }
+    ///
+    ///     impl<'a, C: Context<'a, Orig = str>> Extract<'a, C, Span> for Dat<'a> {
+    ///         type Out<'b> = Dat<'b>;
+    ///
+    ///         type Error = neure::err::Error;
+    ///
+    ///         fn extract(ctx: &C, ret: &Span) -> std::result::Result<Self::Out<'a>, Self::Error> {
+    ///             Ok(Dat {
+    ///                 span: *ret,
+    ///                 dat: ctx.orig_sub(ret.beg, ret.len)?,
+    ///             })
+    ///         }
+    ///     }
+    ///
+    ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    ///     pub enum Op<'a> {
+    ///         Sig(Dat<'a>),
+    ///
+    ///         Wire(Dat<'a>),
+    ///     }
+    ///
+    ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    ///     pub enum Inst<'a> {
+    ///         Store(Op<'a>),
+    ///
+    ///         And((Op<'a>, Op<'a>)),
+    ///
+    ///         Or((Op<'a>, Op<'a>)),
+    ///
+    ///         LShift((Op<'a>, Op<'a>)),
+    ///
+    ///         RShift((Op<'a>, Op<'a>)),
+    ///
+    ///         Not(Op<'a>),
+    ///     }
+    ///
+    ///     // a sample data from https://adventofcode.com/2015/day/7
+    ///     const DATA: &str = r#"
+    /// 123 -> x
+    /// 456 -> y
+    /// x AND y -> d
+    /// x OR y -> e
+    /// x LSHIFT 2 -> f
+    /// y RSHIFT 2 -> g
+    /// NOT x -> h
+    /// NOT y -> i
+    /// "#;
+    ///
+    ///     let sig = neu::digit(10).repeat_one_more().map(|v| Ok(Op::Sig(v)));
+    ///     let wire = neu::ascii_lowercase().repeat_one_more();
+    ///     let op = sig.or(wire.map(|v| Ok(Op::Wire(v))));
+    ///     let and = op.sep_once("AND", op).map(|v| Ok(Inst::And(v)));
+    ///     let or = op.sep_once("OR", op).map(|v| Ok(Inst::Or(v)));
+    ///     let lshift = op.sep_once("LSHIFT", op).map(|v| Ok(Inst::LShift(v)));
+    ///     let rshift = op.sep_once("RSHIFT", op).map(|v| Ok(Inst::RShift(v)));
+    ///     let not = op.padded("NOT").map(|v| Ok(Inst::Not(v)));
+    ///     let store = sig.map(|v| Ok(Inst::Store(v)));
+    ///     let src = and
+    ///         .or(or.or(lshift.or(rshift.or(not.or(store)))))
+    ///         .into_box();
+    ///     let parser = src.sep_once("->", wire).collect::<_, Vec<_>>();
+    ///
+    ///     // ignore white space using re_policy
+    ///     let mut ctx = CharsCtx::new(DATA).ignore(neu::whitespace().repeat_full());
+    ///
+    ///     let insts: Vec<_> = ctx.ctor_with(&parser, &mut Ok)?;
+    ///
+    ///     assert_eq!(insts.len(), 8);
+    ///     assert_eq!(
+    ///         insts[0],
+    ///         (
+    ///             Inst::Store(Op::Sig(Dat {
+    ///                 span: Span::new(1, 3),
+    ///                 dat: "123"
+    ///             })),
+    ///             Dat {
+    ///                 span: Span::new(8, 1),
+    ///                 dat: "x"
+    ///             }
+    ///         )
+    ///     );
+    ///     assert_eq!(
+    ///         insts[6],
+    ///         (
+    ///             Inst::Not(Op::Wire(Dat {
+    ///                 span: Span::new(80, 1),
+    ///                 dat: "x"
+    ///             })),
+    ///             Dat {
+    ///                 span: Span::new(85, 1),
+    ///                 dat: "h"
+    ///             }
+    ///         )
+    ///     );
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn ignore<R>(self, regex: R) -> PolicyCtx<Self, RePolicy<Self, R>> {
         PolicyCtx {
             inner: self,

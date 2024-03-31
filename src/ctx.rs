@@ -140,7 +140,7 @@ where
     fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
         match self {
             Some(ref_) => ref_.invoke_policy(ctx),
-            None => unimplemented!(""),
+            None => Ok(()),
         }
     }
 }
@@ -184,6 +184,7 @@ where
     }
 }
 
+/// Using for either [`RegexCtx::with_policy`] or [`PolicyCtx::with_policy`].
 pub fn re_policy<C, T>(regex: T) -> RePolicy<C, T> {
     RePolicy::new(regex)
 }

@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn quote() {
+    assert!(quote_impl().is_ok());
+}
+
+fn quote_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let comma = ','.repeat_one();
     let digit = neu::range('0'..='9').repeat_one_more().sep(comma);

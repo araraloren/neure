@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn collect() {
+    assert!(collect_impl().is_ok());
+}
+
+fn collect_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let val = neu::ascii_alphabetic().repeat_one();
     let vec = val.collect::<_, Vec<_>>();

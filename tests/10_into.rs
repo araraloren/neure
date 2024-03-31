@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn into() {
+    assert!(into_impl().is_ok());
+}
+
+fn into_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
     #[derive(Debug, Clone, PartialEq, Eq)]

@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn repeat() {
+    assert!(repeat_impl().is_ok());
+}
+
+fn repeat_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let name = re::string("foo");
     let names = name.repeat(2..5);

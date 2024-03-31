@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn ltm() {
+    assert!(ltm_impl().is_ok());
+}
+
+fn ltm_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let name = re::string("localhost");
     let ip = re::string("8080");

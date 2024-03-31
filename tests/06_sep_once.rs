@@ -1,6 +1,11 @@
 use neure::prelude::*;
 
-fn main() -> color_eyre::Result<()> {
+#[test]
+fn sep_once() {
+    assert!(sep_once_impl().is_ok());
+}
+
+fn sep_once_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let words = ':'.not().repeat_one_more();
     let title = words.sep_once(":", words);
