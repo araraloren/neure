@@ -59,19 +59,18 @@ where
     }
 }
 
-impl<'a, 'b, C> CtxGuard<'a, 'b, C>
+impl<'b, C> CtxGuard<'_, 'b, C>
 where
     C: Context<'b> + Match<C>,
 {
     pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
-        self.ctx.try_mat_t(pattern).map(|r| {
+        self.ctx.try_mat_t(pattern).inspect(|_| {
             self.reset = false;
-            r
         })
     }
 }
 
-impl<'a, 'b, C> Drop for CtxGuard<'a, 'b, C>
+impl<'b, C> Drop for CtxGuard<'_, 'b, C>
 where
     C: Context<'b>,
 {

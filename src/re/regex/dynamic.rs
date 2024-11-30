@@ -23,7 +23,7 @@ impl<'a, C, R> DynamicBoxedRegex<'a, C, R> {
     }
 }
 
-impl<'a, C, R> Regex<C> for DynamicBoxedRegex<'a, C, R> {
+impl<C, R> Regex<C> for DynamicBoxedRegex<'_, C, R> {
     type Ret = R;
 
     #[inline(always)]
@@ -32,7 +32,7 @@ impl<'a, C, R> Regex<C> for DynamicBoxedRegex<'a, C, R> {
     }
 }
 
-impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicBoxedRegex<'b, C, Span>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicBoxedRegex<'_, C, Span>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
@@ -74,7 +74,7 @@ impl<'a, C, R> DynamicArcRegex<'a, C, R> {
     }
 }
 
-impl<'a, C, R> Regex<C> for DynamicArcRegex<'a, C, R> {
+impl<C, R> Regex<C> for DynamicArcRegex<'_, C, R> {
     type Ret = R;
 
     #[inline(always)]
@@ -83,7 +83,7 @@ impl<'a, C, R> Regex<C> for DynamicArcRegex<'a, C, R> {
     }
 }
 
-impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicArcRegex<'b, C, Span>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicArcRegex<'_, C, Span>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
@@ -125,7 +125,7 @@ impl<'a, C, R> DynamicRcRegex<'a, C, R> {
     }
 }
 
-impl<'a, C, R> Regex<C> for DynamicRcRegex<'a, C, R> {
+impl<C, R> Regex<C> for DynamicRcRegex<'_, C, R> {
     type Ret = R;
 
     #[inline(always)]
@@ -134,7 +134,7 @@ impl<'a, C, R> Regex<C> for DynamicRcRegex<'a, C, R> {
     }
 }
 
-impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicRcRegex<'b, C, Span>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicRcRegex<'_, C, Span>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,

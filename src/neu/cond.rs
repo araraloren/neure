@@ -81,7 +81,7 @@ pub struct RegexCond<'a, C, T> {
     marker: PhantomData<(&'a (), C)>,
 }
 
-impl<'a, C, T> Debug for RegexCond<'a, C, T>
+impl<C, T> Debug for RegexCond<'_, C, T>
 where
     T: Debug,
 {
@@ -92,7 +92,7 @@ where
     }
 }
 
-impl<'a, C, T> Clone for RegexCond<'a, C, T>
+impl<C, T> Clone for RegexCond<'_, C, T>
 where
     T: Clone,
 {
@@ -104,7 +104,7 @@ where
     }
 }
 
-impl<'a, C, T> RegexCond<'a, C, T> {
+impl<C, T> RegexCond<'_, C, T> {
     pub fn new(regex: T) -> Self {
         Self {
             regex,

@@ -26,7 +26,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicBoxedCtor<'a, 'b, C, M, O, H, A> {
+impl<C, M, O, H, A> Regex<C> for DynamicBoxedCtor<'_, '_, C, M, O, H, A> {
     type Ret = Span;
 
     fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
@@ -34,7 +34,7 @@ impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicBoxedCtor<'a, 'b, C, M, O, H, A>
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicBoxedCtor<'a, 'b, C, M, O, H, A>
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicBoxedCtor<'a, '_, C, M, O, H, A>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -77,7 +77,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A> {
+impl<C, M, O, H, A> Regex<C> for DynamicBoxedCtorSync<'_, '_, C, M, O, H, A> {
     type Ret = Span;
 
     fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
@@ -85,7 +85,7 @@ impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicBoxedCtorSync<'a, 'b, C, M, O, H
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicBoxedCtorSync<'a, '_, C, M, O, H, A>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -129,7 +129,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicArcCtor<'a, 'b, C, M, O, H, A> {
+impl<C, M, O, H, A> Regex<C> for DynamicArcCtor<'_, '_, C, M, O, H, A> {
     type Ret = Span;
 
     fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
@@ -137,7 +137,7 @@ impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicArcCtor<'a, 'b, C, M, O, H, A> {
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicArcCtor<'a, 'b, C, M, O, H, A>
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicArcCtor<'a, '_, C, M, O, H, A>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -181,7 +181,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicRcCtor<'a, 'b, C, M, O, H, A> {
+impl<C, M, O, H, A> Regex<C> for DynamicRcCtor<'_, '_, C, M, O, H, A> {
     type Ret = Span;
 
     fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
@@ -189,7 +189,7 @@ impl<'a, 'b, C, M, O, H, A> Regex<C> for DynamicRcCtor<'a, 'b, C, M, O, H, A> {
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicRcCtor<'a, 'b, C, M, O, H, A>
+impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicRcCtor<'a, '_, C, M, O, H, A>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,

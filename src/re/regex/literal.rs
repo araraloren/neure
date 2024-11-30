@@ -27,7 +27,7 @@ impl<'a, T> LitSlice<'a, T> {
     }
 }
 
-impl<'a, 'b, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for LitSlice<'b, T>
+impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
     C: Context<'a, Orig = [T]> + Match<C>,
@@ -42,7 +42,7 @@ where
     }
 }
 
-impl<'a, 'b, C, T> Regex<C> for LitSlice<'b, T>
+impl<'a, C, T> Regex<C> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
     C: Context<'a, Orig = [T]>,
@@ -81,7 +81,7 @@ impl<'a> LitString<'a> {
     }
 }
 
-impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for LitString<'b>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for LitString<'_>
 where
     C: Context<'a, Orig = str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
@@ -95,7 +95,7 @@ where
     }
 }
 
-impl<'a, 'b, C> Regex<C> for LitString<'b>
+impl<'a, C> Regex<C> for LitString<'_>
 where
     C: Context<'a, Orig = str>,
 {

@@ -21,7 +21,7 @@ impl IndexBySpan for str {
     }
 }
 
-impl<'a> IndexBySpan for &'a str {
+impl IndexBySpan for &'_ str {
     type Output = str;
 
     fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {
@@ -37,7 +37,7 @@ impl IndexBySpan for [u8] {
     }
 }
 
-impl<'a> IndexBySpan for &'a [u8] {
+impl IndexBySpan for &'_ [u8] {
     type Output = [u8];
 
     fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {
@@ -53,7 +53,7 @@ impl IndexBySpan for Vec<u8> {
     }
 }
 
-impl<'a> IndexBySpan for &'a Vec<u8> {
+impl IndexBySpan for &'_ Vec<u8> {
     type Output = [u8];
 
     fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {

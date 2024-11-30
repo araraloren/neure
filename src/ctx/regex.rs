@@ -29,7 +29,7 @@ where
     offset: usize,
 }
 
-impl<'a, T> Clone for RegexCtx<'a, T>
+impl<T> Clone for RegexCtx<'_, T>
 where
     T: ?Sized,
 {
@@ -38,7 +38,7 @@ where
     }
 }
 
-impl<'a, T> Copy for RegexCtx<'a, T> where T: ?Sized {}
+impl<T> Copy for RegexCtx<'_, T> where T: ?Sized {}
 
 impl<'a, T> RegexCtx<'a, T>
 where
@@ -172,7 +172,7 @@ where
     }
 }
 
-impl<'a, T> RegexCtx<'a, T>
+impl<T> RegexCtx<'_, T>
 where
     T: ?Sized,
 {
@@ -307,7 +307,10 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
 
     type Item = u8;
 
-    type Iter<'b> = BytesIndices<'b, u8> where Self: 'b;
+    type Iter<'b>
+        = BytesIndices<'b, u8>
+    where
+        Self: 'b;
 
     fn len(&self) -> usize {
         self.dat.len()
@@ -359,7 +362,10 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
 
     type Item = char;
 
-    type Iter<'b> = CharIndices<'b> where Self: 'b;
+    type Iter<'b>
+        = CharIndices<'b>
+    where
+        Self: 'b;
 
     fn len(&self) -> usize {
         self.dat.len()

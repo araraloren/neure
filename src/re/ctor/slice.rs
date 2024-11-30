@@ -36,7 +36,7 @@ use super::Ctor;
 #[derive(Debug, Clone, Copy)]
 pub struct Slice<'a, const N: usize, T>(&'a [T; N]);
 
-impl<'a, const N: usize, T> std::ops::Not for Slice<'a, N, T> {
+impl<const N: usize, T> std::ops::Not for Slice<'_, N, T> {
     type Output = crate::re::RegexNot<Self>;
 
     fn not(self) -> Self::Output {
@@ -50,7 +50,7 @@ impl<'a, const N: usize, T> Slice<'a, N, T> {
     }
 }
 
-impl<'a, const N: usize, T> Deref for Slice<'a, N, T> {
+impl<const N: usize, T> Deref for Slice<'_, N, T> {
     type Target = [T; N];
 
     fn deref(&self) -> &Self::Target {
@@ -58,7 +58,7 @@ impl<'a, const N: usize, T> Deref for Slice<'a, N, T> {
     }
 }
 
-impl<'a, 'b, const N: usize, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Slice<'b, N, T>
+impl<'a, const N: usize, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Slice<'_, N, T>
 where
     T: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
@@ -84,7 +84,7 @@ where
     }
 }
 
-impl<'a, 'b, const N: usize, C, T> Regex<C> for Slice<'b, N, T>
+impl<'a, const N: usize, C, T> Regex<C> for Slice<'_, N, T>
 where
     T: Regex<C>,
     C: Context<'a> + Match<C>,
@@ -141,7 +141,7 @@ where
 #[derive(Debug, Clone, Copy)]
 pub struct PairSlice<'a, const N: usize, K, V>(&'a [(K, V); N]);
 
-impl<'a, const N: usize, K, V> std::ops::Not for PairSlice<'a, N, K, V> {
+impl<const N: usize, K, V> std::ops::Not for PairSlice<'_, N, K, V> {
     type Output = crate::re::RegexNot<Self>;
 
     fn not(self) -> Self::Output {
@@ -155,7 +155,7 @@ impl<'a, const N: usize, K, V> PairSlice<'a, N, K, V> {
     }
 }
 
-impl<'a, const N: usize, K, V> Deref for PairSlice<'a, N, K, V> {
+impl<const N: usize, K, V> Deref for PairSlice<'_, N, K, V> {
     type Target = [(K, V); N];
 
     fn deref(&self) -> &Self::Target {
@@ -163,8 +163,8 @@ impl<'a, const N: usize, K, V> Deref for PairSlice<'a, N, K, V> {
     }
 }
 
-impl<'a, 'b, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A>
-    for PairSlice<'b, N, K, V>
+impl<'a, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A>
+    for PairSlice<'_, N, K, V>
 where
     V: Clone,
     K: Ctor<'a, C, M, O, H, A>,
@@ -191,7 +191,7 @@ where
     }
 }
 
-impl<'a, 'b, const N: usize, C, K, V> Regex<C> for PairSlice<'b, N, K, V>
+impl<'a, const N: usize, C, K, V> Regex<C> for PairSlice<'_, N, K, V>
 where
     K: Regex<C>,
     C: Context<'a> + Match<C>,

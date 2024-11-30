@@ -236,7 +236,7 @@ impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
 ///   assert_eq!(ctx2.try_mat(&arr).unwrap(), Span::new(0, 2));
 /// # }
 /// ```
-impl<'a, T: PartialEq + MayDebug> Neu<T> for &'a [T] {
+impl<T: PartialEq + MayDebug> Neu<T> for &'_ [T] {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_u!("slice", self, other, self.contains(other))

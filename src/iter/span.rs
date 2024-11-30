@@ -21,7 +21,7 @@ impl<'a, 'b, T: ?Sized> IteratorBySpan<'a, 'b, T> {
     }
 }
 
-impl<'a, 'b, T> Iterator for IteratorBySpan<'a, 'b, T>
+impl<'a, T> Iterator for IteratorBySpan<'a, '_, T>
 where
     T: ?Sized + IndexBySpan,
 {
@@ -41,7 +41,7 @@ where
     }
 }
 
-impl<'a, 'b, T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'a, 'b, T> {}
+impl<T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'_, '_, T> {}
 
 #[derive(Debug, Clone)]
 pub struct SpanIterator<'a> {
@@ -56,7 +56,7 @@ impl<'a> SpanIterator<'a> {
     }
 }
 
-impl<'a> Iterator for SpanIterator<'a> {
+impl Iterator for SpanIterator<'_> {
     type Item = Span;
 
     fn next(&mut self) -> Option<Self::Item> {

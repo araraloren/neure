@@ -11,7 +11,7 @@ impl<'a, T> BytesIndices<'a, T> {
     }
 }
 
-impl<'a, T> Iterator for BytesIndices<'a, T>
+impl<T> Iterator for BytesIndices<'_, T>
 where
     T: Copy,
 {
@@ -35,4 +35,4 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for BytesIndices<'a, T> where T: Copy {}
+impl<T> ExactSizeIterator for BytesIndices<'_, T> where T: Copy {}
