@@ -28,10 +28,10 @@ impl<T: Display> Display for CRange<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.start {
             Bound::Included(start) => {
-                write!(f, "{} ..", start)?;
+                write!(f, "{start} ..")?;
             }
             Bound::Excluded(start) => {
-                write!(f, "{} ..", start)?;
+                write!(f, "{start} ..")?;
             }
             Bound::Unbounded => {
                 write!(f, " ..",)?;
@@ -39,10 +39,10 @@ impl<T: Display> Display for CRange<T> {
         }
         match &self.end {
             Bound::Included(end) => {
-                write!(f, "= {}", end)
+                write!(f, "= {end}")
             }
             Bound::Excluded(end) => {
-                write!(f, " {}", end)
+                write!(f, " {end}")
             }
             Bound::Unbounded => {
                 write!(f, " ",)

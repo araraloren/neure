@@ -103,11 +103,7 @@ where
         let beg = g.beg();
         let ret = trace!("or", beg @ "left", self.pat.construct(g.ctx(), func));
 
-        Ok(if let Ok(ret) = g.process_ret(ret) {
-            Some(ret)
-        } else {
-            None
-        })
+        Ok(g.process_ret(ret).ok())
     }
 }
 

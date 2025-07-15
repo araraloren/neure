@@ -74,7 +74,7 @@ mod email_neure {
 
     pub fn parse(tests: &[&str], results: &[bool]) {
         for (test, result) in tests.iter().zip(results.iter()) {
-            assert_eq!(parser(test).is_ok(), *result, "test = {}", test);
+            assert_eq!(parser(test).is_ok(), *result, "test = {test}");
         }
     }
 }

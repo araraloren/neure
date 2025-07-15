@@ -95,10 +95,7 @@ impl<'a> MapSingle<&'a [u8], Trunk> for PngParser<Trunk> {
         let calc_value = calc_crc(crc_data);
 
         if crc_value != calc_value {
-            panic!(
-                "Incorrectly crc value => got {crc_value} in file <-> {}",
-                calc_value
-            );
+            panic!("Incorrectly crc value => got {crc_value} in file <-> {calc_value}");
         }
         Ok(Trunk {
             ancillary,

@@ -88,7 +88,7 @@ mod email_neure {
         for (test, result) in tests.iter().zip(results.iter()) {
             let ret = parser(test);
 
-            assert_eq!(ret.is_ok(), result.is_some(), "test = {}", test);
+            assert_eq!(ret.is_ok(), result.is_some(), "test = {test}");
             if let Some(result) = result {
                 let ret = ret.unwrap();
 

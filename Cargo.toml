@@ -1,6 +1,6 @@
 [package]
 name = "neure"
-version = "0.6.3"
+version = "0.6.4"
 authors = [
     "araraloren <blackcatoverwall@gmail.com>",
 ]
@@ -21,8 +21,8 @@ nom = "7.1"
 tracing-subscriber = { version = "0.3", features = [
     "env-filter",
 ] }
-color-eyre = "0.5"
-criterion = "0.5"
+color-eyre = "0.6"
+criterion = "0.6"
 
 [dependencies]
 charize = "0.0.2"
