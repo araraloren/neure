@@ -1,5 +1,7 @@
+use std::hint::black_box;
+
 use ::regex::Regex;
-use criterion::{black_box, Criterion};
+use criterion::Criterion;
 use neure::prelude::*;
 
 fn bench_color(c: &mut Criterion) {

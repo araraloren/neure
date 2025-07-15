@@ -1,4 +1,6 @@
-use criterion::{black_box, Criterion};
+use std::hint::black_box;
+
+use criterion::Criterion;
 use neure::prelude::*;
 use nom::{
     bytes::complete::{tag, take_while_m_n},
