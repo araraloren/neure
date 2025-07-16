@@ -1,6 +1,6 @@
 [package]
 name = "neure"
-version = "0.6.5"
+version = "0.6.6"
 authors = [
     "araraloren <blackcatoverwall@gmail.com>",
 ]
@@ -50,3 +50,15 @@ harness = false
 name = "json"
 path = "./bench/json.rs"
 harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+cargo-args = [
+    "-Zunstable-options",
+    "-Zrustdoc-scrape-examples",
+]
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+    "--generate-link-to-definition",
+]
