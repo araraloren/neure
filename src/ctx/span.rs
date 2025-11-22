@@ -1,7 +1,5 @@
 use std::fmt::Display;
 
-use super::Ret;
-
 use crate::ctx::Context;
 use crate::err::Error;
 use crate::re::Extract;
@@ -17,38 +15,26 @@ impl Span {
     pub fn new(beg: usize, len: usize) -> Self {
         Self { beg, len }
     }
-}
 
-impl Ret for Span {
-    fn fst(&self) -> usize {
+    pub fn begin(&self) -> usize {
         self.beg
     }
 
-    fn snd(&self) -> usize {
+    pub fn length(&self) -> usize {
         self.len
     }
 
-    fn is_zero(&self) -> bool {
+    pub fn is_zero(&self) -> bool {
         self.len == 0
     }
 
-    fn add_assign(&mut self, other: Self) -> &mut Self {
+    pub fn add_assign(&mut self, other: Self) -> &mut Self {
         self.len += other.len + other.beg - (self.beg + self.len);
         self
     }
-
-    fn from_ctx<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
-    where
-        C: Context<'a>,
-    {
-        Span {
-            beg: ctx.offset(),
-            len: info.1,
-        }
-    }
 }
 
-impl<'a, C: Context<'a>> Extract<'a, C, Span> for Span {
+impl<'a, C: Context<'a>> Extract<'a, C> for Span {
     type Out<'b> = Span;
 
     type Error = Error;

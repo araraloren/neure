@@ -8,7 +8,6 @@ use std::marker::PhantomData;
 
 use crate::err::Error;
 use crate::re::Regex;
-use crate::MayDebug;
 
 pub use self::guard::CtxGuard;
 pub use self::policy::PolicyCtx;
@@ -58,23 +57,6 @@ pub trait Context<'a> {
     fn clone_with(&self, orig: &'a Self::Orig) -> Self;
 }
 
-pub trait Ret: MayDebug
-where
-    Self: Sized,
-{
-    fn fst(&self) -> usize;
-
-    fn snd(&self) -> usize;
-
-    fn is_zero(&self) -> bool;
-
-    fn add_assign(&mut self, other: Self) -> &mut Self;
-
-    fn from_ctx<'a, C>(ctx: &mut C, info: (usize, usize)) -> Self
-    where
-        C: Context<'a>;
-}
-
 pub trait Match<C> {
     fn is_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
         self.try_mat_t(pat).is_ok()
@@ -91,30 +73,6 @@ pub trait PolicyMatch<C, B> {
     fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
     where
         Pat: Regex<C> + ?Sized;
-}
-
-impl Ret for () {
-    fn fst(&self) -> usize {
-        0
-    }
-
-    fn snd(&self) -> usize {
-        0
-    }
-
-    fn is_zero(&self) -> bool {
-        true
-    }
-
-    fn add_assign(&mut self, _: Self) -> &mut Self {
-        self
-    }
-
-    fn from_ctx<'a, C>(_: &mut C, _: (usize, usize)) -> Self
-    where
-        C: Context<'a>,
-    {
-    }
 }
 
 pub trait BPolicy<C> {

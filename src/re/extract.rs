@@ -1,38 +1,38 @@
 use crate::ctx::Context;
-use crate::ctx::Ret;
+use crate::ctx::Span;
 use crate::err::Error;
 
-pub trait Extract<'a, C: Context<'a>, R> {
+pub trait Extract<'a, C: Context<'a>> {
     type Out<'b>;
     type Error: Into<Error>;
 
-    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error>;
+    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error>;
 }
 
-impl<'a, C: Context<'a>, R> Extract<'a, C, R> for () {
+impl<'a, C: Context<'a>> Extract<'a, C> for () {
     type Out<'b> = ();
 
     type Error = Error;
 
-    fn extract(_: &C, _: &R) -> Result<Self::Out<'a>, Self::Error> {
+    fn extract(_: &C, _: &Span) -> Result<Self::Out<'a>, Self::Error> {
         Ok(())
     }
 }
 
 macro_rules! impl_extracter_for {
     ($($arg:ident)*) => {
-        impl<'a, Ctx: Context<'a>, R, $($arg,)*> Extract<'a, Ctx, R> for ($($arg,)*)
+        impl<'a, Ctx: Context<'a>, $($arg,)*> Extract<'a, Ctx> for ($($arg,)*)
         where
             $(
-                $arg: Extract<'a, Ctx, R, Error = Error>,
+                $arg: Extract<'a, Ctx, Error = Error>,
             )*
         {
-            type Out<'b> = ($(<$arg as Extract<'a, Ctx, R>>::Out<'b>,)*);
+            type Out<'b> = ($(<$arg as Extract<'a, Ctx>>::Out<'b>,)*);
 
             type Error = Error;
 
 
-            fn extract(ctx: &Ctx, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
+            fn extract(ctx: &Ctx, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
                 Ok(($($arg::extract(ctx, ret)?,)*))
             }
         }
@@ -90,33 +90,33 @@ impl_handler_for!(A B C D E);
 
 impl_handler_for!(A B C D E F);
 
-impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for &'a str {
+impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for &'a str {
     type Out<'b> = &'b str;
 
     type Error = Error;
 
-    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(ret.fst(), ret.snd())
+    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
+        ctx.orig_sub(ret.begin(), ret.length())
     }
 }
 
-impl<'a, C: Context<'a, Orig = [u8]>, R: Ret> Extract<'a, C, R> for &'a [u8] {
+impl<'a, C: Context<'a, Orig = [u8]>> Extract<'a, C> for &'a [u8] {
     type Out<'b> = &'b [u8];
 
     type Error = Error;
 
-    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(ret.fst(), ret.snd())
+    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
+        ctx.orig_sub(ret.begin(), ret.length())
     }
 }
 
-impl<'a, C: Context<'a, Orig = str>, R: Ret> Extract<'a, C, R> for String {
+impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for String {
     type Out<'b> = String;
 
     type Error = Error;
 
-    fn extract(ctx: &C, ret: &R) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(String::from(ctx.orig_sub(ret.fst(), ret.snd())?))
+    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
+        Ok(String::from(ctx.orig_sub(ret.begin(), ret.length())?))
     }
 }
 

@@ -70,7 +70,7 @@ where
     T: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -179,7 +179,7 @@ where
     K: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
@@ -205,8 +205,6 @@ where
     K: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-  
-
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);

@@ -132,7 +132,7 @@ where
     C: Context<'a> + Match<C>,
     F: Fn(&O1) -> Result<T, Error>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {

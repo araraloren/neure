@@ -16,7 +16,6 @@ pub use self::not::RegexNot;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::def_not;
@@ -42,7 +41,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for AnchorStart
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -62,7 +61,7 @@ where
         let beg = ctx.offset();
 
         if ctx.offset() == 0 {
-            ret = Ok(<Span as Ret>::from_ctx(ctx, (0, 0)))
+            ret = Ok(Span::new(ctx.offset(), 0))
         }
         trace!("start", beg => ctx.offset(), ret)
     }
@@ -84,7 +83,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for AnchorEnd
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -104,7 +103,7 @@ where
         let beg = ctx.offset();
 
         if ctx.len() == ctx.offset() {
-            ret = Ok(<Span as Ret>::from_ctx(ctx, (0, 0)));
+            ret = Ok(Span::new(ctx.offset(), 0));
         }
         trace!("start", beg => ctx.offset(), ret)
     }
@@ -126,7 +125,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Consume
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -169,7 +168,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for ConsumeAll
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

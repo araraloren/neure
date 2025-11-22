@@ -34,7 +34,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicBoxedRegex<'_, C>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -83,7 +83,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicArcRegex<'_, C>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -132,7 +132,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for DynamicRcRegex<'_, C>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

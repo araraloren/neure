@@ -40,7 +40,6 @@ pub mod prelude {
     pub use crate::ctx::Context;
     pub use crate::ctx::Match;
     pub use crate::ctx::RegexCtx;
-    pub use crate::ctx::Ret;
     pub use crate::ctx::Span;
     pub use crate::map;
     pub use crate::neu;

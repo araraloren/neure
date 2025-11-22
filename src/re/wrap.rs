@@ -77,7 +77,7 @@ where
     C: Context<'a> + Match<C>,
     I: Ctor<'a, C, M, O, H, A>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::def_not;
@@ -115,7 +114,7 @@ where
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
@@ -154,7 +153,7 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
+        let mut span = Span::new(g.ctx().offset(), 0);
         let mut ret = Err(Error::Collect);
         let beg = g.beg();
 

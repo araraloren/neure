@@ -25,8 +25,6 @@ impl<I> BoxedCtor<I> {
 }
 
 impl<I, C> Regex<C> for BoxedCtor<I> {
-    
-
     fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unreachable!("Boxed invoke not support `Regex` trait")
     }
@@ -37,7 +35,7 @@ where
     I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

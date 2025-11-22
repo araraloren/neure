@@ -56,7 +56,6 @@ pub use self::vec::Vector;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
@@ -87,7 +86,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C>>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -100,7 +99,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &str
 where
     C: Context<'a, Orig = str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -113,7 +112,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for String
 where
     C: Context<'a, Orig = str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(&self.as_str())?;
@@ -126,7 +125,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &String
 where
     C: Context<'a, Orig = str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(&self.as_str())?;
@@ -139,7 +138,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8]
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -152,7 +151,7 @@ impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8; N]
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -165,7 +164,7 @@ impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for [u8; N]
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -178,7 +177,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Vec<u8>
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -191,7 +190,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &Vec<u8>
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
@@ -205,7 +204,7 @@ where
     I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref().ok_or(Error::Option)?, ctx, handler)
@@ -217,7 +216,7 @@ where
     I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(&*self.borrow(), ctx, handler)
@@ -229,7 +228,7 @@ where
     I: Ctor<'a, C, M, O, H, A> + Copy,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(&self.get(), ctx, handler)
@@ -241,7 +240,7 @@ where
     I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = self.lock().map_err(|_| Error::LockMutex)?;
@@ -255,7 +254,7 @@ where
     I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
@@ -267,7 +266,7 @@ where
     I: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
@@ -278,7 +277,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H,
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
@@ -289,7 +288,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H,
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
@@ -300,7 +299,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, 
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)

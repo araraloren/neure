@@ -2,7 +2,6 @@ use std::fmt::Debug;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Regex;
@@ -31,7 +30,7 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let beg = ctx.offset();
-        let ret = Ok(Span::from_ctx(ctx, (0, 0)));
+        let ret = Ok(Span::new(beg, 0));
 
         trace!("null", beg => ctx.offset(), ret)
     }
@@ -41,7 +40,7 @@ impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for NullRegex
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

@@ -13,7 +13,7 @@ mod range;
 mod units;
 
 use crate::ctx::Context;
-use crate::ctx::Ret;
+use crate::ctx::Span;
 use crate::MayDebug;
 
 use std::cell::Cell;
@@ -651,8 +651,8 @@ pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option
 }
 
 #[inline(always)]
-pub(crate) fn ret_and_inc<'a, C: Context<'a>, R: Ret>(ctx: &mut C, count: usize, len: usize) -> R {
-    let ret = R::from_ctx(ctx, (count, len));
+pub(crate) fn ret_and_inc<'a, C: Context<'a>>(ctx: &mut C, len: usize) -> Span {
+    let ret = Span::new(ctx.offset(), len);
 
     ctx.inc(len);
     ret

@@ -183,7 +183,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -233,7 +233,7 @@ where
             if cnt >= M {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
                 let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
-                ret = Ok(ret_and_inc(g.ctx(), cnt, len));
+                ret = Ok(ret_and_inc(g.ctx(),  len));
             }
         }
         trace_v!("neu repeat", range, offset => g.end(), g.process_ret(ret), cnt)
@@ -361,7 +361,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -419,7 +419,7 @@ where
             if self.range.contains(&cnt) {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
                 let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
-                ret = Ok(ret_and_inc(g.ctx(), cnt, len));
+                ret = Ok(ret_and_inc(g.ctx(),  len));
             }
         }
         trace_v!("neu repeat_range", self.range, offset => g.end(), g.process_ret(ret), cnt)

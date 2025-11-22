@@ -163,7 +163,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -198,7 +198,7 @@ where
                         && self.cond.check(g.ctx(), &(snd_offset, item))?
                     {
                         let len = length_of(fst_offset, g.ctx(), iter.next().map(|v| v.0));
-                        ret = Ok(ret_and_inc(g.ctx(), 1, len));
+                        ret = Ok(ret_and_inc(g.ctx(),  len));
                     }
                 }
             }

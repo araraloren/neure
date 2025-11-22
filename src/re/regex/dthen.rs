@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::map::Select0;

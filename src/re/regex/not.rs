@@ -1,7 +1,6 @@
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::ctx::Ret;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::def_not;
@@ -34,7 +33,7 @@ where
     T: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -58,7 +57,7 @@ where
         let r = trace!("not", beg, g.try_mat(&self.val));
 
         if r.is_err() {
-            ret = Ok(Span::from_ctx(g.ctx(), (0, 0)));
+            ret = Ok(Span::new(beg, 0));
         }
         trace!("not", beg => g.reset().end(), ret)
     }

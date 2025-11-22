@@ -169,7 +169,7 @@ where
     }
 }
 
-impl<'a, I, R, B> Extract<'a, Self, R> for PolicyCtx<I, B>
+impl<'a, I, B> Extract<'a, Self> for PolicyCtx<I, B>
 where
     B: Clone,
     Self: Context<'a>,
@@ -179,7 +179,7 @@ where
 
     type Error = Error;
 
-    fn extract(ctx: &Self, _: &R) -> Result<Self::Out<'a>, Self::Error> {
+    fn extract(ctx: &Self, _: &Span) -> Result<Self::Out<'a>, Self::Error> {
         Ok(Clone::clone(ctx))
     }
 }
@@ -194,7 +194,7 @@ where
     where
         P: Ctor<'a, Self, M, O, H, A>,
         H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
+        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
     {
         pat.construct(self, handler)
     }
@@ -203,7 +203,7 @@ where
     where
         P: Regex<Self>,
         H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
+        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
     {
         let ret = self.try_mat(pat)?;
 
@@ -221,7 +221,7 @@ where
             &'a <Self as Context<'a>>::Orig,
         >,
         &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
+            Extract<'a, Self, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
     {
         self.ctor_with(pat, &mut Pass)
     }
@@ -235,7 +235,7 @@ where
         P: Regex<Self>,
         <Self as Context<'a>>::Orig: 'a,
         &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
+            Extract<'a, Self, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }
@@ -243,7 +243,7 @@ where
     pub fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
         P: Ctor<'a, Self, Span, O, Pass, Span>,
-        Span: Extract<'a, Self, Span, Out<'a> = Span, Error = Error>,
+        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
     {
         self.ctor_with(pat, &mut Pass)
     }
@@ -251,7 +251,7 @@ where
     pub fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>
     where
         P: Regex<Self>,
-        Span: Extract<'a, Self, Span, Out<'a> = Span, Error = Error>,
+        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }

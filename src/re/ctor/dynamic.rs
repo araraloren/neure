@@ -36,7 +36,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicBoxedCtor<'a, '_, C, 
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -85,7 +85,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicBoxedCtorSync<'a, '_,
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -135,7 +135,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicArcCtor<'a, '_, C, M,
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -185,7 +185,7 @@ impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for DynamicRcCtor<'a, '_, C, M, 
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

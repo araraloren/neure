@@ -136,7 +136,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -166,7 +166,7 @@ where
         if let Some((offset, item)) = iter.next() {
             if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
                 let len = length_of(offset, g.ctx(), iter.next().map(|v| v.0));
-                ret = Ok(ret_and_inc(g.ctx(), 1, len));
+                ret = Ok(ret_and_inc(g.ctx(), len));
             }
         }
         trace!("neu_one", beg => g.end(), g.process_ret(ret))
@@ -291,7 +291,7 @@ where
     I: NeuCond<'a, C>,
     C: Context<'a> + Match<C> + 'a,
     H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -313,7 +313,6 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
         let mut ret = Err(Error::NeuOneMore);
@@ -326,14 +325,13 @@ where
                 end = Some(pair);
                 break;
             }
-            cnt += 1;
             if beg.is_none() {
                 beg = Some(pair.0);
             }
         }
         if let Some(start) = beg {
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
-            ret = Ok(ret_and_inc(g.ctx(), cnt, len))
+            ret = Ok(ret_and_inc(g.ctx(), len))
         }
         trace!("neu_one_more", offset => g.end(), g.process_ret(ret))
     }
