@@ -96,7 +96,7 @@ impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for &'a str {
     type Error = Error;
 
     fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(ret.begin(), ret.length())
+        ctx.orig_sub(ret.beg(), ret.len())
     }
 }
 
@@ -106,7 +106,7 @@ impl<'a, C: Context<'a, Orig = [u8]>> Extract<'a, C> for &'a [u8] {
     type Error = Error;
 
     fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(ret.begin(), ret.length())
+        ctx.orig_sub(ret.beg(), ret.len())
     }
 }
 
@@ -116,7 +116,7 @@ impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for String {
     type Error = Error;
 
     fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(String::from(ctx.orig_sub(ret.begin(), ret.length())?))
+        Ok(String::from(ctx.orig_sub(ret.beg(), ret.len())?))
     }
 }
 

@@ -16,11 +16,12 @@ impl Span {
         Self { beg, len }
     }
 
-    pub fn begin(&self) -> usize {
+    pub fn beg(&self) -> usize {
         self.beg
     }
 
-    pub fn length(&self) -> usize {
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
         self.len
     }
 
