@@ -25,9 +25,9 @@ impl<I> BoxedCtor<I> {
 }
 
 impl<I, C> Regex<C> for BoxedCtor<I> {
-    type Ret = Span;
+    
 
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unreachable!("Boxed invoke not support `Regex` trait")
     }
 }

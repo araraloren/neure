@@ -66,10 +66,8 @@ impl<C, I> Regex<C> for WrappedTy<I>
 where
     I: Regex<C>,
 {
-    type Ret = <I as Regex<C>>::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.value.try_parse(ctx)
     }
 }

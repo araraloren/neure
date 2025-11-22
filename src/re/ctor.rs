@@ -83,7 +83,7 @@ where
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C, Ret = Span>>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C>>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,

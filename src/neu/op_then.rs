@@ -183,10 +183,8 @@ where
     R: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut iter = g.ctx().peek()?;
         let mut ret = Err(Error::NeuThen);

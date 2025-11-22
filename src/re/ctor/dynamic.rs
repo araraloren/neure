@@ -27,9 +27,7 @@ where
 }
 
 impl<C, M, O, H, A> Regex<C> for DynamicBoxedCtor<'_, '_, C, M, O, H, A> {
-    type Ret = Span;
-
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unreachable!("Dynamic invoke not support `Regex` trait")
     }
 }
@@ -78,9 +76,7 @@ where
 }
 
 impl<C, M, O, H, A> Regex<C> for DynamicBoxedCtorSync<'_, '_, C, M, O, H, A> {
-    type Ret = Span;
-
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unreachable!("Dynamic invoke not support `Regex` trait")
     }
 }
@@ -130,9 +126,7 @@ where
 }
 
 impl<C, M, O, H, A> Regex<C> for DynamicArcCtor<'_, '_, C, M, O, H, A> {
-    type Ret = Span;
-
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unreachable!("Dynamic invoke not support `Regex` trait")
     }
 }
@@ -182,9 +176,7 @@ where
 }
 
 impl<C, M, O, H, A> Regex<C> for DynamicRcCtor<'_, '_, C, M, O, H, A> {
-    type Ret = Span;
-
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unreachable!("Dynamic invoke not support `Regex` trait")
     }
 }

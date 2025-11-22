@@ -152,7 +152,7 @@ impl<'a, C, L, S, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A> for SepOnce
 where
     L: Ctor<'a, C, M, O1, H, A>,
     R: Ctor<'a, C, M, O2, H, A>,
-    S: Regex<C, Ret = Span>,
+    S: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -174,15 +174,13 @@ where
 
 impl<'a, C, L, S, R> Regex<C> for SepOnce<C, L, S, R>
 where
-    S: Regex<C, Ret = Span>,
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
+    S: Regex<C>,
+    L: Regex<C>,
+    R: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
         let beg = g.beg();
@@ -352,7 +350,7 @@ impl<C, P, S> Separate<C, P, S> {
 impl<'a, C, S, P, M, O, H, A> Ctor<'a, C, M, Vec<O>, H, A> for Separate<C, P, S>
 where
     P: Ctor<'a, C, M, O, H, A>,
-    S: Regex<C, Ret = Span>,
+    S: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -389,14 +387,12 @@ where
 
 impl<'a, C, S, P> Regex<C> for Separate<C, P, S>
 where
-    S: Regex<C, Ret = Span>,
-    P: Regex<C, Ret = Span>,
+    S: Regex<C>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));
@@ -568,7 +564,7 @@ impl<'a, C, S, P, M, O, V, H, A> Ctor<'a, C, M, V, H, A> for SepCollect<C, P, S,
 where
     V: FromIterator<O>,
     P: Ctor<'a, C, M, O, H, A>,
-    S: Regex<C, Ret = Span>,
+    S: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -613,14 +609,12 @@ where
 
 impl<'a, C, S, P, O, V> Regex<C> for SepCollect<C, P, S, O, V>
 where
-    S: Regex<C, Ret = Span>,
-    P: Regex<C, Ret = Span>,
+    S: Regex<C>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));

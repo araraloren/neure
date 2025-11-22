@@ -147,13 +147,11 @@ where
 
 impl<'a, C, P, O, V> Regex<C> for Collect<C, P, O, V>
 where
-    P: Regex<C, Ret = Span>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = <Span as Ret>::from_ctx(g.ctx(), (0, 0));

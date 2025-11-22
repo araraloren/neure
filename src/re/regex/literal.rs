@@ -47,10 +47,8 @@ where
     T: PartialOrd + 'a,
     C: Context<'a, Orig = [T]>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ret = Err(Error::Slice);
         let len = self.val.len();
         let beg = ctx.offset();
@@ -99,10 +97,8 @@ impl<'a, C> Regex<C> for LitString<'_>
 where
     C: Context<'a, Orig = str>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ret = Err(Error::String);
         let len = self.val.len();
         let beg = ctx.offset();

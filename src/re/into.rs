@@ -36,23 +36,17 @@ where
 
     fn into_mutex_regex(self) -> WrappedTy<Mutex<Self>>;
 
-    fn into_dyn_regex<'a, 'b, C>(
-        self,
-    ) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_regex<'a, 'b, C>(self) -> WrappedTy<DynamicBoxedRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b;
 
-    fn into_dyn_arc_regex<'a, 'b, C>(
-        self,
-    ) -> WrappedTy<DynamicArcRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_arc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicArcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b;
 
-    fn into_dyn_rc_regex<'a, 'b, C>(
-        self,
-    ) -> WrappedTy<DynamicRcRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_rc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicRcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b;
@@ -85,9 +79,7 @@ impl<T> RegexIntoOp for T {
         WrappedTy::new(Mutex::new(self))
     }
 
-    fn into_dyn_regex<'a, 'b, C>(
-        self,
-    ) -> WrappedTy<DynamicBoxedRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_regex<'a, 'b, C>(self) -> WrappedTy<DynamicBoxedRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b,
@@ -97,9 +89,7 @@ impl<T> RegexIntoOp for T {
         }
     }
 
-    fn into_dyn_arc_regex<'a, 'b, C>(
-        self,
-    ) -> WrappedTy<DynamicArcRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_arc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicArcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b,
@@ -109,9 +99,7 @@ impl<T> RegexIntoOp for T {
         }
     }
 
-    fn into_dyn_rc_regex<'a, 'b, C>(
-        self,
-    ) -> WrappedTy<DynamicRcRegex<'b, C, <Self as Regex<C>>::Ret>>
+    fn into_dyn_rc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicRcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b,

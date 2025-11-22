@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
+use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::Regex;
 
@@ -63,7 +64,7 @@ impl<'b, C> CtxGuard<'_, 'b, C>
 where
     C: Context<'b> + Match<C>,
 {
-    pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<P::Ret, Error> {
+    pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<Span, Error> {
         self.ctx.try_mat_t(pattern).inspect(|_| {
             self.reset = false;
         })

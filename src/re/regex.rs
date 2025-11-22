@@ -56,10 +56,8 @@ impl<'a, C> Regex<C> for AnchorStart
 where
     C: Context<'a>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ret = Err(Error::Start);
         let beg = ctx.offset();
 
@@ -100,10 +98,8 @@ impl<'a, C> Regex<C> for AnchorEnd
 where
     C: Context<'a>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ret = Err(Error::End);
         let beg = ctx.offset();
 
@@ -144,10 +140,8 @@ impl<'a, C> Regex<C> for Consume
 where
     C: Context<'a>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ret = Err(Error::Consume);
         let beg = ctx.offset();
 
@@ -189,10 +183,8 @@ impl<'a, C> Regex<C> for ConsumeAll
 where
     C: Context<'a>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let beg = ctx.offset();
         let len = ctx.len().saturating_sub(ctx.offset());
 

@@ -162,15 +162,13 @@ where
 
 impl<'a, C, P, I, E> Regex<C> for IfRegex<C, P, I, E>
 where
-    P: Regex<C, Ret = Span>,
-    E: Regex<C, Ret = Span>,
+    P: Regex<C>,
+    E: Regex<C>,
     C: Context<'a> + Match<C>,
     I: Fn(&C) -> Result<bool, Error>,
 {
-    type Ret = P::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
@@ -187,8 +185,8 @@ where
 pub fn branch<'a, C, P, I, E>(r#if: I, re: P, r#else: E) -> IfRegex<C, P, I, E>
 where
     C: Context<'a> + Match<C>,
-    E: Regex<C, Ret = Span>,
-    P: Regex<C, Ret = Span>,
+    E: Regex<C>,
+    P: Regex<C>,
     I: Fn(&C) -> Result<bool, Error>,
 {
     IfRegex::new(re, r#if, r#else)

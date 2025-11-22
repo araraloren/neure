@@ -98,12 +98,12 @@ impl SimpleStorer {
 }
 
 impl SimpleStorer {
-    pub fn try_cap<'a, C, P: Regex<C, Ret = Span>>(
+    pub fn try_cap<'a, C, P: Regex<C>>(
         &mut self,
         id: usize,
         ctx: &mut C,
         pat: &P,
-    ) -> Result<P::Ret, Error>
+    ) -> Result<Span, Error>
     where
         C: Context<'a> + Match<C>,
     {

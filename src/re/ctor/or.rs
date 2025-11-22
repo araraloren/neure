@@ -147,14 +147,14 @@ where
 
 impl<'a, C, L, R> Regex<C> for Or<C, L, R>
 where
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
+    L: Regex<C, >,
+    R: Regex<C, >,
     C: Context<'a> + Match<C>,
 {
-    type Ret = L::Ret;
+    
 
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let ret = trace!("or", beg @ "left", g.try_mat(&self.left).or_else(|_| {

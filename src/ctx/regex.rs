@@ -417,10 +417,10 @@ where
     T: ?Sized,
     Self: Context<'a>,
 {
-    fn try_mat_t<Pat: Regex<RegexCtx<'a, T>> + ?Sized>(
-        &mut self,
-        pat: &Pat,
-    ) -> Result<Pat::Ret, Error> {
+    fn try_mat_t<Pat>(&mut self, pat: &Pat) -> Result<Span, Error>
+    where
+        Pat: Regex<RegexCtx<'a, T>> + ?Sized,
+    {
         self.try_mat_policy(pat, &|_: &mut Self| Ok(()))
     }
 }
@@ -431,7 +431,7 @@ where
     Self: Context<'a>,
     B: BPolicy<RegexCtx<'a, T>>,
 {
-    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Pat::Ret, Error>
+    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
     where
         Pat: Regex<RegexCtx<'a, T>> + ?Sized,
     {
@@ -470,9 +470,9 @@ where
 
     pub fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
-        P: Regex<Self, Ret = Span>,
+        P: Regex<Self>,
         H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, Self, P::Ret, Out<'a> = A, Error = Error>,
+        A: Extract<'a, Self, Span, Out<'a> = A, Error = Error>,
     {
         let ret = self.try_mat(pat)?;
 
@@ -501,9 +501,9 @@ where
         mapper: impl MapSingle<&'a <Self as Context<'a>>::Orig, O>,
     ) -> Result<O, Error>
     where
-        P: Regex<Self, Ret = Span>,
+        P: Regex<Self>,
         &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, P::Ret, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
+            Extract<'a, Self, Span, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }
@@ -518,8 +518,8 @@ where
 
     pub fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>
     where
-        P: Regex<Self, Ret = Span>,
-        Span: Extract<'a, Self, P::Ret, Out<'a> = Span, Error = Error>,
+        P: Regex<Self>,
+        Span: Extract<'a, Self, Span, Out<'a> = Span, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }

@@ -101,15 +101,13 @@ impl<C, P, F> DynamicCreateRegexThen<C, P, F> {
 
 impl<'a, C, P, F, T> Regex<C> for DynamicCreateRegexThen<C, P, F>
 where
-    P: Regex<C, Ret = Span>,
-    T: Regex<C, Ret = Span>,
+    P: Regex<C>,
+    T: Regex<C>,
     C: Context<'a> + Match<C>,
     F: Fn(&Span) -> Result<T, Error>,
 {
-    type Ret = P::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let mut ret = trace!("dynamic_create_regex_then", beg @ "pat", g.try_mat(&self.pat)?);

@@ -150,12 +150,12 @@ where
 
 impl<'a, C, P, F> Regex<C> for DynamicCreateCtorThen<C, P, F>
 where
-    P: Regex<C, Ret = Span>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
+    
 
-    fn try_parse(&self, _: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unimplemented!("Can't not using DynamicThen for regex")
     }
 }

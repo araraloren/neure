@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -14,46 +13,31 @@ use super::Ctor;
 use super::Extract;
 use super::Handler;
 
-#[derive(Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct NullRegex<R>(PhantomData<R>);
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct NullRegex;
 
-def_not!(NullRegex<R>);
+def_not!(NullRegex);
 
-impl<R> Debug for NullRegex<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("NullRegex").field(&self.0).finish()
-    }
-}
-
-impl<R> Clone for NullRegex<R> {
-    fn clone(&self) -> Self {
-        Self(self.0)
-    }
-}
-
-impl<R> NullRegex<R> {
+impl NullRegex {
     pub fn new() -> Self {
-        Self(PhantomData)
+        Self
     }
 }
 
-impl<'a, C, R> Regex<C> for NullRegex<R>
+impl<'a, C> Regex<C> for NullRegex
 where
-    R: Ret,
     C: Context<'a>,
 {
-    type Ret = R;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let beg = ctx.offset();
-        let ret = Ok(<R as Ret>::from_ctx(ctx, (0, 0)));
+        let ret = Ok(Span::from_ctx(ctx, (0, 0)));
 
         trace!("null", beg => ctx.offset(), ret)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for NullRegex<Span>
+impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for NullRegex
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,

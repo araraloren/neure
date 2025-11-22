@@ -31,7 +31,7 @@ def_not!(RegexNot<T>);
 
 impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for RegexNot<T>
 where
-    T: Regex<C, Ret = Span>,
+    T: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -47,20 +47,18 @@ where
 impl<'a, C, T> Regex<C> for RegexNot<T>
 where
     T: Regex<C>,
-    <T as Regex<C>>::Ret: Ret,
+
     C: Context<'a> + Match<C>,
 {
-    type Ret = T::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut ret = Err(Error::Not);
         let beg = g.beg();
         let r = trace!("not", beg, g.try_mat(&self.val));
 
         if r.is_err() {
-            ret = Ok(<T::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
+            ret = Ok(Span::from_ctx(g.ctx(), (0, 0)));
         }
         trace!("not", beg => g.reset().end(), ret)
     }

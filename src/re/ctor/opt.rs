@@ -109,13 +109,11 @@ where
 
 impl<'a, C, P> Regex<C> for OptionPat<C, P>
 where
-    P: Regex<C, Ret = Span>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let beg = ctx.offset();
         let ret = ctx.try_mat(&self.pat);
 

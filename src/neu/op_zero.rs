@@ -157,12 +157,10 @@ where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
+        let mut ret = Ok(Span::from_ctx(g.ctx(), (0, 0)));
         let beg = g.beg();
 
         trace!("neu_zero_one", beg, ());
@@ -317,15 +315,13 @@ where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, crate::err::Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Ok(<Self::Ret as Ret>::from_ctx(g.ctx(), (0, 0)));
+        let mut ret = Ok(Span::from_ctx(g.ctx(), (0, 0)));
         let offset = g.beg();
 
         trace!("neu_zero_more", offset, ());

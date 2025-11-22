@@ -75,23 +75,19 @@ use crate::neu::NeureZeroOne;
 use crate::neu::NullCond;
 
 pub trait Regex<C> {
-    type Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error>;
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error>;
 
     fn parse(&self, ctx: &mut C) -> bool {
         self.try_parse(ctx).is_ok()
     }
 }
 
-impl<C, F, R> Regex<C> for F
+impl<C, F> Regex<C> for F
 where
-    F: Fn(&mut C) -> Result<R, Error>,
+    F: Fn(&mut C) -> Result<Span, Error>,
 {
-    type Ret = R;
-
     #[inline]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         (self)(ctx)
     }
 }
@@ -100,10 +96,8 @@ impl<'a, C> Regex<C> for &str
 where
     C: Context<'a, Orig = str> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let pattern = crate::re::string(self);
         pattern.try_parse(ctx)
     }
@@ -113,10 +107,8 @@ impl<'a, C> Regex<C> for String
 where
     C: Context<'a, Orig = str> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let pattern = crate::re::string(self.as_str());
         pattern.try_parse(ctx)
     }
@@ -126,10 +118,8 @@ impl<'a, C> Regex<C> for &String
 where
     C: Context<'a, Orig = str> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let pattern = crate::re::string(self.as_str());
         pattern.try_parse(ctx)
     }
@@ -139,10 +129,8 @@ impl<'a, C> Regex<C> for &[u8]
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let pattern = crate::re::lit_slice(self);
         pattern.try_parse(ctx)
     }
@@ -152,10 +140,8 @@ impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let pattern = crate::re::lit_slice(self.as_slice());
         pattern.try_parse(ctx)
     }
@@ -165,10 +151,8 @@ impl<'a, const N: usize, C> Regex<C> for [u8; N]
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
 {
-    type Ret = Span;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let pattern = crate::re::lit_slice(self.as_slice());
         pattern.try_parse(ctx)
     }
@@ -178,9 +162,7 @@ impl<'a, C> Regex<C> for Vec<u8>
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
 {
-    type Ret = Span;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(&self.as_slice(), ctx)
     }
 }
@@ -189,9 +171,7 @@ impl<'a, C> Regex<C> for &Vec<u8>
 where
     C: Context<'a, Orig = [u8]> + Match<C>,
 {
-    type Ret = Span;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(&self.as_slice(), ctx)
     }
 }
@@ -201,9 +181,7 @@ where
     P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().ok_or(Error::Option)?.try_parse(ctx)
     }
 }
@@ -213,9 +191,7 @@ where
     P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         (*self.borrow()).try_parse(ctx)
     }
 }
@@ -225,9 +201,7 @@ where
     P: Regex<C> + Copy,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.get().try_parse(ctx)
     }
 }
@@ -237,9 +211,7 @@ where
     P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let ret = self.lock().map_err(|_| Error::LockMutex)?;
         (*ret).try_parse(ctx)
     }
@@ -250,9 +222,7 @@ where
     P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
 }
@@ -262,42 +232,34 @@ where
     P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
 }
 
-impl<'a, Ret, C> Regex<C> for Box<dyn Regex<C, Ret = Ret>>
+impl<'a, C> Regex<C> for Box<dyn Regex<C>>
 where
     C: Context<'a> + Match<C>,
 {
-    type Ret = Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
 }
 
-impl<'a, Ret, C> Regex<C> for Arc<dyn Regex<C, Ret = Ret>>
+impl<'a, C> Regex<C> for Arc<dyn Regex<C>>
 where
     C: Context<'a> + Match<C>,
 {
-    type Ret = Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
 }
 
-impl<'a, Ret, C> Regex<C> for Rc<dyn Regex<C, Ret = Ret>>
+impl<'a, C> Regex<C> for Rc<dyn Regex<C>>
 where
     C: Context<'a> + Match<C>,
 {
-    type Ret = Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
 }
@@ -652,7 +614,7 @@ pub fn consume_all() -> ConsumeAll {
 ///     Ok(())
 /// # }
 /// ```
-pub fn null<R>() -> NullRegex<R> {
+pub fn null() -> NullRegex {
     NullRegex::new()
 }
 

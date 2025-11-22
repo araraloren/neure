@@ -186,13 +186,11 @@ where
 
 impl<'a, C, P, F, O> Regex<C> for Map<C, P, F, O>
 where
-    P: Regex<C, Ret = Span>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         ctx.try_mat(&self.pat)
     }
 }

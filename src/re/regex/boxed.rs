@@ -27,16 +27,14 @@ impl<C, T> Regex<C> for BoxedRegex<T>
 where
     T: Regex<C>,
 {
-    type Ret = <T as Regex<C>>::Ret;
-
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.inner.try_parse(ctx)
     }
 }
 
 impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for BoxedRegex<T>
 where
-    T: Regex<C, Ret = Span>,
+    T: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,

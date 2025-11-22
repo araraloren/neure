@@ -152,14 +152,12 @@ where
 
 impl<'a, C, L, R> Regex<C> for Then<C, L, R>
 where
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
+    L: Regex<C>,
+    R: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = L::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let mut ret = trace!("then", beg @ "left", g.try_mat(&self.left)?);
@@ -303,7 +301,7 @@ impl<'a, C, L, I, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, Option<O2>), H, A> for
 where
     L: Ctor<'a, C, M, O1, H, A>,
     R: Ctor<'a, C, M, O2, H, A>,
-    I: Regex<C, Ret = Span>,
+    I: Regex<C>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Span, Out<'a> = A, Error = Error>,
@@ -333,15 +331,13 @@ where
 
 impl<'a, C, L, I, R> Regex<C> for IfThen<C, L, I, R>
 where
-    I: Regex<C, Ret = Span>,
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
+    I: Regex<C>,
+    L: Regex<C>,
+    R: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = L::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let mut ret = trace!("if_then", beg @ "left", g.try_mat(&self.left)?);

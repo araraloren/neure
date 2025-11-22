@@ -80,18 +80,15 @@ pub trait Match<C> {
         self.try_mat_t(pat).is_ok()
     }
 
-    fn try_mat_t<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Pat::Ret, Error>;
+    fn try_mat_t<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error>;
 
-    fn try_mat<Pat: Regex<C, Ret = Span> + ?Sized>(
-        &mut self,
-        pat: &Pat,
-    ) -> Result<Pat::Ret, Error> {
+    fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error> {
         self.try_mat_t(pat)
     }
 }
 
 pub trait PolicyMatch<C, B> {
-    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Pat::Ret, Error>
+    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
     where
         Pat: Regex<C> + ?Sized;
 }

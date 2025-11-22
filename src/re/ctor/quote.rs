@@ -136,8 +136,8 @@ impl<C, P, L, R> Quote<C, P, L, R> {
 
 impl<'a, C, L, R, P, M, O, H, A> Ctor<'a, C, M, O, H, A> for Quote<C, P, L, R>
 where
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
+    L: Regex<C>,
+    R: Regex<C>,
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -159,15 +159,13 @@ where
 
 impl<'a, C, L, R, P> Regex<C> for Quote<C, P, L, R>
 where
-    L: Regex<C, Ret = Span>,
-    R: Regex<C, Ret = Span>,
-    P: Regex<C, Ret = Span>,
+    L: Regex<C>,
+    R: Regex<C>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let mut ret = trace!("quote", beg @ "left", g.try_mat(&self.left)?);

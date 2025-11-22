@@ -90,10 +90,8 @@ where
     T: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = T::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 
@@ -196,10 +194,8 @@ where
     K: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    type Ret = K::Ret;
-
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
 

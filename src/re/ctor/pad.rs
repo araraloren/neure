@@ -113,7 +113,7 @@ impl<C, P, T> Pad<C, P, T> {
 
 impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Pad<C, P, T>
 where
-    T: Regex<C, Ret = Span>,
+    T: Regex<C, >,
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -135,14 +135,14 @@ where
 
 impl<'a, C, P, T> Regex<C> for Pad<C, P, T>
 where
-    T: Regex<C, Ret = Span>,
-    P: Regex<C, Ret = Span>,
+    T: Regex<C, >,
+    P: Regex<C, >,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
+    
 
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let mut ret = trace!("pad", beg @ "pat", g.try_mat(&self.pat)?);
@@ -251,7 +251,7 @@ impl<C, P, T> Padded<C, P, T> {
 
 impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Padded<C, P, T>
 where
-    T: Regex<C, Ret = Span>,
+    T: Regex<C, >,
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -271,14 +271,14 @@ where
 
 impl<'a, C, P, T> Regex<C> for Padded<C, P, T>
 where
-    T: Regex<C, Ret = Span>,
-    P: Regex<C, Ret = Span>,
+    T: Regex<C, >,
+    P: Regex<C, >,
     C: Context<'a> + Match<C>,
 {
-    type Ret = P::Ret;
+    
 
     #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Self::Ret, Error> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let beg = g.beg();
         let mut ret = trace!("padded", beg @ "head", g.try_mat(&self.head)?);
