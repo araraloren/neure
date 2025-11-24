@@ -6,7 +6,6 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::trace;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
@@ -28,9 +27,9 @@ use super::Ctor;
 /// # fn main() -> color_eyre::Result<()> {
 /// #   color_eyre::install()?;
 ///     let array = ["a", "b", "c"];
-///     let tuple = re::array(array);
+///     let parser = re::array(array);
 ///
-///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("abc").ctor_span(&parser)?, Span::new(0, 1));
 ///     Ok(())
 /// # }
 /// ```
@@ -75,19 +74,21 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
+        let mut ret = Err(Error::Vec);
 
+        crate::debug_ctor_beg!("Array", g.beg());
         for regex in self.0.iter() {
-            let ret = trace!("array", beg, regex.construct(g.ctx(), func));
+            let res = regex.construct(g.ctx(), func);
 
-            if ret.is_ok() {
-                trace!("array", beg -> g.end(), true);
-                return ret;
+            if res.is_ok() {
+                ret = Ok(res?);
+                break;
             } else {
                 g.reset();
             }
         }
-        Err(Error::Vec)
+        crate::debug_ctor_reval!("Array", g.beg(), g.end(), ret.is_ok());
+        ret
     }
 }
 
@@ -99,19 +100,23 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
+        let mut ret = Err(Error::Vec);
 
+        crate::debug_regex_beg!("Array", g.beg());
         for regex in self.0.iter() {
-            let ret = trace!("array", beg, g.try_mat(regex));
+            let span = g.try_mat(regex);
 
-            if ret.is_ok() {
-                trace!("array", beg => g.end(), true);
-                return ret;
-            } else {
-                g.reset();
+            match span {
+                Ok(span) => {
+                    ret = Ok(span);
+                    break;
+                }
+                Err(_) => {
+                    g.reset();
+                }
             }
         }
-        Err(Error::Vec)
+        crate::debug_regex_reval!("Array", g.beg(), g.end(), ret)
     }
 }
 
@@ -184,19 +189,21 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
+        let mut ret = Err(Error::PairVec);
 
+        crate::debug_ctor_beg!("PairArray", g.beg());
         for (regex, value) in self.0.iter() {
-            let ret = trace!("pair_array", beg, regex.construct(g.ctx(), func));
+            let res = regex.construct(g.ctx(), func);
 
-            if ret.is_ok() {
-                trace!("pair_array", beg -> g.end(), true);
-                return Ok((ret?, value.clone()));
+            if res.is_ok() {
+                ret = Ok((res?, value.clone()));
+                break;
             } else {
                 g.reset();
             }
         }
-        Err(Error::PairVec)
+        crate::debug_ctor_reval!("PairArray", g.beg(), g.end(), ret.is_ok());
+        ret
     }
 }
 
@@ -208,18 +215,22 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
+        let mut ret = Err(Error::PairVec);
 
+        crate::debug_regex_beg!("PairArray", g.beg());
         for (regex, _) in self.0.iter() {
-            let ret = trace!("pair_array", beg, g.try_mat(regex));
+            let span = g.try_mat(regex);
 
-            if ret.is_ok() {
-                trace!("pair_array", beg => g.end(), true);
-                return ret;
-            } else {
-                g.reset();
+            match span {
+                Ok(span) => {
+                    ret = Ok(span);
+                    break;
+                }
+                Err(_) => {
+                    g.reset();
+                }
             }
         }
-        Err(Error::PairVec)
+        crate::debug_regex_reval!("PairArray", g.beg(), g.end(), ret)
     }
 }

@@ -1,7 +1,6 @@
 mod bool;
 mod cond;
 mod equal;
-mod may;
 mod op_and;
 mod op_not;
 mod op_one;
@@ -9,11 +8,13 @@ mod op_or;
 mod op_repeat;
 mod op_then;
 mod op_zero;
+mod prefix;
 mod range;
 mod units;
 
 use crate::ctx::Context;
 use crate::ctx::Span;
+use crate::trace_retval;
 use crate::MayDebug;
 
 use std::cell::Cell;
@@ -35,7 +36,6 @@ pub use self::cond::NullCond;
 pub use self::cond::RegexCond;
 pub use self::equal::equal;
 pub use self::equal::Equal;
-pub use self::may::MayUnit;
 pub use self::op_and::and;
 pub use self::op_and::And;
 pub use self::op_not::not;
@@ -49,6 +49,12 @@ pub use self::op_repeat::NeureRepeatRange;
 pub use self::op_then::NeureThen;
 pub use self::op_zero::NeureZeroMore;
 pub use self::op_zero::NeureZeroOne;
+pub use self::prefix::prefix;
+pub use self::prefix::prefix_cnt;
+pub use self::prefix::prefix_sync;
+pub use self::prefix::prefix_sync_cnt;
+pub use self::prefix::Prefix;
+pub use self::prefix::PrefixSync;
 pub use self::range::range;
 pub use self::range::CRange;
 pub use self::units::alphabetic;
@@ -103,7 +109,9 @@ where
 {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("func", "func", other, (self)(other))
+        let ret = (self)(other);
+
+        trace_retval!("F", other, ret)
     }
 }
 
@@ -114,7 +122,7 @@ where
 {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("char", self, other, self == other)
+        trace_retval!("char", self, other, self == other)
     }
 }
 
@@ -125,7 +133,7 @@ where
 {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("u8", self, other, self == other)
+        trace_retval!("u8", self, other, self == other)
     }
 }
 
@@ -215,7 +223,7 @@ impl<T> Neu<T> for Rc<dyn Neu<T>> {
 impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("array", self, other, self.contains(other))
+        trace_retval!("array", self, other, self.contains(other))
     }
 }
 
@@ -239,7 +247,7 @@ impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
 impl<T: PartialEq + MayDebug> Neu<T> for &'_ [T] {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("slice", self, other, self.contains(other))
+        trace_retval!("slice", self, other, self.contains(other))
     }
 }
 
@@ -268,7 +276,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for &'_ [T] {
 impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("vector", self, other, self.contains(other))
+        trace_retval!("vector", self, other, self.contains(other))
     }
 }
 
@@ -295,7 +303,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
 impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("bound(&T)", self, other, self.contains(other))
+        trace_retval!("bound(&T)", self, other, self.contains(other))
     }
 }
 
@@ -321,7 +329,7 @@ impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound
 impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("bound(T)", self, other, self.contains(other))
+        trace_retval!("bound(T)", self, other, self.contains(other))
     }
 }
 
@@ -346,7 +354,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range(&T)", self, other, self.contains(&other))
+        trace_retval!("range(&T)", self, other, self.contains(&other))
     }
 }
 
@@ -371,7 +379,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range(T)", self, other, self.contains(other))
+        trace_retval!("range(T)", self, other, self.contains(other))
     }
 }
 
@@ -396,7 +404,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_from(&T)", self, other, self.contains(&other))
+        trace_retval!("range_from(&T)", self, other, self.contains(&other))
     }
 }
 
@@ -421,7 +429,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_from(T)", self, other, self.contains(other))
+        trace_retval!("range_from(T)", self, other, self.contains(other))
     }
 }
 
@@ -446,7 +454,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
 impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_full", self, other, self.contains(&other))
+        trace_retval!("range_full", self, other, self.contains(&other))
     }
 }
 
@@ -471,7 +479,7 @@ impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_inclusive(&T)", self, other, self.contains(&other))
+        trace_retval!("range_inclusive(&T)", self, other, self.contains(&other))
     }
 }
 
@@ -496,7 +504,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_inclusive(T)", self, other, self.contains(other))
+        trace_retval!("range_inclusive(T)", self, other, self.contains(other))
     }
 }
 
@@ -521,7 +529,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_to(&T)", self, other, self.contains(&other))
+        trace_retval!("range_to(&T)", self, other, self.contains(&other))
     }
 }
 
@@ -546,7 +554,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_to(T)", self, other, self.contains(other))
+        trace_retval!("range_to(T)", self, other, self.contains(other))
     }
 }
 
@@ -571,7 +579,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_to_inclusive(&T)", self, other, self.contains(&other))
+        trace_retval!("range_to_inclusive(&T)", self, other, self.contains(&other))
     }
 }
 
@@ -596,7 +604,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
 impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("range_to_inclusive(T)", self, other, self.contains(other))
+        trace_retval!("range_to_inclusive(T)", self, other, self.contains(other))
     }
 }
 
@@ -740,64 +748,3 @@ where
         NeureRepeatRange::new(self, range.into(), NullCond)
     }
 }
-
-/// Match `if` and remember the result, then match `unit`
-///
-/// # Example
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let digit = neu::digit(10);
-///     let hex = neu::digit(16);
-///
-///     let tests = [
-///         ("99EF", Some(Span::new(0, 2))),
-///         ("0x99EF", Some(Span::new(0, 6))),
-///         ("099EF", Some(Span::new(0, 3))),
-///         ("9899", Some(Span::new(0, 4))),
-///         ("x99EF", None),
-///     ];
-///
-///     for test in tests {
-///         // `may` is not reuseable
-///         let num = neu::may('0', neu::may('x', hex).or(neu::none())).or(digit);
-///         let num = re!((num){1,6});
-///         let mut ctx = CharsCtx::new(test.0);
-///
-///         if let Some(span) = test.1 {
-///             assert_eq!(ctx.try_mat(&num)?, span, "at {}", test.0);
-///         } else {
-///             assert!(ctx.try_mat(&num).is_err());
-///         }
-///     }
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn may<T, I, U>(r#if: I, unit: U) -> MayUnit<U, I, T>
-where
-    U: Neu<T>,
-    I: Neu<T>,
-{
-    MayUnit::new(r#if, 1, unit)
-}
-
-pub fn may_count<T, I, U>(r#if: I, count: usize, unit: U) -> MayUnit<U, I, T>
-where
-    U: Neu<T>,
-    I: Neu<T>,
-{
-    MayUnit::new(r#if, count, unit)
-}
-
-macro_rules! trace_u {
-    ($name:literal, $self:expr, $other:ident, $ret:expr) => {{
-        let ret = $ret;
-        $crate::trace_log!("{:?} -> u`{}-{:?}` -> {}", $other, $name, $self, ret);
-        ret
-    }};
-}
-
-pub(crate) use trace_u;

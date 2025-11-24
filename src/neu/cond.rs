@@ -5,7 +5,6 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::re::Regex;
-use crate::trace_log;
 
 pub trait NeuCond<'a, C>
 where
@@ -58,8 +57,7 @@ where
     fn check(&self, ctx: &C, item: &(usize, C::Item)) -> Result<bool, Error> {
         let ret = (self)(ctx, item);
 
-        trace_log!("running cond -> {:?}", ret);
-        ret
+        crate::trace_retval!("Fn", "NeuCond", item, ret)
     }
 }
 
@@ -70,7 +68,7 @@ impl<'a, C> NeuCond<'a, C> for NullCond
 where
     C: Context<'a>,
 {
-    fn check(&self, _: &C, _: &(usize, C::Item)) -> Result<bool, Error> {
+    fn check(&self, _: &C, _item: &(usize, C::Item)) -> Result<bool, Error> {
         Ok(true)
     }
 }
@@ -122,12 +120,9 @@ where
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
         let mut ctx = ctx.clone_with(ctx.orig_at(ctx.offset() + item.0)?);
-        let ret = {
-            trace_log!("running regex cond");
-            ctx.try_mat_t(&self.regex)
-        };
+        let ret = ctx.try_mat_t(&self.regex);
 
-        crate::trace_log!("running regex cond -> {:?}", ret.is_ok());
+        crate::trace_retval!("RegexCond", "NeuCond", item, ret.is_ok());
         Ok(ret.is_ok())
     }
 }

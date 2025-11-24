@@ -6,7 +6,6 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -142,10 +141,8 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("neu_zero_one", beg, g.try_mat(self));
+        let ret = g.try_mat(self);
 
-        trace!("neu_zero_one", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -160,9 +157,8 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut ret = Ok(Span::new(g.beg(), 0));
-        let beg = g.beg();
 
-        trace!("neu_zero_one", beg, ());
+        crate::debug_regex_beg!("NeureZeroOne", g.beg());
         if let Ok(mut iter) = g.ctx().peek() {
             if let Some((offset, item)) = iter.next() {
                 if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
@@ -172,7 +168,7 @@ where
                 }
             }
         }
-        trace!("neu_zero_one", beg => g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureZeroOne", g.beg(), g.end(), g.process_ret(ret))
     }
 }
 
@@ -300,10 +296,8 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("neu_zero_more", beg, g.try_mat(self));
+        let ret = g.try_mat(self);
 
-        trace!("neu_zero_more", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -320,9 +314,8 @@ where
         let mut beg = None;
         let mut end = None;
         let mut ret = Ok(Span::new(g.beg(), 0));
-        let offset = g.beg();
 
-        trace!("neu_zero_more", offset, ());
+        crate::debug_regex_beg!("NeureZeroMore", g.beg());
         if let Ok(mut iter) = g.ctx().peek() {
             for pair in iter.by_ref() {
                 if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
@@ -338,6 +331,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), len));
         }
-        trace!("neu_zero_more", offset => g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureZeroMore", g.beg(), g.end(), g.process_ret(ret))
     }
 }

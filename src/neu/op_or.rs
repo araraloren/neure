@@ -1,4 +1,7 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::fmt::Debug;
+use std::marker::PhantomData;
+
+use crate::MayDebug;
 
 use super::Neu;
 
@@ -105,6 +108,7 @@ where
 
 impl<L, R, T> Neu<T> for Or<L, R, T>
 where
+    T: MayDebug,
     L: Neu<T>,
     R: Neu<T>,
 {
@@ -112,8 +116,7 @@ where
     fn is_match(&self, other: &T) -> bool {
         let ret = self.left.is_match(other) || self.right.is_match(other);
 
-        crate::trace_log!("neu logical `or` -> {ret}");
-        ret
+        crate::trace_retval!("Or", other, ret)
     }
 }
 

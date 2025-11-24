@@ -5,8 +5,8 @@ mod literal;
 mod not;
 
 pub use self::boxed::BoxedRegex;
-pub use self::dthen::DynamicCreateRegexThen;
-pub use self::dthen::DynamicCreateRegexThenHelper;
+pub use self::dthen::DynamicRegexBuilder;
+pub use self::dthen::DynamicRegexBuilderHelper;
 pub use self::dynamic::DynamicArcRegex;
 pub use self::dynamic::DynamicBoxedRegex;
 pub use self::dynamic::DynamicRcRegex;

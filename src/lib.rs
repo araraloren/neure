@@ -8,18 +8,10 @@ pub mod neu;
 pub mod re;
 pub mod span;
 
-#[cfg(feature = "log")]
-pub(crate) use tracing::trace as trace_log;
-#[cfg(not(feature = "log"))]
 #[macro_use]
-pub(crate) mod log {
-    #[macro_export]
-    macro_rules! trace_log {
-        ($($arg:tt)*) => {
-            ();
-        };
-    }
-}
+pub(crate) mod log;
+
+pub(crate) use log::*;
 
 #[cfg(feature = "log")]
 pub trait MayDebug: std::fmt::Debug {}

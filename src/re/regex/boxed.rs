@@ -6,7 +6,7 @@ use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::re::Wrapped;
+use crate::re::Wrappable;
 
 use std::fmt::Debug;
 
@@ -46,7 +46,7 @@ where
     }
 }
 
-impl<T> Wrapped for BoxedRegex<T> {
+impl<T> Wrappable for BoxedRegex<T> {
     type Inner = Box<T>;
 
     fn wrap(inner: Self::Inner) -> Self {

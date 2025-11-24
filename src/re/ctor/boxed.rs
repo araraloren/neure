@@ -8,7 +8,7 @@ use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::re::Wrapped;
+use crate::re::Wrappable;
 
 // into_box
 #[derive(Debug, Clone)]
@@ -43,7 +43,7 @@ where
     }
 }
 
-impl<I> Wrapped for BoxedCtor<I> {
+impl<I> Wrappable for BoxedCtor<I> {
     type Inner = Box<I>;
 
     fn wrap(inner: Self::Inner) -> Self {

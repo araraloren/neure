@@ -53,13 +53,13 @@ pub use self::regex::Consume;
 pub use self::regex::ConsumeAll;
 pub use self::regex::DynamicArcRegex;
 pub use self::regex::DynamicBoxedRegex;
-pub use self::regex::DynamicCreateRegexThenHelper;
 pub use self::regex::DynamicRcRegex;
+pub use self::regex::DynamicRegexBuilderHelper;
 pub use self::regex::LitSlice;
 pub use self::regex::LitString;
 pub use self::regex::RegexNot;
+pub use self::wrap::Wrappable;
 pub use self::wrap::Wrapped;
-pub use self::wrap::WrappedTy;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -89,6 +89,16 @@ where
     #[inline]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         (self)(ctx)
+    }
+}
+
+impl<'a, C> Regex<C> for ()
+where
+    C: Context<'a> + Match<C>,
+{
+    #[inline(always)]
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        Ok(Span::new(ctx.offset(), 0))
     }
 }
 
@@ -732,22 +742,22 @@ pub fn pair_slice<const N: usize, K, V>(val: &[(K, V); N]) -> PairSlice<'_, N, K
 macro_rules! trace {
     ($name:literal, $beg:ident, $ret:expr) => {{
         let ret = $ret;
-        $crate::trace_log!("r`{}`@{} start", $name, $beg);
+        $crate::neure_trace!("r`{}`@{} start", $name, $beg);
         ret
     }};
     ($name:literal, $beg:ident @ $stage:literal, $ret:expr) => {{
         let ret = $ret;
-        $crate::trace_log!("r`{}`@{} try stage `{}`", $name, $beg, $stage);
+        $crate::neure_trace!("r`{}`@{} try stage `{}`", $name, $beg, $stage);
         ret
     }};
     ($name:literal, $beg:ident -> $end:expr, $ret:expr) => {{
         let ret = $ret;
-        $crate::trace_log!("r`{}`@{} -> {{end: {}, ret: {}}}", $name, $beg, $end, ret);
+        $crate::neure_trace!("r`{}`@{} -> {{end: {}, ret: {}}}", $name, $beg, $end, ret);
         ret
     }};
     ($name:literal, $beg:ident => $end:expr, $ret:expr) => {{
         let ret = $ret;
-        $crate::trace_log!("r`{}`@{} => {{end: {}, ret: {:?}}}", $name, $beg, $end, ret);
+        $crate::neure_trace!("r`{}`@{} => {{end: {}, ret: {:?}}}", $name, $beg, $end, ret);
         ret
     }};
 }
@@ -756,17 +766,17 @@ macro_rules! trace {
 macro_rules! trace_v {
     ($name:literal, $inner:expr, $beg:ident, $ret:expr) => {{
         let ret = $ret;
-        $crate::trace_log!("r`{}({:?})`@{} start", $name, $inner, $beg);
+        $crate::neure_trace!("r`{}({:?})`@{} start", $name, $inner, $beg);
         ret
     }};
     ($name:literal, $inner:expr, $beg:ident @ $stage:literal, $ret:expr) => {{
         let ret = $ret;
-        $crate::trace_log!("r`{}({:?})`@{} try stage `{}`", $name, $inner, $beg, $stage);
+        $crate::neure_trace!("r`{}({:?})`@{} try stage `{}`", $name, $inner, $beg, $stage);
         ret
     }};
     ($name:literal, $inner:expr, $beg:ident => $end:expr, $ret:expr, $cnt:expr) => {{
         let ret = $ret;
-        $crate::trace_log!(
+        $crate::neure_trace!(
             "r`{}({:?})`@{} => {{end: {}, ret: {:?}, cnt = {}}}",
             $name,
             $inner,
@@ -779,7 +789,7 @@ macro_rules! trace_v {
     }};
     ($name:literal, $inner:expr, $beg:ident -> $end:expr, $ret:expr, $cnt:expr) => {{
         let ret = $ret;
-        $crate::trace_log!(
+        $crate::neure_trace!(
             "r`{}({:?})`@{} -> {{end: {}, ret: {}, cnt: {}}}",
             $name,
             $inner,

@@ -47,6 +47,14 @@ where
         self.ctx
     }
 
+    // Return `Span { beg: self.beg(), len }` and incrment the offset of `C`
+    pub fn inc(&mut self, len: usize) -> Span {
+        let span = Span::new(self.beg(), len);
+
+        self.ctx.inc(len);
+        span
+    }
+
     pub fn reset(&mut self) -> &mut Self {
         self.ctx.set_offset(self.offset);
         self

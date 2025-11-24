@@ -1,4 +1,3 @@
-use super::trace_u;
 use super::Neu;
 
 use crate::MayDebug;
@@ -17,7 +16,10 @@ impl<T> Equal<T> {
 impl<T: PartialEq + MayDebug> Neu<T> for Equal<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
-        trace_u!("equal", self.val, other, &self.val == other)
+        let val = &self.val;
+        let ret = val == other;
+
+        crate::trace_retval!("Equal", val, other, ret)
     }
 }
 

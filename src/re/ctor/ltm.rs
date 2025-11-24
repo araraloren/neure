@@ -6,13 +6,13 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neure_trace;
 use crate::re::def_not;
 use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::trace_log;
 
 ///
 /// Match `L` and `R`, return the longest match result.
@@ -134,7 +134,7 @@ where
             (offset_r, r_r)
         };
 
-        trace_log!(
+        neure_trace!(
             "r`ltm`@{} -> {{l: offset = {}, r: offset = {}}}",
             beg,
             offset_l,
@@ -166,7 +166,7 @@ where
             (offset_r, r_r)
         };
 
-        trace_log!(
+        neure_trace!(
             "r`ltm`@{} -> {{l: offset = {}, ret = {:?}; r: offset = {}, ret = {:?}}}",
             beg,
             offset_l,

@@ -8,7 +8,6 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace_v;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -188,11 +187,8 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let range = M..N;
-        let ret = trace_v!("neu repeat", &range, beg, g.try_mat(self));
+        let ret = g.try_mat(self);
 
-        trace_v!( "neu repeat", range, beg -> g.end(), ret.is_ok(), 1);
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -211,10 +207,9 @@ where
         let mut end = None;
         let mut ret = Err(Error::NeuRepeat);
         let iter = g.ctx().peek();
-        let offset = g.beg();
         let range = M..N;
 
-        trace_v!("neu repeat", &range, offset, ());
+        crate::debug_regex_beg!("NeureRepeat", range, g.beg());
         if let Ok(mut iter) = iter {
             while cnt < N {
                 if let Some(pair) = iter.next() {
@@ -233,10 +228,10 @@ where
             if cnt >= M {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
                 let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
-                ret = Ok(ret_and_inc(g.ctx(),  len));
+                ret = Ok(ret_and_inc(g.ctx(), len));
             }
         }
-        trace_v!("neu repeat", range, offset => g.end(), g.process_ret(ret), cnt)
+        crate::debug_regex_reval!("NeureRepeat", cnt, g.beg(), g.end(), g.process_ret(ret))
     }
 }
 
@@ -366,10 +361,8 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace_v!("neu repeat_range", self.range, beg, g.try_mat(self));
+        let ret = g.try_mat(self);
 
-        trace_v!( "neu repeat_range", self.range, beg -> g.end(), ret.is_ok(), 1);
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -388,9 +381,8 @@ where
         let mut end = None;
         let mut ret = Err(Error::NeuRepeatRange);
         let iter = g.ctx().peek();
-        let offset = g.beg();
 
-        trace_v!("neu repeat_range", self.range, offset, ());
+        crate::debug_regex_beg!("NeureRepeatRange", self.range, g.beg());
         if let Ok(mut iter) = iter {
             fn bound_checker(max: Option<usize>) -> impl Fn(usize) -> bool {
                 move |val| max.map(|max| val < max).unwrap_or(true)
@@ -419,9 +411,11 @@ where
             if self.range.contains(&cnt) {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
                 let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
-                ret = Ok(ret_and_inc(g.ctx(),  len));
+                ret = Ok(ret_and_inc(g.ctx(), len));
             }
         }
-        trace_v!("neu repeat_range", self.range, offset => g.end(), g.process_ret(ret), cnt)
+        let ret = g.process_ret(ret);
+
+        crate::debug_regex_reval!("NeureRepeatRange", cnt, g.beg(), g.end(), ret)
     }
 }

@@ -18,93 +18,93 @@ use super::DynamicArcRegex;
 use super::DynamicBoxedCtorSync;
 use super::DynamicBoxedRegex;
 use super::DynamicRcRegex;
-use super::WrappedTy;
+use super::Wrapped;
 
 pub trait RegexIntoOp
 where
     Self: Sized,
 {
-    fn into_box_regex(self) -> WrappedTy<BoxedRegex<Self>>;
+    fn into_box_regex(self) -> Wrapped<BoxedRegex<Self>>;
 
-    fn into_rc_regex(self) -> WrappedTy<Rc<Self>>;
+    fn into_rc_regex(self) -> Wrapped<Rc<Self>>;
 
-    fn into_arc_regex(self) -> WrappedTy<Arc<Self>>;
+    fn into_arc_regex(self) -> Wrapped<Arc<Self>>;
 
-    fn into_cell_regex(self) -> WrappedTy<Cell<Self>>;
+    fn into_cell_regex(self) -> Wrapped<Cell<Self>>;
 
-    fn into_refcell_regex(self) -> WrappedTy<RefCell<Self>>;
+    fn into_refcell_regex(self) -> Wrapped<RefCell<Self>>;
 
-    fn into_mutex_regex(self) -> WrappedTy<Mutex<Self>>;
+    fn into_mutex_regex(self) -> Wrapped<Mutex<Self>>;
 
-    fn into_dyn_regex<'a, 'b, C>(self) -> WrappedTy<DynamicBoxedRegex<'b, C>>
+    fn into_dyn_regex<'a, 'b, C>(self) -> Wrapped<DynamicBoxedRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b;
 
-    fn into_dyn_arc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicArcRegex<'b, C>>
+    fn into_dyn_arc_regex<'a, 'b, C>(self) -> Wrapped<DynamicArcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b;
 
-    fn into_dyn_rc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicRcRegex<'b, C>>
+    fn into_dyn_rc_regex<'a, 'b, C>(self) -> Wrapped<DynamicRcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b;
 }
 
 impl<T> RegexIntoOp for T {
-    fn into_box_regex(self) -> WrappedTy<BoxedRegex<Self>> {
-        WrappedTy {
+    fn into_box_regex(self) -> Wrapped<BoxedRegex<Self>> {
+        Wrapped {
             value: BoxedRegex::new(self),
         }
     }
 
-    fn into_rc_regex(self) -> WrappedTy<Rc<Self>> {
-        WrappedTy::new(Rc::new(self))
+    fn into_rc_regex(self) -> Wrapped<Rc<Self>> {
+        Wrapped::new(Rc::new(self))
     }
 
-    fn into_arc_regex(self) -> WrappedTy<Arc<Self>> {
-        WrappedTy::new(Arc::new(self))
+    fn into_arc_regex(self) -> Wrapped<Arc<Self>> {
+        Wrapped::new(Arc::new(self))
     }
 
-    fn into_cell_regex(self) -> WrappedTy<Cell<Self>> {
-        WrappedTy::new(Cell::new(self))
+    fn into_cell_regex(self) -> Wrapped<Cell<Self>> {
+        Wrapped::new(Cell::new(self))
     }
 
-    fn into_refcell_regex(self) -> WrappedTy<RefCell<Self>> {
-        WrappedTy::new(RefCell::new(self))
+    fn into_refcell_regex(self) -> Wrapped<RefCell<Self>> {
+        Wrapped::new(RefCell::new(self))
     }
 
-    fn into_mutex_regex(self) -> WrappedTy<Mutex<Self>> {
-        WrappedTy::new(Mutex::new(self))
+    fn into_mutex_regex(self) -> Wrapped<Mutex<Self>> {
+        Wrapped::new(Mutex::new(self))
     }
 
-    fn into_dyn_regex<'a, 'b, C>(self) -> WrappedTy<DynamicBoxedRegex<'b, C>>
+    fn into_dyn_regex<'a, 'b, C>(self) -> Wrapped<DynamicBoxedRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicBoxedRegex::new(self),
         }
     }
 
-    fn into_dyn_arc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicArcRegex<'b, C>>
+    fn into_dyn_arc_regex<'a, 'b, C>(self) -> Wrapped<DynamicArcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicArcRegex::new(self),
         }
     }
 
-    fn into_dyn_rc_regex<'a, 'b, C>(self) -> WrappedTy<DynamicRcRegex<'b, C>>
+    fn into_dyn_rc_regex<'a, 'b, C>(self) -> Wrapped<DynamicRcRegex<'b, C>>
     where
         C: Context<'a>,
         Self: Regex<C> + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicRcRegex::new(self),
         }
     }
@@ -114,38 +114,36 @@ pub trait ConstructIntoOp
 where
     Self: Sized,
 {
-    fn into_box(self) -> WrappedTy<BoxedCtor<Self>>;
+    fn into_box(self) -> Wrapped<BoxedCtor<Self>>;
 
-    fn into_rc(self) -> WrappedTy<Rc<Self>>;
+    fn into_rc(self) -> Wrapped<Rc<Self>>;
 
-    fn into_arc(self) -> WrappedTy<Arc<Self>>;
+    fn into_arc(self) -> Wrapped<Arc<Self>>;
 
-    fn into_cell(self) -> WrappedTy<Cell<Self>>;
+    fn into_cell(self) -> Wrapped<Cell<Self>>;
 
-    fn into_refcell(self) -> WrappedTy<RefCell<Self>>;
+    fn into_refcell(self) -> Wrapped<RefCell<Self>>;
 
-    fn into_mutex(self) -> WrappedTy<Mutex<Self>>;
+    fn into_mutex(self) -> Wrapped<Mutex<Self>>;
 
-    fn into_dyn<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn<'a, 'b, C, M, O, H, A>(self) -> Wrapped<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + 'b;
 
     fn into_dyn_sync<'a, 'b, C, M, O, H, A>(
         self,
-    ) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
+    ) -> Wrapped<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + Send + 'b;
 
-    fn into_dyn_arc<'a, 'b, C, M, O, H, A>(
-        self,
-    ) -> WrappedTy<DynamicArcCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn_arc<'a, 'b, C, M, O, H, A>(self) -> Wrapped<DynamicArcCtor<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + 'b;
 
-    fn into_dyn_rc<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicRcCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn_rc<'a, 'b, C, M, O, H, A>(self) -> Wrapped<DynamicRcCtor<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + 'b;
@@ -179,8 +177,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_box(self) -> WrappedTy<BoxedCtor<Self>> {
-        WrappedTy::new(Box::new(self))
+    fn into_box(self) -> Wrapped<BoxedCtor<Self>> {
+        Wrapped::new(Box::new(self))
     }
 
     ///
@@ -210,24 +208,24 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_rc(self) -> WrappedTy<Rc<Self>> {
-        WrappedTy::new(Rc::new(self))
+    fn into_rc(self) -> Wrapped<Rc<Self>> {
+        Wrapped::new(Rc::new(self))
     }
 
-    fn into_arc(self) -> WrappedTy<Arc<Self>> {
-        WrappedTy::new(Arc::new(self))
+    fn into_arc(self) -> Wrapped<Arc<Self>> {
+        Wrapped::new(Arc::new(self))
     }
 
-    fn into_cell(self) -> WrappedTy<Cell<Self>> {
-        WrappedTy::new(Cell::new(self))
+    fn into_cell(self) -> Wrapped<Cell<Self>> {
+        Wrapped::new(Cell::new(self))
     }
 
-    fn into_refcell(self) -> WrappedTy<RefCell<Self>> {
-        WrappedTy::new(RefCell::new(self))
+    fn into_refcell(self) -> Wrapped<RefCell<Self>> {
+        Wrapped::new(RefCell::new(self))
     }
 
-    fn into_mutex(self) -> WrappedTy<Mutex<Self>> {
-        WrappedTy::new(Mutex::new(self))
+    fn into_mutex(self) -> Wrapped<Mutex<Self>> {
+        Wrapped::new(Mutex::new(self))
     }
 
     /// # Example 2
@@ -250,44 +248,44 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_dyn<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn<'a, 'b, C, M, O, H, A>(self) -> Wrapped<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicBoxedCtor::new(self),
         }
     }
 
     fn into_dyn_sync<'a, 'b, C, M, O, H, A>(
         self,
-    ) -> WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
+    ) -> Wrapped<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + Send + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicBoxedCtorSync::new(self),
         }
     }
 
-    fn into_dyn_arc<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicArcCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn_arc<'a, 'b, C, M, O, H, A>(self) -> Wrapped<DynamicArcCtor<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicArcCtor::new(self),
         }
     }
 
-    fn into_dyn_rc<'a, 'b, C, M, O, H, A>(self) -> WrappedTy<DynamicRcCtor<'a, 'b, C, M, O, H, A>>
+    fn into_dyn_rc<'a, 'b, C, M, O, H, A>(self) -> Wrapped<DynamicRcCtor<'a, 'b, C, M, O, H, A>>
     where
         C: Context<'a> + Match<C>,
         Self: Ctor<'a, C, M, O, H, A> + 'b,
     {
-        WrappedTy {
+        Wrapped {
             value: DynamicRcCtor::new(self),
         }
     }

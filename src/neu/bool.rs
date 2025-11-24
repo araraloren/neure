@@ -1,7 +1,6 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
-use super::trace_u;
 use super::Neu;
 
 use crate::MayDebug;
@@ -37,7 +36,7 @@ impl<T> True<T> {
 impl<T: MayDebug> Neu<T> for True<T> {
     #[inline(always)]
     fn is_match(&self, _other: &T) -> bool {
-        trace_u!("true", "true", _other, true)
+        crate::trace_retval!("True", _other, true)
     }
 }
 
@@ -89,7 +88,7 @@ impl<T> False<T> {
 impl<T: MayDebug> Neu<T> for False<T> {
     #[inline(always)]
     fn is_match(&self, _other: &T) -> bool {
-        trace_u!("false", "false", _other, false)
+        crate::trace_retval!("False", _other, false)
     }
 }
 

@@ -9,7 +9,7 @@ use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::re::Wrapped;
+use crate::re::Wrappable;
 
 pub struct DynamicBoxedRegex<'a, C> {
     inner: Box<dyn Regex<C> + 'a>,
@@ -44,7 +44,7 @@ where
     }
 }
 
-impl<'a, C> Wrapped for DynamicBoxedRegex<'a, C> {
+impl<'a, C> Wrappable for DynamicBoxedRegex<'a, C> {
     type Inner = Box<dyn Regex<C> + 'a>;
 
     fn wrap(inner: Self::Inner) -> Self {
@@ -93,7 +93,7 @@ where
     }
 }
 
-impl<'a, C> Wrapped for DynamicArcRegex<'a, C> {
+impl<'a, C> Wrappable for DynamicArcRegex<'a, C> {
     type Inner = Arc<dyn Regex<C> + 'a>;
 
     fn wrap(inner: Self::Inner) -> Self {
@@ -142,7 +142,7 @@ where
     }
 }
 
-impl<'a, C> Wrapped for DynamicRcRegex<'a, C> {
+impl<'a, C> Wrappable for DynamicRcRegex<'a, C> {
     type Inner = Rc<dyn Regex<C> + 'a>;
 
     fn wrap(inner: Self::Inner) -> Self {

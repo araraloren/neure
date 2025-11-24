@@ -6,37 +6,64 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::map::Select0;
-use crate::map::Select1;
-use crate::map::SelectEq;
-use crate::re::ctor::Map;
 use crate::re::def_not;
-use crate::re::trace;
+use crate::re::Ctor;
+use crate::re::Extract;
+use crate::re::Handler;
 use crate::re::Regex;
 
+///
+/// [`DynamicRegexBuilder`] can dynamically construct a new regex based on the [`Span`]
+/// result of given `pat`, then use this newly regex to continue matching forward. When
+/// successful, it will return [`Span`] of newly regex.
+///
+/// # Example
+/// ```
+/// # use neure::{prelude::*, re::DynamicRegexBuilderHelper};
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///
+///     let year = re::string("rust")
+///         .into_regex_builder(|_, s| Ok(neu::ascii_alphanumeric().repeat_range(s.len()..=s.len())));
+///     let year = year.map(map::from_str::<u64>());
+///     let mut ctx = CharsCtx::new("rust2028");
+///
+///     assert_eq!(ctx.ctor(&year)?, 2028);
+///
+///     let what = re::string("rust").into_regex_builder(|ctx: &mut CharsCtx, s| {
+///         // reset to begin of previous regex
+///         ctx.set_offset(s.beg());
+///         Ok(re::consume(s.len()).then(neu::ascii_alphanumeric().repeat_one_more()))
+///     });
+///     let mut ctx = CharsCtx::new("rust10086");
+///
+///     assert_eq!(ctx.ctor(&what)?, "rust10086");
+///     Ok(())
+/// # }
+/// ```
 #[derive(Default, Copy)]
-pub struct DynamicCreateRegexThen<C, P, F> {
+pub struct DynamicRegexBuilder<C, P, F> {
     pat: P,
     func: F,
     marker: PhantomData<C>,
 }
 
-def_not!(DynamicCreateRegexThen<C, P, F>);
+def_not!(DynamicRegexBuilder<C, P, F>);
 
-impl<C, P, F> Debug for DynamicCreateRegexThen<C, P, F>
+impl<C, P, F> Debug for DynamicRegexBuilder<C, P, F>
 where
     P: Debug,
     F: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("DynamicCreateRegexThen")
+        f.debug_struct("DynamicRegexBuilder")
             .field("pat", &self.pat)
             .field("func", &self.func)
             .finish()
     }
 }
 
-impl<C, P, F> Clone for DynamicCreateRegexThen<C, P, F>
+impl<C, P, F> Clone for DynamicRegexBuilder<C, P, F>
 where
     P: Clone,
     F: Clone,
@@ -50,7 +77,7 @@ where
     }
 }
 
-impl<C, P, F> DynamicCreateRegexThen<C, P, F> {
+impl<C, P, F> DynamicRegexBuilder<C, P, F> {
     pub fn new(pat: P, func: F) -> Self {
         Self {
             pat,
@@ -84,54 +111,72 @@ impl<C, P, F> DynamicCreateRegexThen<C, P, F> {
         self.func = func;
         self
     }
-
-    pub fn _0<O>(self) -> Map<C, Self, Select0, O> {
-        Map::new(self, Select0)
-    }
-
-    pub fn _1<O>(self) -> Map<C, Self, Select1, O> {
-        Map::new(self, Select1)
-    }
-
-    pub fn _eq<I1, I2>(self) -> Map<C, Self, SelectEq, (I1, I2)> {
-        Map::new(self, SelectEq)
-    }
 }
 
-impl<'a, C, P, F, T> Regex<C> for DynamicCreateRegexThen<C, P, F>
+impl<'a, C, O, H, A, P, F, T> Ctor<'a, C, O, O, H, A> for DynamicRegexBuilder<C, P, F>
 where
     P: Regex<C>,
     T: Regex<C>,
     C: Context<'a> + Match<C>,
-    F: Fn(&Span) -> Result<T, Error>,
+    F: Fn(&mut C, &Span) -> Result<T, Error>,
+    H: Handler<A, Out = O, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+{
+    #[inline(always)]
+    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
+        let mut g = CtxGuard::new(ctx);
+        let ret = g.try_mat(self);
+
+        func.invoke(A::extract(g.ctx(), &ret?)?)
+    }
+}
+
+impl<'a, C, P, F, T> Regex<C> for DynamicRegexBuilder<C, P, F>
+where
+    P: Regex<C>,
+    T: Regex<C>,
+    C: Context<'a> + Match<C>,
+    F: Fn(&mut C, &Span) -> Result<T, Error>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("dynamic_create_regex_then", beg @ "pat", g.try_mat(&self.pat)?);
 
-        ret.add_assign(
-            trace!("dynamic_create_regex_then", beg @ "dynamic regex", g.try_mat(&(self.func)(&ret)?)?)
-        );
-        trace!("dynamic_create_regex_then", beg => g.end(), Ok(ret))
+        crate::debug_regex_beg!("DynamicRegexBuilder", g.beg());
+
+        // match first regex
+        let ret = g.try_mat(&self.pat)?;
+
+        // build new regex base on result, let the user control ctx
+        // continue match from end of previous span
+        let pat = (self.func)(g.ctx(), &ret)?;
+        let ret = g.try_mat(&pat);
+
+        crate::debug_regex_reval!("DynamicRegexBuilder", g.beg(), g.end(), ret)
     }
 }
 
-pub trait DynamicCreateRegexThenHelper<'a, C>
+pub trait DynamicRegexBuilderHelper<'a, C>
 where
     Self: Sized,
     C: Context<'a> + Match<C>,
 {
-    fn dyn_then_regex<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F>;
+    fn into_regex_builder<F, R>(self, func: F) -> DynamicRegexBuilder<C, Self, F>
+    where
+        R: Regex<C>,
+        F: Fn(&mut C, &Span) -> Result<R, Error>;
 }
 
-impl<'a, C, T> DynamicCreateRegexThenHelper<'a, C> for T
+impl<'a, C, T> DynamicRegexBuilderHelper<'a, C> for T
 where
-    Self: Sized,
+    Self: Regex<C> + Sized,
     C: Context<'a> + Match<C>,
 {
-    fn dyn_then_regex<F>(self, func: F) -> DynamicCreateRegexThen<C, Self, F> {
-        DynamicCreateRegexThen::new(self, func)
+    fn into_regex_builder<F, R>(self, func: F) -> DynamicRegexBuilder<C, Self, F>
+    where
+        R: Regex<C>,
+        F: Fn(&mut C, &Span) -> Result<R, Error>,
+    {
+        DynamicRegexBuilder::new(self, func)
     }
 }

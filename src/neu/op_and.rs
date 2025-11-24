@@ -1,6 +1,9 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::fmt::Debug;
+use std::marker::PhantomData;
 
 use super::Neu;
+
+use crate::MayDebug;
 
 ///
 /// Return true if the value matches both `L` and `R`.
@@ -106,6 +109,7 @@ where
 
 impl<L, R, T> Neu<T> for And<L, R, T>
 where
+    T: MayDebug,
     L: Neu<T>,
     R: Neu<T>,
 {
@@ -113,8 +117,7 @@ where
     fn is_match(&self, other: &T) -> bool {
         let ret = self.left.is_match(other) && self.right.is_match(other);
 
-        crate::trace_log!("neu logical `and` -> {ret}");
-        ret
+        crate::trace_retval!("And", other, ret)
     }
 }
 
@@ -128,8 +131,8 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     const BEG: u8 = 'a' as u8 - 1;
-///     const END: u8 = 'z' as u8 + 1;
+///     const BEG: u8 = b'a' - 1;
+///     const END: u8 = b'z' + 1;
 ///
 ///     let char = neu::and(|a: &u8| a > &BEG, |a: &u8| a < &END);
 ///     let str = char.repeat_range(6..);

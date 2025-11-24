@@ -9,7 +9,7 @@ use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
-use crate::re::Wrapped;
+use crate::re::Wrappable;
 
 pub struct DynamicBoxedCtor<'a, 'b, C, M, O, H, A> {
     inner: Box<dyn Ctor<'a, C, M, O, H, A> + 'b>,
@@ -44,7 +44,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Wrapped for DynamicBoxedCtor<'a, 'b, C, M, O, H, A> {
+impl<'a, 'b, C, M, O, H, A> Wrappable for DynamicBoxedCtor<'a, 'b, C, M, O, H, A> {
     type Inner = Box<dyn Ctor<'a, C, M, O, H, A> + 'b>;
 
     fn wrap(inner: Self::Inner) -> Self {
@@ -93,7 +93,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Wrapped for DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A> {
+impl<'a, 'b, C, M, O, H, A> Wrappable for DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A> {
     type Inner = Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>;
 
     fn wrap(inner: Self::Inner) -> Self {
@@ -143,7 +143,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Wrapped for DynamicArcCtor<'a, 'b, C, M, O, H, A> {
+impl<'a, 'b, C, M, O, H, A> Wrappable for DynamicArcCtor<'a, 'b, C, M, O, H, A> {
     type Inner = Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>;
 
     fn wrap(inner: Self::Inner) -> Self {
@@ -193,7 +193,7 @@ where
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Wrapped for DynamicRcCtor<'a, 'b, C, M, O, H, A> {
+impl<'a, 'b, C, M, O, H, A> Wrappable for DynamicRcCtor<'a, 'b, C, M, O, H, A> {
     type Inner = Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>;
 
     fn wrap(inner: Self::Inner) -> Self {

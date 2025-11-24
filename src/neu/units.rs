@@ -1,4 +1,5 @@
-use super::trace_u;
+use crate::trace_retval;
+
 use super::Neu;
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -13,7 +14,7 @@ impl Alphabetic {
 impl Neu<char> for Alphabetic {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("alphabetic", self, other, other.is_alphabetic())
+        trace_retval!("Alphabetic", other, other.is_alphabetic())
     }
 }
 
@@ -52,7 +53,7 @@ impl Alphanumeric {
 impl Neu<char> for Alphanumeric {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("alphanumeric", self, other, other.is_alphanumeric())
+        trace_retval!("Alphanumeric", other, other.is_alphanumeric())
     }
 }
 
@@ -92,14 +93,14 @@ impl Ascii {
 impl Neu<char> for Ascii {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii", self, other, other.is_ascii())
+        trace_retval!("Ascii", other, other.is_ascii())
     }
 }
 
 impl Neu<u8> for Ascii {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii", self, other, other.is_ascii())
+        trace_retval!("Ascii", other, other.is_ascii())
     }
 }
 
@@ -138,14 +139,14 @@ impl AsciiAlphabetic {
 impl Neu<char> for AsciiAlphabetic {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_alphabetic", self, other, other.is_ascii_alphabetic())
+        trace_retval!("AsciiAlphabetic", other, other.is_ascii_alphabetic())
     }
 }
 
 impl Neu<u8> for AsciiAlphabetic {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_alphabetic", self, other, other.is_ascii_alphabetic())
+        trace_retval!("AsciiAlphabetic", other, other.is_ascii_alphabetic())
     }
 }
 
@@ -184,24 +185,14 @@ impl AsciiAlphanumeric {
 impl Neu<char> for AsciiAlphanumeric {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!(
-            "ascii_alphanumeric",
-            self,
-            other,
-            other.is_ascii_alphanumeric()
-        )
+        trace_retval!("AsciiAlphanumeric", other, other.is_ascii_alphanumeric())
     }
 }
 
 impl Neu<u8> for AsciiAlphanumeric {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!(
-            "ascii_alphanumeric",
-            self,
-            other,
-            other.is_ascii_alphanumeric()
-        )
+        trace_retval!("AsciiAlphanumeric", other, other.is_ascii_alphanumeric())
     }
 }
 
@@ -240,14 +231,14 @@ impl AsciiControl {
 impl Neu<char> for AsciiControl {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_control", self, other, other.is_ascii_control())
+        trace_retval!("AsciiControl", other, other.is_ascii_control())
     }
 }
 
 impl Neu<u8> for AsciiControl {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_control", self, other, other.is_ascii_control())
+        trace_retval!("AsciiControl", other, other.is_ascii_control())
     }
 }
 
@@ -286,14 +277,14 @@ impl AsciiDigit {
 impl Neu<char> for AsciiDigit {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_digit", self, other, other.is_ascii_digit())
+        trace_retval!("AsciiDigit", other, other.is_ascii_digit())
     }
 }
 
 impl Neu<u8> for AsciiDigit {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_digit", self, other, other.is_ascii_digit())
+        trace_retval!("AsciiDigit", other, other.is_ascii_digit())
     }
 }
 
@@ -332,14 +323,14 @@ impl AsciiGraphic {
 impl Neu<char> for AsciiGraphic {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_graphic", self, other, other.is_ascii_graphic())
+        trace_retval!("AsciiGraphic", other, other.is_ascii_graphic())
     }
 }
 
 impl Neu<u8> for AsciiGraphic {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_graphic", self, other, other.is_ascii_graphic())
+        trace_retval!("AsciiGraphic", other, other.is_ascii_graphic())
     }
 }
 
@@ -378,14 +369,14 @@ impl AsciiHexDigit {
 impl Neu<char> for AsciiHexDigit {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_hexdigit", self, other, other.is_ascii_hexdigit())
+        trace_retval!("AsciiHexDigit", other, other.is_ascii_hexdigit())
     }
 }
 
 impl Neu<u8> for AsciiHexDigit {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_hexdigit", self, other, other.is_ascii_hexdigit())
+        trace_retval!("AsciiHexDigit", other, other.is_ascii_hexdigit())
     }
 }
 
@@ -424,14 +415,14 @@ impl AsciiLowercase {
 impl Neu<char> for AsciiLowercase {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_lowercase", self, other, other.is_ascii_lowercase())
+        trace_retval!("AsciiLowercase", other, other.is_ascii_lowercase())
     }
 }
 
 impl Neu<u8> for AsciiLowercase {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_lowercase", self, other, other.is_ascii_lowercase())
+        trace_retval!("AsciiLowercase", other, other.is_ascii_lowercase())
     }
 }
 
@@ -470,24 +461,14 @@ impl AsciiPunctuation {
 impl Neu<char> for AsciiPunctuation {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!(
-            "ascii_punctuation",
-            self,
-            other,
-            other.is_ascii_punctuation()
-        )
+        trace_retval!("AsciiPunctuation", other, other.is_ascii_punctuation())
     }
 }
 
 impl Neu<u8> for AsciiPunctuation {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!(
-            "ascii_punctuation",
-            self,
-            other,
-            other.is_ascii_punctuation()
-        )
+        trace_retval!("AsciiPunctuation", other, other.is_ascii_punctuation())
     }
 }
 
@@ -526,14 +507,14 @@ impl AsciiUppercase {
 impl Neu<char> for AsciiUppercase {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_uppercase", self, other, other.is_ascii_uppercase())
+        trace_retval!("AsciiUppercase", other, other.is_ascii_uppercase())
     }
 }
 
 impl Neu<u8> for AsciiUppercase {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_uppercase", self, other, other.is_ascii_uppercase())
+        trace_retval!("AsciiUppercase", other, other.is_ascii_uppercase())
     }
 }
 
@@ -572,14 +553,14 @@ impl AsciiWhiteSpace {
 impl Neu<char> for AsciiWhiteSpace {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("ascii_whitespace", self, other, other.is_ascii_whitespace())
+        trace_retval!("AsciiWhiteSpace", other, other.is_ascii_whitespace())
     }
 }
 
 impl Neu<u8> for AsciiWhiteSpace {
     #[inline(always)]
     fn is_match(&self, other: &u8) -> bool {
-        trace_u!("ascii_whitespace", self, other, other.is_ascii_whitespace())
+        trace_retval!("AsciiWhiteSpace", other, other.is_ascii_whitespace())
     }
 }
 
@@ -620,7 +601,7 @@ impl Control {
 impl Neu<char> for Control {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("control", self, other, other.is_control())
+        trace_retval!("Control", other, other.is_control())
     }
 }
 
@@ -659,7 +640,7 @@ impl Digit {
 impl Neu<char> for Digit {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("digit", self, other, other.is_digit(self.0))
+        trace_retval!("Digit", other, other.is_digit(self.0))
     }
 }
 
@@ -698,7 +679,7 @@ impl Lowercase {
 impl Neu<char> for Lowercase {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("lowercase", self, other, other.is_lowercase())
+        trace_retval!("Lowercase", other, other.is_lowercase())
     }
 }
 
@@ -737,7 +718,7 @@ impl Numeric {
 impl Neu<char> for Numeric {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("numeric", self, other, other.is_numeric())
+        trace_retval!("Numeric", other, other.is_numeric())
     }
 }
 
@@ -776,7 +757,7 @@ impl Uppercase {
 impl Neu<char> for Uppercase {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("uppercase", self, other, other.is_uppercase())
+        trace_retval!("Uppercase", other, other.is_uppercase())
     }
 }
 
@@ -815,7 +796,7 @@ impl WhiteSpace {
 impl Neu<char> for WhiteSpace {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("whitespace", self, other, other.is_whitespace())
+        trace_retval!("WhiteSpace", other, other.is_whitespace())
     }
 }
 
@@ -856,7 +837,7 @@ impl Wild {
 impl Neu<char> for Wild {
     #[inline(always)]
     fn is_match(&self, other: &char) -> bool {
-        trace_u!("wild", '\n', other, other != &'\n')
+        trace_retval!("Wild", other, other != &'\n')
     }
 }
 

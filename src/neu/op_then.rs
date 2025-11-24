@@ -6,7 +6,6 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -168,10 +167,8 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("neu_then", beg, g.try_mat(self));
+        let ret = g.try_mat(self);
 
-        trace!("neu_then", beg -> g.end(), ret.is_ok());
         func.invoke(A::extract(g.ctx(), &ret?)?)
     }
 }
@@ -188,9 +185,8 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut iter = g.ctx().peek()?;
         let mut ret = Err(Error::NeuThen);
-        let beg = g.beg();
 
-        trace!("neu_then", beg, ());
+        crate::debug_regex_beg!("NeureThen", g.beg());
         if let Some((fst_offset, item)) = iter.next() {
             if self.left.is_match(&item) && self.cond.check(g.ctx(), &(fst_offset, item))? {
                 if let Some((snd_offset, item)) = iter.next() {
@@ -198,11 +194,11 @@ where
                         && self.cond.check(g.ctx(), &(snd_offset, item))?
                     {
                         let len = length_of(fst_offset, g.ctx(), iter.next().map(|v| v.0));
-                        ret = Ok(ret_and_inc(g.ctx(),  len));
+                        ret = Ok(ret_and_inc(g.ctx(), len));
                     }
                 }
             }
         }
-        trace!("neu_then", beg => g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureThen", g.beg(), g.end(), g.process_ret(ret))
     }
 }

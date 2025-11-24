@@ -13,12 +13,12 @@ use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::map::MapSingle;
+use crate::neure_trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Pass;
 use crate::span::SimpleStorer;
-use crate::trace_log;
 
 #[derive(Debug)]
 pub struct RegexCtx<'a, T>
@@ -322,19 +322,19 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
 
     fn set_offset(&mut self, offset: usize) -> &mut Self {
         self.offset = offset;
-        trace_log!("set {offset} -> ctx -> {}", self.offset);
+        neure_trace!("set {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
         self.offset += offset;
-        trace_log!("inc {offset} -> ctx -> {}", self.offset);
+        neure_trace!("inc {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn dec(&mut self, offset: usize) -> &mut Self {
         self.offset -= offset;
-        trace_log!("dec {offset} -> ctx -> {}", self.offset);
+        neure_trace!("dec {offset} -> ctx -> {}", self.offset);
         self
     }
 
@@ -377,19 +377,19 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
 
     fn set_offset(&mut self, offset: usize) -> &mut Self {
         self.offset = offset;
-        trace_log!("set {offset} -> ctx -> {}", self.offset);
+        neure_trace!("set {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn inc(&mut self, offset: usize) -> &mut Self {
         self.offset += offset;
-        trace_log!("inc {offset} -> ctx -> {}", self.offset);
+        neure_trace!("inc {offset} -> ctx -> {}", self.offset);
         self
     }
 
     fn dec(&mut self, offset: usize) -> &mut Self {
         self.offset -= offset;
-        trace_log!("dec {offset} -> ctx -> {}", self.offset);
+        neure_trace!("dec {offset} -> ctx -> {}", self.offset);
         self
     }
 

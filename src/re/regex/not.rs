@@ -4,7 +4,6 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -53,12 +52,11 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
         let mut ret = Err(Error::Not);
-        let beg = g.beg();
-        let r = trace!("not", beg, g.try_mat(&self.val));
 
-        if r.is_err() {
-            ret = Ok(Span::new(beg, 0));
+        crate::debug_regex_beg!("RegexNot", g.beg());
+        if g.try_mat(&self.val).is_err() {
+            ret = Ok(Span::new(g.beg(), 0));
         }
-        trace!("not", beg => g.reset().end(), ret)
+        crate::debug_regex_reval!("RegexNot", g.beg(), g.reset().end(), ret)
     }
 }

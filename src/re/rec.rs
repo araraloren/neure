@@ -8,21 +8,21 @@ use super::Ctor;
 use super::DynamicBoxedCtor;
 use super::DynamicBoxedCtorSync;
 use super::Pass;
-use super::WrappedTy;
+use super::Wrapped;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
 
 pub type RecursiveCtorWith<'a, 'b, C, M, O, H, A> =
-    Rc<RefCell<Option<WrappedTy<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>>>>;
+    Rc<RefCell<Option<Wrapped<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>>>>;
 
 pub type RecursiveCtorWithSync<'a, 'b, C, M, O, H, A> =
-    Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>>>>;
+    Arc<Mutex<Option<Wrapped<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>>>>;
 
 pub type RecursiveCtor<'a, 'b, C, M, O> = RecursiveCtorWith<'a, 'b, C, M, O, Pass, M>;
 
 pub type RecursiveCtorSync<'a, 'b, C, M, O> =
-    Arc<Mutex<Option<WrappedTy<DynamicBoxedCtorSync<'a, 'b, C, M, O, Pass, M>>>>>;
+    Arc<Mutex<Option<Wrapped<DynamicBoxedCtorSync<'a, 'b, C, M, O, Pass, M>>>>>;
 
 ///
 /// # Example

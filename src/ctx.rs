@@ -8,6 +8,7 @@ use std::marker::PhantomData;
 
 use crate::err::Error;
 use crate::re::Regex;
+use crate::MayDebug;
 
 pub use self::guard::CtxGuard;
 pub use self::policy::PolicyCtx;
@@ -20,7 +21,7 @@ pub type CharsCtx<'a> = RegexCtx<'a, str>;
 pub trait Context<'a> {
     type Orig: ?Sized;
 
-    type Item;
+    type Item: MayDebug;
 
     type Iter<'b>: Iterator<Item = (usize, Self::Item)>
     where

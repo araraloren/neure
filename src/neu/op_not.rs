@@ -1,4 +1,7 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::fmt::Debug;
+use std::marker::PhantomData;
+
+use crate::MayDebug;
 
 use super::Neu;
 
@@ -82,14 +85,14 @@ where
 
 impl<U, T> Neu<T> for Not<U, T>
 where
+    T: MayDebug,
     U: Neu<T>,
 {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         let ret = !self.unit.is_match(other);
 
-        crate::trace_log!("neu logical `not` -> {ret}");
-        ret
+        crate::trace_retval!("Not", other, ret)
     }
 }
 

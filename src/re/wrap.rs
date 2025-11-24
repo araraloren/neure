@@ -11,21 +11,21 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 #[derive(Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct WrappedTy<I> {
+pub struct Wrapped<I> {
     pub(crate) value: I,
 }
 
-def_not!(WrappedTy<I>);
+def_not!(Wrapped<I>);
 
-impl<I: Debug> Debug for WrappedTy<I> {
+impl<I: Debug> Debug for Wrapped<I> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("WrappedTy")
+        f.debug_struct("Wrapped")
             .field("value", &self.value)
             .finish()
     }
 }
 
-impl<I: Clone> Clone for WrappedTy<I> {
+impl<I: Clone> Clone for Wrapped<I> {
     fn clone(&self) -> Self {
         Self {
             value: self.value.clone(),
@@ -33,9 +33,9 @@ impl<I: Clone> Clone for WrappedTy<I> {
     }
 }
 
-impl<I> WrappedTy<I>
+impl<I> Wrapped<I>
 where
-    I: Wrapped,
+    I: Wrappable,
 {
     pub fn new(inner: I::Inner) -> Self {
         Self {
@@ -62,7 +62,7 @@ where
     }
 }
 
-impl<C, I> Regex<C> for WrappedTy<I>
+impl<C, I> Regex<C> for Wrapped<I>
 where
     I: Regex<C>,
 {
@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<'a, C, M, O, H, A, I> Ctor<'a, C, M, O, H, A> for WrappedTy<I>
+impl<'a, C, M, O, H, A, I> Ctor<'a, C, M, O, H, A> for Wrapped<I>
 where
     C: Context<'a> + Match<C>,
     I: Ctor<'a, C, M, O, H, A>,
@@ -85,7 +85,7 @@ where
     }
 }
 
-pub trait Wrapped
+pub trait Wrappable
 where
     Self: Sized,
 {
@@ -100,7 +100,7 @@ where
 
 macro_rules! self_wrap {
     ($ty:path) => {
-        impl<T> Wrapped for $ty {
+        impl<T> Wrappable for $ty {
             type Inner = $ty;
 
             fn wrap(inner: Self::Inner) -> Self {
