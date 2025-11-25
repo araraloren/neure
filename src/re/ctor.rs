@@ -75,10 +75,10 @@ where
 impl<'a, C, M, O, H, A, F> Ctor<'a, C, M, O, H, A> for F
 where
     C: Context<'a> + Match<C>,
-    F: Fn(&mut C) -> Result<O, Error>,
+    F: Fn(&mut C, &mut H) -> Result<O, Error>,
 {
-    fn construct(&self, ctx: &mut C, _: &mut H) -> Result<O, Error> {
-        (self)(ctx)
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        (self)(ctx, handler)
     }
 }
 

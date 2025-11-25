@@ -120,7 +120,7 @@ where
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
         let mut ctx = ctx.clone_with(ctx.orig_at(ctx.offset() + item.0)?);
-        let ret = ctx.try_mat_t(&self.regex);
+        let ret = ctx.try_mat(&self.regex);
 
         crate::trace_retval!("RegexCond", "NeuCond", item, ret.is_ok());
         Ok(ret.is_ok())

@@ -73,7 +73,7 @@ where
     C: Context<'b> + Match<C>,
 {
     pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<Span, Error> {
-        self.ctx.try_mat_t(pattern).inspect(|_| {
+        self.ctx.try_mat(pattern).inspect(|_| {
             self.reset = false;
         })
     }

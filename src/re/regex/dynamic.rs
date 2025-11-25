@@ -38,7 +38,7 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat_t(self.inner.as_ref())?;
+        let ret = ctx.try_mat(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
     }
@@ -87,7 +87,7 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat_t(self.inner.as_ref())?;
+        let ret = ctx.try_mat(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
     }
@@ -136,7 +136,7 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat_t(self.inner.as_ref())?;
+        let ret = ctx.try_mat(self.inner.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
     }

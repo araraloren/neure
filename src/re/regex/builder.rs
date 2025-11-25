@@ -14,7 +14,7 @@ use crate::re::Regex;
 
 ///
 /// [`DynamicRegexBuilder`] can dynamically construct a new regex based on the [`Span`]
-/// result of given `pat`, then use this newly regex to continue matching forward. When
+/// result of given `P`, then use this newly regex to continue matching forward. When
 /// successful, it will return [`Span`] of newly regex.
 ///
 /// # Example

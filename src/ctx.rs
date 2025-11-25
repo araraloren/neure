@@ -60,14 +60,10 @@ pub trait Context<'a> {
 
 pub trait Match<C> {
     fn is_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
-        self.try_mat_t(pat).is_ok()
+        self.try_mat(pat).is_ok()
     }
 
-    fn try_mat_t<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error>;
-
-    fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error> {
-        self.try_mat_t(pat)
-    }
+    fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error>;
 }
 
 pub trait PolicyMatch<C, B> {
@@ -135,7 +131,7 @@ where
     C: Context<'a> + Match<C>,
 {
     fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
-        ctx.try_mat_t(&self.regex)?;
+        ctx.try_mat(&self.regex)?;
         Ok(())
     }
 }

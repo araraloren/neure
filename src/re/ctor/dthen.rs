@@ -17,13 +17,17 @@ use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// [`DynamicCtorBuilder`] can dynamically construct a new type based on the match result of
-/// given `pat`, then use this newly type to continue matching forward. When
-/// successful, it will return result of newly type.
+/// [`DynamicCtorThenBuilder`] is a type similar to [`Then`](crate::re::ctor::Then).
+/// It can dynamically construct a new type based on the result type of given `P`,
+/// and upon success, it will return a tuple of result type of `P` and result of the newly type.
+///
+/// # Regex
+///
+/// Not support.
 ///
 /// # Ctor
 ///
-/// Return a tuple of `P`'s result and new type result.
+/// Return a tuple of `P`'s result and newly type result.
 ///
 /// # Example
 ///
@@ -176,12 +180,12 @@ where
     C: Context<'a> + Match<C>,
 {
     ///
-    /// Construct a new regex with `Ctor` implementation based on previous result.
+    /// Construct a new regex based on previous result.
     ///
     /// # Example
     ///
     /// ```
-    /// # use neure::{err::Error, prelude::*, re::DynamicCtorThenBuilder};
+    /// # use neure::{err::Error, prelude::*, re::DynamicCtorThenBuilderHelper};
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
@@ -190,7 +194,7 @@ where
     ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
     ///         .map(map::from_str::<usize>());
     ///     let num = num.clone().sep_once(b",", num);
-    ///     let re = num.into_ctor_then_builder(|_, a| {
+    ///     let re = num.into_ctor_then_builder(|_, a: &(usize, usize)| {
     ///         // leave the a's type empty cause rustc reject compile
     ///         Ok(b'+'
     ///             .repeat_range(a.0..a.0 + 1)

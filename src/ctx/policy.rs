@@ -145,7 +145,7 @@ where
     I: Context<'a>,
     Self: Context<'a>,
 {
-    fn try_mat_t<Pat>(&mut self, pat: &Pat) -> Result<Span, Error>
+    fn try_mat<Pat>(&mut self, pat: &Pat) -> Result<Span, Error>
     where
         Pat: Regex<PolicyCtx<I, B>> + ?Sized,
     {
