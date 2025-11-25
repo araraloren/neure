@@ -7,7 +7,6 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -121,10 +120,8 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut ret = Err(Error::Collect);
-        let beg = g.beg();
-        let val = trace!(
-            "collect",
-            beg,
+        let val = {
+            crate::debug_ctor_beg!("Collect", g.beg());
             V::from_iter(std::iter::from_fn(|| {
                 match self.pat.construct(g.ctx(), func) {
                     Ok(ret) => {
@@ -134,12 +131,12 @@ where
                     Err(_) => None,
                 }
             }))
-        );
+        };
 
         if cnt >= self.min {
             ret = Ok(val);
         }
-        trace!("collect", beg -> g.end(), ret.is_ok());
+        crate::debug_ctor_reval!("Collect", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
@@ -153,12 +150,11 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut span = Span::new(g.ctx().offset(), 0);
+        let mut span = Span::new(g.beg(), 0);
         let mut ret = Err(Error::Collect);
-        let beg = g.beg();
 
-        // don't use g.try_mat
-        trace!("collect", beg, ());
+        // don't use g.try_mat, it will set reset when failed
+        crate::debug_regex_beg!("Collect", g.beg());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             cnt += 1;
             span.add_assign(ret);
@@ -166,6 +162,6 @@ where
         if cnt >= self.min {
             ret = Ok(span);
         }
-        trace!("collect", beg => g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("Collect", g.beg(), g.end(), g.process_ret(ret))
     }
 }

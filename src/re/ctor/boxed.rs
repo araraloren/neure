@@ -26,7 +26,7 @@ impl<I> BoxedCtor<I> {
 
 impl<I, C> Regex<C> for BoxedCtor<I> {
     fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
-        unreachable!("Boxed invoke not support `Regex` trait")
+        unimplemented!("BoxedCtor not support `Regex` trait")
     }
 }
 

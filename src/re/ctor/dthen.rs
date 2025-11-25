@@ -11,28 +11,29 @@ use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::re::ctor::Map;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
 ///
-/// Like [`Then`](crate::re::ctor::Then), but create with [`.dyn_then_ctor`](crate::re::ctor::DynamicCreateCtorThenHelper#tymethod.dyn_then_ctor) of regex.
+/// [`DynamicCtorBuilder`] can dynamically construct a new type based on the match result of
+/// given `pat`, then use this newly type to continue matching forward. When
+/// successful, it will return result of newly type.
 ///
 /// # Ctor
 ///
-/// Return a tuple of `P`'s result and new regex result.
+/// Return a tuple of `P`'s result and new type result.
 ///
 /// # Example
 ///
 /// ```
-/// # use neure::{prelude::*, re::DynamicCreateCtorThenHelper};
+/// # use neure::{prelude::*, re::DynamicCtorThenBuilderHelper};
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let len = re::consume(2).map(map::from_le_bytes::<i16>());
-///     let data = len.dyn_then_ctor(|v: &i16| Ok(re::consume(*v as usize)));
+///     let data = len.into_ctor_then_builder(|_, v| Ok(re::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
 ///
 ///     assert_eq!(ret, (0x1f, b"Hello there, where are you from".as_ref()));
@@ -41,28 +42,28 @@ use crate::re::Regex;
 /// # }
 /// ```
 #[derive(Default, Copy)]
-pub struct DynamicCreateCtorThen<C, P, F> {
+pub struct DynamicCtorThenBuilder<C, P, F> {
     pat: P,
     func: F,
     marker: PhantomData<C>,
 }
 
-def_not!(DynamicCreateCtorThen<C, P, F>);
+def_not!(DynamicCtorThenBuilder<C, P, F>);
 
-impl<C, P, F> Debug for DynamicCreateCtorThen<C, P, F>
+impl<C, P, F> Debug for DynamicCtorThenBuilder<C, P, F>
 where
     P: Debug,
     F: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("DynamicCreateCtorThen")
+        f.debug_struct("DynamicCtorBuilder")
             .field("pat", &self.pat)
             .field("func", &self.func)
             .finish()
     }
 }
 
-impl<C, P, F> Clone for DynamicCreateCtorThen<C, P, F>
+impl<C, P, F> Clone for DynamicCtorThenBuilder<C, P, F>
 where
     P: Clone,
     F: Clone,
@@ -76,7 +77,7 @@ where
     }
 }
 
-impl<C, P, F> DynamicCreateCtorThen<C, P, F> {
+impl<C, P, F> DynamicCtorThenBuilder<C, P, F> {
     pub fn new(pat: P, func: F) -> Self {
         Self {
             pat,
@@ -125,50 +126,51 @@ impl<C, P, F> DynamicCreateCtorThen<C, P, F> {
 }
 
 impl<'a, C, P, F, T, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A>
-    for DynamicCreateCtorThen<C, P, F>
+    for DynamicCtorThenBuilder<C, P, F>
 where
     P: Ctor<'a, C, M, O1, H, A>,
     T: Ctor<'a, C, M, O2, H, A>,
     C: Context<'a> + Match<C>,
-    F: Fn(&O1) -> Result<T, Error>,
+    F: Fn(&mut C, &O1) -> Result<T, Error>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let l = trace!("dynamic_create_ctor_then", beg @ "pat", self.pat.construct(g.ctx(), func));
+
+        crate::debug_ctor_beg!("DynamicCtorThenBuilder", g.beg());
+
+        let l = self.pat.construct(g.ctx(), func);
         let l = g.process_ret(l)?;
-        let r = trace!("dynamic_create_ctor_then", beg @ "dynamic ctor", (self.func)(&l)?.construct(g.ctx(), func));
+        let r = (self.func)(g.ctx(), &l)?.construct(g.ctx(), func);
         let r = g.process_ret(r)?;
 
-        trace!("dynamic_create_ctor_then", beg -> g.end(), true);
+        crate::debug_ctor_reval!("DynamicCtorThenBuilder", g.beg(), g.end(), true);
         Ok((l, r))
     }
 }
 
-impl<'a, C, P, F> Regex<C> for DynamicCreateCtorThen<C, P, F>
+impl<'a, C, P, F> Regex<C> for DynamicCtorThenBuilder<C, P, F>
 where
-    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    
-
     fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
-        unimplemented!("Can't not using DynamicThen for regex")
+        unimplemented!("DynamicCtorThenBuilder not support Regex trait")
     }
 }
 
-pub trait DynamicCreateCtorThenHelper<'a, C>
+pub trait DynamicCtorThenBuilderHelper<'a, C>
 where
     Self: Sized,
     C: Context<'a> + Match<C>,
 {
-    fn dyn_then_ctor<F>(self, func: F) -> DynamicCreateCtorThen<C, Self, F>;
+    fn into_ctor_then_builder<F, O1, R>(self, func: F) -> DynamicCtorThenBuilder<C, Self, F>
+    where
+        F: Fn(&mut C, &O1) -> Result<R, Error>;
 }
 
-impl<'a, C, T> DynamicCreateCtorThenHelper<'a, C> for T
+impl<'a, C, T> DynamicCtorThenBuilderHelper<'a, C> for T
 where
     Self: Sized,
     C: Context<'a> + Match<C>,
@@ -179,7 +181,7 @@ where
     /// # Example
     ///
     /// ```
-    /// # use neure::{err::Error, prelude::*, re::DynamicCreateCtorThenHelper};
+    /// # use neure::{err::Error, prelude::*, re::DynamicCtorThenBuilder};
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
@@ -188,7 +190,7 @@ where
     ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
     ///         .map(map::from_str::<usize>());
     ///     let num = num.clone().sep_once(b",", num);
-    ///     let re = num.dyn_then_ctor(|a: &(usize, usize)| {
+    ///     let re = num.into_ctor_then_builder(|_, a| {
     ///         // leave the a's type empty cause rustc reject compile
     ///         Ok(b'+'
     ///             .repeat_range(a.0..a.0 + 1)
@@ -210,7 +212,10 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn dyn_then_ctor<F>(self, func: F) -> DynamicCreateCtorThen<C, Self, F> {
-        DynamicCreateCtorThen::new(self, func)
+    fn into_ctor_then_builder<F, O1, R>(self, func: F) -> DynamicCtorThenBuilder<C, Self, F>
+    where
+        F: Fn(&mut C, &O1) -> Result<R, Error>,
+    {
+        DynamicCtorThenBuilder::new(self, func)
     }
 }
