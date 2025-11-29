@@ -1,8 +1,8 @@
 mod array;
-mod boxed;
+//mod boxed;
 mod collect;
 mod dthen;
-mod dynamic;
+//mod dynamic;
 mod r#if;
 mod ltm;
 mod map;
@@ -16,6 +16,7 @@ mod sep;
 mod slice;
 mod then;
 mod vec;
+mod wrap;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -25,14 +26,14 @@ use std::sync::Mutex;
 
 pub use self::array::Array;
 pub use self::array::PairArray;
-pub use self::boxed::BoxedCtor;
+//pub use self::boxed::BoxedCtor;
 pub use self::collect::Collect;
 pub use self::dthen::DynamicCtorThenBuilder;
 pub use self::dthen::DynamicCtorThenBuilderHelper;
-pub use self::dynamic::DynamicArcCtor;
-pub use self::dynamic::DynamicBoxedCtor;
-pub use self::dynamic::DynamicBoxedCtorSync;
-pub use self::dynamic::DynamicRcCtor;
+// pub use self::dynamic::DynamicArcCtor;
+// pub use self::dynamic::DynamicBoxedCtor;
+// pub use self::dynamic::DynamicBoxedCtorSync;
+// pub use self::dynamic::DynamicRcCtor;
 pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
@@ -53,6 +54,7 @@ pub use self::then::IfThen;
 pub use self::then::Then;
 pub use self::vec::PairVector;
 pub use self::vec::Vector;
+pub use self::wrap::Wrap;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -273,7 +275,7 @@ where
     }
 }
 
-impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A>>
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A> + 'b>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -284,7 +286,7 @@ where
     }
 }
 
-impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A>>
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -295,7 +297,40 @@ where
     }
 }
 
-impl<'a, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A>>
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+{
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.as_ref(), ctx, handler)
+    }
+}
+
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+{
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.as_ref(), ctx, handler)
+    }
+}
+
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>
+where
+    C: Context<'a> + Match<C>,
+    H: Handler<A, Out = M, Error = Error>,
+    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+{
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.as_ref(), ctx, handler)
+    }
+}
+
+impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,

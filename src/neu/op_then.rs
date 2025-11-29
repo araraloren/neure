@@ -199,6 +199,6 @@ where
                 }
             }
         }
-        crate::debug_regex_reval!("NeureThen", g.beg(), g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureThen", g.process_ret(ret))
     }
 }

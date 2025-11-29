@@ -5,6 +5,10 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
@@ -138,14 +142,17 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("then", beg @ "left", self.left.construct(g.ctx(), func).map(|ret1| {
-            trace!("then", beg @ "right", self.right.construct(g.ctx(), func).map(|ret2| (ret1, ret2)))   
-        }) );
+
+        debug_ctor_beg!("Then", g.beg());
+
+        let ret = self
+            .left
+            .construct(g.ctx(), func)
+            .map(|ret1| self.right.construct(g.ctx(), func).map(|ret2| (ret1, ret2)));
         let ret = g.process_ret(ret)?;
 
-        trace!("then", beg => g.end(), ret.is_ok());
-        g.process_ret(ret)
+        debug_ctor_reval!("Then", g.beg(), g.end(), ret.is_ok());
+        ret
     }
 }
 
@@ -158,11 +165,13 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("then", beg @ "left", g.try_mat(&self.left)?);
 
-        ret.add_assign(trace!("then", beg @ "right", g.try_mat(&self.right)?));
-        trace!("then", beg => g.end(), Ok(ret))
+        debug_regex_beg!("Then", g.beg());
+
+        let mut ret = g.try_mat(&self.left)?;
+
+        ret.add_assign(g.try_mat(&self.right)?);
+        debug_regex_reval!("Then", Ok(ret))
     }
 }
 

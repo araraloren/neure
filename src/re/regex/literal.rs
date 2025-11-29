@@ -56,7 +56,7 @@ where
         if g.ctx().orig()?.starts_with(self.val) {
             ret = Ok(g.inc(self.val.len()));
         }
-        crate::debug_regex_reval!("LitSlice", g.beg(), g.end(), ret)
+        crate::debug_regex_reval!("LitSlice", ret)
     }
 }
 
@@ -104,6 +104,6 @@ where
         if g.ctx().orig()?.starts_with(self.val) {
             ret = Ok(g.inc(self.val.len()));
         }
-        crate::debug_regex_reval!("LitString", self.val, g.beg(), g.end(), ret)
+        crate::debug_regex_reval!("LitString", self.val, ret)
     }
 }

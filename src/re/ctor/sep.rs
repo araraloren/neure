@@ -11,14 +11,16 @@ use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::neu::CRange;
 use crate::re::def_not;
-use crate::re::trace;
-use crate::re::trace_v;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
 use crate::re::Regex;
 
 use super::Map;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
 
 ///
 /// Match `L` and `R` separated by `S`.
@@ -159,14 +161,16 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let r = trace!("sep_once", beg @ "left", self.left.construct(g.ctx(), func));
+
+        debug_ctor_beg!("SepOnce", g.beg());
+
+        let r = self.left.construct(g.ctx(), func);
         let r = g.process_ret(r)?;
-        let _ = trace!("sep_once", beg @ "sep",  g.try_mat(&self.sep)?);
-        let l = trace!("sep_once", beg @ "right", self.right.construct(g.ctx(), func));
+        let _ = g.try_mat(&self.sep)?;
+        let l = self.right.construct(g.ctx(), func);
         let l = g.process_ret(l)?;
 
-        trace!("sep_once", beg => g.end(), true);
+        debug_ctor_reval!("SepOnce", g.beg(), g.end(), true);
         Ok((r, l))
     }
 }
@@ -182,13 +186,12 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut span = Span::new(g.ctx().offset(), 0);
-        let beg = g.beg();
 
-        span.add_assign(trace!("sep_once", beg @ "left", g.try_mat(&self.left)?));
-        span.add_assign(trace!("sep_once", beg @ "sep", g.try_mat(&self.sep)?));
-        span.add_assign(trace!("sep_once", beg @ "right", g.try_mat(&self.right)?));
-
-        trace!("sep_once", beg => g.end(), Ok(span))
+        debug_regex_beg!("SepOnce", g.beg());
+        span.add_assign(g.try_mat(&self.left)?);
+        span.add_assign(g.try_mat(&self.sep)?);
+        span.add_assign(g.try_mat(&self.right)?);
+        debug_regex_reval!("SepOnce", Ok(span))
     }
 }
 
@@ -358,12 +361,11 @@ where
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut res = Vec::with_capacity(self.capacity.max(self.min));
-        let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
 
-        trace_v!("separate", range, beg, ());
+        debug_ctor_beg!("Separate", range, g.beg());
         while let Ok(ret) = self.pat.construct(g.ctx(), func) {
-            let sep_ret = trace_v!("separate", range, beg @ "sep", g.ctx().try_mat(&self.sep));
+            let sep_ret = g.ctx().try_mat(&self.sep);
 
             if sep_ret.is_ok() || self.skip {
                 res.push(ret);
@@ -379,7 +381,7 @@ where
             Err(Error::Separate)
         });
 
-        trace_v!("separate", range, beg -> g.end(), ret.is_ok(), len);
+        debug_ctor_reval!("Separate", range, g.beg(), g.end(), ret.is_ok());
         ret
     }
 }
@@ -396,10 +398,9 @@ where
         let mut cnt = 0;
         let mut span = Span::new(g.ctx().offset(), 0);
         let mut ret = Err(Error::Separate);
-        let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
 
-        trace_v!("separate", range, beg, ());
+        debug_regex_beg!("Separate", range, g.beg());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
@@ -417,7 +418,7 @@ where
         if cnt >= self.min {
             ret = Ok(span);
         }
-        trace_v!("separate", range, beg => g.end(), g.process_ret(ret), cnt )
+        debug_regex_reval!("Separate", range, g.process_ret(ret))
     }
 }
 
@@ -573,14 +574,12 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut end = false;
-        let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
         let ret = {
-            trace_v!("sep_collect", range, beg, ());
+            debug_ctor_beg!("SepCollect", range, g.beg());
             V::from_iter(std::iter::from_fn(|| {
                 self.pat.construct(g.ctx(), func).ok().and_then(|ret| {
-                    let sep_ret =
-                        trace_v!("sep_collect", range, beg @ "sep", g.ctx().try_mat(&self.sep));
+                    let sep_ret = g.ctx().try_mat(&self.sep);
 
                     if !end {
                         if sep_ret.is_err() {
@@ -601,7 +600,7 @@ where
             Err(Error::SepCollect)
         });
 
-        trace_v!("sep_collect", range, beg -> g.end(), ret.is_ok(), cnt);
+        debug_ctor_reval!("SepCollect", range, g.beg(), g.end(), ret.is_ok());
         ret
     }
 }
@@ -618,10 +617,9 @@ where
         let mut cnt = 0;
         let mut span = Span::new(g.ctx().offset(), 0);
         let mut ret = Err(Error::SepCollect);
-        let beg = g.beg();
         let range: CRange<usize> = (self.min..).into();
 
-        trace_v!("sep_collect", range, beg, ());
+        debug_regex_beg!("SepCollect", range, g.beg());
         while let Ok(ret) = g.ctx().try_mat(&self.pat) {
             let sep_ret = g.ctx().try_mat(&self.sep);
 
@@ -639,6 +637,6 @@ where
         if cnt >= self.min {
             ret = Ok(span);
         }
-        trace_v!("sep_collect", range, beg => g.end(), g.process_ret(ret), cnt)
+        debug_regex_reval!("SepCollect", range, g.process_ret(ret))
     }
 }

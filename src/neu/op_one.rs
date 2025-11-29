@@ -165,7 +165,7 @@ where
                 ret = Ok(ret_and_inc(g.ctx(), len));
             }
         }
-        crate::debug_regex_reval!("NeureOne", g.beg(), g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureOne", g.process_ret(ret))
     }
 }
 
@@ -326,6 +326,6 @@ where
             let len = length_of(start, g.ctx(), end.map(|v| v.0));
             ret = Ok(ret_and_inc(g.ctx(), len))
         }
-        crate::debug_regex_reval!("NeureOneMore", g.beg(), g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureOneMore", g.process_ret(ret))
     }
 }

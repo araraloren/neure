@@ -162,6 +162,6 @@ where
         if cnt >= self.min {
             ret = Ok(span);
         }
-        crate::debug_regex_reval!("Collect", g.beg(), g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("Collect", g.process_ret(ret))
     }
 }

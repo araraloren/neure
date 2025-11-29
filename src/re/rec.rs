@@ -3,26 +3,23 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use super::ConstructIntoOp;
 use super::Ctor;
-use super::DynamicBoxedCtor;
-use super::DynamicBoxedCtorSync;
 use super::Pass;
-use super::Wrapped;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
+use crate::re::ctor::Wrap;
 
 pub type RecursiveCtorWith<'a, 'b, C, M, O, H, A> =
-    Rc<RefCell<Option<Wrapped<DynamicBoxedCtor<'a, 'b, C, M, O, H, A>>>>>;
+    Rc<RefCell<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>>>>;
 
 pub type RecursiveCtorWithSync<'a, 'b, C, M, O, H, A> =
-    Arc<Mutex<Option<Wrapped<DynamicBoxedCtorSync<'a, 'b, C, M, O, H, A>>>>>;
+    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>, C>>>>;
 
 pub type RecursiveCtor<'a, 'b, C, M, O> = RecursiveCtorWith<'a, 'b, C, M, O, Pass, M>;
 
 pub type RecursiveCtorSync<'a, 'b, C, M, O> =
-    Arc<Mutex<Option<Wrapped<DynamicBoxedCtorSync<'a, 'b, C, M, O, Pass, M>>>>>;
+    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, Pass, M> + Send + 'b>, C>>>>;
 
 ///
 /// # Example
@@ -86,7 +83,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.borrow_mut() = Some(ConstructIntoOp::into_dyn(ctor));
+    *r_ctor.borrow_mut() = Some(Wrap::dyn_box(ctor));
     r_ctor
 }
 
@@ -130,7 +127,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.borrow_mut() = Some(ConstructIntoOp::into_dyn(ctor));
+    *r_ctor.borrow_mut() = Some(Wrap::dyn_box(ctor));
     r_ctor
 }
 
@@ -145,7 +142,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.lock().unwrap() = Some(ConstructIntoOp::into_dyn_sync(ctor));
+    *r_ctor.lock().unwrap() = Some(Wrap::box_sync(ctor));
     r_ctor
 }
 
@@ -163,7 +160,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.lock().unwrap() = Some(ConstructIntoOp::into_dyn_sync(ctor));
+    *r_ctor.lock().unwrap() = Some(Wrap::box_sync(ctor));
     r_ctor
 }
 

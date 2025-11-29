@@ -116,7 +116,7 @@ where
                 }
             }
         }
-        crate::debug_regex_reval!("Array", g.beg(), g.end(), ret)
+        crate::debug_regex_reval!("Array", ret)
     }
 }
 
@@ -231,6 +231,6 @@ where
                 }
             }
         }
-        crate::debug_regex_reval!("PairArray", g.beg(), g.end(), ret)
+        crate::debug_regex_reval!("PairArray", ret)
     }
 }

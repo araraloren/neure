@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::ctx::Span;
 use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
@@ -14,7 +13,6 @@ use crate::re::def_not;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
-use crate::re::Regex;
 
 ///
 /// [`DynamicCtorThenBuilder`] is a type similar to [`Then`](crate::re::ctor::Then).
@@ -144,23 +142,18 @@ where
         let mut g = CtxGuard::new(ctx);
 
         crate::debug_ctor_beg!("DynamicCtorThenBuilder", g.beg());
+        crate::debug_ctor_stage!("DynamicCtorThenBuilder", "left");
 
         let l = self.pat.construct(g.ctx(), func);
         let l = g.process_ret(l)?;
+
+        crate::debug_ctor_stage!("DynamicCtorThenBuilder", "right");
+
         let r = (self.func)(g.ctx(), &l)?.construct(g.ctx(), func);
         let r = g.process_ret(r)?;
 
         crate::debug_ctor_reval!("DynamicCtorThenBuilder", g.beg(), g.end(), true);
         Ok((l, r))
-    }
-}
-
-impl<'a, C, P, F> Regex<C> for DynamicCtorThenBuilder<C, P, F>
-where
-    C: Context<'a> + Match<C>,
-{
-    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
-        unimplemented!("DynamicCtorThenBuilder not support Regex trait")
     }
 }
 

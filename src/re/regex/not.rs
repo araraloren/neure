@@ -57,6 +57,6 @@ where
         if g.try_mat(&self.val).is_err() {
             ret = Ok(Span::new(g.beg(), 0));
         }
-        crate::debug_regex_reval!("RegexNot", g.beg(), g.reset().end(), ret)
+        crate::debug_regex_reval!("RegexNot", ret)
     }
 }

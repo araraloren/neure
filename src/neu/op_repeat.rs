@@ -231,7 +231,7 @@ where
                 ret = Ok(ret_and_inc(g.ctx(), len));
             }
         }
-        crate::debug_regex_reval!("NeureRepeat", cnt, g.beg(), g.end(), g.process_ret(ret))
+        crate::debug_regex_reval!("NeureRepeat", cnt, g.process_ret(ret))
     }
 }
 
@@ -416,6 +416,6 @@ where
         }
         let ret = g.process_ret(ret);
 
-        crate::debug_regex_reval!("NeureRepeatRange", cnt, g.beg(), g.end(), ret)
+        crate::debug_regex_reval!("NeureRepeatRange", cnt, ret)
     }
 }
