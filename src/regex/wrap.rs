@@ -11,12 +11,7 @@ use crate::err::Error;
 use crate::regex::def_not;
 use crate::regex::Regex;
 
-/// Implement the [`Regex`] and [`Ctor`] traits for any type that implements [`Wrappable`]
-/// and whose [`Inner`](crate::regex::Wrappable#Inner) type implements [`Regex`].
-///
-/// # Example
-/// ```
-/// ```
+/// Implement the [`Regex`] and [`Ctor`] traits any type implements [`Regex`].
 #[derive(Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Wrap<I, C> {
     inner: I,

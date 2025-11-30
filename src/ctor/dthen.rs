@@ -18,7 +18,7 @@ use crate::regex::def_not;
 use crate::regex::Regex;
 
 ///
-/// [`DynamicCtorThenBuilder`] is a type similar to [`Then`](crate::regex::ctor::Then).
+/// [`DynamicCtorThenBuilder`] is a type similar to [`Then`](crate::ctor::Then).
 /// It can dynamically construct a new type based on the result type of given `P`,
 /// and upon success, it will return a tuple of result type of `P` and result of the newly type.
 ///

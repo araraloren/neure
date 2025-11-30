@@ -13,7 +13,7 @@ use crate::regex::def_not;
 use crate::regex::Regex;
 
 ///
-/// Repeatedly match the regex `P` at least [`min`](crate::regex::ctor::Collect#tymethod.min) times.
+/// Repeatedly match the regex `P` at least [`min`](crate::ctor::Collect#tymethod.min) times.
 ///
 /// # Ctor
 ///

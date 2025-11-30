@@ -717,7 +717,7 @@ where
     }
 
     ///
-    /// Repeatedly match the regex `P` at least [`min`](crate::regex::ctor::Collect#tymethod.min) times.
+    /// Repeatedly match the regex `P` at least [`min`](crate::ctor::Collect#tymethod.min) times.
     ///
     /// # Example
     ///
