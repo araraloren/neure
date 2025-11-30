@@ -20,7 +20,7 @@ use super::Neu;
 ///
 ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
 ///
-///     let aorb = re!(['a' 'b']{1,2});
+///     let aorb = regex!(['a' 'b']{1,2});
 ///     let mut ctx = CharsCtx::new("abc");
 ///
 ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));

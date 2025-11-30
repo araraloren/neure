@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::err::Error;
-use crate::re::Regex;
+use crate::regex::Regex;
 
 pub trait NeuCond<'a, C>
 where
@@ -141,7 +141,7 @@ where
 ///     let str = neu::not(b'"')
 ///         .repeat_one_more()
 ///         // avoid match escape sequence
-///         .set_cond(neu::re_cond(re::not(escape)))
+///         .set_cond(neu::re_cond(regex::not(escape)))
 ///         // match the escape sequence in another regex
 ///         .or(escape)
 ///         .repeat(1..)

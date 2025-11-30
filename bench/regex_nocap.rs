@@ -62,13 +62,13 @@ mod email_neure {
                 Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
             },
         );
-        let email = re::start()
+        let email = regex::start()
             .then(name)
             .then("@")
             .then(domain)
             .then(".")
             .then(neu!((alpha, '.')).repeat::<2, 6>())
-            .then(re::end());
+            .then(regex::end());
 
         ctx.try_mat(&email)?;
         Ok(())

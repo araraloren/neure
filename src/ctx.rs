@@ -7,7 +7,7 @@ mod span;
 use std::marker::PhantomData;
 
 use crate::err::Error;
-use crate::re::Regex;
+use crate::regex::Regex;
 use crate::MayDebug;
 
 pub use self::guard::CtxGuard;

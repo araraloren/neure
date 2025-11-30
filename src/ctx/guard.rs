@@ -4,7 +4,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::Regex;
+use crate::regex::Regex;
 
 #[derive(Debug)]
 pub struct CtxGuard<'a, 'b, C>

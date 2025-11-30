@@ -20,7 +20,7 @@ For more, reference [`examples`](https://docs.rs/crate/neure/latest/source/examp
 use neure::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let year = re!(['0' - '9']+); // match digit from 0 to 9 more than once
+    let year = regex!(['0' - '9']+); // match digit from 0 to 9 more than once
     let year = year.map(map::from_str::<i32>()); // map it to i32
     let name = neu::ascii_alphabetic().repeat_one_more(); // match ascii alphabetic
     let mut ctx = CharsCtx::new("2024rust");
@@ -49,13 +49,13 @@ mod neure_ {
                 Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
             },
         );
-        let email = re::start()
+        let email = regex::start()
             .then(name)
             .then("@")
             .then(domain)
             .then(".")
             .then(neu!((alpha, '.')).repeat::<2, 6>())
-            .then(re::end());
+            .then(regex::end());
 
         ctx.try_mat(&email)?;
         Ok(())

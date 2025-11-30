@@ -1,41 +1,41 @@
 #[macro_export]
-macro_rules! re {
+macro_rules! regex {
     (@q * $($res:tt)*) => {
-        $crate::re::zero_more($($res)*)
+        $crate::regex::zero_more($($res)*)
     };
     (@q ? $($res:tt)*) => {
-        $crate::re::zero_one($($res)*)
+        $crate::regex::zero_one($($res)*)
     };
     (@q + $($res:tt)*) => {
-        $crate::re::one_more($($res)*)
+        $crate::regex::one_more($($res)*)
     };
     (@q {$st:literal} $($res:tt)*) => {
-        $crate::re::count::<$st, $st, _, _>($($res)*)
+        $crate::regex::count::<$st, $st, _, _>($($res)*)
     };
     (@q {$st:literal,} $($res:tt)*) => {
-        $crate::re::count::<$st, {usize::MAX}, _, _>($($res)*)
+        $crate::regex::count::<$st, {usize::MAX}, _, _>($($res)*)
     };
     (@q {$st:literal, $ed:literal} $($res:tt)*) => {
-        $crate::re::count::<$st, $ed, _, _>($($res)*)
+        $crate::regex::count::<$st, $ed, _, _>($($res)*)
     };
     (@q $($res:tt)*) => {
-        $crate::re::one($($res)*)
+        $crate::regex::one($($res)*)
     };
 
     (@r ^ $($res:tt)*) => { // \S
-        re!(@q $($res)* $crate::neu!(^))
+        regex!(@q $($res)* $crate::neu!(^))
     };
     (@r . $($res:tt)*) => { // .
-        re!(@q $($res)* $crate::neu!(.))
+        regex!(@q $($res)* $crate::neu!(.))
     };
     (@r [ $($range:tt)+ ] $($res:tt)*) => {
-        re!(@q $($res)* $crate::neu!([$($range)+]))
+        regex!(@q $($res)* $crate::neu!([$($range)+]))
     };
     (@r $ch:ident $($res:tt)*) => {
-        re!(@q $($res)* $crate::neu::equal($crate::charize!($ch)))
+        regex!(@q $($res)* $crate::neu::equal($crate::charize!($ch)))
     };
     (@r $ch:literal $($res:tt)*) => {
-        re!(@q $($res)* $crate::neu::equal($ch))
+        regex!(@q $($res)* $crate::neu::equal($ch))
     };
     (@r ($($regex:expr),+) $($res:tt)*) => {
         {
@@ -43,14 +43,14 @@ macro_rules! re {
             $(
                 let re = re.or($regex);
             )+
-            re!(@q $($res)* re)
+            regex!(@q $($res)* re)
         }
     };
     (@r $($res:tt)*) => {
-        re!(@q $($res)* $crate::neu::whitespace())
+        regex!(@q $($res)* $crate::neu::whitespace())
     };
     ($($res:tt)*) => {
-        re!(@r $($res)*)
+        regex!(@r $($res)*)
     };
 }
 
@@ -173,7 +173,7 @@ macro_rules! neu {
 #[macro_export]
 macro_rules! escape {
     ($re:expr, $escape:expr, $or:expr) => {{
-        let cond = $crate::neu::re_cond($crate::re::not($escape));
+        let cond = $crate::neu::re_cond($crate::regex::not($escape));
         $re.set_cond(cond).or($or)
     }};
 }

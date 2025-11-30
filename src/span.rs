@@ -5,7 +5,7 @@ use crate::err::Error;
 use crate::iter::IndexBySpan;
 use crate::iter::IteratorBySpan;
 use crate::iter::SpanIterator;
-use crate::re::Regex;
+use crate::regex::Regex;
 
 #[derive(Debug, Clone, Default)]
 pub struct SimpleStorer {

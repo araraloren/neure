@@ -21,7 +21,7 @@ use crate::MayDebug;
 ///
 ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
 ///
-///     let digit = re!((neu::digit(10).and(large_than)){1,3});
+///     let digit = regex!((neu::digit(10).and(large_than)){1,3});
 ///     let mut ctx = CharsCtx::new("99c");
 ///
 ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 2));

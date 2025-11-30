@@ -261,7 +261,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for &'_ [T] {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = vec!['a', 'b', 'c', 'd', 'e', 'f'];
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -292,7 +292,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = (Bound::Included(&'a'), Bound::Excluded(&'g'));
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -318,7 +318,7 @@ impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = (Bound::Included('a'), Bound::Excluded('g'));
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -343,7 +343,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = &'a' .. &'g';
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -368,7 +368,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = 'a' .. 'g';
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -393,7 +393,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let from = &'a' ..;
-///     let from = re!((from){1,6});
+///     let from = regex!((from){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 6));
@@ -418,7 +418,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let from = 'a' ..;
-///     let from = re!((from){1,6});
+///     let from = regex!((from){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&from)?, Span::new(0, 6));
@@ -443,7 +443,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let full = ..;
-///     let full = re!((full){1,6});
+///     let full = regex!((full){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&full)?, Span::new(0, 6));
@@ -468,7 +468,7 @@ impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = &'a' ..= &'f';
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -493,7 +493,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let hex = 'a' ..= 'f';
-///     let hex = re!((hex){1,6});
+///     let hex = regex!((hex){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -518,7 +518,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let to = .. &'g';
-///     let to = re!((to){1,6});
+///     let to = regex!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
@@ -543,7 +543,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let to = .. 'g';
-///     let to = re!((to){1,6});
+///     let to = regex!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
@@ -568,7 +568,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let to = ..= &'f';
-///     let to = re!((to){1,6});
+///     let to = regex!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));
@@ -593,7 +593,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let to = ..= 'f';
-///     let to = re!((to){1,6});
+///     let to = regex!((to){1,6});
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&to)?, Span::new(0, 6));

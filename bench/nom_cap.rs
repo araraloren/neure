@@ -86,8 +86,8 @@ mod color_neure {
     use super::*;
 
     fn parser(str: &str) -> Result<Color, Box<dyn std::error::Error>> {
-        let pound = re!('#');
-        let hex = re!((('0' .. ':'), ('A' .. 'G')){2}); // better performance than ..=
+        let pound = regex!('#');
+        let hex = regex!((('0' .. ':'), ('A' .. 'G')){2}); // better performance than ..=
         let hex = hex.map(map::from_str_radix::<u8>(16));
         let mut ctx = RegexCtx::new(str);
 

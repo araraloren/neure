@@ -6,10 +6,10 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::re::Ctor;
-use crate::re::Extract;
-use crate::re::Handler;
-use crate::re::Regex;
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
+use crate::regex::Regex;
 
 use super::length_of;
 use super::ret_and_inc;
@@ -54,10 +54,10 @@ impl<C, U, T, I> std::ops::Not for NeureZeroOne<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::re::regex::RegexNot<Self>;
+    type Output = crate::regex::RegexNot<Self>;
 
     fn not(self) -> Self::Output {
-        crate::re::not(self)
+        crate::regex::not(self)
     }
 }
 
@@ -209,10 +209,10 @@ impl<C, U, T, I> std::ops::Not for NeureZeroMore<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::re::regex::RegexNot<Self>;
+    type Output = crate::regex::RegexNot<Self>;
 
     fn not(self) -> Self::Output {
-        crate::re::not(self)
+        crate::regex::not(self)
     }
 }
 

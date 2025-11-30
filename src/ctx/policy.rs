@@ -4,13 +4,13 @@ use super::PolicyMatch;
 use super::Regex;
 use super::Span;
 
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
+use crate::ctor::Pass;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::map::MapSingle;
-use crate::re::Ctor;
-use crate::re::Extract;
-use crate::re::Handler;
-use crate::re::Pass;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]

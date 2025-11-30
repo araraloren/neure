@@ -9,14 +9,14 @@ use super::RePolicy;
 use super::Regex;
 use super::Span;
 
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
+use crate::ctor::Pass;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::map::MapSingle;
-use crate::re::Ctor;
-use crate::re::Extract;
-use crate::re::Handler;
-use crate::re::Pass;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
@@ -88,7 +88,7 @@ where
     /// ```
     /// # use neure::ctx::CtxGuard;
     /// # use neure::prelude::*;
-    /// # use neure::re::Extract;
+    /// # use neure::ctor::Extract;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #   color_eyre::install()?;
@@ -184,7 +184,7 @@ where
     ///
     /// ```
     /// # use neure::prelude::*;
-    /// # use neure::re::Extract;
+    /// # use neure::ctor::Extract;
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #   color_eyre::install()?;

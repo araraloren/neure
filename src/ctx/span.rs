@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
+use crate::ctor::Extract;
 use crate::ctx::Context;
 use crate::err::Error;
-use crate::re::Extract;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {

@@ -20,7 +20,7 @@ use super::Neu;
 ///
 ///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 2));
 ///
-///     let not_digit = re!((neu::digit(10).not()){1,3});
+///     let not_digit = regex!((neu::digit(10).not()){1,3});
 ///     let mut ctx = CharsCtx::new("c99");
 ///
 ///     assert_eq!(ctx.try_mat(&not_digit)?, Span::new(0, 1));

@@ -7,7 +7,7 @@ fn repeat() {
 
 fn repeat_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let name = re::string("foo");
+    let name = regex::string("foo");
     let names = name.repeat(2..5);
 
     assert!(CharsCtx::new("foo").ctor_span(&names).is_err(),);

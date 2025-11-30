@@ -7,8 +7,8 @@ fn ltm() {
 
 fn ltm_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let name = re::string("localhost");
-    let ip = re::string("8080");
+    let name = regex::string("localhost");
+    let ip = regex::string("8080");
     let port = name.sep_once(":", ip);
     let or = name.or(port);
     let ltm = name.ltm(port);
