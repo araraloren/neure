@@ -51,6 +51,8 @@ pub enum Error {
 
     PairVec,
 
+    PairSlice,
+
     Utf8Error,
 
     FromLeBytes,
@@ -92,6 +94,7 @@ impl Display for Error {
             Error::NeuThen => write!(f, "In (`NeuThen`): need more data"),
             Error::Vec => write!(f, "In (`Vec`): all match failed"),
             Error::PairVec => write!(f, "In (`Hash`): all match failed"),
+            Error::PairSlice => todo!(),
             Error::OriginOutOfBound => write!(f, "Offset out of bound"),
             Error::Utf8Error => write!(f, "In (`FromUtf8`): catch `Utf8Error` or `FromUtf8Error`"),
             Error::FromLeBytes => write!(f, "In (`FromLeBytes`): need more bytes for given type"),

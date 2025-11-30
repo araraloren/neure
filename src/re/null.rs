@@ -7,7 +7,6 @@ use crate::err::Error;
 use crate::re::Regex;
 
 use super::def_not;
-use super::trace;
 use super::Ctor;
 use super::Extract;
 use super::Handler;
@@ -29,10 +28,7 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let beg = ctx.offset();
-        let ret = Ok(Span::new(beg, 0));
-
-        trace!("null", beg => ctx.offset(), ret)
+        crate::debug_regex_reval!("NullRegex", Ok(Span::new(ctx.offset(), 0)))
     }
 }
 
@@ -44,10 +40,8 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let beg = ctx.offset();
         let ret = ctx.try_mat(self);
 
-        trace!("null", beg -> ctx.offset(), ret.is_ok());
         handler.invoke(A::extract(ctx, &ret?)?)
     }
 }

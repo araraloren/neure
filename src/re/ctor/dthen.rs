@@ -4,6 +4,7 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
+use crate::debug_ctor_stage;
 use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
@@ -142,14 +143,22 @@ where
         let mut g = CtxGuard::new(ctx);
 
         crate::debug_ctor_beg!("DynamicCtorThenBuilder", g.beg());
-        crate::debug_ctor_stage!("DynamicCtorThenBuilder", "left");
 
-        let l = self.pat.construct(g.ctx(), func);
+        let l = {
+            debug_ctor_stage!(
+                "DynamicCtorThenBuilder",
+                "left",
+                self.pat.construct(g.ctx(), func)
+            )
+        };
         let l = g.process_ret(l)?;
-
-        crate::debug_ctor_stage!("DynamicCtorThenBuilder", "right");
-
-        let r = (self.func)(g.ctx(), &l)?.construct(g.ctx(), func);
+        let r = {
+            debug_ctor_stage!(
+                "DynamicCtorThenBuilder",
+                "right",
+                (self.func)(g.ctx(), &l)?.construct(g.ctx(), func)
+            )
+        };
         let r = g.process_ret(r)?;
 
         crate::debug_ctor_reval!("DynamicCtorThenBuilder", g.beg(), g.end(), true);

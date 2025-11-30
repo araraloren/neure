@@ -9,7 +9,6 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
 use crate::re::def_not;
-use crate::re::trace_v;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -162,28 +161,22 @@ where
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut res = Vec::with_capacity(self.capacity);
+        let mut vec = Vec::with_capacity(self.capacity);
         let mut ret = Err(Error::RegexRepeat);
-        let beg = g.beg();
 
-        trace_v!("repeat", self.range, beg, ());
+        crate::debug_ctor_beg!("Repeat", self.range, g.beg());
         while self.is_contain(cnt) {
-            let ret = self.pat.construct(g.ctx(), handler);
-
-            match ret {
-                Ok(ret) => {
-                    res.push(ret);
-                    cnt += 1;
-                }
-                Err(_) => {
-                    break;
-                }
+            if let Ok(res) = self.pat.construct(g.ctx(), handler) {
+                vec.push(res);
+                cnt += 1;
+            } else {
+                break;
             }
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            ret = Ok(res);
+            ret = Ok(vec);
         }
-        trace_v!("repeat", self.range, beg -> g.end(), ret.is_ok(), cnt);
+        crate::debug_ctor_reval!("Repeat", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
@@ -199,23 +192,19 @@ where
         let mut cnt = 0;
         let mut span = Span::new(g.ctx().offset(), 0);
         let mut ret = Err(Error::RegexRepeat);
-        let beg = g.beg();
 
-        trace_v!("repeat", self.range, beg, ());
+        crate::debug_regex_beg!("Repeat", self.range, g.beg());
         while self.is_contain(cnt) {
-            match g.ctx().try_mat(&self.pat) {
-                Ok(ret) => {
-                    span.add_assign(ret);
-                    cnt += 1;
-                }
-                Err(_) => {
-                    break;
-                }
+            if let Ok(res) = g.ctx().try_mat(&self.pat) {
+                span.add_assign(res);
+                cnt += 1;
+            } else {
+                break;
             }
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
             ret = Ok(span);
         }
-        trace_v!("repeat", self.range, beg => g.end(), g.process_ret(ret), cnt)
+        crate::debug_regex_reval!("Repeat", g.process_ret(ret))
     }
 }

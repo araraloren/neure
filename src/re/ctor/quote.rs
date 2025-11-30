@@ -5,9 +5,14 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_ctor_stage;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
+use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -145,13 +150,15 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let _ = trace!("quote", beg @ "left", g.try_mat(&self.left)?);
-        let r = trace!("quote", beg @ "pat", self.pat.construct(g.ctx(), func));
-        let r = g.process_ret(r)?;
-        let _ = trace!("quote", beg @ "right", g.try_mat(&self.right)?);
 
-        trace!("quote", beg -> g.end(), true);
+        debug_ctor_beg!("Quote", g.beg());
+
+        let _ = debug_ctor_stage!("Quote", "l", g.try_mat(&self.left)?);
+        let r = debug_ctor_stage!("Quote", "pat", self.pat.construct(g.ctx(), func));
+        let r = g.process_ret(r)?;
+        let _ = debug_ctor_stage!("Quote", "r", g.try_mat(&self.right)?);
+
+        debug_ctor_reval!("Quote", g.beg(), g.end(), true);
         Ok(r)
     }
 }
@@ -166,11 +173,13 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("quote", beg @ "left", g.try_mat(&self.left)?);
 
-        ret.add_assign(trace!("quote", beg @ "pat", g.try_mat(&self.pat)?));
-        ret.add_assign(trace!("quote", beg @ "right", g.try_mat(&self.right)?));
-        trace!("quote", beg => g.end(), Ok(ret))
+        debug_regex_beg!("Quote", g.beg());
+
+        let mut ret = debug_regex_stage!("Quote", "l", g.try_mat(&self.left)?);
+
+        ret.add_assign(debug_regex_stage!("Quote", "pat", g.try_mat(&self.pat)?));
+        ret.add_assign(debug_regex_stage!("Quote", "r", g.try_mat(&self.right)?));
+        debug_regex_reval!("Quote", Ok(ret))
     }
 }

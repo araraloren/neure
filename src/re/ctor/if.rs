@@ -5,9 +5,14 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_ctor_stage;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
+use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -147,15 +152,21 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
+
+        debug_ctor_beg!("IfRegex", g.beg());
+
+        let ret = debug_ctor_stage!("IfRegex", "if", (self.r#if)(g.ctx())?);
         let ret = if ret {
-            trace!("if", beg @ "true", self.pat.construct(g.ctx(), func))
+            debug_ctor_stage!("IfRegex", "true", self.pat.construct(g.ctx(), func))
         } else {
-            trace!("if", beg @ "false", self.r#else.construct(g.reset().ctx(), func))
+            debug_ctor_stage!(
+                "IfRegex",
+                "false",
+                self.r#else.construct(g.reset().ctx(), func)
+            )
         };
 
-        trace!("if", beg -> g.end(), ret.is_ok());
+        debug_ctor_reval!("IfRegex", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
@@ -170,15 +181,17 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("if", beg, (self.r#if)(g.ctx())?);
+
+        debug_regex_beg!("IfRegex", g.beg());
+
+        let ret = debug_regex_stage!("IfRegex", "if", (self.r#if)(g.ctx())?);
         let ret = if ret {
-            trace!("if", beg @ "true", g.try_mat(&self.pat))
+            debug_regex_stage!("IfRegex", "true", g.try_mat(&self.pat))
         } else {
-            trace!("if", beg @ "false", g.try_mat(&self.r#else))
+            debug_regex_stage!("IfRegex", "false", g.try_mat(&self.r#else))
         };
 
-        trace!("if", beg => g.end(), ret)
+        debug_regex_reval!("IfRegex", ret)
     }
 }
 

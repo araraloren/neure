@@ -119,23 +119,20 @@ where
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut ret = Err(Error::Collect);
         let val = {
             crate::debug_ctor_beg!("Collect", g.beg());
             V::from_iter(std::iter::from_fn(|| {
-                match self.pat.construct(g.ctx(), func) {
-                    Ok(ret) => {
-                        cnt += 1;
-                        Some(ret)
-                    }
-                    Err(_) => None,
-                }
+                self.pat.construct(g.ctx(), func).ok().inspect(|_| {
+                    cnt += 1;
+                })
             }))
         };
+        let ret = if cnt >= self.min {
+            Ok(val)
+        } else {
+            Err(Error::Collect)
+        };
 
-        if cnt >= self.min {
-            ret = Ok(val);
-        }
         crate::debug_ctor_reval!("Collect", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
@@ -151,7 +148,6 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = Span::new(g.beg(), 0);
-        let mut ret = Err(Error::Collect);
 
         // don't use g.try_mat, it will set reset when failed
         crate::debug_regex_beg!("Collect", g.beg());
@@ -159,9 +155,12 @@ where
             cnt += 1;
             span.add_assign(ret);
         }
-        if cnt >= self.min {
-            ret = Ok(span);
-        }
+        let ret = if cnt >= self.min {
+            Ok(span)
+        } else {
+            Err(Error::Collect)
+        };
+
         crate::debug_regex_reval!("Collect", g.process_ret(ret))
     }
 }

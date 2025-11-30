@@ -5,9 +5,14 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_ctor_stage;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
+use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -112,7 +117,7 @@ impl<C, P, T> Pad<C, P, T> {
 
 impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Pad<C, P, T>
 where
-    T: Regex<C, >,
+    T: Regex<C>,
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -121,33 +126,34 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("pad", beg @ "pat", self.pat.construct(g.ctx(), func));
+
+        debug_ctor_beg!("Pad", g.beg());
+
+        let ret = debug_ctor_stage!("Pad", "pat", self.pat.construct(g.ctx(), func));
 
         if ret.is_ok() {
-            let _ = trace!("pad", beg @ "tail", g.try_mat(&self.tail)?);
+            let _ = debug_ctor_stage!("Pad", "tail", g.try_mat(&self.tail)?);
         }
-        trace!("pad", beg -> g.end(), ret.is_ok());
+        debug_ctor_reval!("Pad", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
 
 impl<'a, C, P, T> Regex<C> for Pad<C, P, T>
 where
-    T: Regex<C, >,
-    P: Regex<C, >,
+    T: Regex<C>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    
-
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("pad", beg @ "pat", g.try_mat(&self.pat)?);
 
-        ret.add_assign(trace!("pad", beg @ "tail", g.try_mat(&self.tail)?));
-        trace!("pad", beg => g.end(), Ok(ret))
+        debug_regex_beg!("Pad", g.beg());
+        let mut ret = debug_regex_stage!("Pad", "pat", g.try_mat(&self.pat)?);
+
+        ret.add_assign(debug_regex_stage!("Pad", "tail", g.try_mat(&self.tail)?));
+        debug_regex_reval!("Pad", Ok(ret))
     }
 }
 
@@ -250,7 +256,7 @@ impl<C, P, T> Padded<C, P, T> {
 
 impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Padded<C, P, T>
 where
-    T: Regex<C, >,
+    T: Regex<C>,
     P: Ctor<'a, C, M, O, H, A>,
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = M, Error = Error>,
@@ -259,30 +265,32 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let _ = trace!("padded", beg @ "head", g.try_mat(&self.head)?);
-        let r = trace!("padded", beg @ "pat", self.pat.construct(g.ctx(), func));
 
-        trace!("padded", beg -> g.end(), r.is_ok());
+        debug_ctor_beg!("Padded", g.beg());
+
+        let _ = debug_ctor_stage!("Padded", "head", g.try_mat(&self.head)?);
+        let r = debug_ctor_stage!("Padded", "pat", self.pat.construct(g.ctx(), func));
+
+        debug_ctor_reval!("Padded", g.beg(), g.end(), r.is_ok());
         g.process_ret(r)
     }
 }
 
 impl<'a, C, P, T> Regex<C> for Padded<C, P, T>
 where
-    T: Regex<C, >,
-    P: Regex<C, >,
+    T: Regex<C>,
+    P: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    
-
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("padded", beg @ "head", g.try_mat(&self.head)?);
 
-        ret.add_assign(trace!("padded", beg @ "pat", g.try_mat(&self.pat)?));
-        trace!("padded", beg => g.end(), Ok(ret))
+        debug_regex_beg!("Padded", g.beg());
+
+        let mut ret = debug_regex_stage!("Padded", "head", g.try_mat(&self.head)?);
+
+        ret.add_assign(debug_regex_stage!("Padded", "pat", g.try_mat(&self.pat)?));
+        debug_regex_reval!("Padded", Ok(ret))
     }
 }

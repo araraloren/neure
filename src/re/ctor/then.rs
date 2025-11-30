@@ -7,15 +7,16 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
+use crate::debug_ctor_stage;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
+use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::re::ctor::Map;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -145,11 +146,12 @@ where
 
         debug_ctor_beg!("Then", g.beg());
 
-        let ret = self
-            .left
-            .construct(g.ctx(), func)
-            .map(|ret1| self.right.construct(g.ctx(), func).map(|ret2| (ret1, ret2)));
-        let ret = g.process_ret(ret)?;
+        let ret =
+            debug_ctor_stage!("Then", "l", self.left.construct(g.ctx(), func)).and_then(|ret1| {
+                debug_ctor_stage!("Then", "r", self.right.construct(g.ctx(), func))
+                    .map(|ret2| (ret1, ret2))
+            });
+        let ret = g.process_ret(ret);
 
         debug_ctor_reval!("Then", g.beg(), g.end(), ret.is_ok());
         ret
@@ -168,9 +170,9 @@ where
 
         debug_regex_beg!("Then", g.beg());
 
-        let mut ret = g.try_mat(&self.left)?;
+        let mut ret = debug_regex_stage!("Then", "l", g.try_mat(&self.left)?);
 
-        ret.add_assign(g.try_mat(&self.right)?);
+        ret.add_assign(debug_regex_stage!("Then", "r", g.try_mat(&self.right)?));
         debug_regex_reval!("Then", Ok(ret))
     }
 }
@@ -317,12 +319,14 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let r_l = trace!("if_then", beg @ "left", self.left.construct(g.ctx(), func));
+
+        debug_ctor_beg!("IfThen", g.beg());
+
+        let r_l = debug_ctor_stage!("IfThen", "l", self.left.construct(g.ctx(), func));
         let r_l = g.process_ret(r_l)?;
-        let r_i = trace!("if_then", beg @ "if", g.try_mat(&self.r#if));
+        let r_i = debug_ctor_stage!("IfThen", "if", g.try_mat(&self.r#if));
         let ret = if r_i.is_ok() {
-            let r_r = trace!("if_then", beg @ "right", self.right.construct(g.ctx(), func));
+            let r_r = debug_ctor_stage!("IfThen", "r", self.right.construct(g.ctx(), func));
             let r_r = g.process_ret(r_r)?;
 
             // if matched, return (01, Some(O2))
@@ -332,7 +336,7 @@ where
             (r_l, None)
         };
 
-        trace!("if_then", beg => g.end(), true);
+        debug_ctor_reval!("IfThen", g.beg(), g.end(), true);
         Ok(ret)
     }
 }
@@ -347,12 +351,14 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("if_then", beg @ "left", g.try_mat(&self.left)?);
 
-        if trace!("if_then", beg @ "if", g.try_mat(&self.r#if)).is_ok() {
-            ret.add_assign(trace!("if_then", beg @ "right", g.try_mat(&self.right)?));
+        debug_regex_beg!("IfThen", g.beg());
+
+        let mut ret = debug_regex_stage!("IfThen", "l", g.try_mat(&self.left)?);
+
+        if debug_regex_stage!("IfThen", "if", g.try_mat(&self.r#if)).is_ok() {
+            ret.add_assign(debug_regex_stage!("IfThen", "r", g.try_mat(&self.right)?));
         }
-        trace!("if_then", beg => g.end(), Ok(ret))
+        debug_regex_reval!("IfThen", Ok(ret))
     }
 }

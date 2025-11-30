@@ -5,10 +5,14 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_ctor_stage;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
+use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::neure_trace;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -123,10 +127,16 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let r_l = trace!("ltm", beg @ "left", self.left.construct(g.ctx(), func));
+
+        debug_ctor_beg!("LongestTokenMatch", g.beg());
+
+        let r_l = debug_ctor_stage!("LongestTokenMatch", "l", self.left.construct(g.ctx(), func));
         let offset_l = g.end();
-        let r_r = trace!("ltm", beg @ "right", self.right.construct(g.reset().ctx(), func));
+        let r_r = debug_ctor_stage!(
+            "LongestTokenMatch",
+            "r",
+            self.right.construct(g.reset().ctx(), func)
+        );
         let offset_r = g.end();
         let (offset, ret) = if offset_l >= offset_r {
             (offset_l, r_l)
@@ -134,14 +144,8 @@ where
             (offset_r, r_r)
         };
 
-        neure_trace!(
-            "r`ltm`@{} -> {{l: offset = {}, r: offset = {}}}",
-            beg,
-            offset_l,
-            offset_r
-        );
         g.ctx().set_offset(offset);
-        trace!("ltm", beg -> g.end(), ret.is_ok());
+        debug_ctor_reval!("LongestTokenMatch", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
@@ -155,26 +159,20 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let r_l = trace!("ltm", beg @ "left", g.try_mat(&self.left));
+
+        debug_regex_beg!("LongestTokenMatch", g.beg());
+
+        let r_l = debug_regex_stage!("LongestTokenMatch", "l", g.try_mat(&self.left));
         let offset_l = g.end();
-        let r_r = trace!("ltm", beg @ "right", g.reset().try_mat(&self.right));
+        let r_r = debug_regex_stage!("LongestTokenMatch", "r", g.reset().try_mat(&self.right));
         let offset_r = g.end();
-        let (off, ret) = if offset_l >= offset_r {
+        let (offset, ret) = if offset_l >= offset_r {
             (offset_l, r_l)
         } else {
             (offset_r, r_r)
         };
 
-        neure_trace!(
-            "r`ltm`@{} -> {{l: offset = {}, ret = {:?}; r: offset = {}, ret = {:?}}}",
-            beg,
-            offset_l,
-            r_l,
-            offset_r,
-            r_r
-        );
-        g.ctx().set_offset(off);
-        trace!("ltm", beg => g.end(), g.process_ret(ret))
+        g.ctx().set_offset(offset);
+        debug_regex_reval!("LongestTokenMatch", g.process_ret(ret))
     }
 }

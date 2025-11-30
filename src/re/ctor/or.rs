@@ -5,9 +5,14 @@ use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_ctor_beg;
+use crate::debug_ctor_reval;
+use crate::debug_ctor_stage;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
+use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -134,33 +139,32 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let mut ret = trace!("or", beg @ "left", self.left.construct(g.ctx(), func));
 
-        if ret.is_err() {
-            ret = trace!("or", beg @ "right", self.right.construct(g.reset().ctx(), func));
-        }
-        trace!("or", beg -> g.end(), ret.is_ok());
+        debug_ctor_beg!("Or", g.beg());
+
+        let ret = debug_ctor_stage!("Or", "l", self.left.construct(g.ctx(), func))
+            .or_else(|_| debug_ctor_stage!("Or", "r", self.right.construct(g.reset().ctx(), func)));
+
+        debug_ctor_reval!("Or", g.beg(), g.end(), ret.is_ok());
         g.process_ret(ret)
     }
 }
 
 impl<'a, C, L, R> Regex<C> for Or<C, L, R>
 where
-    L: Regex<C, >,
-    R: Regex<C, >,
+    L: Regex<C>,
+    R: Regex<C>,
     C: Context<'a> + Match<C>,
 {
-    
-
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let beg = g.beg();
-        let ret = trace!("or", beg @ "left", g.try_mat(&self.left).or_else(|_| {
-            trace!("or", beg @ "right", g.reset().try_mat(&self.right))
-        }));
 
-        trace!("or", beg => g.end(), ret)
+        debug_regex_beg!("Or", g.beg());
+
+        let ret = debug_regex_stage!("Or", "l", g.try_mat(&self.left))
+            .or_else(|_| debug_regex_stage!("Or", "r", g.reset().try_mat(&self.right)));
+
+        debug_regex_reval!("Or", ret)
     }
 }

@@ -1,9 +1,11 @@
 use crate::ctx::Context;
+use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::debug_regex_beg;
+use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::re::def_not;
-use crate::re::trace;
 use crate::re::Ctor;
 use crate::re::Extract;
 use crate::re::Handler;
@@ -41,13 +43,17 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ret = Err(Error::Start);
-        let beg = ctx.offset();
+        let mut g = CtxGuard::new(ctx);
 
-        if ctx.offset() == 0 {
-            ret = Ok(Span::new(ctx.offset(), 0))
-        }
-        trace!("start", beg => ctx.offset(), ret)
+        debug_regex_beg!("AnchorStart", g.beg());
+
+        let ret = if g.beg() == 0 {
+            Ok(g.inc(0))
+        } else {
+            Err(Error::Start)
+        };
+
+        debug_regex_reval!("AnchorStart", ret)
     }
 }
 
@@ -83,12 +89,16 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ret = Err(Error::End);
-        let beg = ctx.offset();
+        let mut g = CtxGuard::new(ctx);
 
-        if ctx.len() == ctx.offset() {
-            ret = Ok(Span::new(ctx.offset(), 0));
-        }
-        trace!("start", beg => ctx.offset(), ret)
+        debug_regex_beg!("AnchorEnd", g.beg());
+
+        let ret = if g.beg() == g.ctx().len() {
+            Ok(g.inc(0))
+        } else {
+            Err(Error::End)
+        };
+
+        debug_regex_reval!("AnchorEnd", ret)
     }
 }
