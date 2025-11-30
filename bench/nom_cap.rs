@@ -2,12 +2,6 @@ use std::hint::black_box;
 
 use criterion::Criterion;
 use neure::prelude::*;
-use nom::{
-    bytes::complete::{tag, take_while_m_n},
-    combinator::map_res,
-    sequence::tuple,
-    IResult,
-};
 
 #[derive(Debug, PartialEq)]
 pub struct Color {
@@ -48,22 +42,27 @@ criterion::criterion_main!(benches);
 
 mod color_nom {
     use super::*;
+    use nom::{
+        bytes::complete::{tag, take_while_m_n},
+        combinator::map_res,
+        IResult, Parser,
+    };
 
     fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
         u8::from_str_radix(input, 16)
     }
 
     fn is_hex_digit(c: char) -> bool {
-        c.is_ascii_hexdigit()
+        c.is_ascii_digit()
     }
 
     fn hex_primary(input: &str) -> IResult<&str, u8> {
-        map_res(take_while_m_n(2, 2, is_hex_digit), from_hex)(input)
+        map_res(take_while_m_n(2, 2, is_hex_digit), from_hex).parse(input)
     }
 
     fn hex_color(input: &str) -> IResult<&str, Color> {
         let (input, _) = tag("#")(input)?;
-        let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
+        let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
 
         Ok((input, Color { red, green, blue }))
     }

@@ -17,6 +17,7 @@ use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::map::MapSingle;
+use crate::neu::Neu2Re;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
@@ -298,6 +299,66 @@ where
             inner: self,
             b_policy: re_policy(regex),
         }
+    }
+}
+
+impl<'a> RegexCtx<'a, [u8]> {
+    pub fn skip_ascii_whitespace(
+        self,
+    ) -> PolicyCtx<
+        Self,
+        RePolicy<
+            Self,
+            crate::neu::NeureRepeat<
+                0,
+                { usize::MAX },
+                Self,
+                crate::neu::AsciiWhiteSpace,
+                crate::neu::NullCond,
+            >,
+        >,
+    > {
+        self.ignore(crate::neu::ascii_whitespace().repeat_full())
+    }
+}
+
+impl<'a> RegexCtx<'a, str> {
+    pub fn skip_ascii_whitespace(
+        self,
+    ) -> PolicyCtx<
+        Self,
+        RePolicy<
+            Self,
+            crate::neu::NeureRepeat<
+                0,
+                { usize::MAX },
+                Self,
+                crate::neu::AsciiWhiteSpace,
+                crate::neu::NullCond,
+            >,
+        >,
+    > {
+        self.ignore(crate::neu::ascii_whitespace().repeat_full())
+    }
+}
+
+impl<'a> RegexCtx<'a, str> {
+    pub fn skip_whitespace(
+        self,
+    ) -> PolicyCtx<
+        Self,
+        RePolicy<
+            Self,
+            crate::neu::NeureRepeat<
+                0,
+                { usize::MAX },
+                Self,
+                crate::neu::WhiteSpace,
+                crate::neu::NullCond,
+            >,
+        >,
+    > {
+        self.ignore(crate::neu::whitespace().repeat_full())
     }
 }
 
