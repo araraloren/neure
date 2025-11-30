@@ -725,6 +725,8 @@ pub trait RegexIntoOp<C>
 where
     Self: Sized + Regex<C>,
 {
+    fn into_ctor(self) -> Wrap<Self, C>;
+
     fn into_box_regex(self) -> Wrap<BoxedRegex<Self>, C>;
 
     fn into_rc_regex(self) -> Wrap<Rc<Self>, C>;
@@ -757,6 +759,10 @@ impl<C, T> RegexIntoOp<C> for T
 where
     T: Regex<C>,
 {
+    fn into_ctor(self) -> Wrap<Self, C> {
+        Wrap::new(self)
+    }
+
     fn into_box_regex(self) -> Wrap<BoxedRegex<Self>, C> {
         Wrap::r#box(self)
     }

@@ -14,7 +14,6 @@ use crate::regex::def_not;
 use crate::regex::Regex;
 
 use super::length_of;
-use super::ret_and_inc;
 use super::CRange;
 use super::Condition;
 use super::Neu;
@@ -228,7 +227,8 @@ where
             if cnt >= M {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
                 let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
-                ret = Ok(ret_and_inc(g.ctx(), len));
+
+                ret = Ok(g.inc(len));
             }
         }
         crate::debug_regex_reval!("NeureRepeat", cnt, g.process_ret(ret))
@@ -411,7 +411,8 @@ where
             if self.range.contains(&cnt) {
                 let end = end.or_else(|| iter.next()).map(|v| v.0);
                 let len = beg.map(|v| length_of(v, g.ctx(), end)).unwrap_or(0);
-                ret = Ok(ret_and_inc(g.ctx(), len));
+
+                ret = Ok(g.inc(len));
             }
         }
         let ret = g.process_ret(ret);

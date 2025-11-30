@@ -13,7 +13,6 @@ mod range;
 mod units;
 
 use crate::ctx::Context;
-use crate::ctx::Span;
 use crate::trace_retval;
 use crate::MayDebug;
 
@@ -656,14 +655,6 @@ where
 pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option<usize>) -> usize {
     let next_offset = next.unwrap_or(ctx.len() - ctx.offset());
     next_offset - offset
-}
-
-#[inline(always)]
-pub(crate) fn ret_and_inc<'a, C: Context<'a>>(ctx: &mut C, len: usize) -> Span {
-    let ret = Span::new(ctx.offset(), len);
-
-    ctx.inc(len);
-    ret
 }
 
 pub trait Neu2Re<'a, C>

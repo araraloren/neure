@@ -1,18 +1,17 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 use super::length_of;
-use super::ret_and_inc;
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
@@ -194,7 +193,8 @@ where
                         && self.cond.check(g.ctx(), &(snd_offset, item))?
                     {
                         let len = length_of(fst_offset, g.ctx(), iter.next().map(|v| v.0));
-                        ret = Ok(ret_and_inc(g.ctx(), len));
+
+                        ret = Ok(g.inc(len));
                     }
                 }
             }
