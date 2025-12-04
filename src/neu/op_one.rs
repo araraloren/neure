@@ -153,19 +153,23 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
-        let mut iter = g.ctx().peek()?;
+        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::NeuOne);
 
-        crate::debug_regex_beg!("NeureOne", g.beg());
-        if let Some((offset, item)) = iter.next() {
-            if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
-                let len = length_of(offset, g.ctx(), iter.next().map(|v| v.0));
+        if !ctx.is_reach_end() || ctx.req_data()? {
+            let mut iter = ctx.peek()?;
 
-                ret = Ok(g.inc(len));
+            crate::debug_regex_beg!("NeureOne", ctx.beg());
+            if let Some((offset, item)) = iter.next() {
+                if self.unit.is_match(&item) && self.cond.check(ctx.ctx(), &(offset, item))? {
+                    let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
+
+                    ret = Ok(ctx.inc(len));
+                }
             }
         }
-        crate::debug_regex_reval!("NeureOne", g.process_ret(ret))
+
+        crate::debug_regex_reval!("NeureOne", ctx.process_ret(ret))
     }
 }
 
@@ -306,27 +310,35 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut beg = None;
         let mut end = None;
         let mut ret = Err(Error::NeuOneMore);
-        let mut iter = g.ctx().peek()?;
+        let mut peek = ctx.beg();
 
-        crate::debug_regex_beg!("NeureOneMore", g.beg());
-        for pair in iter.by_ref() {
-            if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
-                end = Some(pair);
-                break;
-            }
-            if beg.is_none() {
-                beg = Some(pair.0);
-            }
-        }
-        if let Some(start) = beg {
-            let len = length_of(start, g.ctx(), end.map(|v| v.0));
+        crate::debug_regex_beg!("NeureOneMore", ctx.beg());
+        loop {
+            let mut iter = ctx.peek_at(peek)?;
 
-            ret = Ok(g.inc(len))
+            for pair in iter.by_ref() {
+                if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
+                    end = Some(pair);
+                    break;
+                }
+                if beg.is_none() {
+                    beg = Some(pair.0);
+                }
+            }
+            if end.is_none() && ctx.record_peek_then_req(&mut peek)? {
+                continue;
+            }
+            if let Some(start) = beg {
+                let len = length_of(start, ctx.ctx(), end.map(|v| v.0));
+
+                ret = Ok(ctx.inc(len))
+            }
+            break;
         }
-        crate::debug_regex_reval!("NeureOneMore", g.process_ret(ret))
+        crate::debug_regex_reval!("NeureOneMore", ctx.process_ret(ret))
     }
 }

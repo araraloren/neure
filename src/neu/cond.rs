@@ -113,7 +113,6 @@ impl<C, T> RegexCond<'_, C, T> {
 
 impl<'a, C, T> NeuCond<'a, C> for RegexCond<'a, C, T>
 where
-    C::Orig: 'a,
     T: Regex<C>,
     C: Context<'a> + Match<C>,
 {

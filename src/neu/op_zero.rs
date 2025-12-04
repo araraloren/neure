@@ -154,20 +154,24 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
-        let mut ret = Ok(Span::new(g.beg(), 0));
+        let mut ctx = CtxGuard::new(ctx);
+        let mut ret = Ok(Span::new(ctx.beg(), 0));
 
-        crate::debug_regex_beg!("NeureZeroOne", g.beg());
-        if let Ok(mut iter) = g.ctx().peek() {
+        crate::debug_regex_beg!("NeureZeroOne", ctx.beg());
+        if ctx.is_reach_end() {
+            // try request new data
+            let _ = ctx.req_data();
+        }
+        if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
-                if self.unit.is_match(&item) && self.cond.check(g.ctx(), &(offset, item))? {
-                    let len = length_of(offset, g.ctx(), iter.next().map(|v| v.0));
+                if self.unit.is_match(&item) && self.cond.check(ctx.ctx(), &(offset, item))? {
+                    let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
 
-                    ret = Ok(g.inc(len));
+                    ret = Ok(ctx.inc(len));
                 }
             }
         }
-        crate::debug_regex_reval!("NeureZeroOne", g.process_ret(ret))
+        crate::debug_regex_reval!("NeureZeroOne", ctx.process_ret(ret))
     }
 }
 
@@ -309,28 +313,35 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut beg = None;
         let mut end = None;
-        let mut ret = Ok(Span::new(g.beg(), 0));
+        let mut ret = Ok(Span::new(ctx.beg(), 0));
+        let mut peek = ctx.beg();
 
-        crate::debug_regex_beg!("NeureZeroMore", g.beg());
-        if let Ok(mut iter) = g.ctx().peek() {
-            for pair in iter.by_ref() {
-                if !self.unit.is_match(&pair.1) || !self.cond.check(g.ctx(), &pair)? {
-                    end = Some(pair);
-                    break;
+        crate::debug_regex_beg!("NeureZeroMore", ctx.beg());
+        loop {
+            if let Ok(mut iter) = ctx.peek_at(peek) {
+                for pair in iter.by_ref() {
+                    if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
+                        end = Some(pair);
+                        break;
+                    }
+                    if beg.is_none() {
+                        beg = Some(pair.0);
+                    }
                 }
-                if beg.is_none() {
-                    beg = Some(pair.0);
+                if end.is_none() && ctx.record_peek_then_req(&mut peek)? {
+                    continue;
+                }
+                if let Some(start) = beg {
+                    let len = length_of(start, ctx.ctx(), end.map(|v| v.0));
+
+                    ret = Ok(ctx.inc(len));
                 }
             }
+            break;
         }
-        if let Some(start) = beg {
-            let len = length_of(start, g.ctx(), end.map(|v| v.0));
-
-            ret = Ok(g.inc(len));
-        }
-        crate::debug_regex_reval!("NeureZeroMore", g.process_ret(ret))
+        crate::debug_regex_reval!("NeureZeroMore", ctx.process_ret(ret))
     }
 }

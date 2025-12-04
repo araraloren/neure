@@ -181,24 +181,28 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
-        let mut iter = g.ctx().peek()?;
+        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::NeuThen);
 
-        crate::debug_regex_beg!("NeureThen", g.beg());
-        if let Some((fst_offset, item)) = iter.next() {
-            if self.left.is_match(&item) && self.cond.check(g.ctx(), &(fst_offset, item))? {
-                if let Some((snd_offset, item)) = iter.next() {
-                    if self.right.is_match(&item)
-                        && self.cond.check(g.ctx(), &(snd_offset, item))?
-                    {
-                        let len = length_of(fst_offset, g.ctx(), iter.next().map(|v| v.0));
+        crate::debug_regex_beg!("NeureThen", ctx.beg());
+        loop {
+            let mut iter = ctx.peek()?;
 
-                        ret = Ok(g.inc(len));
-                    }
+            if let (Some(fst), Some(snd)) = (iter.next(), iter.next()) {
+                if self.left.is_match(&fst.1)
+                    && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
+                    && self.right.is_match(&snd.1)
+                    && self.cond.check(ctx.ctx(), &(snd.0, snd.1))?
+                {
+                    let len = length_of(fst.0, ctx.ctx(), iter.next().map(|v| v.0));
+
+                    ret = Ok(ctx.inc(len));
                 }
+            } else if ctx.req_data()? {
+                continue;
             }
+            break;
         }
-        crate::debug_regex_reval!("NeureThen", g.process_ret(ret))
+        crate::debug_regex_reval!("NeureThen", ctx.process_ret(ret))
     }
 }

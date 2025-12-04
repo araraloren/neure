@@ -43,6 +43,22 @@ where
         self.ctx.offset()
     }
 
+    pub(crate) fn is_reach_end(&self) -> bool {
+        self.end() == self.len()
+    }
+
+    pub(crate) fn remaining_len(&self) -> usize {
+        self.ctx.len() - self.beg()
+    }
+
+    pub fn len(&self) -> usize {
+        self.ctx.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.ctx.is_empty()
+    }
+
     pub fn ctx(&mut self) -> &mut C {
         self.ctx
     }
@@ -53,6 +69,24 @@ where
 
         self.ctx.inc(len);
         span
+    }
+
+    pub fn req_data(&mut self) -> Result<bool, Error> {
+        self.ctx.req()
+    }
+
+    pub(crate) fn record_peek_then_req(&mut self, len: &mut usize) -> Result<bool, Error> {
+        // save last len to offset
+        *len = self.ctx.len();
+        self.ctx.req()
+    }
+
+    pub fn peek(&self) -> Result<<C as Context<'b>>::Iter<'b>, Error> {
+        self.ctx.peek()
+    }
+
+    pub fn peek_at(&self, offset: usize) -> Result<<C as Context<'b>>::Iter<'b>, Error> {
+        self.ctx.peek_at(offset)
     }
 
     pub fn reset(&mut self) -> &mut Self {

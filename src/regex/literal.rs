@@ -1,12 +1,12 @@
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::def_not;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 /// Match given slice in the [`Context`].
@@ -30,7 +30,7 @@ impl<'a, T> LitSlice<'a, T> {
 impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
-    C: Context<'a, Orig = [T]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [T]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -45,16 +45,21 @@ where
 impl<'a, C, T> Regex<C> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
-    C: Context<'a, Orig = [T]>,
+    C: Context<'a, Orig<'a> = &'a [T]>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::Slice);
+        let slice_len = self.val.len();
 
-        crate::debug_regex_beg!("LitSlice", g.beg());
-        if g.ctx().orig()?.starts_with(self.val) {
-            ret = Ok(g.inc(self.val.len()));
+        crate::debug_regex_beg!("LitSlice", ctx.beg());
+        if ctx.remaining_len() < slice_len {
+            // just request new data, ignore the result
+            let _ = ctx.req_data();
+        }
+        if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
+            ret = Ok(ctx.inc(slice_len));
         }
         crate::debug_regex_reval!("LitSlice", ret)
     }
@@ -80,7 +85,7 @@ impl<'a> LitString<'a> {
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for LitString<'_>
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -94,15 +99,20 @@ where
 
 impl<'a, C> Regex<C> for LitString<'_>
 where
-    C: Context<'a, Orig = str>,
+    C: Context<'a, Orig<'a> = &'a str>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::String);
+        let slice_len = self.val.len();
 
-        if g.ctx().orig()?.starts_with(self.val) {
-            ret = Ok(g.inc(self.val.len()));
+        if ctx.remaining_len() < slice_len {
+            // just request new data, ignore the result
+            let _ = ctx.req_data();
+        }
+        if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
+            ret = Ok(ctx.inc(slice_len));
         }
         crate::debug_regex_reval!("LitString", self.val, ret)
     }

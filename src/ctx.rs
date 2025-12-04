@@ -19,7 +19,7 @@ pub type BytesCtx<'a> = RegexCtx<'a, [u8]>;
 pub type CharsCtx<'a> = RegexCtx<'a, str>;
 
 pub trait Context<'a> {
-    type Orig: ?Sized;
+    type Orig<'b>;
 
     type Item: MayDebug;
 
@@ -41,21 +41,25 @@ pub trait Context<'a> {
 
     fn dec(&mut self, offset: usize) -> &mut Self;
 
+    fn req(&mut self) -> Result<bool, Error> {
+        Ok(false)
+    }
+
     fn peek(&self) -> Result<Self::Iter<'a>, Error> {
         self.peek_at(self.offset())
     }
 
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error>;
 
-    fn orig(&self) -> Result<&'a Self::Orig, Error> {
+    fn orig(&self) -> Result<Self::Orig<'a>, Error> {
         self.orig_at(self.offset())
     }
 
-    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error>;
+    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error>;
 
-    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error>;
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error>;
 
-    fn clone_with(&self, orig: &'a Self::Orig) -> Self;
+    fn clone_with(&self, orig: Self::Orig<'a>) -> Self;
 }
 
 pub trait Match<C> {
@@ -126,7 +130,6 @@ impl<C, T> RePolicy<C, T> {
 
 impl<'a, C, T> BPolicy<C> for RePolicy<C, T>
 where
-    C::Orig: 'a,
     T: Regex<C>,
     C: Context<'a> + Match<C>,
 {

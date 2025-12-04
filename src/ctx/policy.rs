@@ -87,7 +87,7 @@ where
     B: Clone + 'a,
     I: Context<'a>,
 {
-    type Orig = <I as Context<'a>>::Orig;
+    type Orig<'b> = <I as Context<'a>>::Orig<'b>;
 
     type Item = <I as Context<'a>>::Item;
 
@@ -119,7 +119,7 @@ where
         self
     }
 
-    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error> {
+    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
         Context::orig_at(&self.inner, offset)
     }
 
@@ -127,11 +127,11 @@ where
         Context::peek_at(&self.inner, offset)
     }
 
-    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error> {
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error> {
         Context::orig_sub(&self.inner, offset, len)
     }
 
-    fn clone_with(&self, orig: &'a Self::Orig) -> Self {
+    fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
         PolicyCtx {
             inner: I::clone_with(&self.inner, orig),
             b_policy: self.b_policy.clone(),
@@ -215,13 +215,13 @@ where
         P: Ctor<
             'a,
             Self,
-            &'a <Self as Context<'a>>::Orig,
+            <Self as Context<'a>>::Orig<'a>,
             O,
             Pass,
-            &'a <Self as Context<'a>>::Orig,
+            <Self as Context<'a>>::Orig<'a>,
         >,
-        &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
+        <Self as Context<'a>>::Orig<'a>:
+            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error> + 'a,
     {
         self.ctor_with(pat, &mut Pass)
     }
@@ -229,13 +229,13 @@ where
     pub fn map<P, O>(
         &mut self,
         pat: &P,
-        mapper: impl MapSingle<&'a <Self as Context<'a>>::Orig, O>,
+        mapper: impl MapSingle<<Self as Context<'a>>::Orig<'a>, O>,
     ) -> Result<O, Error>
     where
         P: Regex<Self>,
-        <Self as Context<'a>>::Orig: 'a,
-        &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
+        <Self as Context<'a>>::Orig<'a>: 'a,
+        <Self as Context<'a>>::Orig<'a>:
+            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }

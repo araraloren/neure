@@ -100,7 +100,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &str
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -113,7 +113,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for String
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -126,7 +126,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &String
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -139,7 +139,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8]
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -152,7 +152,7 @@ where
 
 impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -165,7 +165,7 @@ where
 
 impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for [u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -178,7 +178,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -191,7 +191,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {

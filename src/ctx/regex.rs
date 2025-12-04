@@ -101,7 +101,7 @@ where
     ///         dat: &'a str,
     ///     }
     ///
-    ///     impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for Dat<'a> {
+    ///     impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for Dat<'a> {
     ///         type Out<'b> = Dat<'b>;
     ///
     ///         type Error = neure::err::Error;
@@ -197,7 +197,7 @@ where
     ///         dat: &'a str,
     ///     }
     ///
-    ///     impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for Dat<'a> {
+    ///     impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for Dat<'a> {
     ///         type Out<'b> = Dat<'b>;
     ///
     ///         type Error = neure::err::Error;
@@ -363,7 +363,7 @@ impl<'a> RegexCtx<'a, str> {
 }
 
 impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
-    type Orig = [u8];
+    type Orig<'b> = &'b [u8];
 
     type Item = u8;
 
@@ -398,7 +398,7 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
         self
     }
 
-    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error> {
+    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
         self.dat.get(offset..).ok_or(Error::OriginOutOfBound)
     }
 
@@ -406,19 +406,19 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
         Ok(BytesIndices::new(self.orig_at(offset)?))
     }
 
-    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error> {
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error> {
         self.dat
             .get(offset..(offset + len))
             .ok_or(Error::OriginOutOfBound)
     }
 
-    fn clone_with(&self, orig: &'a Self::Orig) -> Self {
+    fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
         RegexCtx::new(orig)
     }
 }
 
 impl<'a> Context<'a> for RegexCtx<'a, str> {
-    type Orig = str;
+    type Orig<'b> = &'b str;
 
     type Item = char;
 
@@ -453,7 +453,7 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
         self
     }
 
-    fn orig_at(&self, offset: usize) -> Result<&'a Self::Orig, Error> {
+    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
         self.dat.get(offset..).ok_or(Error::OriginOutOfBound)
     }
 
@@ -461,13 +461,13 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
         Ok(self.orig_at(offset)?.char_indices())
     }
 
-    fn orig_sub(&self, offset: usize, len: usize) -> Result<&'a Self::Orig, Error> {
+    fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error> {
         self.dat
             .get(offset..(offset + len))
             .ok_or(Error::OriginOutOfBound)
     }
 
-    fn clone_with(&self, orig: &'a Self::Orig) -> Self {
+    fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
         RegexCtx::new(orig)
     }
 }
@@ -544,13 +544,13 @@ where
         P: Ctor<
             'a,
             Self,
-            &'a <Self as Context<'a>>::Orig,
+            <Self as Context<'a>>::Orig<'a>,
             O,
             Pass,
-            &'a <Self as Context<'a>>::Orig,
+            <Self as Context<'a>>::Orig<'a>,
         >,
-        &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error> + 'a,
+        <Self as Context<'a>>::Orig<'a>:
+            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error> + 'a,
     {
         self.ctor_with(pat, &mut Pass)
     }
@@ -558,12 +558,12 @@ where
     pub fn map<P, O>(
         &mut self,
         pat: &P,
-        mapper: impl MapSingle<&'a <Self as Context<'a>>::Orig, O>,
+        mapper: impl MapSingle<<Self as Context<'a>>::Orig<'a>, O>,
     ) -> Result<O, Error>
     where
         P: Regex<Self>,
-        &'a <Self as Context<'a>>::Orig:
-            Extract<'a, Self, Out<'a> = &'a <Self as Context<'a>>::Orig, Error = Error>,
+        <Self as Context<'a>>::Orig<'a>:
+            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }

@@ -90,7 +90,7 @@ impl_handler_for!(A B C D E);
 
 impl_handler_for!(A B C D E F);
 
-impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for &'a str {
+impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for &'a str {
     type Out<'b> = &'b str;
 
     type Error = Error;
@@ -100,7 +100,7 @@ impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for &'a str {
     }
 }
 
-impl<'a, C: Context<'a, Orig = [u8]>> Extract<'a, C> for &'a [u8] {
+impl<'a, C: Context<'a, Orig<'a> = &'a [u8]>> Extract<'a, C> for &'a [u8] {
     type Out<'b> = &'b [u8];
 
     type Error = Error;
@@ -110,7 +110,7 @@ impl<'a, C: Context<'a, Orig = [u8]>> Extract<'a, C> for &'a [u8] {
     }
 }
 
-impl<'a, C: Context<'a, Orig = str>> Extract<'a, C> for String {
+impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for String {
     type Out<'b> = String;
 
     type Error = Error;

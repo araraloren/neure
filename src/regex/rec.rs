@@ -184,12 +184,11 @@ pub struct RecParser;
 
 impl<'ctx, Ctx> RecursiveParser<'ctx, Ctx> for RecParser
 where
-    &'ctx Ctx::Orig: 'ctx,
     Ctx: Context<'ctx> + Match<Ctx>,
 {
     type H = Pass;
 
-    type A = &'ctx Ctx::Orig;
+    type A = Ctx::Orig<'ctx>;
 
     type Ctor<'a, 'b, C, M, O, H, A> = RecursiveCtorWith<'a, 'b, C, M, O, H, A>;
 
@@ -231,12 +230,11 @@ pub struct RecParserSync;
 
 impl<'ctx, Ctx> RecursiveParserSync<'ctx, Ctx> for RecParserSync
 where
-    &'ctx Ctx::Orig: 'ctx,
     Ctx: Context<'ctx> + Match<Ctx>,
 {
     type H = Pass;
 
-    type A = &'ctx Ctx::Orig;
+    type A = Ctx::Orig<'ctx>;
 
     type Ctor<'a, 'b, C, M, O, H, A> = RecursiveCtorWithSync<'a, 'b, C, M, O, H, A>;
 

@@ -87,7 +87,7 @@ where
 
 impl<'a, C> Regex<C> for &str
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -98,7 +98,7 @@ where
 
 impl<'a, C> Regex<C> for String
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -109,7 +109,7 @@ where
 
 impl<'a, C> Regex<C> for &String
 where
-    C: Context<'a, Orig = str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -120,7 +120,7 @@ where
 
 impl<'a, C> Regex<C> for &[u8]
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -131,7 +131,7 @@ where
 
 impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -142,7 +142,7 @@ where
 
 impl<'a, const N: usize, C> Regex<C> for [u8; N]
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -153,7 +153,7 @@ where
 
 impl<'a, C> Regex<C> for Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(&self.as_slice(), ctx)
@@ -162,7 +162,7 @@ where
 
 impl<'a, C> Regex<C> for &Vec<u8>
 where
-    C: Context<'a, Orig = [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(&self.as_slice(), ctx)
