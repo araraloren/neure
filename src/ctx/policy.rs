@@ -4,13 +4,9 @@ use super::PolicyMatch;
 use super::Regex;
 use super::Span;
 
-use crate::ctor::Ctor;
 use crate::ctor::Extract;
-use crate::ctor::Handler;
-use crate::ctor::Pass;
 use crate::ctx::Match;
 use crate::err::Error;
-use crate::map::MapSingle;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
@@ -183,78 +179,5 @@ where
 
     fn extract(ctx: &Self, _: &Span) -> Result<Self::Out<'a>, Self::Error> {
         Ok(Clone::clone(ctx))
-    }
-}
-
-impl<'a, I, B> PolicyCtx<I, B>
-where
-    I: Context<'a>,
-    Self: Context<'a>,
-    B: BPolicy<I> + 'a,
-{
-    pub fn ctor_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
-    where
-        P: Ctor<'a, Self, M, O, H, A>,
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
-    {
-        pat.construct(self, handler)
-    }
-
-    pub fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
-    where
-        P: Regex<Self>,
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
-    {
-        let ret = self.try_mat(pat)?;
-
-        handler.invoke(A::extract(self, &ret)?)
-    }
-
-    pub fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
-    where
-        P: Ctor<
-            'a,
-            Self,
-            <Self as Context<'a>>::Orig<'a>,
-            O,
-            Pass,
-            <Self as Context<'a>>::Orig<'a>,
-        >,
-        <Self as Context<'a>>::Orig<'a>:
-            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error> + 'a,
-    {
-        self.ctor_with(pat, &mut Pass)
-    }
-
-    pub fn map<P, O>(
-        &mut self,
-        pat: &P,
-        mapper: impl MapSingle<<Self as Context<'a>>::Orig<'a>, O>,
-    ) -> Result<O, Error>
-    where
-        P: Regex<Self>,
-        <Self as Context<'a>>::Orig<'a>: 'a,
-        <Self as Context<'a>>::Orig<'a>:
-            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error>,
-    {
-        mapper.map_to(self.map_with(pat, Ok)?)
-    }
-
-    pub fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
-    where
-        P: Ctor<'a, Self, Span, O, Pass, Span>,
-        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
-    {
-        self.ctor_with(pat, &mut Pass)
-    }
-
-    pub fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>
-    where
-        P: Regex<Self>,
-        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
-    {
-        mapper.map_to(self.map_with(pat, Ok)?)
     }
 }

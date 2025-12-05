@@ -6,7 +6,9 @@ mod span;
 
 use std::marker::PhantomData;
 
+use crate::ctor::{Ctor, Extract, Handler, Pass};
 use crate::err::Error;
+use crate::map::MapSingle;
 use crate::regex::Regex;
 use crate::MayDebug;
 
@@ -70,6 +72,87 @@ pub trait Match<C> {
     }
 
     fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error>;
+}
+
+pub trait ContextHelper<'a>
+where
+    Self: Context<'a> + Sized,
+{
+    fn ctor_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
+    where
+        P: Ctor<'a, Self, M, O, H, A>,
+        H: Handler<A, Out = M, Error = Error>,
+        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
+    {
+        pat.construct(self, handler)
+    }
+
+    fn map_with<H, A, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
+    where
+        P: Regex<Self>,
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, Self, Out<'a> = A, Error = Error>;
+
+    fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    where
+        P: Ctor<
+            'a,
+            Self,
+            <Self as Context<'a>>::Orig<'a>,
+            O,
+            Pass,
+            <Self as Context<'a>>::Orig<'a>,
+        >,
+        <Self as Context<'a>>::Orig<'a>:
+            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error> + 'a,
+    {
+        self.ctor_with(pat, &mut Pass)
+    }
+
+    fn map<P, O>(
+        &mut self,
+        pat: &P,
+        mapper: impl MapSingle<<Self as Context<'a>>::Orig<'a>, O>,
+    ) -> Result<O, Error>
+    where
+        P: Regex<Self>,
+        <Self as Context<'a>>::Orig<'a>:
+            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error>,
+    {
+        mapper.map_to(self.map_with(pat, Ok)?)
+    }
+
+    fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    where
+        P: Ctor<'a, Self, Span, O, Pass, Span>,
+        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
+    {
+        self.ctor_with(pat, &mut Pass)
+    }
+
+    fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>
+    where
+        P: Regex<Self>,
+        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
+    {
+        mapper.map_to(self.map_with(pat, Ok)?)
+    }
+}
+
+impl<'a, C> ContextHelper<'a> for C
+where
+    C: Sized + Context<'a> + Match<Self>,
+{
+    fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    where
+        P: Regex<Self>,
+        H: Handler<A, Out = O, Error = Error>,
+        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
+    {
+        let ret = self.try_mat(pat)?;
+
+        handler.invoke(A::extract(self, &ret)?)
+    }
 }
 
 pub trait PolicyMatch<C, B> {
