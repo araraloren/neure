@@ -372,6 +372,8 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
     where
         Self: 'b;
 
+    type Cloned = Self;
+
     fn len(&self) -> usize {
         self.dat.len()
     }
@@ -426,6 +428,8 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
         = CharIndices<'b>
     where
         Self: 'b;
+
+    type Cloned = Self;
 
     fn len(&self) -> usize {
         self.dat.len()

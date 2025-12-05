@@ -27,6 +27,8 @@ pub trait Context<'a> {
     where
         Self: 'b;
 
+    type Cloned: Context<'a>;
+
     fn len(&self) -> usize;
 
     fn is_empty(&self) -> bool {
@@ -59,7 +61,7 @@ pub trait Context<'a> {
 
     fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error>;
 
-    fn clone_with(&self, orig: Self::Orig<'a>) -> Self;
+    fn clone_with(&self, orig: Self::Orig<'a>) -> Self::Cloned;
 }
 
 pub trait Match<C> {

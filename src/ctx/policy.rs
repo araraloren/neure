@@ -96,6 +96,8 @@ where
     where
         Self: 'b;
 
+    type Cloned = PolicyCtx<<I as Context<'a>>::Cloned, B>;
+
     fn len(&self) -> usize {
         Context::len(&self.inner)
     }
@@ -131,7 +133,7 @@ where
         Context::orig_sub(&self.inner, offset, len)
     }
 
-    fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
+    fn clone_with(&self, orig: Self::Orig<'a>) -> Self::Cloned {
         PolicyCtx {
             inner: I::clone_with(&self.inner, orig),
             b_policy: self.b_policy.clone(),
