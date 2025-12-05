@@ -154,7 +154,7 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
-        let mut ret = Err(Error::NeuOne);
+        let mut ret = Err(Error::NeureOne);
 
         if !ctx.is_reach_end() || ctx.req_data()? {
             let mut iter = ctx.peek()?;
@@ -313,7 +313,7 @@ where
         let mut ctx = CtxGuard::new(ctx);
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::NeuOneMore);
+        let mut ret = Err(Error::NeureOneMore);
         let mut peek = ctx.beg();
 
         crate::debug_regex_beg!("NeureOneMore", ctx.beg());

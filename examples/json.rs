@@ -66,9 +66,9 @@ impl JsonParser {
 
     pub fn to_digit<'a>(val: &[u8]) -> Result<JsonZero<'a>, Error> {
         std::str::from_utf8(val)
-            .map_err(|_| Error::Other)?
+            .map_err(|_| Error::Utf8Error)?
             .parse::<f64>()
-            .map_err(|_| Error::Other)
+            .map_err(|_| Error::FromStr)
             .map(JsonZero::Num)
     }
 }

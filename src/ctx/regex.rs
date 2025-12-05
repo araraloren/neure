@@ -399,7 +399,7 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
     }
 
     fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
-        self.dat.get(offset..).ok_or(Error::OriginOutOfBound)
+        self.dat.get(offset..).ok_or(Error::OutOfBound)
     }
 
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error> {
@@ -409,7 +409,7 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
     fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error> {
         self.dat
             .get(offset..(offset + len))
-            .ok_or(Error::OriginOutOfBound)
+            .ok_or(Error::OutOfBound)
     }
 
     fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
@@ -454,7 +454,7 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
     }
 
     fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
-        self.dat.get(offset..).ok_or(Error::OriginOutOfBound)
+        self.dat.get(offset..).ok_or(Error::OutOfBound)
     }
 
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error> {
@@ -464,7 +464,7 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
     fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error> {
         self.dat
             .get(offset..(offset + len))
-            .ok_or(Error::OriginOutOfBound)
+            .ok_or(Error::OutOfBound)
     }
 
     fn clone_with(&self, orig: Self::Orig<'a>) -> Self {

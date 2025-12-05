@@ -2,6 +2,9 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
@@ -9,9 +12,6 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
 use crate::regex::def_not;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 ///
@@ -159,25 +159,25 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut vec = Vec::with_capacity(self.capacity);
-        let mut ret = Err(Error::RegexRepeat);
+        let mut vals = Vec::with_capacity(self.capacity);
+        let mut ret = Err(Error::Repeat);
 
-        crate::debug_ctor_beg!("Repeat", self.range, g.beg());
+        crate::debug_ctor_beg!("Repeat", self.range, ctx.beg());
         while self.is_contain(cnt) {
-            if let Ok(res) = self.pat.construct(g.ctx(), handler) {
-                vec.push(res);
+            if let Ok(val) = self.pat.construct(ctx.ctx(), handler) {
+                vals.push(val);
                 cnt += 1;
             } else {
                 break;
             }
         }
         if std::ops::RangeBounds::contains(&self.range, &cnt) {
-            ret = Ok(vec);
+            ret = Ok(vals);
         }
-        crate::debug_ctor_reval!("Repeat", g.beg(), g.end(), ret.is_ok());
-        g.process_ret(ret)
+        crate::debug_ctor_reval!("Repeat", ctx.beg(), ctx.end(), ret.is_ok());
+        ctx.process_ret(ret)
     }
 }
 
@@ -191,7 +191,7 @@ where
         let mut g = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut span = Span::new(g.ctx().offset(), 0);
-        let mut ret = Err(Error::RegexRepeat);
+        let mut ret = Err(Error::Repeat);
 
         crate::debug_regex_beg!("Repeat", self.range, g.beg());
         while self.is_contain(cnt) {

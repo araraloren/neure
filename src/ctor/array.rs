@@ -74,7 +74,7 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Vec);
+        let mut ret = Err(Error::Array);
 
         crate::debug_ctor_beg!("Array", g.beg());
         for regex in self.0.iter() {
@@ -100,7 +100,7 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Vec);
+        let mut ret = Err(Error::Array);
 
         crate::debug_regex_beg!("Array", g.beg());
         for regex in self.0.iter() {
@@ -189,7 +189,7 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::PairVec);
+        let mut ret = Err(Error::PairArray);
 
         crate::debug_ctor_beg!("PairArray", g.beg());
         for (regex, value) in self.0.iter() {
@@ -215,7 +215,7 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::PairVec);
+        let mut ret = Err(Error::PairArray);
 
         crate::debug_regex_beg!("PairArray", g.beg());
         for (regex, _) in self.0.iter() {

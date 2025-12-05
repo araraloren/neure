@@ -204,7 +204,7 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::NeuRepeat);
+        let mut ret = Err(Error::NeureRepeat);
         let mut peek = ctx.beg();
         let range = M..N;
 
@@ -386,7 +386,7 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::NeuRepeatRange);
+        let mut ret = Err(Error::NeureRepeatRange);
         let mut peek = ctx.beg();
 
         fn bound_checker(max: Option<usize>) -> impl Fn(usize) -> bool {

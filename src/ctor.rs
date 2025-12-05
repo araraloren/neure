@@ -246,7 +246,7 @@ where
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = self.lock().map_err(|_| Error::LockMutex)?;
+        let ret = self.lock().map_err(|_| Error::Mutex)?;
 
         Ctor::construct(&*ret, ctx, handler)
     }

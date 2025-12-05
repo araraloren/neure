@@ -50,12 +50,11 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Slice);
+        let mut ret = Err(Error::LitSlice);
         let slice_len = self.val.len();
 
         crate::debug_regex_beg!("LitSlice", ctx.beg());
-        // request data if remaining data < length of slice
-        while ctx.remaining_len() < slice_len && ctx.req_data()? {}
+        ctx.req_data_less_than(slice_len)?;
         if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
             ret = Ok(ctx.inc(slice_len));
         }
@@ -102,14 +101,13 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
-        let mut ret = Err(Error::String);
-        let slice_len = self.val.len();
+        let mut ret = Err(Error::LitString);
+        let literal_len = self.val.len();
 
         crate::debug_regex_beg!("LitString", ctx.beg());
-        // request data if remaining data < length of slice
-        while ctx.remaining_len() < slice_len && ctx.req_data()? {}
-        if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
-            ret = Ok(ctx.inc(slice_len));
+        ctx.req_data_less_than(literal_len)?;
+        if ctx.remaining_len() >= literal_len && ctx.ctx().orig()?.starts_with(self.val) {
+            ret = Ok(ctx.inc(literal_len));
         }
         crate::debug_regex_reval!("LitString", self.val, ret)
     }

@@ -43,14 +43,14 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("AnchorStart", g.beg());
+        debug_regex_beg!("AnchorStart", ctx.beg());
 
-        let ret = if g.beg() == 0 {
-            Ok(g.inc(0))
+        let ret = if ctx.beg() == 0 {
+            Ok(ctx.inc(0))
         } else {
-            Err(Error::Start)
+            Err(Error::AnchorStart)
         };
 
         debug_regex_reval!("AnchorStart", ret)
@@ -89,14 +89,14 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("AnchorEnd", g.beg());
-
-        let ret = if g.beg() == g.ctx().len() {
-            Ok(g.inc(0))
+        debug_regex_beg!("AnchorEnd", ctx.beg());
+        while ctx.req_data()? {}
+        let ret = if ctx.beg() == ctx.len() {
+            Ok(ctx.inc(0))
         } else {
-            Err(Error::End)
+            Err(Error::AnchorEnd)
         };
 
         debug_regex_reval!("AnchorEnd", ret)

@@ -359,29 +359,29 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let mut res = Vec::with_capacity(self.capacity.max(self.min));
+        let mut ctx = CtxGuard::new(ctx);
+        let mut vals = Vec::with_capacity(self.capacity.max(self.min));
         let range: CRange<usize> = (self.min..).into();
 
-        debug_ctor_beg!("Separate", range, g.beg());
-        while let Ok(ret) = self.pat.construct(g.ctx(), func) {
-            let sep_ret = g.ctx().try_mat(&self.sep);
+        debug_ctor_beg!("Separate", range, ctx.beg());
+        while let Ok(val) = self.pat.construct(ctx.ctx(), func) {
+            let res = ctx.ctx().try_mat(&self.sep);
 
-            if sep_ret.is_ok() || self.skip {
-                res.push(ret);
+            if res.is_ok() || self.skip {
+                vals.push(val);
             }
-            if sep_ret.is_err() {
+            if res.is_err() {
                 break;
             }
         }
-        let len = res.len();
-        let ret = g.process_ret(if len >= self.min {
-            Ok(res)
+        let len = vals.len();
+        let ret = ctx.process_ret(if len >= self.min {
+            Ok(vals)
         } else {
             Err(Error::Separate)
         });
 
-        debug_ctor_reval!("Separate", range, g.beg(), g.end(), ret.is_ok());
+        debug_ctor_reval!("Separate", range, ctx.beg(), ctx.end(), ret.is_ok());
         ret
     }
 }
@@ -394,31 +394,32 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut span = Span::new(g.ctx().offset(), 0);
-        let mut ret = Err(Error::Separate);
+        let mut span = Span::new(ctx.ctx().offset(), 0);
         let range: CRange<usize> = (self.min..).into();
 
-        debug_regex_beg!("Separate", range, g.beg());
-        while let Ok(ret) = g.ctx().try_mat(&self.pat) {
-            let sep_ret = g.ctx().try_mat(&self.sep);
+        debug_regex_beg!("Separate", range, ctx.beg());
+        while let Ok(ret) = ctx.ctx().try_mat(&self.pat) {
+            let res = ctx.ctx().try_mat(&self.sep);
 
-            if sep_ret.is_ok() || self.skip {
+            if res.is_ok() || self.skip {
                 cnt += 1;
                 span.add_assign(ret);
-                if let Ok(sep_ret) = sep_ret {
+                if let Ok(sep_ret) = res {
                     span.add_assign(sep_ret);
                 }
             }
-            if sep_ret.is_err() {
+            if res.is_err() {
                 break;
             }
         }
-        if cnt >= self.min {
-            ret = Ok(span);
-        }
-        debug_regex_reval!("Separate", range, g.process_ret(ret))
+        let ret = if cnt >= self.min {
+            Ok(span)
+        } else {
+            Err(Error::Separate)
+        };
+        debug_regex_reval!("Separate", range, ctx.process_ret(ret))
     }
 }
 
@@ -571,21 +572,24 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut cnt = 0;
         let mut end = false;
         let range: CRange<usize> = (self.min..).into();
         let ret = {
-            debug_ctor_beg!("SepCollect", range, g.beg());
+            debug_ctor_beg!("SepCollect", range, ctx.beg());
             V::from_iter(std::iter::from_fn(|| {
-                self.pat.construct(g.ctx(), func).ok().and_then(|ret| {
-                    let sep_ret = g.ctx().try_mat(&self.sep);
+                self.pat.construct(ctx.ctx(), func).ok().and_then(|ret| {
+                    let res = ctx.ctx().try_mat(&self.sep);
 
                     if !end {
-                        if sep_ret.is_err() {
+                        if res.is_err() {
                             end = true;
                         }
-                        if sep_ret.is_ok() || self.skip {
+                        // The current value is captured only
+                        // when the current delimiter matches successfully
+                        // or the skip flag is true.
+                        if res.is_ok() || self.skip {
                             cnt += 1;
                             return Some(ret);
                         }
@@ -594,13 +598,13 @@ where
                 })
             }))
         };
-        let ret = g.process_ret(if cnt >= self.min {
+        let ret = ctx.process_ret(if cnt >= self.min {
             Ok(ret)
         } else {
             Err(Error::SepCollect)
         });
 
-        debug_ctor_reval!("SepCollect", range, g.beg(), g.end(), ret.is_ok());
+        debug_ctor_reval!("SepCollect", range, ctx.beg(), ctx.end(), ret.is_ok());
         ret
     }
 }
@@ -613,30 +617,30 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
         let mut cnt = 0;
-        let mut span = Span::new(g.ctx().offset(), 0);
+        let mut span = Span::new(ctx.ctx().offset(), 0);
         let mut ret = Err(Error::SepCollect);
         let range: CRange<usize> = (self.min..).into();
 
-        debug_regex_beg!("SepCollect", range, g.beg());
-        while let Ok(ret) = g.ctx().try_mat(&self.pat) {
-            let sep_ret = g.ctx().try_mat(&self.sep);
+        debug_regex_beg!("SepCollect", range, ctx.beg());
+        while let Ok(ret) = ctx.ctx().try_mat(&self.pat) {
+            let res = ctx.ctx().try_mat(&self.sep);
 
-            if sep_ret.is_ok() || self.skip {
+            if res.is_ok() || self.skip {
                 cnt += 1;
                 span.add_assign(ret);
-                if let Ok(sep_ret) = sep_ret {
+                if let Ok(sep_ret) = res {
                     span.add_assign(sep_ret);
                 }
             }
-            if sep_ret.is_err() {
+            if res.is_err() {
                 break;
             }
         }
         if cnt >= self.min {
             ret = Ok(span);
         }
-        debug_regex_reval!("SepCollect", range, g.process_ret(ret))
+        debug_regex_reval!("SepCollect", range, ctx.process_ret(ret))
     }
 }

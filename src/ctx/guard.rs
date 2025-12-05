@@ -75,6 +75,12 @@ where
         self.ctx.req()
     }
 
+    // request data if total length less than given `len`
+    pub(crate) fn req_data_less_than(&mut self, len: usize) -> Result<(), Error> {
+        while self.remaining_len() < len && self.req_data()? {}
+        Ok(())
+    }
+
     pub(crate) fn record_peek_then_req(&mut self, len: &mut usize) -> Result<bool, Error> {
         // save last len to offset
         *len = self.ctx.len();

@@ -1,12 +1,12 @@
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::def_not;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 /// Reverse the result, return zero length [`Span`] if match failed.
@@ -45,13 +45,12 @@ where
 impl<'a, C, T> Regex<C> for RegexNot<T>
 where
     T: Regex<C>,
-
     C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Not);
+        let mut ret = Err(Error::RegexNot);
 
         crate::debug_regex_beg!("RegexNot", g.beg());
         if g.try_mat(&self.val).is_err() {

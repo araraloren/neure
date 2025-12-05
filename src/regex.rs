@@ -205,7 +205,7 @@ where
     C: Context<'a> + Match<C>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let ret = self.lock().map_err(|_| Error::LockMutex)?;
+        let ret = self.lock().map_err(|_| Error::Mutex)?;
         (*ret).try_parse(ctx)
     }
 }

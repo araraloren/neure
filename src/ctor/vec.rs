@@ -72,7 +72,7 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Vec);
+        let mut ret = Err(Error::Vector);
 
         debug_ctor_beg!("Vector", g.beg());
         for regex in self.0.iter() {
@@ -97,7 +97,7 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::Vec);
+        let mut ret = Err(Error::Vector);
 
         debug_regex_beg!("Vector", g.beg());
         for regex in self.0.iter() {
@@ -176,7 +176,7 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::PairVec);
+        let mut ret = Err(Error::PairVector);
 
         debug_ctor_beg!("PairVector", g.beg());
         for (regex, value) in self.0.iter() {
@@ -201,7 +201,7 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::PairVec);
+        let mut ret = Err(Error::PairVector);
 
         debug_regex_beg!("PairVector", g.beg());
         for (regex, _) in self.0.iter() {

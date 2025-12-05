@@ -1,3 +1,6 @@
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
@@ -6,9 +9,6 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::def_not;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 /// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
@@ -43,12 +43,12 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("Consume", g.beg());
-
-        let ret = if g.ctx().len() - g.beg() >= self.0 {
-            Ok(g.inc(self.0))
+        debug_regex_beg!("Consume", ctx.beg());
+        ctx.req_data_less_than(self.0)?;
+        let ret = if ctx.remaining_len() >= self.0 {
+            Ok(ctx.inc(self.0))
         } else {
             Err(Error::Consume)
         };
@@ -89,12 +89,14 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("ConsumeAll", g.beg());
+        debug_regex_beg!("ConsumeAll", ctx.beg());
 
-        let len = g.ctx().len().saturating_sub(g.beg());
-        let ret = Ok(g.inc(len));
+        while ctx.req_data()? {}
+
+        let len = ctx.len().saturating_sub(ctx.beg());
+        let ret = Ok(ctx.inc(len));
 
         debug_regex_reval!("ConsumeAll", ret)
     }

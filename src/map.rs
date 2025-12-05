@@ -440,39 +440,45 @@ impl<T> Default for FromNeBytes<T> {
 macro_rules! impl_from_bytes {
     (le $ty:ty, $size:literal) => {
         impl<'a> MapSingle<&'a [u8], $ty> for FromLeBytes<$ty> {
-            fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+            fn map_to(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
                 debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
                     .next()
-                    .ok_or_else(|| Error::FromLeBytes)
-                    .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromLeBytes))??;
+                    .ok_or_else(|| $crate::err::Error::FromLeBytes)
+                    .map(|v| {
+                        <&[u8; $size]>::try_from(v).map_err(|_| $crate::err::Error::FromLeBytes)
+                    })??;
                 Ok(<$ty>::from_le_bytes(*bytes))
             }
         }
     };
     (be $ty:ty, $size:literal) => {
         impl<'a> MapSingle<&'a [u8], $ty> for FromBeBytes<$ty> {
-            fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+            fn map_to(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
                 debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
                     .next()
-                    .ok_or_else(|| Error::FromBeBytes)
-                    .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromBeBytes))??;
+                    .ok_or_else(|| $crate::err::Error::FromBeBytes)
+                    .map(|v| {
+                        <&[u8; $size]>::try_from(v).map_err(|_| $crate::err::Error::FromBeBytes)
+                    })??;
                 Ok(<$ty>::from_be_bytes(*bytes))
             }
         }
     };
     (ne $ty:ty, $size:literal) => {
         impl<'a> MapSingle<&'a [u8], $ty> for FromNeBytes<$ty> {
-            fn map_to(&self, val: &'a [u8]) -> Result<$ty, Error> {
+            fn map_to(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
                 debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
                     .next()
-                    .ok_or_else(|| Error::FromNeBytes)
-                    .map(|v| <&[u8; $size]>::try_from(v).map_err(|_| Error::FromNeBytes))??;
+                    .ok_or_else(|| $crate::err::Error::FromNeBytes)
+                    .map(|v| {
+                        <&[u8; $size]>::try_from(v).map_err(|_| $crate::err::Error::FromNeBytes)
+                    })??;
                 Ok(<$ty>::from_ne_bytes(*bytes))
             }
         }
