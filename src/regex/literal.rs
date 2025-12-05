@@ -54,10 +54,8 @@ where
         let slice_len = self.val.len();
 
         crate::debug_regex_beg!("LitSlice", ctx.beg());
-        if ctx.remaining_len() < slice_len {
-            // just request new data, ignore the result
-            let _ = ctx.req_data();
-        }
+        // request data if remaining data < length of slice
+        while ctx.remaining_len() < slice_len && ctx.req_data()? {}
         if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
             ret = Ok(ctx.inc(slice_len));
         }
@@ -107,10 +105,9 @@ where
         let mut ret = Err(Error::String);
         let slice_len = self.val.len();
 
-        if ctx.remaining_len() < slice_len {
-            // just request new data, ignore the result
-            let _ = ctx.req_data();
-        }
+        crate::debug_regex_beg!("LitString", ctx.beg());
+        // request data if remaining data < length of slice
+        while ctx.remaining_len() < slice_len && ctx.req_data()? {}
         if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
             ret = Ok(ctx.inc(slice_len));
         }
