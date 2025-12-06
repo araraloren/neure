@@ -130,8 +130,7 @@ where
     ///         let mut g = CtxGuard::new(ctx);
     ///         let ret = g.try_mat(&'X'.repeat_full());
     ///
-    ///         g.process_ret(ret)?;
-    ///         Ok(())
+    ///         g.process_ret(ret)
     ///     });
     ///
     ///     let texts: Vec<Dat> = ctx.ctor_with(&text.repeat(1..), &mut Ok)?;

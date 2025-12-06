@@ -43,10 +43,6 @@ where
         self.ctx.offset()
     }
 
-    pub(crate) fn is_reach_end(&self) -> bool {
-        self.end() == self.len()
-    }
-
     pub(crate) fn remaining_len(&self) -> usize {
         self.ctx.len() - self.beg()
     }
@@ -69,22 +65,6 @@ where
 
         self.ctx.inc(len);
         span
-    }
-
-    pub fn req_data(&mut self) -> Result<bool, Error> {
-        self.ctx.req()
-    }
-
-    // request data if total length less than given `len`
-    pub(crate) fn req_data_less_than(&mut self, len: usize) -> Result<(), Error> {
-        while self.remaining_len() < len && self.req_data()? {}
-        Ok(())
-    }
-
-    pub(crate) fn record_peek_then_req(&mut self, len: &mut usize) -> Result<bool, Error> {
-        // save last len to offset
-        *len = self.ctx.len();
-        self.ctx.req()
     }
 
     pub fn peek(&self) -> Result<<C as Context<'b>>::Iter<'b>, Error> {

@@ -46,7 +46,7 @@ where
         let mut ctx = CtxGuard::new(ctx);
 
         debug_regex_beg!("Consume", ctx.beg());
-        ctx.req_data_less_than(self.0)?;
+
         let ret = if ctx.remaining_len() >= self.0 {
             Ok(ctx.inc(self.0))
         } else {
@@ -92,8 +92,6 @@ where
         let mut ctx = CtxGuard::new(ctx);
 
         debug_regex_beg!("ConsumeAll", ctx.beg());
-
-        while ctx.req_data()? {}
 
         let len = ctx.len().saturating_sub(ctx.beg());
         let ret = Ok(ctx.inc(len));

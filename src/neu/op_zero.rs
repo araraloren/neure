@@ -158,10 +158,6 @@ where
         let mut ret = Ok(Span::new(ctx.beg(), 0));
 
         crate::debug_regex_beg!("NeureZeroOne", ctx.beg());
-        if ctx.is_reach_end() {
-            // try request new data
-            let _ = ctx.req_data();
-        }
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if self.unit.is_match(&item) && self.cond.check(ctx.ctx(), &(offset, item))? {
@@ -317,30 +313,23 @@ where
         let mut beg = None;
         let mut end = None;
         let mut ret = Ok(Span::new(ctx.beg(), 0));
-        let mut peek = ctx.beg();
 
         crate::debug_regex_beg!("NeureZeroMore", ctx.beg());
-        loop {
-            if let Ok(mut iter) = ctx.peek_at(peek) {
-                for pair in iter.by_ref() {
-                    if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
-                        end = Some(pair);
-                        break;
-                    }
-                    if beg.is_none() {
-                        beg = Some(pair.0);
-                    }
+        if let Ok(mut iter) = ctx.peek() {
+            for pair in iter.by_ref() {
+                if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
+                    end = Some(pair);
+                    break;
                 }
-                if end.is_none() && ctx.record_peek_then_req(&mut peek)? {
-                    continue;
-                }
-                if let Some(start) = beg {
-                    let len = length_of(start, ctx.ctx(), end.map(|v| v.0));
-
-                    ret = Ok(ctx.inc(len));
+                if beg.is_none() {
+                    beg = Some(pair.0);
                 }
             }
-            break;
+            if let Some(start) = beg {
+                let len = length_of(start, ctx.ctx(), end.map(|v| v.0));
+
+                ret = Ok(ctx.inc(len));
+            }
         }
         crate::debug_regex_reval!("NeureZeroMore", ctx.process_ret(ret))
     }

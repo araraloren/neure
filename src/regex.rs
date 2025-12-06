@@ -651,9 +651,9 @@ pub fn not<T>(re: T) -> RegexNot<T> {
 ///     let vec = regex::vector([var, ptr, r#ref]);
 ///     let sp = neu::whitespace().repeat_full();
 ///
-///     assert_eq!(CharsCtx::new("int a").ignore(sp).ctor(&vec)?, ("int", "a"));
-///     assert_eq!(CharsCtx::new("int *a").ignore(sp).ctor(&vec)?, ("int", "a"));
-///     assert_eq!(CharsCtx::new("int &a").ignore(sp).ctor(&vec)?, ("int", "a"));
+///     assert_eq!(CharsCtx::new("int a").skip_before(sp).ctor(&vec)?, ("int", "a"));
+///     assert_eq!(CharsCtx::new("int *a").skip_before(sp).ctor(&vec)?, ("int", "a"));
+///     assert_eq!(CharsCtx::new("int &a").skip_before(sp).ctor(&vec)?, ("int", "a"));
 ///     Ok(())
 /// # }
 /// ```
@@ -687,15 +687,15 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 ///     let sp = neu::whitespace().repeat_full();
 ///
 ///     assert_eq!(
-///         CharsCtx::new("int a").ignore(sp).ctor(&vec)?,
+///         CharsCtx::new("int a").skip_before(sp).ctor(&vec)?,
 ///         (("int", "a"), C::Var)
 ///     );
 ///     assert_eq!(
-///         CharsCtx::new("int *a").ignore(sp).ctor(&vec)?,
+///         CharsCtx::new("int *a").skip_before(sp).ctor(&vec)?,
 ///         (("int", "a"), C::Ptr)
 ///     );
 ///     assert_eq!(
-///         CharsCtx::new("int &a").ignore(sp).ctor(&vec)?,
+///         CharsCtx::new("int &a").skip_before(sp).ctor(&vec)?,
 ///         (("int", "a"), C::Ref)
 ///     );
 ///     Ok(())

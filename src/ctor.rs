@@ -683,7 +683,7 @@ where
     ///         ),
     ///         ("use neure as regex", (vec!["neure"], Some("regex"))),
     ///     ] {
-    ///         assert_eq!(CharsCtx::new(str).ignore(sp).ctor(&using)?, res);
+    ///         assert_eq!(CharsCtx::new(str).skip_before(sp).ctor(&using)?, res);
     ///     }
     ///
     ///     Ok(())

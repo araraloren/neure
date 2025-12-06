@@ -1,4 +1,5 @@
 use neure::prelude::*;
+use std::fs::read_to_string;
 
 #[test]
 fn policy() {
@@ -7,7 +8,7 @@ fn policy() {
 
 fn policy_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let dat = std::fs::read_to_string(file!())?;
+    let dat = read_to_string(file!())?;
     let ident = char::is_ascii_alphabetic
         .or('_')
         .repeat_one()
@@ -22,7 +23,7 @@ fn policy_impl() -> color_eyre::Result<()> {
     let uses = ctx.ctor(&use_parser.collect::<_, Vec<_>>())?;
 
     assert_eq!(uses.len(), 2);
-    assert_eq!(uses[0], (vec!["neure", "ctx", "re_policy"], None));
-    assert_eq!(uses[1], (vec!["neure", "prelude"], Some("*")));
+    assert_eq!(uses[0], (vec!["neure", "prelude"], Some("*")));
+    assert_eq!(uses[1], (vec!["std", "fs", "read_to_string"], None));
     Ok(())
 }

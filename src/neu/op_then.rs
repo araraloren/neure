@@ -183,25 +183,19 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::NeureThen);
+        let mut iter = ctx.peek()?;
 
         crate::debug_regex_beg!("NeureThen", ctx.beg());
-        loop {
-            let mut iter = ctx.peek()?;
+        if let (Some(fst), Some(snd)) = (iter.next(), iter.next()) {
+            if self.left.is_match(&fst.1)
+                && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
+                && self.right.is_match(&snd.1)
+                && self.cond.check(ctx.ctx(), &(snd.0, snd.1))?
+            {
+                let len = length_of(fst.0, ctx.ctx(), iter.next().map(|v| v.0));
 
-            if let (Some(fst), Some(snd)) = (iter.next(), iter.next()) {
-                if self.left.is_match(&fst.1)
-                    && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
-                    && self.right.is_match(&snd.1)
-                    && self.cond.check(ctx.ctx(), &(snd.0, snd.1))?
-                {
-                    let len = length_of(fst.0, ctx.ctx(), iter.next().map(|v| v.0));
-
-                    ret = Ok(ctx.inc(len));
-                }
-            } else if ctx.req_data()? {
-                continue;
+                ret = Ok(ctx.inc(len));
             }
-            break;
         }
         crate::debug_regex_reval!("NeureThen", ctx.process_ret(ret))
     }

@@ -111,10 +111,6 @@ where
         self
     }
 
-    fn req(&mut self) -> Result<bool, Error> {
-        Context::req(&mut self.inner)
-    }
-
     fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
         Context::orig_at(&self.inner, offset)
     }

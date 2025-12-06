@@ -54,7 +54,6 @@ where
         let slice_len = self.val.len();
 
         crate::debug_regex_beg!("LitSlice", ctx.beg());
-        ctx.req_data_less_than(slice_len)?;
         if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
             ret = Ok(ctx.inc(slice_len));
         }
@@ -105,7 +104,6 @@ where
         let literal_len = self.val.len();
 
         crate::debug_regex_beg!("LitString", ctx.beg());
-        ctx.req_data_less_than(literal_len)?;
         if ctx.remaining_len() >= literal_len && ctx.ctx().orig()?.starts_with(self.val) {
             ret = Ok(ctx.inc(literal_len));
         }

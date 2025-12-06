@@ -92,7 +92,7 @@ where
         let mut ctx = CtxGuard::new(ctx);
 
         debug_regex_beg!("AnchorEnd", ctx.beg());
-        while ctx.req_data()? {}
+
         let ret = if ctx.beg() == ctx.len() {
             Ok(ctx.inc(0))
         } else {

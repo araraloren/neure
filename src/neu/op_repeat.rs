@@ -205,39 +205,30 @@ where
         let mut beg = None;
         let mut end = None;
         let mut ret = Err(Error::NeureRepeat);
-        let mut peek = ctx.beg();
+        let mut iter = ctx.peek()?;
         let range = M..N;
 
         crate::debug_regex_beg!("NeureRepeat", &range, ctx.beg());
-        loop {
-            let mut iter = ctx.peek_at(peek)?;
-
-            while cnt < N {
-                if let Some(pair) = iter.next() {
-                    if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
-                        cnt += 1;
-                        if beg.is_none() {
-                            beg = Some(pair.0);
-                        }
-                        continue;
-                    } else {
-                        end = Some(pair);
+        while cnt < N {
+            if let Some(pair) = iter.next() {
+                if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
+                    cnt += 1;
+                    if beg.is_none() {
+                        beg = Some(pair.0);
                     }
+                    continue;
+                } else {
+                    end = Some(pair);
                 }
-                break;
-            }
-            if end.is_none() && ctx.record_peek_then_req(&mut peek)? {
-                continue;
-            }
-            if cnt >= M {
-                let end = end.or_else(|| iter.next()).map(|v| v.0);
-                let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
-
-                ret = Ok(ctx.inc(len));
             }
             break;
         }
+        if cnt >= M {
+            let end = end.or_else(|| iter.next()).map(|v| v.0);
+            let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
 
+            ret = Ok(ctx.inc(len));
+        }
         crate::debug_regex_reval!("NeureRepeat", cnt, ctx.process_ret(ret))
     }
 }
@@ -387,7 +378,7 @@ where
         let mut beg = None;
         let mut end = None;
         let mut ret = Err(Error::NeureRepeatRange);
-        let mut peek = ctx.beg();
+        let mut iter = ctx.peek()?;
 
         fn bound_checker(max: Option<usize>) -> impl Fn(usize) -> bool {
             move |val| max.map(|max| val < max).unwrap_or(true)
@@ -400,33 +391,25 @@ where
         });
 
         crate::debug_regex_beg!("NeureRepeatRange", self.range, ctx.beg());
-        loop {
-            let mut iter = ctx.peek_at(peek)?;
-
-            while cond(cnt) {
-                if let Some(pair) = iter.next() {
-                    if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
-                        cnt += 1;
-                        if beg.is_none() {
-                            beg = Some(pair.0);
-                        }
-                        continue;
-                    } else {
-                        end = Some(pair);
+        while cond(cnt) {
+            if let Some(pair) = iter.next() {
+                if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
+                    cnt += 1;
+                    if beg.is_none() {
+                        beg = Some(pair.0);
                     }
+                    continue;
+                } else {
+                    end = Some(pair);
                 }
-                break;
-            }
-            if end.is_none() && ctx.record_peek_then_req(&mut peek)? {
-                continue;
-            }
-            if self.range.contains(&cnt) {
-                let end = end.or_else(|| iter.next()).map(|v| v.0);
-                let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
-
-                ret = Ok(ctx.inc(len));
             }
             break;
+        }
+        if self.range.contains(&cnt) {
+            let end = end.or_else(|| iter.next()).map(|v| v.0);
+            let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
+
+            ret = Ok(ctx.inc(len));
         }
         crate::debug_regex_reval!("NeureRepeatRange", cnt, ctx.process_ret(ret))
     }

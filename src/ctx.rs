@@ -41,10 +41,6 @@ pub trait Context<'a> {
 
     fn dec(&mut self, offset: usize) -> &mut Self;
 
-    fn req(&mut self) -> Result<bool, Error> {
-        Ok(false)
-    }
-
     fn peek(&self) -> Result<Self::Iter<'a>, Error> {
         self.peek_at(self.offset())
     }
