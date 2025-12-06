@@ -170,10 +170,37 @@ macro_rules! neu {
     };
 }
 
+///
+/// Construct a string value regex pattern.
+///
+/// ```
+/// #
+/// # use neure::escape_strval;
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///
+///     let mut ctx = BytesCtx::new(b"\"abc\t\"");
+///     let pat = escape_strval!(b'\"', b'\\', [b'\\', b'\"', b'\t']);
+///     let pat = pat.quote(b"\"", b"\"");
+///
+///     assert_eq!(ctx.ctor(&pat)?, b"abc\t");
+///     Ok(())
+/// # }
+/// ```
 #[macro_export]
-macro_rules! escape {
-    ($re:expr, $escape:expr, $or:expr) => {{
-        let cond = $crate::neu::re_cond($crate::regex::not($escape));
-        $re.set_cond(cond).or($or)
+macro_rules! escape_strval {
+    ($quote:literal, $prefix:literal, $escape:expr) => {{
+        let escape = $escape;
+        let escape = $prefix.then(escape);
+        let cond = $crate::neu::re_cond($crate::regex::not(escape.clone()));
+
+        $quote
+            .not()
+            .repeat_one_more()
+            .set_cond(cond)
+            .or(escape)
+            .repeat(0..)
+            .pat()
     }};
 }
