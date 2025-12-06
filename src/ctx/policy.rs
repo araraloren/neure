@@ -1,4 +1,4 @@
-use super::BPolicy;
+use super::BeforePolicy;
 use super::Context;
 use super::PolicyMatch;
 use super::Regex;
@@ -139,7 +139,7 @@ where
 
 impl<'a, I, B> Match<PolicyCtx<I, B>> for PolicyCtx<I, B>
 where
-    B: BPolicy<I>,
+    B: BeforePolicy<I>,
     I: Context<'a>,
     Self: Context<'a>,
 {
@@ -154,7 +154,7 @@ where
 
 impl<'a, I, B> PolicyMatch<PolicyCtx<I, B>, B> for PolicyCtx<I, B>
 where
-    B: BPolicy<I>,
+    B: BeforePolicy<I>,
     I: Context<'a>,
     Self: Context<'a>,
 {

@@ -230,7 +230,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for Box<dyn Regex<C>>
+impl<'a, 'b, C> Regex<C> for Box<dyn Regex<C> + 'b>
 where
     C: Context<'a> + Match<C>,
 {
@@ -239,7 +239,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for Arc<dyn Regex<C>>
+impl<'a, 'b, C> Regex<C> for Arc<dyn Regex<C> + 'b>
 where
     C: Context<'a> + Match<C>,
 {
@@ -248,7 +248,7 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for Rc<dyn Regex<C>>
+impl<'a, 'b, C> Regex<C> for Rc<dyn Regex<C> + 'b>
 where
     C: Context<'a> + Match<C>,
 {

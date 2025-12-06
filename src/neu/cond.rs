@@ -113,9 +113,9 @@ impl<C, T> RegexCond<'_, C, T> {
 
 impl<'a, C, T> NeuCond<'a, C> for RegexCond<'a, C, T>
 where
-    T: Regex<C>,
-    C: Context<'a> + Match<C>,
-    C::Cloned: Context<'a> + Match<C>,
+    C: Context<'a>,
+    T: Regex<C::Cloned>,
+    C::Cloned: Context<'a> + Match<C::Cloned>,
 {
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {

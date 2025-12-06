@@ -161,11 +161,11 @@ pub trait PolicyMatch<C, B> {
         Pat: Regex<C> + ?Sized;
 }
 
-pub trait BPolicy<C> {
+pub trait BeforePolicy<C> {
     fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error>;
 }
 
-impl<C, F> BPolicy<C> for F
+impl<C, F> BeforePolicy<C> for F
 where
     F: Fn(&mut C) -> Result<(), Error>,
 {
@@ -174,9 +174,9 @@ where
     }
 }
 
-impl<C, B> BPolicy<C> for Option<B>
+impl<C, B> BeforePolicy<C> for Option<B>
 where
-    B: BPolicy<C>,
+    B: BeforePolicy<C>,
 {
     fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
         match self {
@@ -187,12 +187,12 @@ where
 }
 
 #[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RePolicy<C, T> {
+pub struct RegexPolicy<C, T> {
     regex: T,
     marker: PhantomData<C>,
 }
 
-impl<C, T> Clone for RePolicy<C, T>
+impl<C, T> Clone for RegexPolicy<C, T>
 where
     T: Clone,
 {
@@ -204,7 +204,7 @@ where
     }
 }
 
-impl<C, T> RePolicy<C, T> {
+impl<C, T> RegexPolicy<C, T> {
     pub fn new(regex: T) -> Self {
         Self {
             regex,
@@ -213,7 +213,7 @@ impl<C, T> RePolicy<C, T> {
     }
 }
 
-impl<'a, C, T> BPolicy<C> for RePolicy<C, T>
+impl<'a, C, T> BeforePolicy<C> for RegexPolicy<C, T>
 where
     T: Regex<C>,
     C: Context<'a> + Match<C>,
@@ -225,6 +225,6 @@ where
 }
 
 /// Using for either [`RegexCtx::with_policy`] or [`PolicyCtx::with_policy`].
-pub fn re_policy<C, T>(regex: T) -> RePolicy<C, T> {
-    RePolicy::new(regex)
+pub fn re_policy<C, T>(regex: T) -> RegexPolicy<C, T> {
+    RegexPolicy::new(regex)
 }

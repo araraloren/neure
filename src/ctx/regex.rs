@@ -1,12 +1,12 @@
 use std::str::CharIndices;
 
 use super::re_policy;
-use super::BPolicy;
+use super::BeforePolicy;
 use super::Context;
 use super::PolicyCtx;
 use super::PolicyMatch;
-use super::RePolicy;
 use super::Regex;
+use super::RegexPolicy;
 use super::Span;
 
 use crate::ctor::Extract;
@@ -159,7 +159,7 @@ where
     /// ```
     pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<Self, O>
     where
-        O: BPolicy<Self>,
+        O: BeforePolicy<Self>,
     {
         PolicyCtx {
             inner: self,
@@ -290,7 +290,7 @@ where
     /// #   Ok(())
     /// # }
     /// ```
-    pub fn ignore<R>(self, regex: R) -> PolicyCtx<Self, RePolicy<Self, R>> {
+    pub fn ignore<R>(self, regex: R) -> PolicyCtx<Self, RegexPolicy<Self, R>> {
         PolicyCtx {
             inner: self,
             b_policy: re_policy(regex),
@@ -303,7 +303,7 @@ impl<'a> RegexCtx<'a, [u8]> {
         self,
     ) -> PolicyCtx<
         Self,
-        RePolicy<
+        RegexPolicy<
             Self,
             crate::neu::NeureRepeat<
                 0,
@@ -323,7 +323,7 @@ impl<'a> RegexCtx<'a, str> {
         self,
     ) -> PolicyCtx<
         Self,
-        RePolicy<
+        RegexPolicy<
             Self,
             crate::neu::NeureRepeat<
                 0,
@@ -343,7 +343,7 @@ impl<'a> RegexCtx<'a, str> {
         self,
     ) -> PolicyCtx<
         Self,
-        RePolicy<
+        RegexPolicy<
             Self,
             crate::neu::NeureRepeat<
                 0,
@@ -489,7 +489,7 @@ impl<'a, T, B> PolicyMatch<RegexCtx<'a, T>, B> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,
-    B: BPolicy<RegexCtx<'a, T>>,
+    B: BeforePolicy<RegexCtx<'a, T>>,
 {
     fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
     where

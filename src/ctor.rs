@@ -85,14 +85,14 @@ where
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C>>
+impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C> + 'b>
 where
     C: Context<'a> + Match<C>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat(self)?;
+        let ret = ctx.try_mat(self.as_ref())?;
 
         handler.invoke(A::extract(ctx, &ret)?)
     }
