@@ -1,12 +1,9 @@
 use std::str::CharIndices;
 
-use super::re_policy;
-use super::BeforePolicy;
 use super::Context;
 use super::PolicyCtx;
 use super::PolicyMatch;
 use super::Regex;
-use super::RegexPolicy;
 use super::Span;
 
 use crate::ctor::Extract;
@@ -76,7 +73,12 @@ where
     pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
         SimpleStorer::new(capacity)
     }
+}
 
+impl<T> RegexCtx<'_, T>
+where
+    T: ?Sized,
+{
     ///
     /// Setting a policy(which implemented [`BPolicy`]) will invoked before any match occurs.
     ///
@@ -124,7 +126,7 @@ where
     ///
     ///     // match "\n" or anything not 'X'
     ///     let text = "\n".or('X'.not().repeat_one_more());
-    ///     let mut ctx = CharsCtx::new(DATA).with_policy(|ctx: &mut CharsCtx| {
+    ///     let mut ctx = CharsCtx::new(DATA).skip_before(|ctx: &mut CharsCtx| {
     ///         let mut g = CtxGuard::new(ctx);
     ///         let ret = g.try_mat(&'X'.repeat_full());
     ///
@@ -157,21 +159,29 @@ where
     /// #   Ok(())
     /// # }
     /// ```
-    pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<Self, O>
-    where
-        O: BeforePolicy<Self>,
-    {
-        PolicyCtx {
-            inner: self,
-            b_policy: before_policy,
-        }
+    pub fn skip_before<R>(self, regex: R) -> PolicyCtx<Self, R> {
+        PolicyCtx { inner: self, regex }
     }
 }
 
-impl<T> RegexCtx<'_, T>
-where
-    T: ?Sized,
-{
+impl<'a> RegexCtx<'a, [u8]> {
+    pub fn skip_ascii_whitespace(
+        self,
+    ) -> PolicyCtx<
+        Self,
+        crate::neu::NeureRepeat<
+            0,
+            { usize::MAX },
+            Self,
+            crate::neu::AsciiWhiteSpace,
+            crate::neu::NullCond,
+        >,
+    > {
+        self.skip_before(crate::neu::ascii_whitespace().repeat_full())
+    }
+}
+
+impl<'a> RegexCtx<'a, str> {
     ///
     /// Match the given `regex` before any match.
     ///
@@ -255,7 +265,7 @@ where
     ///     let parser = src.sep_once("->", wire).collect::<_, Vec<_>>();
     ///
     ///     // ignore white space using re_policy
-    ///     let mut ctx = CharsCtx::new(DATA).ignore(neu::whitespace().repeat_full());
+    ///     let mut ctx = CharsCtx::new(DATA).skip_ascii_whitespace();
     ///
     ///     let insts: Vec<_> = ctx.ctor_with(&parser, &mut Ok)?;
     ///
@@ -290,51 +300,19 @@ where
     /// #   Ok(())
     /// # }
     /// ```
-    pub fn ignore<R>(self, regex: R) -> PolicyCtx<Self, RegexPolicy<Self, R>> {
-        PolicyCtx {
-            inner: self,
-            b_policy: re_policy(regex),
-        }
-    }
-}
-
-impl<'a> RegexCtx<'a, [u8]> {
     pub fn skip_ascii_whitespace(
         self,
     ) -> PolicyCtx<
         Self,
-        RegexPolicy<
+        crate::neu::NeureRepeat<
+            0,
+            { usize::MAX },
             Self,
-            crate::neu::NeureRepeat<
-                0,
-                { usize::MAX },
-                Self,
-                crate::neu::AsciiWhiteSpace,
-                crate::neu::NullCond,
-            >,
+            crate::neu::AsciiWhiteSpace,
+            crate::neu::NullCond,
         >,
     > {
-        self.ignore(crate::neu::ascii_whitespace().repeat_full())
-    }
-}
-
-impl<'a> RegexCtx<'a, str> {
-    pub fn skip_ascii_whitespace(
-        self,
-    ) -> PolicyCtx<
-        Self,
-        RegexPolicy<
-            Self,
-            crate::neu::NeureRepeat<
-                0,
-                { usize::MAX },
-                Self,
-                crate::neu::AsciiWhiteSpace,
-                crate::neu::NullCond,
-            >,
-        >,
-    > {
-        self.ignore(crate::neu::ascii_whitespace().repeat_full())
+        self.skip_before(crate::neu::ascii_whitespace().repeat_full())
     }
 }
 
@@ -343,18 +321,15 @@ impl<'a> RegexCtx<'a, str> {
         self,
     ) -> PolicyCtx<
         Self,
-        RegexPolicy<
+        crate::neu::NeureRepeat<
+            0,
+            { usize::MAX },
             Self,
-            crate::neu::NeureRepeat<
-                0,
-                { usize::MAX },
-                Self,
-                crate::neu::WhiteSpace,
-                crate::neu::NullCond,
-            >,
+            crate::neu::WhiteSpace,
+            crate::neu::NullCond,
         >,
     > {
-        self.ignore(crate::neu::whitespace().repeat_full())
+        self.skip_before(crate::neu::whitespace().repeat_full())
     }
 }
 
@@ -367,8 +342,6 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
         = BytesIndices<'b, u8>
     where
         Self: 'b;
-
-    type Cloned = Self;
 
     fn len(&self) -> usize {
         self.dat.len()
@@ -410,8 +383,8 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
             .ok_or(Error::OutOfBound)
     }
 
-    fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
-        RegexCtx::new(orig)
+    fn clone_at(&self, offset: usize) -> Result<Self, Error> {
+        self.orig_at(offset).map(RegexCtx::new)
     }
 }
 
@@ -424,8 +397,6 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
         = CharIndices<'b>
     where
         Self: 'b;
-
-    type Cloned = Self;
 
     fn len(&self) -> usize {
         self.dat.len()
@@ -467,8 +438,8 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
             .ok_or(Error::OutOfBound)
     }
 
-    fn clone_with(&self, orig: Self::Orig<'a>) -> Self {
-        RegexCtx::new(orig)
+    fn clone_at(&self, offset: usize) -> Result<Self, Error> {
+        self.orig_at(offset).map(RegexCtx::new)
     }
 }
 
@@ -481,22 +452,26 @@ where
     where
         Pat: Regex<RegexCtx<'a, T>> + ?Sized,
     {
-        self.try_mat_policy(pat, &|_: &mut Self| Ok(()))
+        self.try_mat_before(pat, &|_: &mut Self| Ok(Span::default()))
     }
 }
 
-impl<'a, T, B> PolicyMatch<RegexCtx<'a, T>, B> for RegexCtx<'a, T>
+impl<'a, T> PolicyMatch<RegexCtx<'a, T>> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,
-    B: BeforePolicy<RegexCtx<'a, T>>,
 {
-    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
+    fn try_mat_policy<P, B, A>(&mut self, pat: &P, before: &B, after: &A) -> Result<Span, Error>
     where
-        Pat: Regex<RegexCtx<'a, T>> + ?Sized,
+        P: Regex<RegexCtx<'a, T>> + ?Sized,
+        B: Regex<RegexCtx<'a, T>> + ?Sized,
+        A: Regex<RegexCtx<'a, T>> + ?Sized,
     {
-        b_policy.invoke_policy(self)?;
-        pat.try_parse(self)
+        before.try_parse(self)?;
+        let ret = pat.try_parse(self)?;
+
+        after.try_parse(self)?;
+        Ok(ret)
     }
 }
 

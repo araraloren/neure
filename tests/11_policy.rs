@@ -1,4 +1,3 @@
-use neure::ctx::re_policy;
 use neure::prelude::*;
 
 #[test]
@@ -18,7 +17,7 @@ fn policy_impl() -> color_eyre::Result<()> {
     let use_parser = path.then("*".opt()).padded("use").pad(";");
 
     // ignore white space using re_policy
-    let mut ctx = CharsCtx::new(&dat).with_policy(re_policy(neu::whitespace().repeat_full()));
+    let mut ctx = CharsCtx::new(&dat).skip_before(neu::whitespace().repeat_full());
 
     let uses = ctx.ctor(&use_parser.collect::<_, Vec<_>>())?;
 

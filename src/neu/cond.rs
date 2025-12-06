@@ -113,13 +113,12 @@ impl<C, T> RegexCond<'_, C, T> {
 
 impl<'a, C, T> NeuCond<'a, C> for RegexCond<'a, C, T>
 where
-    C: Context<'a>,
-    T: Regex<C::Cloned>,
-    C::Cloned: Context<'a> + Match<C::Cloned>,
+    T: Regex<C>,
+    C: Context<'a> + Match<C>,
 {
     #[inline(always)]
     fn check(&self, ctx: &C, item: &(usize, <C as Context<'a>>::Item)) -> Result<bool, Error> {
-        let mut ctx = ctx.clone_with(ctx.orig_at(ctx.offset() + item.0)?);
+        let mut ctx = ctx.clone_at(ctx.offset() + item.0)?;
         let ret = ctx.try_mat(&self.regex);
 
         crate::trace_retval!("RegexCond", "NeuCond", item, ret.is_ok());

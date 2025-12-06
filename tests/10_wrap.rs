@@ -68,7 +68,7 @@ fn into_impl() -> color_eyre::Result<()> {
     let parser = public.or(private).sep(",");
     let space = neu::whitespace().repeat_full();
     let fields = CharsCtx::new("a: i64, b: Option<String>, pub c: bool")
-        .ignore(space)
+        .skip_before(space)
         .ctor(&parser)?;
 
     assert_eq!(

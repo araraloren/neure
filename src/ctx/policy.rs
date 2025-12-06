@@ -1,4 +1,3 @@
-use super::BeforePolicy;
 use super::Context;
 use super::PolicyMatch;
 use super::Regex;
@@ -10,43 +9,40 @@ use crate::err::Error;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
-pub struct PolicyCtx<I, B> {
+pub struct PolicyCtx<I, R> {
     pub(crate) inner: I,
-    pub(crate) b_policy: B,
+    pub(crate) regex: R,
 }
 
-impl<I, B> Clone for PolicyCtx<I, B>
+impl<I, R> Clone for PolicyCtx<I, R>
 where
     I: Clone,
-    B: Clone,
+    R: Clone,
 {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
-            b_policy: self.b_policy.clone(),
+            regex: self.regex.clone(),
         }
     }
 }
 
-impl<I, B> Copy for PolicyCtx<I, B>
+impl<I, R> Copy for PolicyCtx<I, R>
 where
-    B: Copy,
+    R: Copy,
     I: Copy,
 {
 }
 
-impl<I, B> PolicyCtx<I, B> {
-    pub fn new(inner: I, before_policy: B) -> Self {
-        Self {
-            inner,
-            b_policy: before_policy,
-        }
+impl<I, R> PolicyCtx<I, R> {
+    pub fn new(inner: I, regex: R) -> Self {
+        Self { inner, regex }
     }
 
-    pub fn with_policy<O>(self, before_policy: O) -> PolicyCtx<I, O> {
+    pub fn with_regex<O>(self, regex: O) -> PolicyCtx<I, O> {
         PolicyCtx {
             inner: self.inner,
-            b_policy: before_policy,
+            regex,
         }
     }
 
@@ -78,9 +74,9 @@ impl<I, B> PolicyCtx<I, B> {
     }
 }
 
-impl<'a, I, B> Context<'a> for PolicyCtx<I, B>
+impl<'a, I, R> Context<'a> for PolicyCtx<I, R>
 where
-    B: Clone + 'a,
+    R: Clone + 'a,
     I: Context<'a>,
 {
     type Orig<'b> = <I as Context<'a>>::Orig<'b>;
@@ -91,8 +87,6 @@ where
         = <I as Context<'a>>::Iter<'b>
     where
         Self: 'b;
-
-    type Cloned = PolicyCtx<<I as Context<'a>>::Cloned, B>;
 
     fn len(&self) -> usize {
         Context::len(&self.inner)
@@ -117,6 +111,10 @@ where
         self
     }
 
+    fn req(&mut self) -> Result<bool, Error> {
+        Context::req(&mut self.inner)
+    }
+
     fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
         Context::orig_at(&self.inner, offset)
     }
@@ -129,41 +127,46 @@ where
         Context::orig_sub(&self.inner, offset, len)
     }
 
-    fn clone_with(&self, orig: Self::Orig<'a>) -> Self::Cloned {
-        PolicyCtx {
-            inner: I::clone_with(&self.inner, orig),
-            b_policy: self.b_policy.clone(),
-        }
+    fn clone_at(&self, offset: usize) -> Result<Self, Error> {
+        Ok(PolicyCtx {
+            inner: I::clone_at(&self.inner, offset)?,
+            regex: self.regex.clone(),
+        })
     }
 }
 
-impl<'a, I, B> Match<PolicyCtx<I, B>> for PolicyCtx<I, B>
+impl<'a, I, R> Match<PolicyCtx<I, R>> for PolicyCtx<I, R>
 where
-    B: BeforePolicy<I>,
+    R: Regex<I>,
     I: Context<'a>,
     Self: Context<'a>,
 {
     fn try_mat<Pat>(&mut self, pat: &Pat) -> Result<Span, Error>
     where
-        Pat: Regex<PolicyCtx<I, B>> + ?Sized,
+        Pat: Regex<PolicyCtx<I, R>> + ?Sized,
     {
-        self.b_policy.invoke_policy(&mut self.inner)?;
+        self.regex.try_parse(&mut self.inner)?;
         pat.try_parse(self)
     }
 }
 
-impl<'a, I, B> PolicyMatch<PolicyCtx<I, B>, B> for PolicyCtx<I, B>
+impl<'a, I, R> PolicyMatch<PolicyCtx<I, R>> for PolicyCtx<I, R>
 where
-    B: BeforePolicy<I>,
+    R: Regex<I>,
     I: Context<'a>,
     Self: Context<'a>,
 {
-    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
+    fn try_mat_policy<P, B, A>(&mut self, pat: &P, before: &B, after: &A) -> Result<Span, Error>
     where
-        Pat: Regex<PolicyCtx<I, B>> + ?Sized,
+        P: Regex<PolicyCtx<I, R>> + ?Sized,
+        B: Regex<PolicyCtx<I, R>> + ?Sized,
+        A: Regex<PolicyCtx<I, R>> + ?Sized,
     {
-        b_policy.invoke_policy(&mut self.inner)?;
-        pat.try_parse(self)
+        before.try_parse(self)?;
+        let ret = pat.try_parse(self)?;
+
+        after.try_parse(self)?;
+        Ok(ret)
     }
 }
 

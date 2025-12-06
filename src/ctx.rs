@@ -4,8 +4,6 @@ mod policy;
 mod regex;
 mod span;
 
-use std::marker::PhantomData;
-
 use crate::ctor::{Ctor, Extract, Handler, Pass};
 use crate::err::Error;
 use crate::map::MapSingle;
@@ -28,8 +26,6 @@ pub trait Context<'a> {
     type Iter<'b>: Iterator<Item = (usize, Self::Item)>
     where
         Self: 'b;
-
-    type Cloned: Context<'a>;
 
     fn len(&self) -> usize;
 
@@ -63,7 +59,9 @@ pub trait Context<'a> {
 
     fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error>;
 
-    fn clone_with(&self, orig: Self::Orig<'a>) -> Self::Cloned;
+    fn clone_at(&self, offset: usize) -> Result<Self, Error>
+    where
+        Self: Sized;
 }
 
 pub trait Match<C> {
@@ -155,76 +153,26 @@ where
     }
 }
 
-pub trait PolicyMatch<C, B> {
-    fn try_mat_policy<Pat>(&mut self, pat: &Pat, b_policy: &B) -> Result<Span, Error>
+pub trait PolicyMatch<C> {
+    fn try_mat_before<P, B>(&mut self, pat: &P, before: &B) -> Result<Span, Error>
     where
-        Pat: Regex<C> + ?Sized;
-}
-
-pub trait BeforePolicy<C> {
-    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error>;
-}
-
-impl<C, F> BeforePolicy<C> for F
-where
-    F: Fn(&mut C) -> Result<(), Error>,
-{
-    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
-        (self)(ctx)
+        P: Regex<C> + ?Sized,
+        B: Regex<C> + ?Sized,
+    {
+        self.try_mat_policy(pat, before, &|_: &mut C| Ok(Span::default()))
     }
-}
 
-impl<C, B> BeforePolicy<C> for Option<B>
-where
-    B: BeforePolicy<C>,
-{
-    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
-        match self {
-            Some(ref_) => ref_.invoke_policy(ctx),
-            None => Ok(()),
-        }
+    fn try_mat_after<P, A>(&mut self, pat: &P, after: &A) -> Result<Span, Error>
+    where
+        P: Regex<C> + ?Sized,
+        A: Regex<C> + ?Sized,
+    {
+        self.try_mat_policy(pat, &|_: &mut C| Ok(Span::default()), after)
     }
-}
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RegexPolicy<C, T> {
-    regex: T,
-    marker: PhantomData<C>,
-}
-
-impl<C, T> Clone for RegexPolicy<C, T>
-where
-    T: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            regex: self.regex.clone(),
-            marker: self.marker,
-        }
-    }
-}
-
-impl<C, T> RegexPolicy<C, T> {
-    pub fn new(regex: T) -> Self {
-        Self {
-            regex,
-            marker: PhantomData,
-        }
-    }
-}
-
-impl<'a, C, T> BeforePolicy<C> for RegexPolicy<C, T>
-where
-    T: Regex<C>,
-    C: Context<'a> + Match<C>,
-{
-    fn invoke_policy(&self, ctx: &mut C) -> Result<(), Error> {
-        ctx.try_mat(&self.regex)?;
-        Ok(())
-    }
-}
-
-/// Using for either [`RegexCtx::with_policy`] or [`PolicyCtx::with_policy`].
-pub fn re_policy<C, T>(regex: T) -> RegexPolicy<C, T> {
-    RegexPolicy::new(regex)
+    fn try_mat_policy<P, B, A>(&mut self, pat: &P, before: &B, after: &A) -> Result<Span, Error>
+    where
+        P: Regex<C> + ?Sized,
+        B: Regex<C> + ?Sized,
+        A: Regex<C> + ?Sized;
 }
