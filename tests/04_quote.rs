@@ -12,7 +12,7 @@ fn quote_impl() -> color_eyre::Result<()> {
     let array = digit.quote("[", "]");
 
     assert_eq!(
-        CharsCtx::new("[123,456,789]").ctor_span(&array)?,
+        CharsCtx::new("[123,456,789]").span(&array)?,
         vec![Span::new(1, 3), Span::new(5, 3), Span::new(9, 3)]
     );
     Ok(())

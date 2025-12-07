@@ -32,7 +32,7 @@ use super::Ctor;
 ///     let array = ["a", "b", "c"];
 ///     let tuple = regex::slice(&array);
 ///
-///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("abc").span(&tuple)?, Span::new(0, 1));
 ///     Ok(())
 /// # }
 /// ```

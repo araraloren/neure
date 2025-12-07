@@ -11,8 +11,8 @@ fn sep_collect_impl() -> color_eyre::Result<()> {
     let http = "http".sep_once("://", host);
     let https = "https".sep_once("://", host);
     let urls = http.or(https).sep_collect::<_, _, Vec<_>>(",");
-    let ret = CharsCtx::new("https://developer.mozilla.org,http://developer.mozilla.org")
-        .ctor_span(&urls)?;
+    let ret =
+        CharsCtx::new("https://developer.mozilla.org,http://developer.mozilla.org").span(&urls)?;
 
     assert_eq!(
         ret,

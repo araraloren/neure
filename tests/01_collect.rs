@@ -11,7 +11,7 @@ fn collect_impl() -> color_eyre::Result<()> {
     let vec = val.collect::<_, Vec<_>>();
 
     assert_eq!(
-        CharsCtx::new("abcdf").ctor_span(&vec)?,
+        CharsCtx::new("abcdf").span(&vec)?,
         vec![
             Span::new(0, 1),
             Span::new(1, 1),

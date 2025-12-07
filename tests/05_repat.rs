@@ -10,9 +10,9 @@ fn repeat_impl() -> color_eyre::Result<()> {
     let name = regex::string("foo");
     let names = name.repeat(2..5);
 
-    assert!(CharsCtx::new("foo").ctor_span(&names).is_err(),);
+    assert!(CharsCtx::new("foo").span(&names).is_err(),);
     assert_eq!(
-        CharsCtx::new("foofoofoofoo").ctor_span(&names)?,
+        CharsCtx::new("foofoofoofoo").span(&names)?,
         vec![
             Span::new(0, 3),
             Span::new(3, 3),

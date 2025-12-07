@@ -15,6 +15,55 @@ use super::Ctor;
 ///
 /// Iterate over the array and match the regex against the [`Context`].
 ///
+/// Attempts to match each element in the array sequentially until one succeeds.
+/// If a match succeeds, returns immediately with that result. If all elements
+/// fail to match, the context position is restored to its original state.
+///
+/// # Regex
+///
+/// Attempts to match each pattern in the array sequentially. Returns the span
+/// of the first successful match. If no patterns match, returns an error and
+/// resets the context position.
+///
+/// # Ctor
+///
+/// Returns the result of the first regex that matches. Constructed values are
+/// produced from the matching element only.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+/// #   color_eyre::install()?;
+///     let array = ["a", "b", "c"];
+///     let parser = regex::array(array);
+///
+///     assert_eq!(CharsCtx::new("abc").span(&parser)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("bcd").span(&parser)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("cde").span(&parser)?, Span::new(0, 1));
+///     
+///     // First match succeeds, returns immediately
+///     let mut ctx = CharsCtx::new("abc");
+///     assert!(parser.parse(&mut ctx));
+///     assert_eq!(ctx.offset(), 1);
+///     
+///     // No match possible
+///     let mut ctx2 = CharsCtx::new("xyz");
+///     assert!(!parser.parse(&mut ctx2));
+///     assert_eq!(ctx2.offset(), 0); // Position restored
+///     Ok(())
+/// # }
+/// ```
+///
+/// # Performance
+///
+/// This combinator attempts patterns in array order. For optimal performance,
+/// place more frequently occurring patterns earlier in the array.
+///
+/// Iterate over the array and match the regex against the [`Context`].
+///
 /// # Ctor
 ///
 /// Return the result of first regex that matches.
@@ -29,7 +78,7 @@ use super::Ctor;
 ///     let array = ["a", "b", "c"];
 ///     let parser = regex::array(array);
 ///
-///     assert_eq!(CharsCtx::new("abc").ctor_span(&parser)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("abc").span(&parser)?, Span::new(0, 1));
 ///     Ok(())
 /// # }
 /// ```

@@ -11,7 +11,7 @@ fn sep_once_impl() -> color_eyre::Result<()> {
     let title = words.sep_once(":", words);
 
     assert_eq!(
-        CharsCtx::new("Explained: What is programming language?").ctor_span(&title)?,
+        CharsCtx::new("Explained: What is programming language?").span(&title)?,
         (Span::new(0, 9), Span::new(10, 30)),
     );
     Ok(())

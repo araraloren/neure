@@ -73,6 +73,15 @@ where
     pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
         SimpleStorer::new(capacity)
     }
+
+    pub fn with<F, R>(dat: &'a T, mut func: F) -> R
+    where
+        F: FnMut(Self) -> R,
+    {
+        let ctx = Self::new(dat);
+
+        func(ctx)
+    }
 }
 
 impl<T> RegexCtx<'_, T>

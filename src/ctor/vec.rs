@@ -33,7 +33,7 @@ use super::Ctor;
 /// #     color_eyre::install()?;
 ///     let tuple = regex::vector(["a".into_dyn_regex(), "b".into_dyn_regex(), "c".into_dyn_regex()]);
 ///
-///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("abc").span(&tuple)?, Span::new(0, 1));
 ///     Ok(())
 /// # }
 /// ```

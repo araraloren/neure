@@ -156,45 +156,32 @@ where
 
     fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<
-            'a,
-            Self,
-            <Self as Context<'a>>::Orig<'a>,
-            O,
-            Pass,
-            <Self as Context<'a>>::Orig<'a>,
-        >,
-        <Self as Context<'a>>::Orig<'a>:
-            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error> + 'a,
+        P: Ctor<'a, Self, Self::Orig<'a>, O, Pass, Self::Orig<'a>>,
+        Self::Orig<'a>: Extract<'a, Self, Out<'a> = Self::Orig<'a>, Error = Error> + 'a,
     {
         self.ctor_with(pat, &mut Pass)
     }
 
-    fn map<P, O>(
-        &mut self,
-        pat: &P,
-        mapper: impl MapSingle<<Self as Context<'a>>::Orig<'a>, O>,
-    ) -> Result<O, Error>
+    fn map<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
     where
         P: Regex<Self>,
-        <Self as Context<'a>>::Orig<'a>:
-            Extract<'a, Self, Out<'a> = <Self as Context<'a>>::Orig<'a>, Error = Error>,
+        M: MapSingle<Self::Orig<'a>, O>,
+        Self::Orig<'a>: Extract<'a, Self, Out<'a> = Self::Orig<'a>, Error = Error>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }
 
-    fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    fn span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
         P: Ctor<'a, Self, Span, O, Pass, Span>,
-        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
     {
         self.ctor_with(pat, &mut Pass)
     }
 
-    fn map_span<P, O>(&mut self, pat: &P, mapper: impl MapSingle<Span, O>) -> Result<O, Error>
+    fn map_span<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
     where
         P: Regex<Self>,
-        Span: Extract<'a, Self, Out<'a> = Span, Error = Error>,
+        M: MapSingle<Span, O>,
     {
         mapper.map_to(self.map_with(pat, Ok)?)
     }
