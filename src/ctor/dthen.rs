@@ -18,32 +18,78 @@ use crate::regex::def_not;
 use crate::regex::Regex;
 
 ///
-/// [`DynamicCtorThenBuilder`] is a type similar to [`Then`](crate::ctor::Then).
-/// It can dynamically construct a new type based on the result type of given `P`,
-/// and upon success, it will return a tuple of result type of `P` and result of the newly type.
+/// Dynamically constructs a second pattern based on the result of the first match.
+///
+/// This combinator enables context-sensitive parsing where the second pattern depends on
+/// the result of the first match. It's designed primarily for construction scenarios rather
+/// than simple pattern matching.
 ///
 /// # Regex
 ///
-/// Not support.
+/// This struct does not support direct regex matching via the `Regex` trait. Any attempt to
+/// use it as a regular expression pattern will panic with an unimplemented error. It exists
+/// solely as a type system requirement and should not be used for pattern matching operations.
 ///
 /// # Ctor
 ///
-/// Return a tuple of `P`'s result and newly type result.
+/// Performs a two-step construction process:
+/// 1. First constructs a value `O1` using the initial pattern `pat`
+/// 2. Then calls the function `func` with the context and the first result to dynamically
+///    generate a second pattern
+/// 3. Finally constructs a value `O2` using the dynamically generated pattern
+/// 4. Returns the tuple `(O1, O2)` containing both results
 ///
-/// # Example
+/// The context position is advanced sequentially through both matches. If either step fails,
+/// the context position is rolled back to its original state before the combinator was applied.
+///
+/// ## Example
 ///
 /// ```
-/// # use neure::{prelude::*, ctor::DynamicCtorThenBuilderHelper};
+/// # use neure::{ctor::DynamicCtorThenBuilderHelper, prelude::*};
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let len = regex::consume(2).map(map::from_le_bytes::<i16>());
 ///     let data = len.into_ctor_then_builder(|_, v| Ok(regex::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
 ///
 ///     assert_eq!(ret, (0x1f, b"Hello there, where are you from".as_ref()));
 ///
-///     Ok(())
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Helper Trait
+///
+/// The [`DynamicCtorThenBuilderHelper`] trait provides a convenient builder interface.
+///
+/// ## Example
+///
+/// ```
+/// # use neure::{ctor::DynamicCtorThenBuilderHelper, prelude::*};
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let num = u8::is_ascii_digit
+///         .repeat_one()
+///         .map(map::from_utf8::<String>())
+///         .map(map::from_str::<usize>());
+///     let num = num.clone().sep_once(b",", num);
+///     let regex =
+///         num.into_ctor_then_builder(|_, (a, b)| Ok(b'+'.repeat_range(a).then(b'-'.repeat_range(b))));
+///
+///     assert_eq!(
+///         BytesCtx::new(b"3,0+++").ctor(&regex)?,
+///         ((3, 0), ([43, 43, 43].as_ref(), [].as_ref()))
+///     );
+///     assert_eq!(
+///         BytesCtx::new(b"2,1++-").ctor(&regex)?,
+///         ((2, 1), ([43, 43].as_ref(), [45].as_ref()))
+///     );
+///     assert_eq!(
+///         BytesCtx::new(b"0,3---").ctor(&regex)?,
+///         ((0, 3), ([].as_ref(), [45, 45, 45].as_ref()))
+///     );
+///
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Default, Copy)]
@@ -193,43 +239,6 @@ where
     Self: Sized,
     C: Context<'a> + Match<'a>,
 {
-    ///
-    /// Construct a new regex based on previous result.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use neure::{err::Error, prelude::*, ctor::DynamicCtorThenBuilderHelper};
-    /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    /// #     color_eyre::install()?;
-    ///     let num = u8::is_ascii_digit
-    ///         .repeat_one()
-    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
-    ///         .map(map::from_str::<usize>());
-    ///     let num = num.clone().sep_once(b",", num);
-    ///     let re = num.into_ctor_then_builder(|_, a: &(usize, usize)| {
-    ///         // leave the a's type empty cause rustc reject compile
-    ///         Ok(b'+'
-    ///             .repeat_range(a.0..a.0 + 1)
-    ///             .then(b'-'.repeat_range(a.1..a.1 + 1)))
-    ///     });
-    ///
-    ///     assert_eq!(
-    ///         BytesCtx::new(b"3,0+++").ctor(&re)?,
-    ///         ((3, 0), ([43, 43, 43].as_slice(), [].as_slice()))
-    ///     );
-    ///     assert_eq!(
-    ///         BytesCtx::new(b"2,1++-").ctor(&re)?,
-    ///         ((2, 1), ([43, 43].as_slice(), [45].as_slice()))
-    ///     );
-    ///     assert_eq!(
-    ///         BytesCtx::new(b"0,3---").ctor(&re)?,
-    ///         ((0, 3), ([].as_slice(), [45, 45, 45].as_slice()))
-    ///     );
-    ///     Ok(())
-    /// # }
-    /// ```
     fn into_ctor_then_builder<F, O1, R>(self, func: F) -> DynamicCtorThenBuilder<C, Self, F>
     where
         F: Fn(&mut C, &O1) -> Result<R, Error>,

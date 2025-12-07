@@ -13,29 +13,68 @@ use crate::regex::def_not;
 use crate::regex::Regex;
 
 ///
-/// Repeatedly match the regex `P` at least [`min`](crate::ctor::Collect#tymethod.min) times.
+/// Collect repeated matches of a pattern into a collection.
 ///
-/// # Ctor
+/// Attempts to match the inner pattern repeatedly until it fails, collecting
+/// the results into a container type. Requires at least `min` successful matches
+/// to succeed, otherwise fails and resets the context position.
 ///
-/// Return a type `V` that collects the result of regex `P`.
-/// `Collect` will always succeed if the minimum size is 0, be careful to use it with `.sep` faimly APIs.
-/// The default size is 1.
+/// # Regex
 ///
-/// # Example
+/// Matches the inner pattern repeatedly and combines the resulting spans.
+/// The combined span covers the entire matched region from the first to the
+/// last successful match. Requires at least `min` matches to succeed.
+///
+/// ## Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let re = b'+'.repeat_one().collect::<_, Vec<_>>();
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = b"+".collect::<_, Vec<_>>();
 ///
-///     assert!(BytesCtx::new(b"---A").ctor(&re).is_err());
-///     assert_eq!(BytesCtx::new(b"+++A").ctor(&re)?, vec![b"+", b"+", b"+"]);
-///     assert_eq!(BytesCtx::new(b"++-A").ctor(&re)?, vec![b"+", b"+"]);
-///     Ok(())
+///     assert!(BytesCtx::new(b"---A").span(&regex).is_err());
+///     assert_eq!(
+///         BytesCtx::new(b"+++A").span(&regex)?,
+///         vec![Span::new(0, 1), Span::new(1, 1), Span::new(2, 1)]
+///     );
+///
+///     let regex = b"+".collect::<_, Vec<_>>().at_least(3);
+///
+///     assert!(BytesCtx::new(b"++-A").span(&regex).is_err(),);
+///
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// # Ctor
+///
+/// Constructs values from each successful match of the inner pattern and
+/// collects them into a container type `V` (which must implement [`FromIterator`]).
+/// The collection process stops when the pattern fails to match. Requires at
+/// least `min` successful matches to return a valid collection.
+///
+/// ## Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = b"+".collect::<_, Vec<_>>();
+///
+///     assert!(BytesCtx::new(b"---A").ctor(&regex).is_err());
+///     assert_eq!(BytesCtx::new(b"+++A").ctor(&regex)?, vec![b"+", b"+", b"+"]);
+///     assert_eq!(BytesCtx::new(b"++-A").ctor(&regex)?, vec![b"+", b"+"]);
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Greedy Behavior
+///
+/// This combinator is greedy - it will continue matching until the pattern fails.
+/// It does not backtrack between matches. If minimum requirements aren't met,
+/// the context position is reset to the starting point.
 #[derive(Default, Copy)]
 pub struct Collect<C, P, O, V> {
     pat: P,

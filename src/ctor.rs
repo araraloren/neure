@@ -1,8 +1,8 @@
 mod array;
+mod branch;
 mod collect;
 mod dthen;
 mod extract;
-mod r#if;
 mod ltm;
 mod map;
 mod opt;
@@ -25,7 +25,6 @@ use std::sync::Mutex;
 
 pub use self::array::Array;
 pub use self::array::PairArray;
-//pub use self::boxed::BoxedCtor;
 pub use self::collect::Collect;
 pub use self::dthen::DynamicCtorThenBuilder;
 pub use self::dthen::DynamicCtorThenBuilderHelper;
@@ -33,6 +32,8 @@ pub use self::dthen::DynamicCtorThenBuilderHelper;
 // pub use self::dynamic::DynamicBoxedCtor;
 // pub use self::dynamic::DynamicBoxedCtorSync;
 // pub use self::dynamic::DynamicRcCtor;
+pub use self::branch::branch;
+pub use self::branch::Branch;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
 pub use self::extract::Pass;
@@ -44,8 +45,6 @@ pub use self::pad::Pad;
 pub use self::pad::Padded;
 pub use self::pat::Pattern;
 pub use self::quote::Quote;
-pub use self::r#if::branch;
-pub use self::r#if::IfRegex;
 pub use self::repeat::Repeat;
 pub use self::sep::SepCollect;
 pub use self::sep::SepOnce;
@@ -373,7 +372,7 @@ where
 
     fn collect<O, T>(self) -> Collect<C, Self, O, T>;
 
-    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
+    fn branch<I, E>(self, r#if: I, r#else: E) -> Branch<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>;
 
@@ -764,11 +763,11 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn r#if<I, E>(self, r#if: I, r#else: E) -> IfRegex<C, Self, I, E>
+    fn branch<F, E>(self, test: F, other: E) -> Branch<C, Self, F, E>
     where
-        I: Fn(&C) -> Result<bool, Error>,
+        F: Fn(&C) -> Result<bool, Error>,
     {
-        IfRegex::new(self, r#if, r#else)
+        Branch::new(test, self, other)
     }
 
     ///

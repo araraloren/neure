@@ -94,6 +94,14 @@ impl<T: PartialOrd + MayDebug> Neu<T> for CRange<T> {
 }
 
 macro_rules! impl_copy_range {
+    (&$ty:ty) => {
+        impl From<&'_ $ty> for $crate::neu::CRange<usize> {
+            fn from(value: &$ty) -> Self {
+                let value = *value as usize;
+                Self::from(value..=value)
+            }
+        }
+    };
     ($ty:ty) => {
         impl From<$ty> for $crate::neu::CRange<usize> {
             fn from(value: $ty) -> Self {
@@ -114,6 +122,16 @@ impl_copy_range!(u64);
 impl_copy_range!(i64);
 impl_copy_range!(isize);
 impl_copy_range!(usize);
+impl_copy_range!(&i8);
+impl_copy_range!(&u8);
+impl_copy_range!(&i16);
+impl_copy_range!(&u16);
+impl_copy_range!(&u32);
+impl_copy_range!(&i32);
+impl_copy_range!(&u64);
+impl_copy_range!(&i64);
+impl_copy_range!(&isize);
+impl_copy_range!(&usize);
 
 impl<T> From<(Bound<T>, Bound<T>)> for CRange<T> {
     fn from(value: (Bound<T>, Bound<T>)) -> Self {
