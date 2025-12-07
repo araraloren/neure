@@ -144,7 +144,7 @@ impl<'a, C, P, I, E, M, O, H, A> Ctor<'a, C, M, O, H, A> for IfRegex<C, P, I, E>
 where
     P: Ctor<'a, C, M, O, H, A>,
     E: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     I: Fn(&C) -> Result<bool, Error>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
@@ -175,7 +175,7 @@ impl<'a, C, P, I, E> Regex<C> for IfRegex<C, P, I, E>
 where
     P: Regex<C>,
     E: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     I: Fn(&C) -> Result<bool, Error>,
 {
     #[inline(always)]
@@ -197,7 +197,7 @@ where
 
 pub fn branch<'a, C, P, I, E>(r#if: I, re: P, r#else: E) -> IfRegex<C, P, I, E>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     E: Regex<C>,
     P: Regex<C>,
     I: Fn(&C) -> Result<bool, Error>,

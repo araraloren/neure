@@ -154,7 +154,7 @@ where
     L: Ctor<'a, C, M, O1, H, A>,
     R: Ctor<'a, C, M, O2, H, A>,
     S: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -180,7 +180,7 @@ where
     S: Regex<C>,
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -353,7 +353,7 @@ impl<'a, C, S, P, M, O, H, A> Ctor<'a, C, M, Vec<O>, H, A> for Separate<C, P, S>
 where
     P: Ctor<'a, C, M, O, H, A>,
     S: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -390,7 +390,7 @@ impl<'a, C, S, P> Regex<C> for Separate<C, P, S>
 where
     S: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -566,7 +566,7 @@ where
     V: FromIterator<O>,
     P: Ctor<'a, C, M, O, H, A>,
     S: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -613,7 +613,7 @@ impl<'a, C, S, P, O, V> Regex<C> for SepCollect<C, P, S, O, V>
 where
     S: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

@@ -77,7 +77,7 @@ where
 
 impl<'a, C> Regex<C> for ()
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -87,7 +87,7 @@ where
 
 impl<'a, C> Regex<C> for &str
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -98,7 +98,7 @@ where
 
 impl<'a, C> Regex<C> for String
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -109,7 +109,7 @@ where
 
 impl<'a, C> Regex<C> for &String
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -120,7 +120,7 @@ where
 
 impl<'a, C> Regex<C> for &[u8]
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -131,7 +131,7 @@ where
 
 impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -142,7 +142,7 @@ where
 
 impl<'a, const N: usize, C> Regex<C> for [u8; N]
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -153,7 +153,7 @@ where
 
 impl<'a, C> Regex<C> for Vec<u8>
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(&self.as_slice(), ctx)
@@ -162,7 +162,7 @@ where
 
 impl<'a, C> Regex<C> for &Vec<u8>
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(&self.as_slice(), ctx)
@@ -172,7 +172,7 @@ where
 impl<'a, P, C> Regex<C> for Option<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().ok_or(Error::Option)?.try_parse(ctx)
@@ -182,7 +182,7 @@ where
 impl<'a, P, C> Regex<C> for RefCell<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         (*self.borrow()).try_parse(ctx)
@@ -192,7 +192,7 @@ where
 impl<'a, P, C> Regex<C> for Cell<P>
 where
     P: Regex<C> + Copy,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.get().try_parse(ctx)
@@ -202,7 +202,7 @@ where
 impl<'a, P, C> Regex<C> for Mutex<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let ret = self.lock().map_err(|_| Error::Mutex)?;
@@ -213,7 +213,7 @@ where
 impl<'a, P, C> Regex<C> for Arc<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
@@ -223,7 +223,7 @@ where
 impl<'a, P, C> Regex<C> for Rc<P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
@@ -232,7 +232,7 @@ where
 
 impl<'a, 'b, C> Regex<C> for Box<dyn Regex<C> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
@@ -241,7 +241,7 @@ where
 
 impl<'a, 'b, C> Regex<C> for Arc<dyn Regex<C> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
@@ -250,7 +250,7 @@ where
 
 impl<'a, 'b, C> Regex<C> for Rc<dyn Regex<C> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)

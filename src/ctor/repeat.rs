@@ -153,7 +153,7 @@ impl<C, P> Repeat<C, P> {
 impl<'a, C, P, M, O, H, A> Ctor<'a, C, M, Vec<O>, H, A> for Repeat<C, P>
 where
     P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -184,7 +184,7 @@ where
 impl<'a, C, P> Regex<C> for Repeat<C, P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

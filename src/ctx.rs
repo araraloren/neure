@@ -60,12 +60,79 @@ pub trait Context<'a> {
         Self: Sized;
 }
 
-pub trait Match<C> {
-    fn is_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> bool {
+pub trait Match<'a>
+where
+    Self: Sized,
+{
+    fn is_mat<Pat>(&mut self, pat: &Pat) -> bool
+    where
+        Pat: Regex<Self> + ?Sized,
+    {
         self.try_mat(pat).is_ok()
     }
 
-    fn try_mat<Pat: Regex<C> + ?Sized>(&mut self, pat: &Pat) -> Result<Span, Error>;
+    fn try_mat<Pat>(&mut self, pat: &Pat) -> Result<Span, Error>
+    where
+        Pat: Regex<Self> + ?Sized;
+}
+
+pub trait PolicyMatch<'a>
+where
+    Self: Sized,
+{
+    fn try_mat_before<P, B>(&mut self, pat: &P, before: &B) -> Result<Span, Error>
+    where
+        P: Regex<Self> + ?Sized,
+        B: Regex<Self> + ?Sized,
+    {
+        self.try_mat_policy(pat, before, &|_: &mut Self| Ok(Span::default()))
+    }
+
+    fn try_mat_after<P, A>(&mut self, pat: &P, after: &A) -> Result<Span, Error>
+    where
+        P: Regex<Self> + ?Sized,
+        A: Regex<Self> + ?Sized,
+    {
+        self.try_mat_policy(pat, &|_: &mut Self| Ok(Span::default()), after)
+    }
+
+    fn try_mat_policy<P, B, A>(&mut self, pat: &P, before: &B, after: &A) -> Result<Span, Error>
+    where
+        P: Regex<Self> + ?Sized,
+        B: Regex<Self> + ?Sized,
+        A: Regex<Self> + ?Sized;
+}
+
+pub trait Assert<'a>
+where
+    Self: Sized,
+{
+    fn assert<Pat>(&mut self, pat: &Pat) -> bool
+    where
+        Pat: Regex<Self> + ?Sized,
+    {
+        self.try_assert(pat).unwrap_or_default()
+    }
+
+    fn try_assert<Pat>(&mut self, pat: &Pat) -> Result<bool, Error>
+    where
+        Pat: Regex<Self> + ?Sized;
+}
+
+impl<'a, T> Assert<'a> for T
+where
+    T: Context<'a> + Match<'a>,
+{
+    fn try_assert<Pat>(&mut self, pat: &Pat) -> Result<bool, Error>
+    where
+        Pat: Regex<Self> + ?Sized,
+    {
+        let mut ctx = CtxGuard::new(self);
+        let ret = ctx.try_mat(pat);
+
+        ctx.reset();
+        Ok(ret.is_ok())
+    }
 }
 
 pub trait ContextHelper<'a>
@@ -135,7 +202,7 @@ where
 
 impl<'a, C> ContextHelper<'a> for C
 where
-    C: Sized + Context<'a> + Match<Self>,
+    C: Sized + Context<'a> + Match<'a>,
 {
     fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
@@ -147,28 +214,4 @@ where
 
         handler.invoke(A::extract(self, &ret)?)
     }
-}
-
-pub trait PolicyMatch<C> {
-    fn try_mat_before<P, B>(&mut self, pat: &P, before: &B) -> Result<Span, Error>
-    where
-        P: Regex<C> + ?Sized,
-        B: Regex<C> + ?Sized,
-    {
-        self.try_mat_policy(pat, before, &|_: &mut C| Ok(Span::default()))
-    }
-
-    fn try_mat_after<P, A>(&mut self, pat: &P, after: &A) -> Result<Span, Error>
-    where
-        P: Regex<C> + ?Sized,
-        A: Regex<C> + ?Sized,
-    {
-        self.try_mat_policy(pat, &|_: &mut C| Ok(Span::default()), after)
-    }
-
-    fn try_mat_policy<P, B, A>(&mut self, pat: &P, before: &B, after: &A) -> Result<Span, Error>
-    where
-        P: Regex<C> + ?Sized,
-        B: Regex<C> + ?Sized,
-        A: Regex<C> + ?Sized;
 }

@@ -67,7 +67,7 @@ impl<const N: usize, T> DerefMut for Array<N, T> {
 impl<'a, const N: usize, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Array<N, T>
 where
     T: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -95,7 +95,7 @@ where
 impl<'a, const N: usize, C, T> Regex<C> for Array<N, T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -182,7 +182,7 @@ impl<'a, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A> for P
 where
     V: Clone,
     K: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -210,7 +210,7 @@ where
 impl<'a, const N: usize, C, K, V> Regex<C> for PairArray<N, K, V>
 where
     K: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

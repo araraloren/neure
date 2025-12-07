@@ -143,7 +143,7 @@ where
     L: Regex<C>,
     R: Regex<C>,
     P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -168,7 +168,7 @@ where
     L: Regex<C>,
     R: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

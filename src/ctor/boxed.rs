@@ -33,7 +33,7 @@ impl<I, C> Regex<C> for BoxedCtor<I> {
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for BoxedCtor<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {

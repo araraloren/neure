@@ -1,14 +1,14 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::def_not;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 ///
@@ -91,8 +91,8 @@ impl<C, P> Pattern<C, P> {
 
 impl<'a, C, O, P, H, A> Ctor<'a, C, O, O, H, A> for Pattern<C, P>
 where
-    P: Regex<C, >,
-    C: Context<'a> + Match<C>,
+    P: Regex<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -106,11 +106,9 @@ where
 
 impl<'a, C, P> Regex<C> for Pattern<C, P>
 where
-    P: Regex<C, >,
-    C: Context<'a> + Match<C>,
+    P: Regex<C>,
+    C: Context<'a> + Match<'a>,
 {
-    
-
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         ctx.try_mat(&self.pat)

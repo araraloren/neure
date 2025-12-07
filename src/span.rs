@@ -105,7 +105,7 @@ impl SimpleStorer {
         pat: &P,
     ) -> Result<Span, Error>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
     {
         let ret = ctx.try_mat(pat)?;
 

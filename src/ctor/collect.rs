@@ -111,7 +111,7 @@ impl<'a, C, P, M, O, V, H, A> Ctor<'a, C, M, V, H, A> for Collect<C, P, O, V>
 where
     V: FromIterator<O>,
     P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -141,7 +141,7 @@ where
 impl<'a, C, P, O, V> Regex<C> for Collect<C, P, O, V>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

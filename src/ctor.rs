@@ -77,7 +77,7 @@ where
 
 impl<'a, C, M, O, H, A, F> Ctor<'a, C, M, O, H, A> for F
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     F: Fn(&mut C, &mut H) -> Result<O, Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -87,7 +87,7 @@ where
 
 impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -100,7 +100,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &str
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -113,7 +113,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for String
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -126,7 +126,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &String
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -139,7 +139,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8]
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -152,7 +152,7 @@ where
 
 impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8; N]
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -165,7 +165,7 @@ where
 
 impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for [u8; N]
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -178,7 +178,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Vec<u8>
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -191,7 +191,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &Vec<u8>
 where
-    C: Context<'a, Orig<'a> = &'a [u8]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -205,7 +205,7 @@ where
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Option<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -217,7 +217,7 @@ where
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for RefCell<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -229,7 +229,7 @@ where
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Cell<I>
 where
     I: Ctor<'a, C, M, O, H, A> + Copy,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -241,7 +241,7 @@ where
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Mutex<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -255,7 +255,7 @@ where
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Arc<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -267,7 +267,7 @@ where
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Rc<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -278,7 +278,7 @@ where
 
 impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -289,7 +289,7 @@ where
 
 impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -300,7 +300,7 @@ where
 
 impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -311,7 +311,7 @@ where
 
 impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -322,7 +322,7 @@ where
 
 impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -333,7 +333,7 @@ where
 
 impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -345,7 +345,7 @@ where
 pub trait ConstructOp<'a, C>
 where
     Self: Sized,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
@@ -389,7 +389,7 @@ where
 impl<'a, C, T> ConstructOp<'a, C> for T
 where
     T: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)
@@ -881,7 +881,7 @@ where
     #[allow(clippy::complexity)]
     fn into_dyn<'a, 'b, M, O, H, A>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + 'b;
 
     #[allow(clippy::complexity)]
@@ -889,7 +889,7 @@ where
         self,
     ) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + Send + 'b;
 
     #[allow(clippy::complexity)]
@@ -897,7 +897,7 @@ where
         self,
     ) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + 'b;
 
     #[allow(clippy::complexity)]
@@ -905,7 +905,7 @@ where
         self,
     ) -> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + 'b;
 }
 
@@ -1010,7 +1010,7 @@ where
     /// ```
     fn into_dyn<'a, 'b, M, O, H, A>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + 'b,
     {
         Wrap::dyn_box(self)
@@ -1020,7 +1020,7 @@ where
         self,
     ) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + Send + 'b,
     {
         Wrap::dyn_box_sync(self)
@@ -1030,7 +1030,7 @@ where
         self,
     ) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + 'b,
     {
         Wrap::dyn_arc(self)
@@ -1040,7 +1040,7 @@ where
         self,
     ) -> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
     where
-        C: Context<'a> + Match<C>,
+        C: Context<'a> + Match<'a>,
         Self: Ctor<'a, C, M, O, H, A> + 'b,
     {
         Wrap::dyn_rc(self)

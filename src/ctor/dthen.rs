@@ -133,7 +133,7 @@ impl<C, P, F> DynamicCtorThenBuilder<C, P, F> {
 impl<'a, C, P, F> Regex<C> for DynamicCtorThenBuilder<C, P, F>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
         unimplemented!("DynamicCtorThenBuilder not support Regex trait")
@@ -145,7 +145,7 @@ impl<'a, C, P, F, T, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A>
 where
     P: Ctor<'a, C, M, O1, H, A>,
     T: Ctor<'a, C, M, O2, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     F: Fn(&mut C, &O1) -> Result<T, Error>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
@@ -181,7 +181,7 @@ where
 pub trait DynamicCtorThenBuilderHelper<'a, C>
 where
     Self: Sized,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     fn into_ctor_then_builder<F, O1, R>(self, func: F) -> DynamicCtorThenBuilder<C, Self, F>
     where
@@ -191,7 +191,7 @@ where
 impl<'a, C, T> DynamicCtorThenBuilderHelper<'a, C> for T
 where
     Self: Sized,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     ///
     /// Construct a new regex based on previous result.

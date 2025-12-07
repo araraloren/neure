@@ -136,7 +136,7 @@ impl<'a, C, L, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A> for Then<C, L,
 where
     L: Ctor<'a, C, M, O1, H, A>,
     R: Ctor<'a, C, M, O2, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -162,7 +162,7 @@ impl<'a, C, L, R> Regex<C> for Then<C, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -312,7 +312,7 @@ where
     L: Ctor<'a, C, M, O1, H, A>,
     R: Ctor<'a, C, M, O2, H, A>,
     I: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -346,7 +346,7 @@ where
     I: Regex<C>,
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

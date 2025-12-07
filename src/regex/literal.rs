@@ -30,7 +30,7 @@ impl<'a, T> LitSlice<'a, T> {
 impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
-    C: Context<'a, Orig<'a> = &'a [T]> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a [T]> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -81,7 +81,7 @@ impl<'a> LitString<'a> {
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for LitString<'_>
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<C>,
+    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {

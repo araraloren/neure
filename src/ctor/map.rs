@@ -174,7 +174,7 @@ impl<'a, C, M, O, V, P, F, H, A> Ctor<'a, C, M, V, H, A> for Map<C, P, F, O>
 where
     P: Ctor<'a, C, M, O, H, A>,
     F: MapSingle<O, V>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -187,7 +187,7 @@ where
 impl<'a, C, P, F, O> Regex<C> for Map<C, P, F, O>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

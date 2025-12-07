@@ -91,7 +91,7 @@ impl<I, C> Regex<C> for BoxedCtor<I> {
 impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for BoxedCtor<I>
 where
     I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -420,7 +420,7 @@ impl<C, I> Regex<C> for Wrap<I, C> {
 
 impl<'a, C, M, O, H, A, I> Ctor<'a, C, M, O, H, A> for Wrap<I, C>
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     I: Ctor<'a, C, M, O, H, A>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,

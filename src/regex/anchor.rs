@@ -25,7 +25,7 @@ impl AnchorStart {
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for AnchorStart
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -71,7 +71,7 @@ impl AnchorEnd {
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for AnchorEnd
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {

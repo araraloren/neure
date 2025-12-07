@@ -179,7 +179,7 @@ impl<'a, const M: usize, const N: usize, U, C, O, I, H, A> Ctor<'a, C, O, O, H, 
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<C> + 'a,
+    C: Context<'a> + Match<'a> + 'a,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -352,7 +352,7 @@ impl<'a, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureRepeatRange<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<C> + 'a,
+    C: Context<'a> + Match<'a> + 'a,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {

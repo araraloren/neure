@@ -131,7 +131,7 @@ where
     }
 }
 
-impl<'a, I, R> Match<PolicyCtx<I, R>> for PolicyCtx<I, R>
+impl<'a, I, R> Match<'a> for PolicyCtx<I, R>
 where
     R: Regex<I>,
     I: Context<'a>,
@@ -146,7 +146,7 @@ where
     }
 }
 
-impl<'a, I, R> PolicyMatch<PolicyCtx<I, R>> for PolicyCtx<I, R>
+impl<'a, I, R> PolicyMatch<'a> for PolicyCtx<I, R>
 where
     R: Regex<I>,
     I: Context<'a>,

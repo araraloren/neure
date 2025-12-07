@@ -34,7 +34,7 @@ where
 
 impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for NullRegex
 where
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = O, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {

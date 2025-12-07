@@ -88,11 +88,11 @@ where
     }
 }
 
-impl<'b, C> CtxGuard<'_, 'b, C>
+impl<'a, C> CtxGuard<'_, 'a, C>
 where
-    C: Context<'b> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
-    pub fn try_mat<P: Regex<C>>(&mut self, pattern: &P) -> Result<Span, Error> {
+    pub fn try_mat<P: Regex<C> + ?Sized>(&mut self, pattern: &P) -> Result<Span, Error> {
         self.ctx.try_mat(pattern).inspect(|_| {
             self.reset = false;
         })

@@ -442,7 +442,7 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
     }
 }
 
-impl<'a, T> Match<RegexCtx<'a, T>> for RegexCtx<'a, T>
+impl<'a, T> Match<'a> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,
@@ -455,7 +455,7 @@ where
     }
 }
 
-impl<'a, T> PolicyMatch<RegexCtx<'a, T>> for RegexCtx<'a, T>
+impl<'a, T> PolicyMatch<'a> for RegexCtx<'a, T>
 where
     T: ?Sized,
     Self: Context<'a>,

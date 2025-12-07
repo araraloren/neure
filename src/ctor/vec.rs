@@ -65,7 +65,7 @@ impl<T> DerefMut for Vector<T> {
 impl<'a, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Vector<T>
 where
     T: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -92,7 +92,7 @@ where
 impl<'a, C, T> Regex<C> for Vector<T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -169,7 +169,7 @@ impl<'a, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A> for PairVector<K, V>
 where
     V: Clone,
     K: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
     H: Handler<A, Out = M, Error = Error>,
     A: Extract<'a, C, Out<'a> = A, Error = Error>,
 {
@@ -196,7 +196,7 @@ where
 impl<'a, C, K, V> Regex<C> for PairVector<K, V>
 where
     K: Regex<C>,
-    C: Context<'a> + Match<C>,
+    C: Context<'a> + Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
