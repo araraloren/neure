@@ -258,15 +258,15 @@ impl<'a> RegexCtx<'a, str> {
     /// NOT y -> i
     /// "#;
     ///
-    ///     let sig = neu::digit(10).repeat_one_more().map(|v| Ok(Op::Sig(v)));
+    ///     let sig = neu::digit(10).repeat_one_more().map(Op::Sig);
     ///     let wire = neu::ascii_lowercase().repeat_one_more();
-    ///     let op = sig.or(wire.map(|v| Ok(Op::Wire(v))));
-    ///     let and = op.sep_once("AND", op).map(|v| Ok(Inst::And(v)));
-    ///     let or = op.sep_once("OR", op).map(|v| Ok(Inst::Or(v)));
-    ///     let lshift = op.sep_once("LSHIFT", op).map(|v| Ok(Inst::LShift(v)));
-    ///     let rshift = op.sep_once("RSHIFT", op).map(|v| Ok(Inst::RShift(v)));
-    ///     let not = op.padded("NOT").map(|v| Ok(Inst::Not(v)));
-    ///     let store = sig.map(|v| Ok(Inst::Store(v)));
+    ///     let op = sig.or(wire.map(Op::Wire));
+    ///     let and = op.sep_once("AND", op).map(Inst::And);
+    ///     let or = op.sep_once("OR", op).map(Inst::Or);
+    ///     let lshift = op.sep_once("LSHIFT", op).map(Inst::LShift);
+    ///     let rshift = op.sep_once("RSHIFT", op).map(Inst::RShift);
+    ///     let not = op.padded("NOT").map(Inst::Not);
+    ///     let store = sig.map(Inst::Store);
     ///     let src = and
     ///         .or(or.or(lshift.or(rshift.or(not.or(store)))))
     ///         .into_box();

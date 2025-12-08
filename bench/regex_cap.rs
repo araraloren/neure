@@ -79,7 +79,7 @@ mod email_neure {
         let post = neu!((letter, '.')).repeat::<2, 6>();
         let email = name
             .sep_once("@", domain.sep_once(".", post))
-            .map(|(v1, (v2, v3))| Ok((v1, v2, v3)))
+            .try_map(|(v1, (v2, v3))| Ok((v1, v2, v3)))
             .quote(regex::start(), regex::end());
         let mut ctx = RegexCtx::new(str);
 

@@ -39,7 +39,7 @@ use crate::debug_regex_reval;
 ///     let ele = neu::digit(10).repeat_times::<2>();
 ///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
-///     let time = time.map(|((h, m), s)| Ok((h, m, s)));
+///     let time = time.map(|((h, m), s)| (h, m, s));
 ///     let mut ctx = CharsCtx::new("20:31:42");
 ///
 ///     assert_eq!(ctx.ctor(&time)?, ("20", "31", "42"));
@@ -213,7 +213,7 @@ where
 ///     pub struct Tp<'a>(&'a str);
 ///
 ///     let ascii = neu::alphabetic().repeat_one_more();
-///     let ty = ascii.map(|v| Ok(Tp(v)));
+///     let ty = ascii.map(Tp);
 ///     let ele = ty.sep(",".ws());
 ///     let arr = ele.quote("<", ">");
 ///     let mut ctx = CharsCtx::new("<A, B, Len, Size>");
@@ -444,7 +444,7 @@ where
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let digit = neu::digit(10).repeat_one_more();
-///     let val = digit.map(FromStr::<i64>::new());
+///     let val = digit.try_map(FromStr::<i64>::new());
 ///     let vals = val.sep_collect::<_, _, Vec<i64>>(",".ws());
 ///     let array = vals.quote("[", "]");
 ///     let mut ctx = CharsCtx::new("[18, 24, 42, 58, 69]");

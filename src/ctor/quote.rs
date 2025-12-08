@@ -34,7 +34,7 @@ use crate::regex::Regex;
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let digit = neu::digit(10).repeat_full();
-///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
+///     let digit = digit.map(|v: &str| v.parse::<i64>().unwrap());
 ///     let str = regex!([^ '"']+).quote("\"", "\"");
 ///     let tuple = digit.then(",")._0().then(str);
 ///     let tuple = tuple.quote("(", ")");

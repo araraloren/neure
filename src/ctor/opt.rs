@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
@@ -11,36 +14,75 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::def_not;
-use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
 use crate::regex::Regex;
 
 ///
-/// Match `P` and return the result wrapped by `Option`, ignoring the error.
+/// Makes a pattern optional, returning `None` (for [`Ctor`]) or an empty span (for [`Regex`]) when the pattern fails.
 ///
-/// # Ctor
+/// This combinator transforms a required pattern into an optional one. It attempts to match
+/// or construct using the inner pattern, but instead of propagating errors when the pattern
+/// fails, it returns a neutral value (`None` for [`Ctor`], zero-length span for [`Regex`]).
 ///
-/// If the regex `P` matches, return `Some(T)`; otherwise return None.
+/// # Regex
 ///
-/// # Example
+/// Attempts to match the inner pattern. If successful, returns the matched span normally.
+/// If the inner pattern fails to match, returns a zero-length span starting at the current
+/// context position (consuming no input) instead of returning an error. This ensures the
+/// optional pattern never fails to match.
+///
+/// ## Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let num = neu::digit(10)
-///         .repeat_one_more()
-///         .map(map::from_str())
-///         .opt();
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let num = regex!((neu::digit(16))+).opt();
 ///
-///     assert_eq!(CharsCtx::new("8922").ctor(&num)?, Some(8922i32));
-///     assert_eq!(CharsCtx::new("f122").ctor(&num)?, None);
+///     assert_eq!(CharsCtx::new("f1").try_mat(&num)?, Span::new(0, 2));
+///     assert_eq!(CharsCtx::new("p8").try_mat(&num)?, Span::default());
 ///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// # Ctor
+///
+/// Attempts to construct a value using the inner pattern. If successful, returns `Some(O)`.
+/// If the inner pattern fails (returns an error), the error is consumed and `None` is returned
+/// instead. The context position is restored to its original state when the inner pattern fails,
+/// ensuring no partial consumption of input on failure.
+///
+/// ## Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let num = regex!((neu::digit(10))+).try_map(map::from_str()).opt();
+///
+///     assert_eq!(CharsCtx::new("42").ctor(&num)?, Some(42i32));
+///     assert_eq!(CharsCtx::new("f1").ctor(&num)?, None);
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Behavior Notes
+///
+/// - This combinator never fails in the `Regex` implementation (always returns `Ok(Span)`)
+/// - In the `Ctor` implementation, it never propagates errors from the inner pattern
+/// - When the inner pattern fails:
+///   - For `Regex`: Returns `Span::new(offset, 0)` (zero-length span at current position)
+///   - For `Ctor`: Returns `Ok(None)` and restores context position
+/// - When the inner pattern succeeds:
+///   - For `Regex`: Returns the actual span of the match
+///   - For `Ctor`: Returns `Ok(Some(value))` with the constructed value
+///
+/// # Performance
+///
+/// The optional pattern adds minimal overhead. When the inner pattern fails, the context guard
+/// efficiently restores the position without additional allocations. The zero-cost abstraction
+/// principles of Rust ensure this combinator has performance comparable to manual optional handling.
 #[derive(Default, Copy)]
 pub struct OptionPat<C, P> {
     pat: P,

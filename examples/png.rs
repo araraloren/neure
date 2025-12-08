@@ -19,8 +19,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             assert_eq!(dat.len(), 1);
             char::from_u32(u8::from_be_bytes([dat[0]]) as u32).ok_or(Error::Uid(0))
         };
-        let uint32 = regex::consume(4).map(as_u32);
-        let uint8 = regex::consume(1).map(as_u8);
+        let uint32 = regex::consume(4).try_map(as_u32);
+        let uint8 = regex::consume(1).try_map(as_u8);
         let mut ctx = RegexCtx::new(bytes.as_slice());
 
         if ctx.ctor(&head).is_ok() {

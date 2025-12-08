@@ -37,7 +37,7 @@ impl<T> PngParser<T> {
     where
         Self: for<'a> MapSingle<&'a [u8], T>,
     {
-        ctx.ctor(&regex::consume(self.size()).map(self))
+        ctx.ctor(&regex::consume(self.size()).try_map(self))
     }
 }
 

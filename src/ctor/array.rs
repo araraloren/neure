@@ -35,13 +35,13 @@ use super::Ctor;
 ///
 ///     // First match succeeds, returns immediately
 ///     CharsCtx::with("abc", |mut ctx| {
-///         assert!(array.parse(&mut ctx));
+///         assert!(ctx.try_mat(&array).is_ok());
 ///         assert_eq!(ctx.offset(), 1);
 ///     });
 ///
 ///     // No match possible
 ///     CharsCtx::with("xyz", move |mut ctx| {
-///         assert!(!array.parse(&mut ctx));
+///         assert!(ctx.try_mat(&array).is_err());
 ///         assert_eq!(ctx.offset(), 0);
 ///     });
 /// #   Ok(())

@@ -37,9 +37,9 @@ use crate::regex::Regex;
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
-///     let str = str.quote("\"", "\"").map(Ok);
+///     let str = str.quote("\"", "\"");
 ///     let int = neu::digit(10).repeat_one_more();
-///     let int = int.map(map::from_str_radix::<i32>(10));
+///     let int = int.try_map(map::from_str_radix::<i32>(10));
 ///     let tuple = str.ws().then(",".ws())._0().then(int.ws());
 ///     let tuple = tuple.quote("(", ")");
 ///     let mut ctx = CharsCtx::new(r#"("Galaxy", 42)"#);

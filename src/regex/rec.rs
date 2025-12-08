@@ -37,10 +37,10 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O> =
 ///     let xml = regex::rec_parser(|ctor| {
 ///         let alpha = neu::alphabetic()
 ///             .repeat_full()
-///             .map(|v: &str| Ok(v.to_string()));
+///             .map(|v: &str| v.to_string());
 ///         let s = alpha.quote("<", ">");
 ///         let e = alpha.quote("</", ">");
-///         let c = alpha.quote("<", "/>").map(|v| Ok(Xml::Enclosed(v)));
+///         let c = alpha.quote("<", "/>").map(Xml::Enclosed);
 ///         let m = |((l, c), r): ((String, Vec<Xml>), String)| {
 ///             if l != r {
 ///                 Err(Error::Uid(0))
@@ -49,7 +49,7 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O> =
 ///             }
 ///         };
 ///
-///         s.then(ctor.clone()).then(e).map(m).or(c).repeat(1..)
+///         s.then(ctor.clone()).then(e).try_map(m).or(c).repeat(1..)
 ///     });
 ///     let ret = CharsCtx::new("<language><rust><linux/></rust><cpp><windows/></cpp></language>")
 ///         .ctor(&xml)?;

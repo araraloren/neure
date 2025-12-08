@@ -21,7 +21,7 @@ use neure::prelude::*;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let year = regex!(['0' - '9']+); // match digit from 0 to 9 more than once
-    let year = year.map(map::from_str::<i32>()); // map it to i32
+    let year = year.try_map(map::from_str::<i32>()); // map it to i32
     let name = neu::ascii_alphabetic().repeat_one_more(); // match ascii alphabetic
     let mut ctx = CharsCtx::new("2024rust");
 

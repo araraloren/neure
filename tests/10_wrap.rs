@@ -53,18 +53,18 @@ fn into_impl() -> color_eyre::Result<()> {
         .repeat_one()
         .then(ident)
         .pat();
-    let layer0 = ty.map(|ty| Ok(Ty::Layer0(ty)));
+    let layer0 = ty.try_map(|ty| Ok(Ty::Layer0(ty)));
     let layer1 = ctor::Wrap::dyn_rc(ty.then(ty.quote("<", ">")))
         // Add into_dyn_* reduce the trait solve time
-        .map(|(w, ty)| Ok(Ty::Layer1(w, ty)));
+        .try_map(|(w, ty)| Ok(Ty::Layer1(w, ty)));
     let layer2 = ctor::Wrap::dyn_rc(ty.then(ty.then(ty.quote("<", ">")).quote("<", ">"))) // Add into_dyn_* reduce the trait solve time
-        .map(|(w1, (w2, ty))| Ok(Ty::Layer2(w1, w2, ty)));
+        .try_map(|(w1, (w2, ty))| Ok(Ty::Layer2(w1, w2, ty)));
     let field = ident.sep_once(":", layer2.or(layer1.or(layer0)));
     let public = field
         .clone()
         .padded("pub")
-        .map(|(name, ty_name)| Ok(Field::public(name, ty_name)));
-    let private = field.map(|(name, ty_name)| Ok(Field::private(name, ty_name)));
+        .try_map(|(name, ty_name)| Ok(Field::public(name, ty_name)));
+    let private = field.try_map(|(name, ty_name)| Ok(Field::private(name, ty_name)));
     let parser = public.or(private).sep(",");
     let space = neu::whitespace().repeat_full();
     let fields = CharsCtx::new("a: i64, b: Option<String>, pub c: bool")

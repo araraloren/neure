@@ -31,17 +31,14 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let regex = b"+".collect::<_, Vec<_>>();
+///     let regex = b"+".collect::<Span, Vec<Span>>();
 ///
-///     assert!(BytesCtx::new(b"---A").span(&regex).is_err());
-///     assert_eq!(
-///         BytesCtx::new(b"+++A").span(&regex)?,
-///         vec![Span::new(0, 1), Span::new(1, 1), Span::new(2, 1)]
-///     );
+///     assert!(BytesCtx::new(b"---A").try_mat(&regex).is_err());
+///     assert_eq!(BytesCtx::new(b"+++A").try_mat(&regex)?, Span::new(0, 3));
 ///
-///     let regex = b"+".collect::<_, Vec<_>>().at_least(3);
+///     let regex = b"+".collect::<Span, Vec<Span>>().at_least(3);
 ///
-///     assert!(BytesCtx::new(b"++-A").span(&regex).is_err(),);
+///     assert!(BytesCtx::new(b"++-A").try_mat(&regex).is_err(),);
 ///
 /// #   Ok(())
 /// # }

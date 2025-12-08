@@ -34,7 +34,7 @@ use crate::regex::Regex;
 /// #     color_eyre::install()?;
 ///     macro_rules! num {
 ///         ($s:literal) => {
-///             neu::digit($s).repeat_one_more().map(from_str_radix($s))
+///             neu::digit($s).repeat_one_more().try_map(from_str_radix($s))
 ///         };
 ///     }
 ///
@@ -44,11 +44,11 @@ use crate::regex::Regex;
 ///     let oct = "0o".then(oct)._1();
 ///     let hex = "0x".then(hex)._1();
 ///     let bin = "0b".then(bin)._1();
-///     let pos = "+".map(|_| Ok(1));
-///     let neg = "-".map(|_| Ok(-1));
-///     let sign = pos.or(neg.or(regex::null().map(|_| Ok(1))));
+///     let pos = "+".map(|_| 1);
+///     let neg = "-".map(|_| -1);
+///     let sign = pos.or(neg.or(regex::null().map(|_| 1)));
 ///     let num = bin.or(oct.or(dec.or(hex))).or(num);
-///     let num = sign.then(num).map(|(s, v): (_, i64)| Ok(s * v));
+///     let num = sign.then(num).map(|(s, v): (_, i64)| s * v);
 ///     let val = num.sep(",".ws()).quote("[", "]");
 ///     let mut ctx = CharsCtx::new(r#"[0d18, 0o17, 0x18, 0b1010, 18, 1E]"#);
 ///

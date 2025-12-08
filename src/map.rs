@@ -20,22 +20,27 @@ where
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Single;
+pub struct Mapper<F> {
+    func: F,
+}
 
-impl Single {
-    pub fn new() -> Self {
-        Self {}
+impl<F> Mapper<F> {
+    pub fn new(func: F) -> Self {
+        Self { func }
     }
 }
 
-impl<I> MapSingle<I, I> for Single {
-    fn map_to(&self, val: I) -> Result<I, Error> {
-        Ok(val)
+impl<F, I, O> MapSingle<I, O> for Mapper<F>
+where
+    F: Fn(I) -> O,
+{
+    fn map_to(&self, val: I) -> Result<O, Error> {
+        Ok((self.func)(val))
     }
 }
 
-pub fn single() -> Single {
-    Single::new()
+pub fn mapper<F>(func: F) -> Mapper<F> {
+    Mapper::new(func)
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -538,7 +543,7 @@ impl_from_bytes!(ne usize, 8);
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let data = [0x01, 0x02, 0x03, 0x04];
-///     let parser = regex::consume(4).map(map::from_le_bytes::<i32>());
+///     let parser = regex::consume(4).try_map(map::from_le_bytes::<i32>());
 ///
 ///     assert_eq!(BytesCtx::new(&data).ctor(&parser)?, 0x04030201);
 ///
@@ -560,7 +565,7 @@ pub fn from_le_bytes<T>() -> FromLeBytes<T> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let data = [0x01, 0x02, 0x03, 0x04];
-///     let parser = regex::consume(4).map(map::from_be_bytes::<i32>());
+///     let parser = regex::consume(4).try_map(map::from_be_bytes::<i32>());
 ///
 ///     assert_eq!(BytesCtx::new(&data).ctor(&parser)?, 0x01020304);
 ///

@@ -61,6 +61,8 @@ use crate::ctor::wrap::BoxedCtor;
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::err::Error;
+use crate::map::mapper;
+use crate::map::Mapper;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
 use crate::neu::NeureZeroMore;
@@ -346,7 +348,11 @@ where
     Self: Sized,
     C: Context<'a> + Match<'a>,
 {
-    fn map<F, O>(self, f: F) -> Map<C, Self, F, O>;
+    fn try_map<F, O>(self, f: F) -> Map<C, Self, F, O>;
+
+    fn map<F, O>(self, f: F) -> Map<C, Self, Mapper<F>, O> {
+        self.try_map(mapper(f))
+    }
 
     fn pat(self) -> Pattern<C, Self>;
 
@@ -390,7 +396,7 @@ where
     T: Regex<C>,
     C: Context<'a> + Match<'a>,
 {
-    fn map<F, O>(self, func: F) -> Map<C, Self, F, O> {
+    fn try_map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)
     }
 
@@ -405,7 +411,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let digit = regex!(['0' - '9']+);
-    ///     let digit = digit.map(|v: &str| Ok(v.parse::<i64>().unwrap()));
+    ///     let digit = digit.map(|v: &str| v.parse::<i64>().unwrap());
     ///     let digits = digit.sep(",".ws());
     ///     let array = digits.quote("[", "]");
     ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
@@ -431,7 +437,7 @@ where
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10)
     ///         .repeat_one_more()
-    ///         .map(map::from_str::<usize>())
+    ///         .try_map(map::from_str::<usize>())
     ///         .opt();
     ///
     ///     assert_eq!(CharsCtx::new("foo").ctor(&num)?, None);
@@ -582,7 +588,7 @@ where
     ///     let cond = neu::re_cond(regex::not("\\\""));
     ///     let str = regex!([^ '"' ]+).set_cond(cond).or("\\\"").repeat(1..).pat();
     ///     let str = str.quote("\"", "\"");
-    ///     let str = str.map(|v| Ok(V::S(v)));
+    ///     let str = str.map(V::S);
     ///     let vals = str.sep(",".ws());
     ///     let text = r#""lily\"", "lilei", "lucy""#;
     ///     let mut ctx = CharsCtx::new(text);
@@ -612,7 +618,7 @@ where
     ///     pub struct Val<'a>(&'a str);
     ///
     ///     let val = "v".ltm("val".ltm("value"));
-    ///     let val = val.map(|v| Ok(Val(v)));
+    ///     let val = val.map(Val);
     ///     let val = val.sep(",".ws());
     ///     let val = val.quote("{", "}");
     ///     let mut ctx = CharsCtx::new(r#"{val, v, value}"#);
@@ -703,7 +709,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let int = neu::digit(10).repeat_one_more();
-    ///     let int = int.map(map::from_str_radix::<i32>(10));
+    ///     let int = int.try_map(map::from_str_radix::<i32>(10));
     ///     let num = int.ws().repeat(3..5);
     ///     let mut ctx = CharsCtx::new(r#"1 2 3 4"#);
     ///
@@ -726,7 +732,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let val = regex::consume(2)
-    ///         .map(map::from_le_bytes::<i16>())
+    ///         .try_map(map::from_le_bytes::<i16>())
     ///         .collect::<_, Vec<_>>();
     ///
     ///     assert_eq!(
@@ -751,7 +757,7 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let val = "file://".r#if(
+    ///     let val = "file://".branch(
     ///         // test if it is a file url
     ///         |ctx: &CharsCtx| Ok(ctx.orig()?.starts_with("file")),
     ///         "http://",
@@ -927,7 +933,7 @@ where
     ///         .then(u8::is_ascii_hexdigit)
     ///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
     ///         .pat()
-    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+    ///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
     ///         .into_box();
     ///
     ///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, "+AE00");
@@ -996,8 +1002,8 @@ where
     ///     color_eyre::install()?;
     ///     let num = u8::is_ascii_digit
     ///         .repeat_one()
-    ///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
-    ///         .map(map::from_str::<usize>());
+    ///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+    ///         .try_map(map::from_str::<usize>());
     ///     let num = num.clone().sep_once(b",", num);
     ///     let re = num.into_dyn();
     ///

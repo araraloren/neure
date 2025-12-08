@@ -116,7 +116,7 @@ where
 ///         .then(u8::is_ascii_hexdigit)
 ///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
 ///         .pat()
-///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)));
+///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)));
 ///    let re = ctor::Wrap::r#box(re);
 ///
 ///     assert_eq!(BytesCtx::new(b"+AE00").ctor(&re)?, "+AE00");
@@ -203,7 +203,7 @@ impl<T, C> Wrap<std::sync::Arc<T>, C> {
 ///
 ///     let num = char::is_ascii_digit.repeat_one_more();
 ///     let float = num.sep_once(".", num).pat();
-///     let float = float.map(map::from_str::<f64>());
+///     let float = float.try_map(map::from_str::<f64>());
 ///     let ctor = ctor::Wrap::cell(float);
 ///
 ///     assert_eq!(CharsCtx::new("999.88").ctor(&ctor)?, 999.88);
@@ -313,8 +313,8 @@ where
 ///
 ///     let num = u8::is_ascii_digit
 ///         .repeat_one()
-///         .map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
-///         .map(map::from_str::<usize>());
+///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
+///         .try_map(map::from_str::<usize>());
 ///     let num = num.clone().sep_once(b",", num);
 ///     let re = num.into_dyn();
 ///

@@ -19,7 +19,7 @@ use crate::regex::Wrap;
 ///
 ///     let year = regex::string("rust")
 ///         .into_regex_builder(|_, s| Ok(neu::ascii_alphanumeric().repeat_range(s.len()..=s.len())));
-///     let year = year.map(map::from_str::<u64>());
+///     let year = year.try_map(map::from_str::<u64>());
 ///     let mut ctx = CharsCtx::new("rust2028");
 ///
 ///     assert_eq!(ctx.ctor(&year)?, 2028);

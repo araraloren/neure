@@ -43,8 +43,8 @@ use crate::regex::Regex;
 ///         neu::ascii_digit().repeat_full(),
 ///     );
 ///
-///     assert_eq!(CharsCtx::new("21345").span(&regex)?, Span::new(0, 3));
-///     assert_eq!(CharsCtx::new("42").span(&regex)?, Span::new(0, 2));
+///     assert_eq!(CharsCtx::new("21345").try_mat(&regex)?, Span::new(0, 3));
+///     assert_eq!(CharsCtx::new("42").try_mat(&regex)?, Span::new(0, 2));
 ///
 /// #   Ok(())
 /// # }

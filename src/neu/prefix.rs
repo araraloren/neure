@@ -194,7 +194,7 @@ where
 ///     let new_prefix = |n: usize, i: usize| {
 ///         neu::prefix_cnt('A', n, neu::none())
 ///             .repeat_range(n..=n)
-///             .map(move |_| Ok(replys[i]))
+///             .map(move |_| replys[i])
 ///     };
 ///
 ///     for test in tests {

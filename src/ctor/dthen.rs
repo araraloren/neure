@@ -48,7 +48,7 @@ use crate::regex::Regex;
 /// # use neure::{ctor::DynamicCtorThenBuilderHelper, prelude::*};
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let len = regex::consume(2).map(map::from_le_bytes::<i16>());
+///     let len = regex::consume(2).try_map(map::from_le_bytes::<i16>());
 ///     let data = len.into_ctor_then_builder(|_, v| Ok(regex::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
 ///
@@ -70,8 +70,8 @@ use crate::regex::Regex;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let num = u8::is_ascii_digit
 ///         .repeat_one()
-///         .map(map::from_utf8::<String>())
-///         .map(map::from_str::<usize>());
+///         .try_map(map::from_utf8::<String>())
+///         .try_map(map::from_str::<usize>());
 ///     let num = num.clone().sep_once(b",", num);
 ///     let regex =
 ///         num.into_ctor_then_builder(|_, (a, b)| Ok(b'+'.repeat_range(a).then(b'-'.repeat_range(b))));
