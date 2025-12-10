@@ -1,9 +1,7 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use crate::ctor::Extract;
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -33,7 +31,7 @@ use super::Ctor;
 /// #     color_eyre::install()?;
 ///     let tuple = regex::vector(["a".into_dyn_regex(), "b".into_dyn_regex(), "c".into_dyn_regex()]);
 ///
-///     assert_eq!(CharsCtx::new("abc").span(&tuple)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
 ///     Ok(())
 /// # }
 /// ```
@@ -62,12 +60,11 @@ impl<T> DerefMut for Vector<T> {
     }
 }
 
-impl<'a, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Vector<T>
+impl<'a, C, T, M, O, H> Ctor<'a, C, M, O, H> for Vector<T>
 where
-    T: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    T: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -92,7 +89,7 @@ where
 impl<'a, C, T> Regex<C> for Vector<T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -165,13 +162,12 @@ impl<K, V> DerefMut for PairVector<K, V> {
     }
 }
 
-impl<'a, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A> for PairVector<K, V>
+impl<'a, C, K, M, O, V, H> Ctor<'a, C, M, (O, V), H> for PairVector<K, V>
 where
     V: Clone,
-    K: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    K: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
@@ -196,7 +192,7 @@ where
 impl<'a, C, K, V> Regex<C> for PairVector<K, V>
 where
     K: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

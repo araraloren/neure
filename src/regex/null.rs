@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
@@ -32,16 +32,15 @@ where
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for NullRegex
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for NullRegex
 where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self);
 
-        handler.invoke(A::extract(ctx, &ret?)?)
+        handler.invoke(ctx, &ret?).map_err(Into::into)
     }
 }

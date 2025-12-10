@@ -1,4 +1,3 @@
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -39,7 +38,7 @@ pub fn into_regex_builder<'a, C, P, T, F>(pat: P, func: F) -> Wrap<impl Regex<C>
 where
     P: Regex<C>,
     T: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
     F: Fn(&mut C, &Span) -> Result<T, Error>,
 {
     let regex = move |ctx: &mut C| {
@@ -64,7 +63,7 @@ where
 pub trait DynamicRegexBuilderHelper<'a, C>
 where
     Self: Sized,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     fn into_regex_builder<F, R>(self, func: F) -> Wrap<impl Regex<C>, C>
     where
@@ -75,7 +74,7 @@ where
 impl<'a, C, T> DynamicRegexBuilderHelper<'a, C> for T
 where
     Self: Regex<C> + Sized,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     fn into_regex_builder<F, R>(self, func: F) -> Wrap<impl Regex<C>, C>
     where

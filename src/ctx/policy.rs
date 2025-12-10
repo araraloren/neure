@@ -3,7 +3,7 @@ use super::PolicyMatch;
 use super::Regex;
 use super::Span;
 
-use crate::ctor::Extract;
+
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::span::SimpleStorer;
@@ -163,20 +163,5 @@ where
 
         after.try_parse(self)?;
         Ok(ret)
-    }
-}
-
-impl<'a, I, B> Extract<'a, Self> for PolicyCtx<I, B>
-where
-    B: Clone,
-    Self: Context<'a>,
-    I: Context<'a> + Clone,
-{
-    type Out<'b> = PolicyCtx<I, B>;
-
-    type Error = Error;
-
-    fn extract(ctx: &Self, _: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(Clone::clone(ctx))
     }
 }

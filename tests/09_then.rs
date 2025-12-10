@@ -12,7 +12,7 @@ fn then_impl() -> color_eyre::Result<()> {
     let tuple = val.then(num);
 
     assert_eq!(
-        CharsCtx::new("abc42").span(&tuple)?,
+        CharsCtx::new("abc42").ctor_span(&tuple)?,
         (Span::new(0, 3), Span::new(3, 2))
     );
     Ok(())

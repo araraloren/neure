@@ -3,9 +3,8 @@ use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -150,12 +149,11 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O, H, A> Ctor<'a, C, M, Vec<O>, H, A> for Repeat<C, P>
+impl<'a, C, P, M, O, H> Ctor<'a, C, M, Vec<O>, H> for Repeat<C, P>
 where
-    P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    P: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M,>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {
@@ -184,7 +182,7 @@ where
 impl<'a, C, P> Regex<C> for Repeat<C, P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

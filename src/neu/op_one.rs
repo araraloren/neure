@@ -2,9 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -116,7 +115,7 @@ where
 impl<'a, C, U, I> Condition<'a, C> for NeureOne<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
-    C: Context<'a> + 'a,
+    C: Match<'a> + 'a,
 {
     type Out<F> = NeureOne<C, U, C::Item, F>;
 
@@ -128,26 +127,25 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureOne<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureOne<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<'a> + 'a,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a> + 'a,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let ret = g.try_mat(self);
 
-        func.invoke(A::extract(g.ctx(), &ret?)?)
+        func.invoke(g.ctx(), &ret?).map_err(Into::into)
     }
 }
 
 impl<'a, U, C, I> Regex<C> for NeureOne<C, U, C::Item, I>
 where
-    C: Context<'a> + 'a,
+    C: Match<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
@@ -270,7 +268,7 @@ where
 impl<'a, C, U, I> Condition<'a, C> for NeureOneMore<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
-    C: Context<'a> + 'a,
+    C: Match<'a> + 'a,
 {
     type Out<F> = NeureOneMore<C, U, C::Item, F>;
 
@@ -282,26 +280,25 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureOneMore<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureOneMore<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<'a> + 'a,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a> + 'a,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let ret = g.try_mat(self);
 
-        func.invoke(A::extract(g.ctx(), &ret?)?)
+        func.invoke(g.ctx(), &ret?).map_err(Into::into)
     }
 }
 
 impl<'a, U, C, I> Regex<C> for NeureOneMore<C, U, C::Item, I>
 where
-    C: Context<'a> + 'a,
+    C: Match<'a> + 'a,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {

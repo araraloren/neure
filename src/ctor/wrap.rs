@@ -2,10 +2,6 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
-use crate::ctor::Handler;
-use crate::ctx::Context;
-use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::def_not;
@@ -88,12 +84,9 @@ impl<I, C> Regex<C> for BoxedCtor<I> {
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for BoxedCtor<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for BoxedCtor<I>
 where
-    I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -294,11 +287,8 @@ impl<C, T> Wrap<std::cell::RefCell<T>, C> {
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H, A> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
-where
-    C: Context<'a>,
-{
-    pub fn dyn_arc(ctor: impl Ctor<'a, C, M, O, H, A> + 'b) -> Self {
+impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
+    pub fn dyn_arc(ctor: impl Ctor<'a, C, M, O, H> + 'b) -> Self {
         Self::new(std::sync::Arc::new(ctor))
     }
 }
@@ -324,11 +314,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H, A> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
-where
-    C: Context<'a>,
-{
-    pub fn dyn_box(ctor: impl Ctor<'a, C, M, O, H, A> + 'b) -> Self {
+impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
+    pub fn dyn_box(ctor: impl Ctor<'a, C, M, O, H> + 'b) -> Self {
         Self::new(Box::new(ctor))
     }
 }
@@ -363,11 +350,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H, A> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>, C>
-where
-    C: Context<'a>,
-{
-    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, M, O, H, A> + Send + 'b) -> Self {
+impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C> {
+    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, M, O, H> + Send + 'b) -> Self {
         Self::new(Box::new(ctor))
     }
 }
@@ -402,11 +386,8 @@ where
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H, A> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
-where
-    C: Context<'a>,
-{
-    pub fn dyn_rc(ctor: impl Ctor<'a, C, M, O, H, A> + 'b) -> Self {
+impl<'a, 'b, C, M, O, H> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
+    pub fn dyn_rc(ctor: impl Ctor<'a, C, M, O, H> + 'b) -> Self {
         Self::new(std::rc::Rc::new(ctor))
     }
 }
@@ -418,12 +399,9 @@ impl<C, I> Regex<C> for Wrap<I, C> {
     }
 }
 
-impl<'a, C, M, O, H, A, I> Ctor<'a, C, M, O, H, A> for Wrap<I, C>
+impl<'a, C, M, O, H, I> Ctor<'a, C, M, O, H> for Wrap<I, C>
 where
-    C: Context<'a> + Match<'a>,
-    I: Ctor<'a, C, M, O, H, A>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

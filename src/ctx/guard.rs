@@ -90,7 +90,7 @@ where
 
 impl<'a, C> CtxGuard<'_, 'a, C>
 where
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     pub fn try_mat<P: Regex<C> + ?Sized>(&mut self, pattern: &P) -> Result<Span, Error> {
         self.ctx.try_mat(pattern).inspect(|_| {

@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use std::ops::RangeBounds;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
@@ -174,21 +174,20 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A>
+impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<'a, C, O, O, H>
     for NeureRepeat<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<'a> + 'a,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a> + 'a,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let ret = g.try_mat(self);
 
-        func.invoke(A::extract(g.ctx(), &ret?)?)
+        func.invoke(g.ctx(), &ret?).map_err(Into::into)
     }
 }
 
@@ -348,20 +347,19 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureRepeatRange<C, U, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureRepeatRange<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<'a> + 'a,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a> + 'a,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let ret = g.try_mat(self);
 
-        func.invoke(A::extract(g.ctx(), &ret?)?)
+        func.invoke(g.ctx(), &ret?).map_err(Into::into)
     }
 }
 

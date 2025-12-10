@@ -2,10 +2,9 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
 use crate::ctor::Map;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -132,13 +131,12 @@ impl<C, L, R> Then<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, O2), H, A> for Then<C, L, R>
+impl<'a, C, L, R, M, O1, O2, H> Ctor<'a, C, M, (O1, O2), H> for Then<C, L, R>
 where
-    L: Ctor<'a, C, M, O1, H, A>,
-    R: Ctor<'a, C, M, O2, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    L: Ctor<'a, C, M, O1, H>,
+    R: Ctor<'a, C, M, O2, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
@@ -162,7 +160,7 @@ impl<'a, C, L, R> Regex<C> for Then<C, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -307,14 +305,13 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
     }
 }
 
-impl<'a, C, L, I, R, M, O1, O2, H, A> Ctor<'a, C, M, (O1, Option<O2>), H, A> for IfThen<C, L, I, R>
+impl<'a, C, L, I, R, M, O1, O2, H> Ctor<'a, C, M, (O1, Option<O2>), H> for IfThen<C, L, I, R>
 where
-    L: Ctor<'a, C, M, O1, H, A>,
-    R: Ctor<'a, C, M, O2, H, A>,
+    L: Ctor<'a, C, M, O1, H>,
+    R: Ctor<'a, C, M, O2, H>,
     I: Regex<C>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
@@ -346,7 +343,7 @@ where
     I: Regex<C>,
     L: Regex<C>,
     R: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

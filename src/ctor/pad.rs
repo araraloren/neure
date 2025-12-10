@@ -2,9 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -115,13 +114,13 @@ impl<C, P, T> Pad<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Pad<C, P, T>
+impl<'a, C, P, T, M, O, H, > Ctor<'a, C, M, O, H> for Pad<C, P, T>
 where
     T: Regex<C>,
-    P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    P: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M,>,
+    
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -143,7 +142,7 @@ impl<'a, C, P, T> Regex<C> for Pad<C, P, T>
 where
     T: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -254,13 +253,13 @@ impl<C, P, T> Padded<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Padded<C, P, T>
+impl<'a, C, P, T, M, O, H, > Ctor<'a, C, M, O, H> for Padded<C, P, T>
 where
     T: Regex<C>,
-    P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    P: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M,>,
+    
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -280,7 +279,7 @@ impl<'a, C, P, T> Regex<C> for Padded<C, P, T>
 where
     T: Regex<C>,
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

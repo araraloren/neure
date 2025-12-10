@@ -1,9 +1,7 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use crate::ctor::Extract;
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -61,9 +59,9 @@ use super::Ctor;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let array = regex::array(["a", "b", "c"]);
 ///
-///     assert_eq!(CharsCtx::new("abc").span(&array)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("abc").ctor_span(&array)?, Span::new(0, 1));
 ///     assert_eq!(CharsCtx::new("bcd").ctor(&array)?, "b");
-///     assert_eq!(CharsCtx::new("cde").span(&array)?, Span::new(0, 1));
+///     assert_eq!(CharsCtx::new("cde").ctor_span(&array)?, Span::new(0, 1));
 ///
 /// #   Ok(())
 /// # }
@@ -104,12 +102,11 @@ impl<const N: usize, T> DerefMut for Array<N, T> {
     }
 }
 
-impl<'a, const N: usize, C, T, M, O, H, A> Ctor<'a, C, M, O, H, A> for Array<N, T>
+impl<'a, const N: usize, C, T, M, O, H> Ctor<'a, C, M, O, H> for Array<N, T>
 where
-    T: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    T: Ctor<'a, C, M, O, H>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -135,7 +132,7 @@ where
 impl<'a, const N: usize, C, T> Regex<C> for Array<N, T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
@@ -218,13 +215,12 @@ impl<const N: usize, K, V> DerefMut for PairArray<N, K, V> {
     }
 }
 
-impl<'a, const N: usize, C, K, M, O, V, H, A> Ctor<'a, C, M, (O, V), H, A> for PairArray<N, K, V>
+impl<'a, const N: usize, C, K, M, O, V, H> Ctor<'a, C, M, (O, V), H> for PairArray<N, K, V>
 where
     V: Clone,
-    K: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    K: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
@@ -250,7 +246,7 @@ where
 impl<'a, const N: usize, C, K, V> Regex<C> for PairArray<N, K, V>
 where
     K: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

@@ -2,9 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -89,25 +88,24 @@ impl<C, P> Pattern<C, P> {
     }
 }
 
-impl<'a, C, O, P, H, A> Ctor<'a, C, O, O, H, A> for Pattern<C, P>
+impl<'a, C, O, P, H> Ctor<'a, C, O, O, H> for Pattern<C, P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(&self.pat)?;
 
-        func.invoke(A::extract(ctx, &ret)?)
+        func.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
 impl<'a, C, P> Regex<C> for Pattern<C, P>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

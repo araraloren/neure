@@ -6,7 +6,6 @@ use super::PolicyMatch;
 use super::Regex;
 use super::Span;
 
-use crate::ctor::Extract;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
@@ -96,11 +95,8 @@ where
     /// ```
     /// # use neure::ctx::CtxGuard;
     /// # use neure::prelude::*;
-    /// # use neure::ctor::Extract;
     /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    /// #   color_eyre::install()?;
-    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     ///     pub struct Dat<'a> {
     ///         span: Span,
@@ -108,30 +104,17 @@ where
     ///         dat: &'a str,
     ///     }
     ///
-    ///     impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for Dat<'a> {
-    ///         type Out<'b> = Dat<'b>;
-    ///
-    ///         type Error = neure::err::Error;
-    ///
-    ///         fn extract(ctx: &C, ret: &Span) -> std::result::Result<Self::Out<'a>, Self::Error> {
-    ///             Ok(Dat {
-    ///                 span: *ret,
-    ///                 dat: ctx.orig_sub(ret.beg, ret.len)?,
-    ///             })
-    ///         }
-    ///     }
-    ///
     ///     // a sample data from https://adventofcode.com/2015/day/7
     ///     const DATA: &str = r#"
-    /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    /// XXXOOOOOXXXOXXXXOXXXXOOOOOXXXOOOOOXXX
-    /// XXXOXXXOXXXOXXXXOXXXXOXXXXXXXXXOXXXXX
-    /// XXXOOOOOXXXOXXXXOXXXXOOOOOXXXXXOXXXXX
-    /// XXXOXOXXXXXOXXXXOXXXXXXXXOXXXXXOXXXXX
-    /// XXXOXXOXXXXOXXXXOXXXXXXXXOXXXXXOXXXXX
-    /// XXXOXXXOXXXOOOOOOXXXXOOOOOXXXXXOXXXXX
-    /// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    /// "#;
+    ///      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ///      XXXOOOOOXXXOXXXXOXXXXOOOOOXXXOOOOOXXX
+    ///      XXXOXXXOXXXOXXXXOXXXXOXXXXXXXXXOXXXXX
+    ///      XXXOOOOOXXXOXXXXOXXXXOOOOOXXXXXOXXXXX
+    ///      XXXOXOXXXXXOXXXXOXXXXXXXXOXXXXXOXXXXX
+    ///      XXXOXXOXXXXOXXXXOXXXXXXXXOXXXXXOXXXXX
+    ///      XXXOXXXOXXXOOOOOOXXXXOOOOOXXXXXOXXXXX
+    ///      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ///      "#;
     ///
     ///     // match "\n" or anything not 'X'
     ///     let text = "\n".or('X'.not().repeat_one_more());
@@ -142,7 +125,12 @@ where
     ///         g.process_ret(ret)
     ///     });
     ///
-    ///     let texts: Vec<Dat> = ctx.ctor_with(&text.repeat(1..), &mut Ok)?;
+    ///     let texts: Vec<Dat> = ctx.ctor_with(&text.repeat(1..), |ctx, span| {
+    ///         Ok(Dat {
+    ///             span: *span,
+    ///             dat: span.orig(ctx)?,
+    ///         })
+    ///     })?;
     ///     let mut off = 0;
     ///
     ///     // output:
@@ -163,7 +151,7 @@ where
     ///         print!("{}", dat);
     ///         off += len;
     ///     }
-    /// #
+    ///
     /// #   Ok(())
     /// # }
     /// ```
@@ -199,29 +187,17 @@ impl<'a> RegexCtx<'a, str> {
     ///
     /// ```
     /// # use neure::prelude::*;
-    /// # use neure::ctor::Extract;
     /// #
-    /// # fn main() -> color_eyre::Result<()> {
-    /// #   color_eyre::install()?;
-    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     tracing_subscriber::fmt::fmt()
+    ///         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+    ///         .init();
+    ///
     ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     ///     pub struct Dat<'a> {
     ///         span: Span,
     ///
     ///         dat: &'a str,
-    ///     }
-    ///
-    ///     impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for Dat<'a> {
-    ///         type Out<'b> = Dat<'b>;
-    ///
-    ///         type Error = neure::err::Error;
-    ///
-    ///         fn extract(ctx: &C, ret: &Span) -> std::result::Result<Self::Out<'a>, Self::Error> {
-    ///             Ok(Dat {
-    ///                 span: *ret,
-    ///                 dat: ctx.orig_sub(ret.beg, ret.len)?,
-    ///             })
-    ///         }
     ///     }
     ///
     ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -256,7 +232,7 @@ impl<'a> RegexCtx<'a, str> {
     /// y RSHIFT 2 -> g
     /// NOT x -> h
     /// NOT y -> i
-    /// "#;
+    ///      "#;
     ///
     ///     let sig = neu::digit(10).repeat_one_more().map(Op::Sig);
     ///     let wire = neu::ascii_lowercase().repeat_one_more();
@@ -275,7 +251,12 @@ impl<'a> RegexCtx<'a, str> {
     ///     // ignore white space using re_policy
     ///     let mut ctx = CharsCtx::new(DATA).skip_ascii_whitespace();
     ///
-    ///     let insts: Vec<_> = ctx.ctor_with(&parser, &mut Ok)?;
+    ///     let insts: Vec<_> = ctx.ctor_with(&parser, |ctx, span| {
+    ///         Ok(Dat {
+    ///             span: *span,
+    ///             dat: span.orig(ctx)?,
+    ///         })
+    ///     })?;
     ///
     ///     assert_eq!(insts.len(), 8);
     ///     assert_eq!(
@@ -304,7 +285,7 @@ impl<'a> RegexCtx<'a, str> {
     ///             }
     ///         )
     ///     );
-    /// #
+    ///
     /// #   Ok(())
     /// # }
     /// ```
@@ -480,19 +461,5 @@ where
 
         after.try_parse(self)?;
         Ok(ret)
-    }
-}
-
-impl<'a, T> Extract<'a, Self> for RegexCtx<'a, T>
-where
-    T: ?Sized,
-    Self: Context<'a>,
-{
-    type Out<'b> = RegexCtx<'a, T>;
-
-    type Error = Error;
-
-    fn extract(ctx: &Self, _: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(Clone::clone(ctx))
     }
 }

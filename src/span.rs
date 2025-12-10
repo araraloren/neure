@@ -1,4 +1,3 @@
-use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -98,14 +97,10 @@ impl SimpleStorer {
 }
 
 impl SimpleStorer {
-    pub fn try_cap<'a, C, P: Regex<C>>(
-        &mut self,
-        id: usize,
-        ctx: &mut C,
-        pat: &P,
-    ) -> Result<Span, Error>
+    pub fn try_cap<'a, C, P>(&mut self, id: usize, ctx: &mut C, pat: &P) -> Result<Span, Error>
     where
-        C: Context<'a> + Match<'a>,
+        P: Regex<C>,
+        C: Match<'a>,
     {
         let ret = ctx.try_mat(pat)?;
 

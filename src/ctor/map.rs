@@ -2,9 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -97,8 +96,10 @@ use crate::regex::Regex;
 ///
 ///     assert_eq!(id, 777);
 ///
-///     let (span, id) = CharsCtx::new("777").map_with(&num, |v: &str, span: Span| {
-///         Ok((span, v.parse::<i32>().map_err(|_| Error::Uid(0))?))
+///     let (span, id) = CharsCtx::new("777").map_with_handler(&num, |ctx: &CharsCtx, span: &Span| {
+///         let orig = span.orig(ctx)?;
+///
+///         Ok((*span, orig.parse::<i32>().map_err(|_| Error::Uid(0))?))
 ///     })?;
 ///
 ///     assert_eq!(id, 777);
@@ -198,13 +199,12 @@ impl<C, P, F, O> Map<C, P, F, O> {
     }
 }
 
-impl<'a, C, M, O, V, P, F, H, A> Ctor<'a, C, M, V, H, A> for Map<C, P, F, O>
+impl<'a, C, M, O, V, P, F, H> Ctor<'a, C, M, V, H> for Map<C, P, F, O>
 where
-    P: Ctor<'a, C, M, O, H, A>,
+    P: Ctor<'a, C, M, O, H>,
     F: MapSingle<O, V>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
@@ -215,7 +215,7 @@ where
 impl<'a, C, P, F, O> Regex<C> for Map<C, P, F, O>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

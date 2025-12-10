@@ -2,9 +2,7 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -94,17 +92,16 @@ where
     }
 }
 
-impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for BoxedRegex<T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for BoxedRegex<T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
@@ -192,17 +189,16 @@ where
     }
 }
 
-impl<'a, C, O, H, A, I> Ctor<'a, C, O, O, H, A> for Wrap<I, C>
+impl<'a, C, O, H, I> Ctor<'a, C, O, O, H> for Wrap<I, C>
 where
     I: Regex<C>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        func.invoke(A::extract(ctx, &ret)?)
+        func.invoke(ctx, &ret).map_err(Into::into)
     }
 }

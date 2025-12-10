@@ -4,7 +4,10 @@ mod policy;
 mod regex;
 mod span;
 
-use crate::ctor::{Ctor, Extract, Handler, Pass};
+use crate::ctor::extract;
+use crate::ctor::Ctor;
+use crate::ctor::Extract;
+use crate::ctor::Handler;
 use crate::err::Error;
 use crate::map::MapSingle;
 use crate::regex::Regex;
@@ -60,7 +63,7 @@ pub trait Context<'a> {
         Self: Sized;
 }
 
-pub trait Match<'a>
+pub trait Match<'a>: Context<'a>
 where
     Self: Sized,
 {
@@ -121,7 +124,7 @@ where
 
 impl<'a, T> Assert<'a> for T
 where
-    T: Context<'a> + Match<'a>,
+    T: Match<'a>,
 {
     fn try_assert<Pat>(&mut self, pat: &Pat) -> Result<bool, Error>
     where
@@ -139,43 +142,49 @@ pub trait ContextHelper<'a>
 where
     Self: Context<'a> + Sized,
 {
-    fn ctor_with<H, A, P, M, O>(&mut self, pat: &P, handler: &mut H) -> Result<O, Error>
+    fn ctor_with_handler<H, P, M, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, M, O, H, A>,
-        H: Handler<A, Out = M, Error = Error>,
-        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
+        P: Ctor<'a, Self, M, O, H>,
+        H: Handler<Self, Out = M>,
     {
-        pat.construct(self, handler)
+        pat.construct(self, &mut handler)
     }
 
-    fn map_with<H, A, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
+    fn ctor_with<H, P, M, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
-        P: Regex<Self>,
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, Self, Out<'a> = A, Error = Error>;
+        P: Ctor<'a, Self, M, O, H>,
+        H: FnMut(&Self, &Span) -> Result<M, Error>,
+    {
+        self.ctor_with_handler(pat, handler)
+    }
+
+    fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    where
+        P: Ctor<'a, Self, Span, O, Extract<Span>>,
+        Extract<Span>: Handler<Self, Out = Span>,
+    {
+        self.ctor_with_handler(pat, extract())
+    }
 
     fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, Self::Orig<'a>, O, Pass, Self::Orig<'a>>,
-        Self::Orig<'a>: Extract<'a, Self, Out<'a> = Self::Orig<'a>, Error = Error> + 'a,
+        P: Ctor<'a, Self, Self::Orig<'a>, O, Extract<Self::Orig<'a>>>,
+        Extract<Self::Orig<'a>>: Handler<Self, Out = Self::Orig<'a>>,
     {
-        self.ctor_with(pat, &mut Pass)
+        self.ctor_with_handler(pat, extract())
     }
 
-    fn map<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
+    fn map_with_handler<H, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
-        M: MapSingle<Self::Orig<'a>, O>,
-        Self::Orig<'a>: Extract<'a, Self, Out<'a> = Self::Orig<'a>, Error = Error>,
-    {
-        mapper.map_to(self.map_with(pat, Ok)?)
-    }
+        H: Handler<Self, Out = O>;
 
-    fn span<P, O>(&mut self, pat: &P) -> Result<O, Error>
+    fn map_with<H, P, O, M>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, Span, O, Pass, Span>,
+        P: Regex<Self>,
+        H: FnMut(&Self, &Span) -> Result<O, Error>,
     {
-        self.ctor_with(pat, &mut Pass)
+        self.map_with_handler(pat, handler)
     }
 
     fn map_span<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
@@ -183,22 +192,31 @@ where
         P: Regex<Self>,
         M: MapSingle<Span, O>,
     {
-        mapper.map_to(self.map_with(pat, Ok)?)
+        mapper.map_to(self.map_with_handler(pat, extract::<Span>())?)
+    }
+
+    fn map<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
+    where
+        P: Regex<Self>,
+        M: MapSingle<Self::Orig<'a>, O>,
+    {
+        mapper.map_to(self.map_with_handler(pat, |ctx: &Self, span: &Span| {
+            ctx.orig_sub(span.beg, span.len)
+        })?)
     }
 }
 
 impl<'a, C> ContextHelper<'a> for C
 where
-    C: Sized + Context<'a> + Match<'a>,
+    C: Sized + Match<'a>,
 {
-    fn map_with<H, A, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    fn map_with_handler<H, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
-        H: Handler<A, Out = O, Error = Error>,
-        A: Extract<'a, Self, Out<'a> = A, Error = Error>,
+        H: Handler<Self, Out = O>,
     {
         let ret = self.try_mat(pat)?;
 
-        handler.invoke(A::extract(self, &ret)?)
+        handler.invoke(self, &ret).map_err(Into::into)
     }
 }

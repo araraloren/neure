@@ -2,9 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -188,14 +187,13 @@ impl<C, P, F, E> Branch<C, P, F, E> {
     }
 }
 
-impl<'a, C, P, F, E, M, O, H, A> Ctor<'a, C, M, O, H, A> for Branch<C, P, F, E>
+impl<'a, C, P, F, E, M, O, H> Ctor<'a, C, M, O, H> for Branch<C, P, F, E>
 where
-    P: Ctor<'a, C, M, O, H, A>,
-    E: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
+    P: Ctor<'a, C, M, O, H>,
+    E: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
     F: Fn(&C) -> Result<bool, Error>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -223,7 +221,7 @@ impl<'a, C, P, F, E> Regex<C> for Branch<C, P, F, E>
 where
     P: Regex<C>,
     E: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
     F: Fn(&C) -> Result<bool, Error>,
 {
     #[inline(always)]
@@ -245,7 +243,7 @@ where
 
 pub fn branch<'a, C, P, F, E>(test: F, pat: P, other: E) -> Branch<C, P, F, E>
 where
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
     E: Regex<C>,
     P: Regex<C>,
     F: Fn(&C) -> Result<bool, Error>,

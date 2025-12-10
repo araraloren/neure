@@ -1,7 +1,6 @@
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -27,25 +26,24 @@ impl<T> RegexNot<T> {
 
 def_not!(RegexNot<T>);
 
-impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for RegexNot<T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for RegexNot<T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        func.invoke(A::extract(ctx, &ret)?)
+        func.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
 impl<'a, C, T> Regex<C> for RegexNot<T>
 where
     T: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {

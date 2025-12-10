@@ -2,9 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
-use crate::ctx::Context;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
@@ -143,13 +142,12 @@ impl<C, P, O, V> Collect<C, P, O, V> {
     }
 }
 
-impl<'a, C, P, M, O, V, H, A> Ctor<'a, C, M, V, H, A> for Collect<C, P, O, V>
+impl<'a, C, P, M, O, V, H> Ctor<'a, C, M, V, H> for Collect<C, P, O, V>
 where
     V: FromIterator<O>,
-    P: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    P: Ctor<'a, C, M, O, H>,
+    C: Match<'a>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
@@ -177,7 +175,7 @@ where
 impl<'a, C, P, O, V> Regex<C> for Collect<C, P, O, V>
 where
     P: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Match<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {

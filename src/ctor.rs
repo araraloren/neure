@@ -34,9 +34,9 @@ pub use self::dthen::DynamicCtorThenBuilderHelper;
 // pub use self::dynamic::DynamicRcCtor;
 pub use self::branch::branch;
 pub use self::branch::Branch;
+pub use self::extract::extract;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
-pub use self::extract::Pass;
 pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
@@ -69,16 +69,12 @@ use crate::neu::NeureZeroMore;
 use crate::neu::NullCond;
 use crate::regex::Regex;
 
-pub trait Ctor<'a, C, M, O, H, A>
-where
-    C: Context<'a>,
-{
+pub trait Ctor<'a, C, M, O, H> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>;
 }
 
-impl<'a, C, M, O, H, A, F> Ctor<'a, C, M, O, H, A> for F
+impl<'a, C, M, O, H, F> Ctor<'a, C, M, O, H> for F
 where
-    C: Context<'a> + Match<'a>,
     F: Fn(&mut C, &mut H) -> Result<O, Error>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -86,165 +82,144 @@ where
     }
 }
 
-impl<'a, 'b, C, O, H, A> Ctor<'a, C, O, O, H, A> for Box<dyn Regex<C> + 'b>
+impl<'a, 'b, C, O, H> Ctor<'a, C, O, O, H> for Box<dyn Regex<C> + 'b>
 where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self.as_ref())?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &str
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for &str
 where
     C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for String
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for String
 where
     C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(&self.as_str())?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &String
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for &String
 where
     C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(&self.as_str())?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8]
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for &[u8]
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for &[u8; N]
+impl<'a, const N: usize, C, O, H> Ctor<'a, C, O, O, H> for &[u8; N]
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, const N: usize, C, O, H, A> Ctor<'a, C, O, O, H, A> for [u8; N]
+impl<'a, const N: usize, C, O, H> Ctor<'a, C, O, O, H> for [u8; N]
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for Vec<u8>
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for Vec<u8>
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for &Vec<u8>
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for &Vec<u8>
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    H: Handler<C, Out = O>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        handler.invoke(A::extract(ctx, &ret)?)
+        handler.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Option<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for Option<I>
 where
-    I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref().ok_or(Error::Option)?, ctx, handler)
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for RefCell<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for RefCell<I>
 where
-    I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(&*self.borrow(), ctx, handler)
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Cell<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for Cell<I>
 where
-    I: Ctor<'a, C, M, O, H, A> + Copy,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H> + Copy,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(&self.get(), ctx, handler)
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Mutex<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for Mutex<I>
 where
-    I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         let ret = self.lock().map_err(|_| Error::Mutex)?;
@@ -253,100 +228,63 @@ where
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Arc<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for Arc<I>
 where
-    I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, C, M, O, I, H, A> Ctor<'a, C, M, O, H, A> for Rc<I>
+impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for Rc<I>
 where
-    I: Ctor<'a, C, M, O, H, A>,
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    I: Ctor<'a, C, M, O, H>,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A> + 'b>
-where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
-{
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Box<dyn Ctor<'a, C, M, O, H> + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
-where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
-{
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Box<dyn Ctor<'a, C, M, O, H> + Send + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>
-where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
-{
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Arc<dyn Ctor<'a, C, M, O, H> + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Arc<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
-where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
-{
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Arc<dyn Ctor<'a, C, M, O, H> + Send + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>
-where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
-{
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Rc<dyn Ctor<'a, C, M, O, H> + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-impl<'a, 'b, C, M, O, H, A> Ctor<'a, C, M, O, H, A> for Rc<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>
-where
-    C: Context<'a> + Match<'a>,
-    H: Handler<A, Out = M, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
-{
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Rc<dyn Ctor<'a, C, M, O, H> + Send + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
 }
 
-pub trait ConstructOp<'a, C>
+pub trait ConstructOp<'a, C>: Sized
 where
-    Self: Sized,
-    C: Context<'a> + Match<'a>,
+    C: Context<'a>,
 {
     fn try_map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
@@ -391,10 +329,9 @@ where
         C: Context<'a, Item = char>;
 }
 
-impl<'a, C, T> ConstructOp<'a, C> for T
+impl<'a, C, T: Regex<C>> ConstructOp<'a, C> for T
 where
-    T: Regex<C>,
-    C: Context<'a> + Match<'a>,
+    C: Context<'a>,
 {
     fn try_map<F, O>(self, func: F) -> Map<C, Self, F, O> {
         Map::new(self, func)
@@ -884,34 +821,26 @@ where
     fn into_mutex(self) -> Wrap<Mutex<Self>, C>;
 
     #[allow(clippy::complexity)]
-    fn into_dyn<'a, 'b, M, O, H, A>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
+    fn into_dyn<'a, 'b, M, O, H>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + 'b;
+        Self: Ctor<'a, C, M, O, H> + 'b;
 
     #[allow(clippy::complexity)]
-    fn into_dyn_sync<'a, 'b, M, O, H, A>(
-        self,
-    ) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>, C>
+    fn into_dyn_sync<'a, 'b, M, O, H>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + Send + 'b;
+        Self: Ctor<'a, C, M, O, H> + Send + 'b;
 
     #[allow(clippy::complexity)]
-    fn into_dyn_arc<'a, 'b, M, O, H, A>(
+    fn into_dyn_arc<'a, 'b, M, O, H>(
         self,
-    ) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
+    ) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + 'b;
+        Self: Ctor<'a, C, M, O, H> + 'b;
 
     #[allow(clippy::complexity)]
-    fn into_dyn_rc<'a, 'b, M, O, H, A>(
-        self,
-    ) -> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
+    fn into_dyn_rc<'a, 'b, M, O, H>(self) -> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H> + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + 'b;
+        Self: Ctor<'a, C, M, O, H> + 'b;
 }
 
 impl<C, T> ConstructIntoOp<C> for T
@@ -1013,40 +942,30 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_dyn<'a, 'b, M, O, H, A>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
+    fn into_dyn<'a, 'b, M, O, H>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + 'b,
+        Self: Ctor<'a, C, M, O, H> + 'b,
     {
         Wrap::dyn_box(self)
     }
 
-    fn into_dyn_sync<'a, 'b, M, O, H, A>(
-        self,
-    ) -> Wrap<Box<dyn Ctor<'a, C, M, O, H, A> + Send + 'b>, C>
+    fn into_dyn_sync<'a, 'b, M, O, H>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + Send + 'b,
+        Self: Ctor<'a, C, M, O, H> + Send + 'b,
     {
         Wrap::dyn_box_sync(self)
     }
 
-    fn into_dyn_arc<'a, 'b, M, O, H, A>(
-        self,
-    ) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
+    fn into_dyn_arc<'a, 'b, M, O, H>(self) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + 'b,
+        Self: Ctor<'a, C, M, O, H> + 'b,
     {
         Wrap::dyn_arc(self)
     }
 
-    fn into_dyn_rc<'a, 'b, M, O, H, A>(
-        self,
-    ) -> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H, A> + 'b>, C>
+    fn into_dyn_rc<'a, 'b, M, O, H>(self) -> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H> + 'b>, C>
     where
-        C: Context<'a> + Match<'a>,
-        Self: Ctor<'a, C, M, O, H, A> + 'b,
+        Self: Ctor<'a, C, M, O, H> + 'b,
     {
         Wrap::dyn_rc(self)
     }

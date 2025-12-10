@@ -1,134 +1,81 @@
+use std::marker::PhantomData;
+
 use crate::ctx::Context;
 use crate::ctx::Span;
 use crate::err::Error;
 
-pub trait Extract<'a, C: Context<'a>> {
-    type Out<'b>;
-    type Error: Into<Error>;
-
-    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error>;
-}
-
-impl<'a, C: Context<'a>> Extract<'a, C> for () {
-    type Out<'b> = ();
-
-    type Error = Error;
-
-    fn extract(_: &C, _: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(())
-    }
-}
-
-macro_rules! impl_extracter_for {
-    ($($arg:ident)*) => {
-        impl<'a, Ctx: Context<'a>, $($arg,)*> Extract<'a, Ctx> for ($($arg,)*)
-        where
-            $(
-                $arg: Extract<'a, Ctx, Error = Error>,
-            )*
-        {
-            type Out<'b> = ($(<$arg as Extract<'a, Ctx>>::Out<'b>,)*);
-
-            type Error = Error;
-
-
-            fn extract(ctx: &Ctx, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-                Ok(($($arg::extract(ctx, ret)?,)*))
-            }
-        }
-    };
-}
-
-impl_extracter_for!(A);
-
-impl_extracter_for!(A B);
-
-impl_extracter_for!(A B C);
-
-impl_extracter_for!(A B C D);
-
-impl_extracter_for!(A B C D E);
-
-impl_extracter_for!(A B C D E F);
-
-pub trait Handler<Args> {
+pub trait Handler<C> {
     type Out;
     type Error: Into<Error>;
 
-    fn invoke(&mut self, args: Args) -> Result<Self::Out, Self::Error>;
+    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error>;
 }
 
-macro_rules! impl_handler_for {
-    ($($arg:ident)*) => {
-        impl<Func, Out, $($arg,)*> Handler<($($arg,)*)> for Func
-        where
-            Func: FnMut($($arg),*) -> Result<Out, Error>,
-        {
-            type Out = Out;
-            type Error = Error;
+impl<Func, Out, C> Handler<C> for Func
+where
+    Func: FnMut(&C, &Span) -> Result<Out, Error>,
+{
+    type Out = Out;
+    type Error = Error;
 
+    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error> {
+        (self)(ctx, span)
+    }
+}
 
-            #[allow(non_snake_case)]
-            fn invoke(&mut self, ($($arg,)*): ($($arg,)*)) -> Result<Self::Out, Self::Error> {
-                (self)($($arg,)*)
-            }
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Extract<T> {
+    marker: PhantomData<T>,
+}
+
+impl<T> Extract<T> {
+    pub fn new() -> Self {
+        Self {
+            marker: PhantomData,
         }
-    };
-}
-
-impl_handler_for!();
-
-impl_handler_for!(A);
-
-impl_handler_for!(A B);
-
-impl_handler_for!(A B C);
-
-impl_handler_for!(A B C D);
-
-impl_handler_for!(A B C D E);
-
-impl_handler_for!(A B C D E F);
-
-impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for &'a str {
-    type Out<'b> = &'b str;
-
-    type Error = Error;
-
-    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(ret.beg(), ret.len())
     }
 }
 
-impl<'a, C: Context<'a, Orig<'a> = &'a [u8]>> Extract<'a, C> for &'a [u8] {
-    type Out<'b> = &'b [u8];
+pub fn extract<T>() -> Extract<T> {
+    Extract::new()
+}
+
+impl<'a, C: Context<'a, Orig<'a> = &'a str>> Handler<C> for Extract<&'a str> {
+    type Out = &'a str;
 
     type Error = Error;
 
-    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        ctx.orig_sub(ret.beg(), ret.len())
+    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error> {
+        ctx.orig_sub(span.beg(), span.len())
     }
 }
 
-impl<'a, C: Context<'a, Orig<'a> = &'a str>> Extract<'a, C> for String {
-    type Out<'b> = String;
+impl<'a, C: Context<'a, Orig<'a> = &'a [u8]>> Handler<C> for Extract<&'a [u8]> {
+    type Out = &'a [u8];
 
     type Error = Error;
 
-    fn extract(ctx: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(String::from(ctx.orig_sub(ret.beg(), ret.len())?))
+    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error> {
+        ctx.orig_sub(span.beg(), span.len())
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Pass;
-
-impl<T> Handler<T> for Pass {
-    type Out = T;
+impl<'a, C: Context<'a, Orig<'a> = &'a str>> Handler<C> for Extract<String> {
+    type Out = String;
 
     type Error = Error;
 
-    fn invoke(&mut self, args: T) -> Result<Self::Out, Self::Error> {
-        Ok(args)
+    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error> {
+        Ok(String::from(ctx.orig_sub(span.beg(), span.len())?))
+    }
+}
+
+impl<'a, C: Context<'a>> Handler<C> for Extract<Span> {
+    type Out = Span;
+
+    type Error = Error;
+
+    fn invoke(&mut self, _: &C, span: &Span) -> Result<Self::Out, Self::Error> {
+        Ok(*span)
     }
 }

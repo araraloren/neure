@@ -1,5 +1,5 @@
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
@@ -27,18 +27,17 @@ impl<'a, T> LitSlice<'a, T> {
     }
 }
 
-impl<'a, C, O, T, H, A> Ctor<'a, C, O, O, H, A> for LitSlice<'_, T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
-    C: Context<'a, Orig<'a> = &'a [T]> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a, Orig<'a> = &'a [T]>,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        func.invoke(A::extract(ctx, &ret)?)
+        func.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 
@@ -79,17 +78,16 @@ impl<'a> LitString<'a> {
     }
 }
 
-impl<'a, C, O, H, A> Ctor<'a, C, O, O, H, A> for LitString<'_>
+impl<'a, C, O, H> Ctor<'a, C, O, O, H> for LitString<'_>
 where
-    C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a, Orig<'a> = &'a str>,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let ret = ctx.try_mat(self)?;
 
-        func.invoke(A::extract(ctx, &ret)?)
+        func.invoke(ctx, &ret).map_err(Into::into)
     }
 }
 

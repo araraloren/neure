@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
+
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::CtxGuard;
@@ -154,21 +154,20 @@ where
     }
 }
 
-impl<'a, L, R, C, O, I, H, A> Ctor<'a, C, O, O, H, A> for NeureThen<C, L, R, C::Item, I>
+impl<'a, L, R, C, O, I, H> Ctor<'a, C, O, O, H> for NeureThen<C, L, R, C::Item, I>
 where
     L: Neu<C::Item>,
     R: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + Match<'a> + 'a,
-    H: Handler<A, Out = O, Error = Error>,
-    A: Extract<'a, C, Out<'a> = A, Error = Error>,
+    C: Match<'a> + 'a,
+    H: Handler<C, Out = O>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let mut g = CtxGuard::new(ctx);
         let ret = g.try_mat(self);
 
-        func.invoke(A::extract(g.ctx(), &ret?)?)
+        func.invoke(g.ctx(), &ret?).map_err(Into::into)
     }
 }
 

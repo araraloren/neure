@@ -1,8 +1,6 @@
 use std::fmt::Display;
 
-use crate::ctor::Extract;
 use crate::ctx::Context;
-use crate::err::Error;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
@@ -33,15 +31,12 @@ impl Span {
         self.len += other.len + other.beg - (self.beg + self.len);
         self
     }
-}
 
-impl<'a, C: Context<'a>> Extract<'a, C> for Span {
-    type Out<'b> = Span;
-
-    type Error = Error;
-
-    fn extract(_: &C, ret: &Span) -> Result<Self::Out<'a>, Self::Error> {
-        Ok(Clone::clone(ret))
+    pub fn orig<'a, C>(&self, ctx: &C) -> Result<<C as Context<'a>>::Orig<'a>, crate::err::Error>
+    where
+        C: Context<'a>,
+    {
+        ctx.orig_sub(self.beg, self.len)
     }
 }
 
