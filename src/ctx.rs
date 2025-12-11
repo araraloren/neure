@@ -142,7 +142,7 @@ pub trait ContextHelper<'a>
 where
     Self: Context<'a> + Sized,
 {
-    fn ctor_with_handler<H, P, M, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    fn ctor_handler<H, P, M, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
         P: Ctor<'a, Self, M, O, H>,
         H: Handler<Self, Out = M>,
@@ -155,7 +155,7 @@ where
         P: Ctor<'a, Self, M, O, H>,
         H: FnMut(&Self, &Span) -> Result<M, Error>,
     {
-        self.ctor_with_handler(pat, handler)
+        self.ctor_handler(pat, handler)
     }
 
     fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
@@ -163,7 +163,7 @@ where
         P: Ctor<'a, Self, Span, O, Extract<Span>>,
         Extract<Span>: Handler<Self, Out = Span>,
     {
-        self.ctor_with_handler(pat, extract())
+        self.ctor_handler(pat, extract())
     }
 
     fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
@@ -171,20 +171,20 @@ where
         P: Ctor<'a, Self, Self::Orig<'a>, O, Extract<Self::Orig<'a>>>,
         Extract<Self::Orig<'a>>: Handler<Self, Out = Self::Orig<'a>>,
     {
-        self.ctor_with_handler(pat, extract())
+        self.ctor_handler(pat, extract())
     }
 
-    fn map_with_handler<H, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
+    fn map_handler<H, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
         H: Handler<Self, Out = O>;
 
-    fn map_with<H, P, O, M>(&mut self, pat: &P, handler: H) -> Result<O, Error>
+    fn map_with<H, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
         H: FnMut(&Self, &Span) -> Result<O, Error>,
     {
-        self.map_with_handler(pat, handler)
+        self.map_handler(pat, handler)
     }
 
     fn map_span<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
@@ -192,7 +192,7 @@ where
         P: Regex<Self>,
         M: MapSingle<Span, O>,
     {
-        mapper.map_to(self.map_with_handler(pat, extract::<Span>())?)
+        mapper.map_to(self.map_handler(pat, extract::<Span>())?)
     }
 
     fn map<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
@@ -200,7 +200,7 @@ where
         P: Regex<Self>,
         M: MapSingle<Self::Orig<'a>, O>,
     {
-        mapper.map_to(self.map_with_handler(pat, |ctx: &Self, span: &Span| {
+        mapper.map_to(self.map_handler(pat, |ctx: &Self, span: &Span| {
             ctx.orig_sub(span.beg, span.len)
         })?)
     }
@@ -210,7 +210,7 @@ impl<'a, C> ContextHelper<'a> for C
 where
     C: Sized + Match<'a>,
 {
-    fn map_with_handler<H, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    fn map_handler<H, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
         H: Handler<Self, Out = O>,

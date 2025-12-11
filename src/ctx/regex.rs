@@ -241,7 +241,7 @@ impl<'a> RegexCtx<'a, str> {
     ///     let or = op.sep_once("OR", op).map(Inst::Or);
     ///     let lshift = op.sep_once("LSHIFT", op).map(Inst::LShift);
     ///     let rshift = op.sep_once("RSHIFT", op).map(Inst::RShift);
-    ///     let not = op.padded("NOT").map(Inst::Not);
+    ///     let not = op.prefix("NOT").map(Inst::Not);
     ///     let store = sig.map(Inst::Store);
     ///     let src = and
     ///         .or(or.or(lshift.or(rshift.or(not.or(store)))))

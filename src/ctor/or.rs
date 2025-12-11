@@ -18,43 +18,99 @@ use crate::regex::def_not;
 use crate::regex::Regex;
 
 ///
-/// First try to match `L`, if it fails, then try to match `R`.
+/// Provides alternation between two patterns, trying the second only if the first fails.
 ///
-/// # Ctor
+/// This combinator implements logical "or" behavior for patterns. It first attempts the `left`
+/// pattern, and only if that fails (returns an error), it attempts the `right` pattern from the
+/// original starting position. This is equivalent to the `|` operator in regular expressions.
 ///
-/// Return the result of either `L` or `R`.
+/// # Regex
 ///
-/// # Example
+/// Attempts to match the `left` pattern first. If successful, returns its span immediately.
+/// If the `left` pattern fails to match, resets the context position and attempts the `right`
+/// pattern. Returns the span of whichever pattern succeeds first. If both patterns fail to
+/// match, returns an error containing the error from the `right` pattern.
+///
+/// ## Example
 ///
 /// ```
-/// # use neure::{prelude::*, map::from_str_radix};
+/// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     macro_rules! num {
-///         ($s:literal) => {
-///             neu::digit($s).repeat_one_more().try_map(from_str_radix($s))
-///         };
-///     }
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let digits = neu::digit(16).repeat_one_more();
+///     let strs = ('a'..='z').or('A'..='Z');
+///     let strs = strs.repeat_one_more();
+///     let parser = digits.or(strs);
 ///
-///     let (bin, oct, dec, hex) = (num!(2), num!(8), num!(10), num!(16));
-///     let num = dec.ltm(hex);
-///     let dec = "0d".then(dec)._1();
-///     let oct = "0o".then(oct)._1();
-///     let hex = "0x".then(hex)._1();
-///     let bin = "0b".then(bin)._1();
-///     let pos = "+".map(|_| 1);
-///     let neg = "-".map(|_| -1);
-///     let sign = pos.or(neg.or(regex::null().map(|_| 1)));
-///     let num = bin.or(oct.or(dec.or(hex))).or(num);
-///     let num = sign.then(num).map(|(s, v): (_, i64)| s * v);
-///     let val = num.sep(",".ws()).quote("[", "]");
-///     let mut ctx = CharsCtx::new(r#"[0d18, 0o17, 0x18, 0b1010, 18, 1E]"#);
-///
-///     assert_eq!(ctx.ctor(&val)?, [18, 15, 24, 10, 18, 30]);
+///     assert_eq!(CharsCtx::new(r#"8848"#).try_mat(&parser)?, Span::new(0, 4));
+///     assert_eq!(
+///         CharsCtx::new(r#"hello world"#).try_mat(&parser)?,
+///         Span::new(0, 5)
+///     );
 ///     Ok(())
 /// # }
 /// ```
+///
+/// # Ctor
+///
+/// Attempts to construct a value using the `left` pattern first. If successful, returns its
+/// value immediately. If the `left` pattern fails, resets the context position and attempts the
+/// `right` pattern. Returns the value from whichever pattern succeeds first. If both patterns
+/// fail to construct a value, returns an error containing the error from the `right` pattern.
+///
+/// ## Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     macro_rules! digit {
+///         ($p:expr, $r:literal) => {
+///             $p.then(
+///                 neu::digit($r)
+///                     .repeat_one_more()
+///                     .try_map(map::from_str_radix::<i64>($r)),
+///             )
+///             ._1()
+///         };
+///     }
+///
+///     let dec = digit!("0d", 10);
+///     let oct = digit!("0o",  8);
+///     let hex = digit!("0x", 16);
+///     let bin = digit!("0b",  2);
+///     let pos = "+".map(|_| 1);
+///     let neg = "-".map(|_| -1);
+///     let sign = pos.or(neg.or(regex::null().map(|_| 1)));
+///     let num = bin.or(oct.or(dec.or(hex)));
+///     let num = sign.then(num).map(|(s, v)| s * v);
+///     let parser = num.sep(",".ws());
+///
+///     assert_eq!(
+///         CharsCtx::new(r#"0d18, +0o17, -0x18, -0b1010"#).ctor(&parser)?,
+///         [18, 15, -24, -10]
+///     );
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Behavior Notes
+///
+/// - Patterns are evaluated in order: `left` first, then `right` only if `left` fails
+/// - The context position is reset to the starting position before attempting the `right` pattern
+/// - Only the successful pattern's side effects (if any) will be visible after matching/construction
+/// - If both patterns fail, the error from the `right` pattern is returned (or the `left` pattern's
+///   error if the `right` pattern wasn't attempted due to context constraints)
+/// - This combinator does not attempt to find the "longest match" - it returns the first successful
+///   match in declaration order
+///
+/// # Performance
+///
+/// The evaluation is short-circuited: if the `left` pattern succeeds, the `right` pattern is never
+/// evaluated. For optimal performance:
+/// - Place more frequently occurring patterns first
+/// - Place cheaper-to-evaluate patterns first
+/// - Avoid expensive patterns on the right side when possible
 #[derive(Default, Copy)]
 pub struct Or<C, L, R> {
     left: L,
@@ -127,13 +183,12 @@ impl<C, L, R> Or<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O, H, > Ctor<'a, C, M, O, H> for Or<C, L, R>
+impl<'a, C, L, R, M, O, H> Ctor<'a, C, M, O, H> for Or<C, L, R>
 where
     L: Ctor<'a, C, M, O, H>,
     R: Ctor<'a, C, M, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
-    
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

@@ -131,7 +131,7 @@ where
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let re = u8::is_ascii_hexdigit.or(b'g'.or(b'G')).repeat_times::<4>();
-///     let re = re.padded(b"0x");
+///     let re = re.prefix(b"0x");
 ///
 ///     assert_eq!(BytesCtx::new(b"0xcfag").ctor(&re)?, b"cfag");
 ///     Ok(())

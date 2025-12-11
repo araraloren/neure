@@ -1,3 +1,4 @@
+mod affix;
 mod array;
 mod branch;
 mod collect;
@@ -7,7 +8,6 @@ mod ltm;
 mod map;
 mod opt;
 mod or;
-mod pad;
 mod pat;
 mod quote;
 mod repeat;
@@ -32,6 +32,8 @@ pub use self::dthen::DynamicCtorThenBuilderHelper;
 // pub use self::dynamic::DynamicBoxedCtor;
 // pub use self::dynamic::DynamicBoxedCtorSync;
 // pub use self::dynamic::DynamicRcCtor;
+pub use self::affix::Prefix;
+pub use self::affix::Suffix;
 pub use self::branch::branch;
 pub use self::branch::Branch;
 pub use self::extract::extract;
@@ -41,8 +43,6 @@ pub use self::ltm::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
 pub use self::or::Or;
-pub use self::pad::Pad;
-pub use self::pad::Padded;
 pub use self::pat::Pattern;
 pub use self::quote::Quote;
 pub use self::repeat::Repeat;
@@ -320,11 +320,11 @@ where
     where
         I: Fn(&C) -> Result<bool, Error>;
 
-    fn pad<T>(self, tail: T) -> Pad<C, Self, T>;
+    fn suffix<T>(self, tail: T) -> Suffix<C, Self, T>;
 
-    fn padded<T>(self, tail: T) -> Padded<C, Self, T>;
+    fn prefix<T>(self, tail: T) -> Prefix<C, Self, T>;
 
-    fn ws(self) -> Pad<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>;
 }
@@ -726,7 +726,7 @@ where
     ///     let sep = neu!(['，' ';']);
     ///     let end = neu!(['。' '？' '！']);
     ///     let word = sep.or(end).not().repeat_one_more();
-    ///     let sent = word.sep(sep.repeat_one().ws()).pad(end.repeat_one());
+    ///     let sent = word.sep(sep.repeat_one().ws()).suffix(end.repeat_one());
     ///     let sent = sent.repeat(1..);
     ///     let mut ctx = CharsCtx::new(
     ///         r#"暖日晴风初破冻。柳眼眉腮，已觉春心动。酒意诗情谁与共。泪融残粉花钿重。乍试夹衫金缕缝。山枕斜敧，枕损钗头凤。独抱浓愁无好梦。夜阑犹剪灯花弄。"#,
@@ -737,8 +737,8 @@ where
     /// # }
     /// ```
     ///
-    fn pad<P>(self, pat: P) -> Pad<C, Self, P> {
-        Pad::new(self, pat)
+    fn suffix<P>(self, pat: P) -> Suffix<C, Self, P> {
+        Suffix::new(self, pat)
     }
 
     ///  
@@ -757,7 +757,7 @@ where
     ///     let star = '*'.repeat_times::<3>().ws();
     ///     let name = neu::whitespace().not().repeat_one_more().ws();
     ///     let status = "left".or("joined").ws();
-    ///     let record = name.padded(star).then(status);
+    ///     let record = name.prefix(star).then(status);
     ///     let record = time.then(record).repeat(1..);
     ///     let mut ctx = CharsCtx::new(
     ///         r#"[20:59] *** jpn left
@@ -774,8 +774,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn padded<P>(self, pat: P) -> Padded<C, Self, P> {
-        Padded::new(self, pat)
+    fn prefix<P>(self, pat: P) -> Prefix<C, Self, P> {
+        Prefix::new(self, pat)
     }
 
     /// A shortcut for matching trailing ascii spaces.
@@ -796,11 +796,11 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn ws(self) -> Pad<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>,
     {
-        Pad::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
+        Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
     }
 }
 

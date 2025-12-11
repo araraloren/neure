@@ -45,11 +45,11 @@ impl JsonParser {
             let null = regex::lit_slice(b"null").try_map(|_| Ok(JsonZero::Null));
 
             let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
-            let ele = ctor::Wrap::rc(ele.pad(ws).padded(ws));
+            let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
 
             let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
             let key = key.quote(b"\"", b"\"");
-            let key = key.pad(ws).padded(ws);
+            let key = key.suffix(ws).prefix(ws);
             let obj = key.sep_once(b":", ele.clone());
             let obj = ctor::Wrap::dyn_box(obj.sep(b",").quote(b"{", b"}"))
                 .try_map(|v| Ok(JsonZero::Object(v)));

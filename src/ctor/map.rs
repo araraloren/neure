@@ -96,7 +96,7 @@ use crate::regex::Regex;
 ///
 ///     assert_eq!(id, 777);
 ///
-///     let (span, id) = CharsCtx::new("777").map_with_handler(&num, |ctx: &CharsCtx, span: &Span| {
+///     let (span, id) = CharsCtx::new("777").map_with(&num, |ctx, span| {
 ///         let orig = span.orig(ctx)?;
 ///
 ///         Ok((*span, orig.parse::<i32>().map_err(|_| Error::Uid(0))?))

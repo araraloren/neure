@@ -62,7 +62,7 @@ fn into_impl() -> color_eyre::Result<()> {
     let field = ident.sep_once(":", layer2.or(layer1.or(layer0)));
     let public = field
         .clone()
-        .padded("pub")
+        .prefix("pub")
         .try_map(|(name, ty_name)| Ok(Field::public(name, ty_name)));
     let private = field.try_map(|(name, ty_name)| Ok(Field::private(name, ty_name)));
     let parser = public.or(private).sep(",");
