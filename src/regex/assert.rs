@@ -14,17 +14,22 @@ use crate::regex::Regex;
 ///
 /// Return zero length [`Span`] if `T` match failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Not<T> {
+pub struct Assert<T> {
     pat: T,
+    value: bool,
 }
 
-impl<T> Not<T> {
-    pub fn new(val: T) -> Self {
-        Self { pat: val }
+impl<T> Assert<T> {
+    pub fn new(pat: T, value: bool) -> Self {
+        Self { pat, value }
     }
 
     pub fn pat(&self) -> &T {
         &self.pat
+    }
+
+    pub fn value(&self) -> bool {
+        self.value
     }
 
     pub fn pat_mut(&mut self) -> &mut T {
@@ -36,15 +41,20 @@ impl<T> Not<T> {
         self
     }
 
-    pub fn with_pat(mut self, pat: T) -> Self {
-        self.pat = pat;
+    pub fn set_value(&mut self, value: bool) -> &mut Self {
+        self.value = value;
+        self
+    }
+
+    pub fn with_value(mut self, value: bool) -> Self {
+        self.value = value;
         self
     }
 }
 
-impl_not_for_regex!(Not<T>);
+impl_not_for_regex!(Assert<T>);
 
-impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for Not<T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for Assert<T>
 where
     T: Regex<C>,
     C: Match<'a>,
@@ -58,7 +68,7 @@ where
     }
 }
 
-impl<'a, C, T> Regex<C> for Not<T>
+impl<'a, C, T> Regex<C> for Assert<T>
 where
     T: Regex<C>,
     C: Match<'a>,
@@ -67,14 +77,14 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
 
-        crate::debug_regex_beg!("Not", ctx.beg());
-        let ret = if ctx.try_mat(&self.pat).is_err() {
+        crate::debug_regex_beg!("Assert", ctx.beg());
+        let ret = if ctx.try_mat(&self.pat).is_ok() == self.value {
             Ok(Span::new(ctx.beg(), 0))
         } else {
-            Err(Error::Not)
+            Err(Error::Assert)
         };
 
         ctx.reset(); // force reset the offset
-        crate::debug_regex_reval!("Not", ret)
+        crate::debug_regex_reval!("Assert", ret)
     }
 }

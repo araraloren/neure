@@ -51,8 +51,8 @@ pub use self::sep::SepOnce;
 pub use self::sep::Separate;
 pub use self::slice::PairSlice;
 pub use self::slice::Slice;
-pub use self::then::IfThen;
 pub use self::then::Then;
+pub use self::then::ThenIf;
 pub use self::vec::PairVector;
 pub use self::vec::Vector;
 pub use self::wrap::Wrap;
@@ -310,7 +310,7 @@ where
 
     fn then<T>(self, then: T) -> Then<C, Self, T>;
 
-    fn if_then<I, T>(self, r#if: I, then: T) -> IfThen<C, Self, I, T>;
+    fn then_if<I, T>(self, test: I, then: T) -> ThenIf<C, Self, I, T>;
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
@@ -328,6 +328,11 @@ where
     fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<char>, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>;
+
+    #[allow(clippy::type_complexity)]
+    fn ascii_ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<u8>, C::Item, NullCond>>
+    where
+        C: Context<'a, Item = u8>;
 }
 
 impl<'a, C, T: Regex<C>> ConstructOp<'a, C> for T
@@ -617,7 +622,7 @@ where
     ///                 .sep("::"),
     ///         )
     ///         ._1()
-    ///         .if_then("as", neu::ascii_alphanumeric().repeat_one_more());
+    ///         .then_if("as", neu::ascii_alphanumeric().repeat_one_more());
     ///
     ///     for (str, res) in [
     ///         (
@@ -632,8 +637,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn if_then<I, P>(self, r#if: I, then: P) -> IfThen<C, Self, I, P> {
-        IfThen::new(self, r#if, then)
+    fn then_if<I, P>(self, test: I, then: P) -> ThenIf<C, Self, I, P> {
+        ThenIf::new(self, test, then)
     }
 
     ///
@@ -800,6 +805,13 @@ where
     fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<char>, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>,
+    {
+        Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace::new(), NullCond))
+    }
+
+    fn ascii_ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<u8>, C::Item, NullCond>>
+    where
+        C: Context<'a, Item = u8>,
     {
         Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace::new(), NullCond))
     }

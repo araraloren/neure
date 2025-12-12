@@ -7,6 +7,8 @@ pub enum Error {
 
     Not,
 
+    Assert,
+
     Consume,
 
     Slice,
@@ -79,6 +81,10 @@ impl Display for Error {
         match self {
             Error::Null => write!(f, "Error::Null"),
             Error::Not => write!(f, "Not: internal pattern match succeeded"),
+            Error::Assert => write!(
+                f,
+                "Assert: internal pattern match result not equal to test value"
+            ),
             Error::Consume => write!(f, "Consume: remaining data length is insufficient"),
             Error::Slice => write!(f, "Slice: all slices failed to match"),
             Error::LitSlice => write!(f, "LitSlice: slice failed to match"),

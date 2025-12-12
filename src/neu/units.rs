@@ -682,7 +682,7 @@ impl Neu<u8> for Word<u8> {
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let word = word();
-///     let word = word.repeat_full();
+///     let word = word.repeat_one_more();
 ///     let mut ctx = CharsCtx::new("TheLolipop_1\r\n");
 ///
 ///     assert_eq!(ctx.try_mat(&word)?, Span::new(0, 12));

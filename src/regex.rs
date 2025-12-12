@@ -1,4 +1,5 @@
 mod anchor;
+mod assert;
 mod builder;
 mod consume;
 mod literal;
@@ -15,6 +16,7 @@ use std::sync::Mutex;
 
 pub use self::anchor::AnchorEnd;
 pub use self::anchor::AnchorStart;
+pub use self::assert::Assert;
 pub use self::builder::into_regex_builder;
 pub use self::builder::DynamicRegexBuilderHelper;
 pub use self::consume::Consume;
@@ -615,6 +617,10 @@ pub fn null() -> NullRegex {
 /// ```
 pub fn not<T>(re: T) -> crate::regex::Not<T> {
     crate::regex::Not::new(re)
+}
+
+pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
+    Assert::new(pat, value)
 }
 
 /// Iterate over the vector and match the regex against the [`Context`].

@@ -22,29 +22,85 @@ use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
-/// First try to match `P`. If it succeeds, then try to match `T`.
+/// Sequentially composes two expressions, requiring **both** to match in order.
 ///
-/// # Ctor
+/// The [`Then`] combinator implements **sequence semantics** where:
+/// 1. The `left` expression must match first
+/// 2. Upon success, the `right` expression must match at the **advanced position**
+/// 3. Both expressions must succeed for the entire combinator to succeed
+/// 4. On any failure, the context is **atomically reset** to the initial position
 ///
-/// It will return a tuple of results of `L` and `R`.
+/// This is the fundamental building block for constructing compound patterns,
+/// similar to concatenation in regular expressions (`ab` matches 'a' followed by 'b').
+/// Unlike manual sequencing, [`Then`] automatically handles context management,
+/// error propagation, and span concatenation with zero runtime overhead.
 ///
-/// # Example
+/// # Regex
 ///
+/// In regex mode, [`Then`] returns a **combined span** covering both expressions:
+/// 1. Attempts to match `left` at current position
+/// 2. On success, attempts to match `right` at **advanced position**
+/// 3. On both successes:
+///    - Concatenates spans using `Span::add_assign`
+///    - Returns single span covering entire matched region
+/// 4. On any failure:
+///    - Resets context to initial position
+///    - Returns first error encountered
+///
+/// The resulting span is **contiguous** and covers exactly the input consumed by both expressions.
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
 ///     let str = str.enclose("\"", "\"");
 ///     let int = neu::digit(10).repeat_one_more();
-///     let int = int.try_map(map::from_str_radix::<i32>(10));
-///     let tuple = str.ws().then(",".ws())._0().then(int.ws());
-///     let tuple = tuple.enclose("(", ")");
-///     let mut ctx = CharsCtx::new(r#"("Galaxy", 42)"#);
+///     let tuple = str.then(int.prefix(" "));
 ///
-///     assert_eq!(ctx.ctor(&tuple)?, ("Galaxy", 42));
-///     Ok(())
+///     assert_eq!(
+///         CharsCtx::new(r#""Galaxy" 42"#).try_mat(&tuple)?,
+///         Span::new(0, 11)
+///     );
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Ctor
+///
+/// In constructor mode, [`Then`] returns a **tuple of values** `(O1, O2)`:
+/// 1. Constructs value from `left` expression
+/// 2. On success, constructs value from `right` expression at advanced position
+/// 3. On both successes:
+///    - Returns tuple `(left_value, right_value)`
+///    - Context advances past both expressions
+/// 4. On any failure:
+///    - Resets context to initial position
+///    - Returns first error encountered
+///
+/// This enables structured data extraction from sequential patterns, such as:
+/// - Parsing `(key, value)` pairs
+/// - Extracting components from compound identifiers
+/// - Building AST nodes from multiple tokens
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let year = neu::digit(10).repeat_one_more();
+///     let desc = neu::word().repeat_one_more();
+///     let desc = desc.sep(neu::whitespace().repeat_full()).prefix(" ");
+///
+///     let parser = year.then(desc);
+///     let (answer, desc) = CharsCtx::new("42 is the answer").ctor(&parser)?;
+///
+///     assert_eq!(answer, "42");
+///     assert_eq!(desc, ["is", "the", "answer"]);
+///
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Default, Copy)]
@@ -176,58 +232,95 @@ where
 }
 
 ///
-/// First try to match `P`. If it succeeds, then try to match `I`.
-/// If it succeeds, then try to match `T`.
+/// Conditionally extends a match with an optional suffix **only if** a test expression succeeds.
 ///
-/// # Ctor
+/// [`ThenIf`] implements a **conditional sequence** pattern where:
+/// 1. First matches the `left` expression (required)
+/// 2. Then tests the `test` expression at the current position
+/// 3. **Only if `test` succeeds**, matches the `right` expression
+/// 4. Crucially: **`test` failure does NOT cause overall failure** - only `left` is required
 ///
-/// If `I` match succeeds, return a tuple of result of `L` and Some(`T`)(result of `R`).
-/// Otherwise return a tulpe of result of `L` and None.
+/// This differs from standard sequence combinators by making the suffix conditional:
+/// - Unlike [`Then<L, R>`]: The suffix (`test`+`right`) is optional
 ///
-/// # Example
+/// # Regex
 ///
+/// Returns a [`Span`] covering:
+/// - **Always** includes `left`'s matched text
+/// - **Only if `test` succeeds**: Includes `test` + `right` matched text
+/// - If `test` fails: Returns only `left`'s span (no error)
+/// - If `test` succeeds but `right` fails: **Entire match fails**
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let val = neu::ascii_alphabetic().repeat_one_more().ws();
-///     let tuple = val.if_then(",".ws(), val).enclose("(", ")");
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let name = neu::word().repeat_one_more();
+///     let paras = name.sep(", ").enclose("<", ">");
+///     let test = regex::assert("<", true);
+///     let parser = name.then_if(test, paras);
+///
+///     assert_eq!(CharsCtx::new("Vec").try_mat(&parser)?, Span::new(0, 3));
+///     assert_eq!(
+///         CharsCtx::new("Vec<A, B>").try_mat(&parser)?,
+///         Span::new(0, 9)
+///     );
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Ctor
+/// Returns a tuple `(O1, Option<O2>)` where:
+/// - `O1`: Value constructed from `left` (always present)
+/// - `Option<O2>`:
+///   - `Some(O2)` if **both `test` and `right` succeeded**
+///   - `None` if `test` failed
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let val = neu::ascii_alphabetic().repeat_one_more();
+///     let tuple = val.then_if(",".ws(), val).enclose("(", ")");
 ///
 ///     assert_eq!(CharsCtx::new("(abc)").ctor(&tuple)?, ("abc", None));
 ///     assert_eq!(
 ///         CharsCtx::new("(abc, cde)").ctor(&tuple)?,
 ///         ("abc", Some("cde"))
 ///     );
-///     Ok(())
+///
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Default, Copy)]
-pub struct IfThen<C, L, I, R> {
-    r#if: I,
+pub struct ThenIf<C, L, I, R> {
     left: L,
+    test: I,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl_not_for_regex!(IfThen<C, L, I, R>);
+impl_not_for_regex!(ThenIf<C, L, I, R>);
 
-impl<C, L, I, R> Debug for IfThen<C, L, I, R>
+impl<C, L, I, R> Debug for ThenIf<C, L, I, R>
 where
     L: Debug,
     R: Debug,
     I: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("IfThen")
-            .field("r#if", &self.r#if)
+        f.debug_struct("ThenIf")
             .field("left", &self.left)
+            .field("test", &self.test)
             .field("right", &self.right)
             .finish()
     }
 }
 
-impl<C, L, I, R> Clone for IfThen<C, L, I, R>
+impl<C, L, I, R> Clone for ThenIf<C, L, I, R>
 where
     L: Clone,
     R: Clone,
@@ -235,7 +328,7 @@ where
 {
     fn clone(&self) -> Self {
         Self {
-            r#if: self.r#if.clone(),
+            test: self.test.clone(),
             left: self.left.clone(),
             right: self.right.clone(),
             marker: self.marker,
@@ -243,22 +336,22 @@ where
     }
 }
 
-impl<C, L, I, R> IfThen<C, L, I, R> {
-    pub fn new(left: L, r#if: I, right: R) -> Self {
+impl<C, L, I, R> ThenIf<C, L, I, R> {
+    pub fn new(left: L, test: I, right: R) -> Self {
         Self {
-            r#if,
+            test,
             left,
             right,
             marker: PhantomData,
         }
     }
 
-    pub fn r#if(&self) -> &I {
-        &self.r#if
+    pub fn test(&self) -> &I {
+        &self.test
     }
 
-    pub fn r#if_mut(&mut self) -> &mut I {
-        &mut self.r#if
+    pub fn test_mut(&mut self) -> &mut I {
+        &mut self.test
     }
 
     pub fn left(&self) -> &L {
@@ -277,8 +370,8 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
         &mut self.right
     }
 
-    pub fn set_if(&mut self, r#if: I) -> &mut Self {
-        self.r#if = r#if;
+    pub fn set_test(&mut self, test: I) -> &mut Self {
+        self.test = test;
         self
     }
 
@@ -305,7 +398,7 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
     }
 }
 
-impl<'a, C, L, I, R, M, O1, O2, H> Ctor<'a, C, M, (O1, Option<O2>), H> for IfThen<C, L, I, R>
+impl<'a, C, L, I, R, M, O1, O2, H> Ctor<'a, C, M, (O1, Option<O2>), H> for ThenIf<C, L, I, R>
 where
     L: Ctor<'a, C, M, O1, H>,
     R: Ctor<'a, C, M, O2, H>,
@@ -317,13 +410,13 @@ where
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
         let mut g = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("IfThen", g.beg());
+        debug_ctor_beg!("ThenIf", g.beg());
 
-        let r_l = debug_ctor_stage!("IfThen", "l", self.left.construct(g.ctx(), func));
+        let r_l = debug_ctor_stage!("ThenIf", "l", self.left.construct(g.ctx(), func));
         let r_l = g.process_ret(r_l)?;
-        let r_i = debug_ctor_stage!("IfThen", "if", g.try_mat(&self.r#if));
+        let r_i = debug_ctor_stage!("ThenIf", "test", g.try_mat(&self.test));
         let ret = if r_i.is_ok() {
-            let r_r = debug_ctor_stage!("IfThen", "r", self.right.construct(g.ctx(), func));
+            let r_r = debug_ctor_stage!("ThenIf", "r", self.right.construct(g.ctx(), func));
             let r_r = g.process_ret(r_r)?;
 
             // if matched, return (01, Some(O2))
@@ -333,12 +426,12 @@ where
             (r_l, None)
         };
 
-        debug_ctor_reval!("IfThen", g.beg(), g.end(), true);
+        debug_ctor_reval!("ThenIf", g.beg(), g.end(), true);
         Ok(ret)
     }
 }
 
-impl<'a, C, L, I, R> Regex<C> for IfThen<C, L, I, R>
+impl<'a, C, L, I, R> Regex<C> for ThenIf<C, L, I, R>
 where
     I: Regex<C>,
     L: Regex<C>,
@@ -349,13 +442,14 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
 
-        debug_regex_beg!("IfThen", g.beg());
+        debug_regex_beg!("ThenIf", g.beg());
 
-        let mut ret = debug_regex_stage!("IfThen", "l", g.try_mat(&self.left)?);
+        let mut ret = debug_regex_stage!("ThenIf", "l", g.try_mat(&self.left)?);
 
-        if debug_regex_stage!("IfThen", "if", g.try_mat(&self.r#if)).is_ok() {
-            ret.add_assign(debug_regex_stage!("IfThen", "r", g.try_mat(&self.right)?));
+        if let Ok(span) = debug_regex_stage!("ThenIf", "test", g.try_mat(&self.test)) {
+            ret.add_assign(span);
+            ret.add_assign(debug_regex_stage!("ThenIf", "r", g.try_mat(&self.right)?));
         }
-        debug_regex_reval!("IfThen", Ok(ret))
+        debug_regex_reval!("ThenIf", Ok(ret))
     }
 }
