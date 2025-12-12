@@ -14,7 +14,7 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -71,7 +71,7 @@ use crate::regex::Regex;
 ///     let dec = regex!((neu::digit(10))+).try_map(map::from_str_radix::<i32>(10));
 ///     let hex = regex!((neu::digit(16))+).try_map(map::from_str_radix(16));
 ///     let num = dec.ltm(hex);
-///     let val = num.sep(",".ws()).quote("{", "}");
+///     let val = num.sep(",".ws()).enclose("{", "}");
 ///     let mut ctx = CharsCtx::new(r#"{12, 1E, A8, 88, 2F}"#);
 ///
 ///     assert_eq!(ctx.ctor(&val)?, [12, 0x1e, 0xa8, 88, 0x2f]);
@@ -101,7 +101,7 @@ pub struct LongestTokenMatch<C, L, R> {
     marker: PhantomData<C>,
 }
 
-def_not!(LongestTokenMatch<C, L, R>);
+impl_not_for_regex!(LongestTokenMatch<C, L, R>);
 
 impl<C, L, R> Debug for LongestTokenMatch<C, L, R>
 where
@@ -166,13 +166,12 @@ impl<C, L, R> LongestTokenMatch<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O, H, > Ctor<'a, C, M, O, H> for LongestTokenMatch<C, L, R>
+impl<'a, C, L, R, M, O, H> Ctor<'a, C, M, O, H> for LongestTokenMatch<C, L, R>
 where
     L: Ctor<'a, C, M, O, H>,
     R: Ctor<'a, C, M, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
-    
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

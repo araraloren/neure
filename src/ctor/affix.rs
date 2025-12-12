@@ -14,7 +14,7 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -41,7 +41,7 @@ use crate::regex::Regex;
 ///     let domain = neu::alphabetic().repeat_one_more();
 ///     let domain = domain.sep(".").at_least(2);
 ///     let url = protocol.then(domain);
-///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernal.org"#);
+///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernel.org"#);
 ///
 ///     assert_eq!(ctx.try_mat(&url)?, Span::new(0, ctx.len()));
 /// #   Ok(())
@@ -98,7 +98,7 @@ pub struct Suffix<C, P, T> {
     marker: PhantomData<C>,
 }
 
-def_not!(Suffix<C, P, T>);
+impl_not_for_regex!(Suffix<C, P, T>);
 
 impl<C, P, T> Debug for Suffix<C, P, T>
 where
@@ -209,30 +209,77 @@ where
 }
 
 ///
-/// First try to match `T`. If it succeeds, try to match `P`.
+/// Matches a mandatory prefix followed by a pattern, returning only the main pattern's value during construction.
 ///
-/// # Ctor
+/// This combinator requires both the prefix pattern and main pattern to match consecutively.
+/// During construction, it returns only the value from the main pattern while still enforcing
+/// the presence of the prefix. During matching, it returns the combined span of both patterns.
 ///
-/// It will return result of `P`, ignoring the result of `T`.
+/// # Regex
 ///
-/// # Example
+/// Attempts to match the prefix pattern first, then immediately attempts to match the main
+/// pattern at the new position. Returns a single span covering both matches concatenated
+/// together. Fails if either pattern fails to match. The combined span is created by merging
+/// the two spans sequentially, requiring them to be adjacent with no gaps.
 ///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let protocol = "https".or("http".or("ftp"));
-///     let protocol = protocol.suffix("://");
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let protocol = "https".or("http".or("ftp")).suffix("://");
 ///     let domain = neu::alphabetic().repeat_one_more();
 ///     let domain = domain.sep(".").at_least(2);
 ///     let url = domain.prefix(protocol);
-///     let mut ctx = CharsCtx::new(r#"https://www.mozilla.org"#);
+///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernel.org"#);
 ///
-///     assert_eq!(ctx.ctor(&url)?, ["www", "mozilla", "org"]);
-///     Ok(())
+///     assert_eq!(ctx.try_mat(&url)?, Span::new(0, ctx.len()));
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// # Ctor
+///
+/// First matches the prefix pattern (without using its value). If successful, it then constructs
+/// a value using the main pattern. Returns the main pattern's constructed value only if both
+/// patterns succeed. Fails if either pattern fails, with errors from the main pattern taking
+/// precedence when both fail. The context position advances past both patterns on success.
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let protocol = "https".or("http".or("ftp")).suffix("://");
+///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = domain.sep(".").at_least(2);
+///     let url = domain.prefix(protocol);
+///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernel.org"#);
+///
+///     assert_eq!(ctx.ctor(&url)?, ["ftp", "kernel", "org"]);
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Behavior Notes
+///
+/// - Both patterns must match consecutively with no gaps between them
+/// - The prefix pattern is mandatory - failure to match it causes the entire pattern to fail
+/// - During construction:
+///   - Only the main pattern's value is returned
+///   - The prefix pattern's value is ignored (but its match is required)
+/// - During matching:
+///   - Returns a single span covering both patterns
+///   - The span length equals the sum of both pattern spans
+/// - Context position is advanced past both patterns only on complete success
+/// - Errors from the main pattern mask errors from the prefix pattern when both fail
+///
+/// # Performance
+///
+/// Both patterns are evaluated in sequence. For optimal performance:
+/// - Place cheaper patterns first (the prefix is evaluated before the main pattern)
+/// - Ensure the prefix pattern fails quickly on invalid inputs
+/// - Avoid expensive operations in the prefix pattern since it's evaluated unconditionally
 #[derive(Copy)]
 pub struct Prefix<C, P, T> {
     pat: P,
@@ -240,7 +287,7 @@ pub struct Prefix<C, P, T> {
     marker: PhantomData<C>,
 }
 
-def_not!(Prefix<C, P, T>);
+impl_not_for_regex!(Prefix<C, P, T>);
 
 impl<C, P, T> Debug for Prefix<C, P, T>
 where

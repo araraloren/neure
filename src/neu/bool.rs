@@ -7,6 +7,14 @@ use crate::MayDebug;
 
 pub struct True<T>(PhantomData<T>);
 
+impl<T: MayDebug> std::ops::Not for True<T> {
+    type Output = crate::neu::Not<Self, T>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
+
 impl<T> Debug for True<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("True").field(&self.0).finish()
@@ -58,6 +66,14 @@ pub const fn any<T: MayDebug>() -> True<T> {
 }
 
 pub struct False<T>(PhantomData<T>);
+
+impl<T: MayDebug> std::ops::Not for False<T> {
+    type Output = crate::neu::Not<Self, T>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
 
 impl<T> Debug for False<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

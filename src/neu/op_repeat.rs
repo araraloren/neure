@@ -10,7 +10,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 use super::length_of;
@@ -101,7 +101,7 @@ pub struct NeureRepeat<const M: usize, const N: usize, C, U, I> {
 }
 
 impl<const M: usize, const N: usize, C, U, I> std::ops::Not for NeureRepeat<M, N, C, U, I> {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -263,7 +263,7 @@ pub struct NeureRepeatRange<C, U, I> {
     marker: PhantomData<C>,
 }
 
-def_not!(NeureRepeatRange<C, U, I>);
+impl_not_for_regex!(NeureRepeatRange<C, U, I>);
 
 impl<C, U, I> Debug for NeureRepeatRange<C, U, I>
 where

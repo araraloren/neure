@@ -182,7 +182,7 @@ macro_rules! neu {
 ///
 ///     let mut ctx = BytesCtx::new(b"\"abc\t\"");
 ///     let pat = escape_strval!(b'\"', b'\\', [b'\\', b'\"', b'\t']);
-///     let pat = pat.quote(b"\"", b"\"");
+///     let pat = pat.enclose(b"\"", b"\"");
 ///
 ///     assert_eq!(ctx.ctor(&pat)?, b"abc\t");
 ///     Ok(())

@@ -54,10 +54,10 @@ fn into_impl() -> color_eyre::Result<()> {
         .then(ident)
         .pat();
     let layer0 = ty.try_map(|ty| Ok(Ty::Layer0(ty)));
-    let layer1 = ctor::Wrap::dyn_rc(ty.then(ty.quote("<", ">")))
+    let layer1 = ctor::Wrap::dyn_rc(ty.then(ty.enclose("<", ">")))
         // Add into_dyn_* reduce the trait solve time
         .try_map(|(w, ty)| Ok(Ty::Layer1(w, ty)));
-    let layer2 = ctor::Wrap::dyn_rc(ty.then(ty.then(ty.quote("<", ">")).quote("<", ">"))) // Add into_dyn_* reduce the trait solve time
+    let layer2 = ctor::Wrap::dyn_rc(ty.then(ty.then(ty.enclose("<", ">")).enclose("<", ">"))) // Add into_dyn_* reduce the trait solve time
         .try_map(|(w1, (w2, ty))| Ok(Ty::Layer2(w1, w2, ty)));
     let field = ident.sep_once(":", layer2.or(layer1.or(layer0)));
     let public = field

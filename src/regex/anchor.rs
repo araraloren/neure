@@ -8,14 +8,14 @@ use crate::ctx::Span;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 /// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to 0.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AnchorStart;
 
-def_not!(AnchorStart);
+impl_not_for_regex!(AnchorStart);
 
 impl AnchorStart {
     pub fn new() -> Self {
@@ -60,7 +60,7 @@ where
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AnchorEnd;
 
-def_not!(AnchorEnd);
+impl_not_for_regex!(AnchorEnd);
 
 impl AnchorEnd {
     pub fn new() -> Self {

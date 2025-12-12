@@ -6,7 +6,7 @@ use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 /// Implement the [`Regex`] and [`Ctor`] traits any type implements [`Regex`].
@@ -16,7 +16,7 @@ pub struct Wrap<I, C> {
     marker: PhantomData<C>,
 }
 
-def_not!(Wrap<I, C>);
+impl_not_for_regex!(Wrap<I, C>);
 
 impl<I: Debug, C> Debug for Wrap<I, C> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

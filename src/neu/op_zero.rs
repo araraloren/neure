@@ -53,7 +53,7 @@ impl<C, U, T, I> std::ops::Not for NeureZeroOne<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -207,7 +207,7 @@ impl<C, U, T, I> std::ops::Not for NeureZeroMore<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)

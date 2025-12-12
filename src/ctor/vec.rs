@@ -10,7 +10,7 @@ use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 use super::Ctor;
@@ -38,7 +38,7 @@ use super::Ctor;
 #[derive(Debug, Clone)]
 pub struct Vector<T>(Vec<T>);
 
-def_not!(Vector<T>);
+impl_not_for_regex!(Vector<T>);
 
 impl<T> Vector<T> {
     pub fn new(val: Vec<T>) -> Self {
@@ -140,7 +140,7 @@ where
 #[derive(Debug, Clone)]
 pub struct PairVector<K, V>(Vec<(K, V)>);
 
-def_not!(PairVector<K, V>);
+impl_not_for_regex!(PairVector<K, V>);
 
 impl<K, V> PairVector<K, V> {
     pub fn new(val: Vec<(K, V)>) -> Self {

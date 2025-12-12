@@ -40,6 +40,18 @@ where
     marker: PhantomData<T>,
 }
 
+impl<L, R, T: MayDebug> std::ops::Not for And<L, R, T>
+where
+    L: Neu<T>,
+    R: Neu<T>,
+{
+    type Output = crate::neu::Not<Self, T>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
+
 impl<L, R, T> Debug for And<L, R, T>
 where
     L: Neu<T> + Debug,

@@ -3,13 +3,13 @@ mod array;
 mod branch;
 mod collect;
 mod dthen;
+mod enclose;
 mod extract;
 mod ltm;
 mod map;
 mod opt;
 mod or;
 mod pat;
-mod quote;
 mod repeat;
 mod sep;
 mod slice;
@@ -36,6 +36,7 @@ pub use self::affix::Prefix;
 pub use self::affix::Suffix;
 pub use self::branch::branch;
 pub use self::branch::Branch;
+pub use self::enclose::Enclose;
 pub use self::extract::extract;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
@@ -44,7 +45,6 @@ pub use self::map::Map;
 pub use self::opt::OptionPat;
 pub use self::or::Or;
 pub use self::pat::Pattern;
-pub use self::quote::Quote;
 pub use self::repeat::Repeat;
 pub use self::sep::SepCollect;
 pub use self::sep::SepOnce;
@@ -296,7 +296,7 @@ where
 
     fn opt(self) -> OptionPat<C, Self>;
 
-    fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R>;
+    fn enclose<L, R>(self, open: L, close: R) -> Enclose<C, Self, L, R>;
 
     fn sep<S>(self, sep: S) -> Separate<C, Self, S>;
 
@@ -320,11 +320,12 @@ where
     where
         I: Fn(&C) -> Result<bool, Error>;
 
-    fn suffix<T>(self, tail: T) -> Suffix<C, Self, T>;
+    fn suffix<T>(self, suffix: T) -> Suffix<C, Self, T>;
 
-    fn prefix<T>(self, tail: T) -> Prefix<C, Self, T>;
+    fn prefix<T>(self, prefix: T) -> Prefix<C, Self, T>;
 
-    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    #[allow(clippy::type_complexity)]
+    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<char>, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>;
 }
@@ -350,7 +351,7 @@ where
     ///     let digit = regex!(['0' - '9']+);
     ///     let digit = digit.map(|v: &str| v.parse::<i64>().unwrap());
     ///     let digits = digit.sep(",".ws());
-    ///     let array = digits.quote("[", "]");
+    ///     let array = digits.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
     ///
     ///     assert_eq!(ctx.ctor(&array)?, vec![2, 4, 8, 16, 42]);
@@ -398,9 +399,9 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let ascii = neu::ascii().repeat_one();
-    ///     let lit = ascii.quote("'", "'");
+    ///     let lit = ascii.enclose("'", "'");
     ///     let ele = lit.sep(",".ws());
-    ///     let arr = ele.quote("[", "]");
+    ///     let arr = ele.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new("['a', 'c', 'd', 'f']");
     ///
     ///     assert_eq!(ctx.ctor(&arr)?, ["a", "c", "d", "f"]);
@@ -408,8 +409,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn quote<L, R>(self, left: L, right: R) -> Quote<C, Self, L, R> {
-        Quote::new(self, left, right)
+    fn enclose<L, R>(self, open: L, close: R) -> Enclose<C, Self, L, R> {
+        Enclose::new(self, open, close)
     }
 
     ///
@@ -425,7 +426,7 @@ where
     ///     let name = regex!([^ ',' ']' '[']+);
     ///     let sep = ','.repeat_one().ws();
     ///     let arr = name.sep(sep);
-    ///     let arr = arr.quote("[", "]");
+    ///     let arr = arr.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new(r#"[c, rust, java, c++]"#);
     ///
     ///     assert_eq!(ctx.ctor(&arr)?, vec!["c", "rust", "java", "c++"]);
@@ -450,7 +451,7 @@ where
     ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
     ///     let sep = "=>".ws();
     ///     let ele = key.sep_once(sep, val);
-    ///     let hash = ele.sep(",".ws()).quote("{".ws(), "}");
+    ///     let hash = ele.sep(",".ws()).enclose("{".ws(), "}");
     ///     let mut ctx = CharsCtx::new(
     ///         r#"{
     ///         c => c11,
@@ -486,7 +487,7 @@ where
     ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
     ///     let sep = "=>".ws();
     ///     let ele = key.sep_once(sep, val);
-    ///     let hash = ele.sep_collect(",".ws()).quote("{".ws(), "}");
+    ///     let hash = ele.sep_collect(",".ws()).enclose("{".ws(), "}");
     ///     let mut ctx = CharsCtx::new(
     ///         r#"{
     ///         c => c11,
@@ -524,7 +525,7 @@ where
     ///
     ///     let cond = neu::re_cond(regex::not("\\\""));
     ///     let str = regex!([^ '"' ]+).set_cond(cond).or("\\\"").repeat(1..).pat();
-    ///     let str = str.quote("\"", "\"");
+    ///     let str = str.enclose("\"", "\"");
     ///     let str = str.map(V::S);
     ///     let vals = str.sep(",".ws());
     ///     let text = r#""lily\"", "lilei", "lucy""#;
@@ -557,7 +558,7 @@ where
     ///     let val = "v".ltm("val".ltm("value"));
     ///     let val = val.map(Val);
     ///     let val = val.sep(",".ws());
-    ///     let val = val.quote("{", "}");
+    ///     let val = val.enclose("{", "}");
     ///     let mut ctx = CharsCtx::new(r#"{val, v, value}"#);
     ///
     ///     assert_eq!(ctx.ctor(&val)?, [Val("val"), Val("v"), Val("value")]);
@@ -583,7 +584,7 @@ where
     ///     let st = "struct".ws().then(id)._1();
     ///     let en = "enum".ws().then(id)._1();
     ///     let ty = st.or(en);
-    ///     let ty = ty.ws().then(ws.quote("{", "}"))._0();
+    ///     let ty = ty.ws().then(ws.enclose("{", "}"))._0();
     ///     let mut ctx = CharsCtx::new(r#"struct widget { }"#);
     ///
     ///     assert_eq!(ctx.ctor(&ty)?, "widget");
@@ -741,7 +742,7 @@ where
         Suffix::new(self, pat)
     }
 
-    ///  
+    ///
     /// First try to match `T`. If it succeeds, try to match `P`.
     ///
     /// # Example
@@ -753,7 +754,7 @@ where
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10).repeat_times::<2>();
     ///     let time = num.sep_once(":", num);
-    ///     let time = time.quote("[", "]").ws();
+    ///     let time = time.enclose("[", "]").ws();
     ///     let star = '*'.repeat_times::<3>().ws();
     ///     let name = neu::whitespace().not().repeat_one_more().ws();
     ///     let status = "left".or("joined").ws();
@@ -796,11 +797,11 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace, C::Item, NullCond>>
+    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<char>, C::Item, NullCond>>
     where
         C: Context<'a, Item = char>,
     {
-        Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace, NullCond))
+        Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace::new(), NullCond))
     }
 }
 

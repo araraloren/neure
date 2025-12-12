@@ -10,31 +10,72 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
-/// Repeatedly match regex `P`, and the number of matches must meet the given range.
+/// Repeats a pattern a specified number of times, collecting results or spans based on context.
 ///
-/// # Ctor
+/// This combinator matches a pattern repeatedly within a defined count range, supporting both
+/// value construction ([`Ctor`]) and span matching ([`Regex`]). It optimizes performance through
+/// pre-allocation and early termination, while providing precise range validation and context
+/// safety. Designed for parsing lists, sequences, and repeated structures with explicit bounds.
 ///
-/// It will return a [`Vec`] of `P`'s match results.
+/// # Regex
 ///
-/// # Example
+/// Matches the pattern repeatedly and returns a **single merged span** covering all successful
+/// matches. The matching continues until either:
+/// 1. The pattern fails to match
+/// 2. The maximum count in the range is reached
 ///
+/// The result is valid only if the total match count falls within the specified range. If the
+/// count is outside the range, matching fails and the context position is restored to its original
+/// state. The merged span represents the complete sequence from the first match start to the last
+/// match end.
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let char = neu::word().repeat_times::<2>();
+///     let num = char.ws().repeat(1..);
+///     let mut ctx = CharsCtx::new(r#"Hello, World!"#);
+///
+///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Ctor
+///
+/// 1. Collects constructed values from each successful pattern match into a [`Vec`]
+/// 2. Continues matching until pattern failure or maximum count reached
+/// 3. Validates that the total match count falls within the specified range
+/// 4. Returns the collected values only if the count constraint is satisfied
+///
+/// The inner pattern's handler is invoked for each match, with each result preserved in order.
+/// Memory is pre-allocated using the `capacity` field to minimize reallocations. If the final
+/// count doesn't satisfy the range constraint, all collected values are discarded and the context
+/// is restored to its initial position.
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let char = neu::any().repeat_one();
 ///     let num = char.ws().repeat(1..);
 ///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);
 ///
 ///     assert_eq!(ctx.ctor(&num)?, ["你", "好", "，", "世", "界", "？"]);
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// Optimization tips:
+/// - Set capacity close to expected match count
+/// - Use tight ranges to limit unnecessary matching attempts
 #[derive(Copy)]
 pub struct Repeat<C, P> {
     pat: P,
@@ -43,7 +84,7 @@ pub struct Repeat<C, P> {
     marker: PhantomData<C>,
 }
 
-def_not!(Repeat<C, P>);
+impl_not_for_regex!(Repeat<C, P>);
 
 impl<C, P> Debug for Repeat<C, P>
 where
@@ -153,7 +194,7 @@ impl<'a, C, P, M, O, H> Ctor<'a, C, M, Vec<O>, H> for Repeat<C, P>
 where
     P: Ctor<'a, C, M, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {

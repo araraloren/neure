@@ -8,14 +8,14 @@ use crate::ctx::Span;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 /// Consume the specified number [`Item`](crate::ctx::Context::Item)s.
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Consume(usize);
 
-def_not!(Consume);
+impl_not_for_regex!(Consume);
 
 impl Consume {
     pub fn new(size: usize) -> Self {
@@ -60,7 +60,7 @@ where
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ConsumeAll;
 
-def_not!(ConsumeAll);
+impl_not_for_regex!(ConsumeAll);
 
 impl ConsumeAll {
     pub fn new() -> Self {

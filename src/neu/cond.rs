@@ -44,7 +44,7 @@ where
 ///         .pat();
 ///     let mut ctx = BytesCtx::new(br#""Hello world from \"rust\"!""#);
 ///
-///     assert_eq!(ctx.try_mat(&str.quote(b"\"", b"\""))?, Span::new(0, 28));
+///     assert_eq!(ctx.try_mat(&str.enclose(b"\"", b"\""))?, Span::new(0, 28));
 ///     Ok(())
 /// # }
 /// ```
@@ -147,7 +147,7 @@ where
 ///         .pat();
 ///     let mut ctx = BytesCtx::new(br#""Hello world from \"rust\"!""#);
 ///
-///     assert_eq!(ctx.try_mat(&str.quote(b"\"", b"\""))?, Span::new(0, 28));
+///     assert_eq!(ctx.try_mat(&str.enclose(b"\"", b"\""))?, Span::new(0, 28));
 ///     Ok(())
 /// # }
 /// ```

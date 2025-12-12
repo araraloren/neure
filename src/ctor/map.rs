@@ -8,7 +8,7 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::map::MapSingle;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -123,7 +123,7 @@ pub struct Map<C, P, F, O> {
     marker: PhantomData<(C, O)>,
 }
 
-def_not!(Map<C, P, F, O>);
+impl_not_for_regex!(Map<C, P, F, O>);
 
 impl<C, P, F, O> Debug for Map<C, P, F, O>
 where

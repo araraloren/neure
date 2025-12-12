@@ -12,7 +12,7 @@ use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -88,7 +88,7 @@ pub struct OptionPat<C, P> {
     marker: PhantomData<C>,
 }
 
-def_not!(OptionPat<C, P>);
+impl_not_for_regex!(OptionPat<C, P>);
 
 impl<C, P> Debug for OptionPat<C, P>
 where
@@ -137,7 +137,7 @@ impl<'a, C, M, O, P, H> Ctor<'a, C, M, Option<O>, H> for OptionPat<C, P>
 where
     P: Ctor<'a, C, M, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Option<O>, Error> {

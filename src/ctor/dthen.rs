@@ -13,7 +13,7 @@ use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -98,7 +98,7 @@ pub struct DynamicCtorThenBuilder<C, P, F> {
     marker: PhantomData<C>,
 }
 
-def_not!(DynamicCtorThenBuilder<C, P, F>);
+impl_not_for_regex!(DynamicCtorThenBuilder<C, P, F>);
 
 impl<C, P, F> Debug for DynamicCtorThenBuilder<C, P, F>
 where

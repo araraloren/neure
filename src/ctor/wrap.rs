@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 /// Implement the [`Ctor`] and placehoder implementation [`Regex`] traits for any type implements [`Ctor`].
@@ -14,7 +14,7 @@ pub struct Wrap<I, C> {
     marker: PhantomData<C>,
 }
 
-def_not!(Wrap<I, C>);
+impl_not_for_regex!(Wrap<I, C>);
 
 impl<I: Debug, C> Debug for Wrap<I, C> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -249,7 +249,7 @@ impl<T, C> Wrap<std::sync::Mutex<T>, C> {
 ///
 ///     let cjk = |ch: &char| ('\u{4e00}'..='\u{9fff}').contains(ch);
 ///     let scentence = cjk.repeat_one_more();
-///     let parser = scentence.quote("《", "》");
+///     let parser = scentence.enclose("《", "》");
 ///     let ctor = ctor::Wrap::refcell(parser);
 ///
 ///     assert_eq!(CharsCtx::new("《东方力量》").ctor(&ctor)?, "东方力量");

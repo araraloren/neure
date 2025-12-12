@@ -32,16 +32,16 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O> =
 ///     #[derive(Debug, PartialEq, Eq)]
 ///     enum Xml {
 ///         Element { name: String, child: Vec<Xml> },
-///         Enclosed(String),
+///         Enclose(String),
 ///     }
 ///
 ///     let xml = regex::rec_parser(|ctor| {
 ///         let alpha = neu::alphabetic()
 ///             .repeat_full()
 ///             .map(|v: &str| v.to_string());
-///         let s = alpha.quote("<", ">");
-///         let e = alpha.quote("</", ">");
-///         let c = alpha.quote("<", "/>").map(Xml::Enclosed);
+///         let s = alpha.enclose("<", ">");
+///         let e = alpha.enclose("</", ">");
+///         let c = alpha.enclose("<", "/>").map(Xml::Enclose);
 ///         let m = |((l, c), r): ((String, Vec<Xml>), String)| {
 ///             if l != r {
 ///                 Err(Error::Uid(0))
@@ -59,11 +59,11 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O> =
 ///         child: vec![
 ///             Xml::Element {
 ///                 name: "rust".to_owned(),
-///                 child: vec![Xml::Enclosed("linux".to_owned())],
+///                 child: vec![Xml::Enclose("linux".to_owned())],
 ///             },
 ///             Xml::Element {
 ///                 name: "cpp".to_owned(),
-///                 child: vec![Xml::Enclosed("windows".to_owned())],
+///                 child: vec![Xml::Enclose("windows".to_owned())],
 ///             },
 ///         ],
 ///     }];
@@ -106,8 +106,8 @@ where
 ///
 ///         ctor.clone()
 ///             .or(re)
-///             .quote(b"{", b"}")
-///             .or(ctor.clone().or(re).quote(b"[", b"]"))
+///             .enclose(b"{", b"}")
+///             .or(ctor.clone().or(re).enclose(b"[", b"]"))
 ///     });
 ///
 ///     assert_eq!(BytesCtx::new(b"[a]").ctor(&parser)?, b"a");

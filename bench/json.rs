@@ -85,7 +85,7 @@ mod neure_json {
                         .try_map(to_str)
                         .try_map(map::from_str::<String>())
                         .try_map(|v| Ok(Json::Str(v)))
-                        .quote(b"\"", b"\""),
+                        .enclose(b"\"", b"\""),
                 );
 
                 let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(Json::Bool(true)));
@@ -98,13 +98,13 @@ mod neure_json {
                 let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+)
                     .try_map(to_str)
                     .try_map(map::from_str::<String>())
-                    .quote(b"\"", b"\"");
+                    .enclose(b"\"", b"\"");
                 let key = key.suffix(ws).prefix(ws);
                 let obj = key.sep_once(b":", ele.clone());
-                let obj = obj.sep(b",").quote(b"{", b"}").map(Json::Object);
+                let obj = obj.sep(b",").enclose(b"{", b"}").map(Json::Object);
                 let obj = ctor::Wrap::dyn_box(obj);
 
-                let array = ele.sep(b",").quote(b"[", b"]");
+                let array = ele.sep(b",").enclose(b"[", b"]");
                 let array = array.try_map(|v| Ok(Json::Array(v)));
 
                 obj.or(array)
@@ -145,7 +145,7 @@ mod neure_json_zero {
                     .or(escape)
                     .repeat(0..)
                     .pat();
-                let str = ctor::Wrap::dyn_box(str_val.quote(b"\"", b"\""));
+                let str = ctor::Wrap::dyn_box(str_val.enclose(b"\"", b"\""));
                 let str = str.try_map(|v| Ok(JsonZero::Str(v)));
 
                 let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
@@ -156,13 +156,13 @@ mod neure_json_zero {
                 let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
 
                 let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
-                let key = key.quote(b"\"", b"\"");
+                let key = key.enclose(b"\"", b"\"");
                 let key = key.suffix(ws).prefix(ws);
                 let obj = key.sep_once(b":", ele.clone());
-                let obj = ctor::Wrap::dyn_box(obj.sep(b",").quote(b"{", b"}"))
+                let obj = ctor::Wrap::dyn_box(obj.sep(b",").enclose(b"{", b"}"))
                     .try_map(|v| Ok(JsonZero::Object(v)));
 
-                let array = ctor::Wrap::dyn_box(ele.sep(b",").quote(b"[", b"]"));
+                let array = ctor::Wrap::dyn_box(ele.sep(b",").enclose(b"[", b"]"));
                 let array = array.try_map(|v| Ok(JsonZero::Array(v)));
 
                 obj.or(array)

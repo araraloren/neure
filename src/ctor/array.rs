@@ -75,7 +75,7 @@ use super::Ctor;
 pub struct Array<const N: usize, T>([T; N]);
 
 impl<const N: usize, T> std::ops::Not for Array<N, T> {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -188,7 +188,7 @@ where
 pub struct PairArray<const N: usize, K, V>([(K, V); N]);
 
 impl<const N: usize, K, V> std::ops::Not for PairArray<N, K, V> {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)

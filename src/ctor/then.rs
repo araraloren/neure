@@ -18,7 +18,7 @@ use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -36,11 +36,11 @@ use crate::regex::Regex;
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let str = neu::ascii_alphabetic().repeat_one_more();
-///     let str = str.quote("\"", "\"");
+///     let str = str.enclose("\"", "\"");
 ///     let int = neu::digit(10).repeat_one_more();
 ///     let int = int.try_map(map::from_str_radix::<i32>(10));
 ///     let tuple = str.ws().then(",".ws())._0().then(int.ws());
-///     let tuple = tuple.quote("(", ")");
+///     let tuple = tuple.enclose("(", ")");
 ///     let mut ctx = CharsCtx::new(r#"("Galaxy", 42)"#);
 ///
 ///     assert_eq!(ctx.ctor(&tuple)?, ("Galaxy", 42));
@@ -54,7 +54,7 @@ pub struct Then<C, L, R> {
     marker: PhantomData<C>,
 }
 
-def_not!(Then<C, L, R>);
+impl_not_for_regex!(Then<C, L, R>);
 
 impl<C, L, R> Debug for Then<C, L, R>
 where
@@ -192,7 +192,7 @@ where
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let val = neu::ascii_alphabetic().repeat_one_more().ws();
-///     let tuple = val.if_then(",".ws(), val).quote("(", ")");
+///     let tuple = val.if_then(",".ws(), val).enclose("(", ")");
 ///
 ///     assert_eq!(CharsCtx::new("(abc)").ctor(&tuple)?, ("abc", None));
 ///     assert_eq!(
@@ -210,7 +210,7 @@ pub struct IfThen<C, L, I, R> {
     marker: PhantomData<C>,
 }
 
-def_not!(IfThen<C, L, I, R>);
+impl_not_for_regex!(IfThen<C, L, I, R>);
 
 impl<C, L, I, R> Debug for IfThen<C, L, I, R>
 where

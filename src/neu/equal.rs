@@ -7,6 +7,14 @@ pub struct Equal<T> {
     val: T,
 }
 
+impl<T: PartialEq + MayDebug> std::ops::Not for Equal<T> {
+    type Output = crate::neu::Not<Self, T>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
+
 impl<T> Equal<T> {
     pub fn new(val: T) -> Self {
         Self { val }

@@ -14,31 +14,85 @@ use crate::regex::Regex;
 use super::Ctor;
 
 ///
-/// Iterate over the array and match the regex against the [`Context`].
+/// Attempts patterns in sequence, returning the first successful match from a **compile-time fixed array**.
+///
+/// This combinator provides **zero-cost choice semantics** for a fixed set of parsers known at compile time.
+/// `Slice` uses a stack-allocated array with compile-time size `N`, enabling compiler optimizations
+/// and eliminating heap allocations. It's ideal for matching finite sets of keywords, operators,
+/// or mutually exclusive patterns where order matters and performance is critical.
+///
+/// # Regex
+///
+/// Iterates through the array of patterns in order:
+/// 1. Attempts to match each pattern at current context position
+/// 2. On first successful match:
+///    - Returns the matched [`Span`]
+///    - Advances context to end of match
+/// 3. On failure:
+///    - Resets context to initial position (no partial advancement)
+///    - Tries next pattern
+/// 4. If all patterns fail:
+///    - Returns [`Error::Slice`]
+///    - Context remains unchanged
+///
+/// The returned span covers exactly the matched portion of the first successful pattern.
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let array = ["a", "b", "c"];
+///     let parser = regex::slice(&array);
+///
+///     assert_eq!(CharsCtx::new("abc").try_mat(&parser)?, Span::new(0, 1));
+///
+/// #   Ok(())
+/// # }
+/// ```
 ///
 /// # Ctor
 ///
-/// Return the result of first regex that matches.
+/// Mirror behavior to [`Regex`], but with value construction:
+/// 1. Attempts to construct each pattern's value in sequence
+/// 2. On first successful construction:
+///    - Returns the constructed value `O`
+///    - Advances context to end of match
+/// 3. On failure:
+///    - Resets context to initial position
+///    - Tries next pattern
+/// 4. If all patterns fail:
+///    - Returns [`Error::Slice`]
+///    - Context remains unchanged
+///
+/// All patterns must produce values of identical type `O`.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #   color_eyre::install()?;
-///     let array = ["a", "b", "c"];
-///     let tuple = regex::slice(&array);
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let array = ["abc", "def", "ghi"];
+///     let parser = regex::slice(&array);
 ///
-///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
-///     Ok(())
+///     assert_eq!(CharsCtx::new("ghi").ctor(&parser)?, "ghi");
+///
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// Optimization guidelines:
+/// - **Sort by Frequency**: Place most common patterns first
+/// - **Sort by Specificity**: Put longer/more specific patterns before general ones
+/// - **Limit Size**: Keep N small (≤ 8) for best branch prediction
+/// - **Avoid Overlap**: Minimize overlapping patterns to reduce attempts
+/// - **Precompute**: Create `Slice` instances at startup, not in hot paths
 #[derive(Debug, Clone, Copy)]
 pub struct Slice<'a, const N: usize, T>(&'a [T; N]);
 
 impl<const N: usize, T> std::ops::Not for Slice<'_, N, T> {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -108,19 +162,74 @@ where
 }
 
 ///
-/// Iterate over the slice and match the regex against the [`Context`].
+/// Maps patterns to associated values, returning the first successful match with its paired value.
 ///
-/// # Ctor
+/// This combinator extends [`Slice`] with **value association semantics**, creating a compile-time
+/// mapping between patterns and static values. When a pattern matches, its associated value is
+/// cloned and returned alongside the constructed result. This is ideal for scenarios like keyword
+/// tokenization, operator precedence mapping, or state machine transitions where patterns need to
+/// carry semantic meaning beyond their syntactic structure.
 ///
-/// Return a pair of result and the value of first pair that matches.
+/// # Regex
 ///
-/// # Example
+/// Behaves identically to [`Slice`] but ignores associated values:
+/// - Iterates through patterns in array order
+/// - Returns first successful match's `Span`
+/// - Resets context on failure for each attempt
+/// - Associated values `V` are completely ignored in this mode
+/// - Returns [`Error::PairSlice`] if no patterns match
 ///
+/// This mode is useful when you only need the span information and not the semantic mapping.
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+///     pub enum Kind {
+///         Str,
+///         Num,
+///         Other,
+///     }
+///
+///     let num = regex::Wrap::dyn_box(neu::digit(10).repeat_one_more());
+///     let str = regex::Wrap::dyn_box(neu::word().repeat_one_more());
+///     let other = regex::consume_all().into_dyn_regex();
+///
+///     let pairs = [(num, Kind::Num), (str, Kind::Str), (other, Kind::Other)];
+///     let parser = regex::pair_slice(&pairs);
+///
+///     assert_eq!(CharsCtx::new("crab").ctor(&parser)?, ("crab", Kind::Str));
+///     assert_eq!(CharsCtx::new("2025").ctor(&parser)?, ("2025", Kind::Num));
+///     assert_eq!(CharsCtx::new("&ptr").try_mat(&parser)?, Span::new(0, 4));
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Ctor
+///
+/// Core mapping behavior with dual return values:
+/// 1. Iterates through `(pattern, value)` pairs in array order
+/// 2. For each pattern:
+///    - Attempts construction at current context position
+///    - On success: returns `(constructed_value, value.clone())`
+///    - On failure: resets context and tries next pair
+/// 3. Returns [`Error::PairSlice`] if no patterns match
+///
+/// The cloned associated value `V` provides semantic meaning without consuming the original mapping.
+/// This enables patterns to carry metadata like:
+/// - Token types in lexers
+/// - Precedence levels in parsers  
+/// - Handler functions in routers
+/// - State transitions in state machines
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum Kind {
 ///         A,
@@ -132,14 +241,14 @@ where
 ///
 ///     assert_eq!(CharsCtx::new("cab").ctor(&vec)?, ("c", Kind::C));
 ///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub struct PairSlice<'a, const N: usize, K, V>(&'a [(K, V); N]);
 
 impl<const N: usize, K, V> std::ops::Not for PairSlice<'_, N, K, V> {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)

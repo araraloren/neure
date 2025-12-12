@@ -9,12 +9,12 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-use super::def_not;
+use super::impl_not_for_regex;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NullRegex;
 
-def_not!(NullRegex);
+impl_not_for_regex!(NullRegex);
 
 impl NullRegex {
     pub fn new() -> Self {

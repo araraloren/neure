@@ -12,7 +12,7 @@ use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::neu::CRange;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 use super::Map;
@@ -22,27 +22,65 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 
 ///
-/// Match `L` and `R` separated by `S`.
+/// Splits input into two parts at a single separator pattern, discarding the separator value.
 ///
-/// # Ctor
+/// This combinator matches a **left pattern**, followed by a **separator pattern**, followed by a
+/// **right pattern**. It's designed for parsing key-value pairs (`key=value`), headers
+/// (`Content-Type: text/plain`), path segments (`dir/file`), and similar two-part structures with
+/// an intervening delimiter. The separator serves as a structural boundary but its value is
+/// discarded in value construction.
 ///
-/// It will return a tuple of results of `L` and `R`.
+/// # Regex
 ///
-/// # Example
+/// Matches all three components sequentially and returns a **single merged span** covering:
+/// 1. The left pattern match
+/// 2. The separator pattern match  
+/// 3. The right pattern match
+///
+/// The returned span represents the complete matched structure from start of left pattern to end
+/// of right pattern. If any component fails to match, the entire match fails and the context
+/// position remains unchanged. Unlike [`Separate`], this combinator requires exactly one
+/// separator occurrence.
+///
+/// ## Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let key = '='.not().repeat_one_more();
+///     let val = key;
+///     let pair = key.sep_once("=", val);
+///
+///     assert_eq!(CharsCtx::new("lang=rust").try_mat(&pair)?, Span::new(0, 9));
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Ctor
+///
+/// 1. Constructs the left pattern's value
+/// 2. Matches the separator pattern (value discarded)
+/// 3. Constructs the right pattern's value
+/// 4. Returns a **tuple `(left_value, right_value)`**
+///
+/// The separator's matched value is intentionally discarded—only the left and right values are
+/// preserved. This follows the principle that separators define structure but don't contribute to
+/// semantic values. For example, in `key=value`, we want `(key, value)` not `(key, '=', value)`.
+///
+/// ## Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ele = neu::digit(10).repeat_times::<2>();
 ///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
 ///     let time = time.map(|((h, m), s)| (h, m, s));
-///     let mut ctx = CharsCtx::new("20:31:42");
 ///
-///     assert_eq!(ctx.ctor(&time)?, ("20", "31", "42"));
-///     Ok(())
+///     assert_eq!(CharsCtx::new("20:31:42").ctor(&time)?, ("20", "31", "42"));
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Default, Copy)]
@@ -53,7 +91,7 @@ pub struct SepOnce<C, L, S, R> {
     marker: PhantomData<C>,
 }
 
-def_not!(SepOnce<C, L, S, R>);
+impl_not_for_regex!(SepOnce<C, L, S, R>);
 
 impl<C, L, S, R> Debug for SepOnce<C, L, S, R>
 where
@@ -154,7 +192,7 @@ where
     R: Ctor<'a, C, M, O2, H>,
     S: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
@@ -194,33 +232,77 @@ where
 }
 
 ///
-/// Match regex `P` as many times as possible, with S as the delimiter.
+/// Matches a pattern repeated with separators, supporting trailing separators and minimum counts.
 ///
-/// # Ctor
+/// This combinator parses **lists of elements separated by delimiters**, like CSV data (`A,B,C`),
+/// function arguments (`func(a, b, c)`), or path segments (`/usr/local/bin`). It provides fine-grained
+/// control over separator requirements, trailing separator handling, and minimum element
+/// counts. Unlike [`SepOnce`] (single split) or [`Repeat`](crate::ctor::Repeat) (no separators),
+/// this handles arbitrary-length sequences with explicit delimiter semantics.
 ///
-/// It will return a [`Vec`] of `P`'s match results.
+/// # Regex
 ///
-/// # Example
+/// Matches the pattern and separators repeatedly, returning a **single merged span** covering:
+/// 1. All successfully matched patterns
+/// 2. All successfully matched separators (including trailing ones if allowed)
 ///
+/// The matching continues until:
+/// - Pattern matching fails, OR
+/// - Separator matching fails (and `skip = false` for trailing separator)
+///
+/// The result is valid only if the number of matched patterns meets or exceeds the `min` threshold.
+/// The returned span represents the complete matched region from start of first pattern to end of
+/// last pattern (including all intervening separators).
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     #[derive(Debug, PartialEq, PartialOrd)]
-///     pub struct Tp<'a>(&'a str);
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ws = neu::whitespace().repeat_full();
+///     let num = neu::digit(10).repeat_one_more();
+///     let ele = num.sep(",".suffix(ws));
+///     let arr = ele.enclose("{", "}");
+///     let mut ctx = CharsCtx::new("{11, 42, 8, 99}");
 ///
-///     let ascii = neu::alphabetic().repeat_one_more();
-///     let ty = ascii.map(Tp);
-///     let ele = ty.sep(",".ws());
-///     let arr = ele.quote("<", ">");
-///     let mut ctx = CharsCtx::new("<A, B, Len, Size>");
+///     assert_eq!(ctx.try_mat(&arr)?, Span::new(0, 15));
 ///
-///     assert_eq!(ctx.ctor(&arr)?, [Tp("A"), Tp("B"), Tp("Len"), Tp("Size")]);
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// # Ctor
+///
+/// 1. Collects constructed values from each successful pattern match into a `Vec`
+/// 2. Discards all separator values (they define structure but not semantics)
+/// 3. Handles trailing separators based on `skip` flag:
+///    - `skip = true`: Accepts sequences without trailing separator (standard behavior)
+///    - `skip = false`: Requires trailing separator after each element (strict format)
+/// 4. Validates that the total pattern count meets or exceeds `min`
+/// 5. Returns the collected values only if count constraint is satisfied
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ws = neu::whitespace().repeat_full();
+///     let ty = ('a'..='z').or('A'..='Z').repeat_one();
+///     let ty = ty.then(neu::word().repeat_full()).pat();
+///     let ele = ty.sep(",".suffix(ws));
+///     let arr = ele.enclose("<", ">");
+///     let mut ctx = CharsCtx::new("<Ctx, T, O1, O2>");
+///
+///     assert_eq!(ctx.ctor(&arr)?, vec!["Ctx", "T", "O1", "O2"]);
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// Optimization tips:
+/// - Set `capacity` close to expected element count
+/// - Use tight `min` bounds to fail early on invalid inputs
+/// - Prefer `skip(true)` for more common formats (avoids extra separator checks)
 #[derive(Default, Copy)]
 pub struct Separate<C, P, S> {
     pat: P,
@@ -231,7 +313,7 @@ pub struct Separate<C, P, S> {
     marker: PhantomData<C>,
 }
 
-def_not!(Separate<C, P, S>);
+impl_not_for_regex!(Separate<C, P, S>);
 
 impl<C, P, S> Debug for Separate<C, P, S>
 where
@@ -352,7 +434,7 @@ where
     P: Ctor<'a, C, M, O, H>,
     S: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error> {
@@ -421,35 +503,94 @@ where
 }
 
 ///
-/// Match regex `P` as many times as possible, with S as the delimiter.
+/// Collects separator-delimited patterns into any [`FromIterator`] collection type.
+///
+/// This combinator extends [`Separate`] with **generic collection support**, allowing parsed
+/// elements to be collected into any type implementing [`FromIterator`]—not just [`Vec<T>`]. This
+/// enables direct construction of specialized collections like
+/// [`HashSet`](std::collections::HashSet), [`BTreeSet`](std::collections::BTreeSet), [`String`],
+/// or custom aggregate types without intermediate allocations. It maintains the same core
+/// semantics for separator handling and minimum count enforcement, but provides ultimate
+/// flexibility in result representation.
+///
+/// # Regex
+///
+/// Behaves identically to [`Separate`]:
+/// - Matches pattern and separators repeatedly
+/// - Returns a **single merged span** covering all patterns and separators
+/// - Validates minimum count requirement (`min`)
+/// - Includes all separators in the returned span
+/// - Fails atomically if count constraint isn't met
+///
+/// The span covers from start of first pattern to end of last pattern (including all separators).
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let digit = neu::digit(10).repeat_one_more();
+///     let val = digit;
+///     // using sep_collect is inconvenient for Regex
+///     let vals = val.sep_collect::<_, &str, Vec<&str>>(",".ws());
+///     let array = vals.enclose("[", "]");
+///     let mut ctx = CharsCtx::new("[18, 24, 42, 58, 69]");
+///
+///     assert_eq!(ctx.try_mat(&array)?, Span::new(0, 20));
+///
+/// #   Ok(())
+/// # }
+/// ```
 ///
 /// # Ctor
 ///
-/// It will return a `V` that can constructed from `P`'s match results
-/// using [`from_iter`](std::iter::FromIterator::from_iter).
+/// 1. Creates a lazy iterator over successfully constructed pattern values
+/// 2. Applies separator semantics:
+///    - `skip = true`: Accepts sequences without trailing separator
+///    - `skip = false`: Requires trailing separator after each element
+/// 3. Validates that total pattern count meets `min` threshold
+/// 4. Delegates collection to `V::from_iter()`, allowing arbitrary aggregation
+/// 5. Returns collection only if count constraint is satisfied
+///
+/// The iterator-based approach enables **lazy evaluation**—elements are constructed on-demand
+/// during collection, allowing short-circuiting in custom collectors.
+///
+/// ## Example
+/// ```
+/// # use std::collections::HashMap;
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let name = neu::word().repeat_one_more();
+///     let year = neu::digit(10).repeat_one_more();
+///     let year = year.try_map(map::from_str::<u32>());
+///     let pair = name.sep_once(" => ", year);
+///     let pairs = pair.sep_collect(", ");
+///     let parser = pairs.enclose("{", "}");
+///     let mut ctx = CharsCtx::new("{rust => 2015, golang => 2012, java => 1996}");
+///     let hashmap: HashMap<&str, u32> = ctx.ctor(&parser)?;
+///
+///     assert_eq!(hashmap.get("rust"), Some(&2015));
+///     assert_eq!(hashmap.get("golang"), Some(&2012));
+///     assert_eq!(hashmap.get("java"), Some(&1996));
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// Performance guidance:
+/// - **Use [`Separate`]** when you need a `Vec` (better optimized for this case)
+/// - **Use [`SepCollect`]** when:
+///   - Target collection is `HashSet`/`BTreeSet` (avoids `Vec→Set` conversion)
+///   - You need custom aggregation logic
+///   - Memory constraints favor specialized collections
+///   - You want to avoid intermediate allocations
+/// - **Avoid** for large collections with expensive `O` types (iterator overhead adds up)
 ///
 /// # Notice
 ///
 /// `SepCollect` will always succeed if the minimum size is 0, be careful to use it with other `.sep` faimly APIs.
 /// The default size is 1.
-///
-/// # Example
-///
-/// ```
-/// # use neure::{prelude::*, map::FromStr};
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let digit = neu::digit(10).repeat_one_more();
-///     let val = digit.try_map(FromStr::<i64>::new());
-///     let vals = val.sep_collect::<_, _, Vec<i64>>(",".ws());
-///     let array = vals.quote("[", "]");
-///     let mut ctx = CharsCtx::new("[18, 24, 42, 58, 69]");
-///
-///     assert_eq!(ctx.ctor(&array)?, [18, 24, 42, 58, 69]);
-///     Ok(())
-/// # }
-/// ```
 #[derive(Default, Copy)]
 pub struct SepCollect<C, P, S, O, V> {
     pat: P,
@@ -459,7 +600,7 @@ pub struct SepCollect<C, P, S, O, V> {
     marker: PhantomData<(C, O, V)>,
 }
 
-def_not!(SepCollect<C, P, S, O, V>);
+impl_not_for_regex!(SepCollect<C, P, S, O, V>);
 
 impl<C, P, S, O, V> Debug for SepCollect<C, P, S, O, V>
 where
@@ -564,7 +705,7 @@ where
     P: Ctor<'a, C, M, O, H>,
     S: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M,>,
+    H: Handler<C, Out = M>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {

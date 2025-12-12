@@ -1,22 +1,74 @@
 use crate::trace_retval;
 
+macro_rules! setup_unit_ty {
+    ($name:ident, $debug:literal, $func:ident) => {
+        #[derive(Debug, Clone, Default, Copy)]
+        pub struct $name;
+
+        impl std::ops::Not for $name {
+            type Output = crate::neu::Not<Self, char>;
+
+            fn not(self) -> Self::Output {
+                crate::neu::not(self)
+            }
+        }
+
+        impl $name {
+            pub const fn new() -> Self {
+                Self {}
+            }
+        }
+
+        impl Neu<char> for $name {
+            #[inline(always)]
+            fn is_match(&self, other: &char) -> bool {
+                trace_retval!($debug, other, other.$func())
+            }
+        }
+    };
+}
+
+macro_rules! setup_unit_ty2 {
+    ($name:ident, $debug:literal, $func:ident) => {
+        #[derive(Debug, Clone, Default, Copy)]
+        pub struct $name<T>(std::marker::PhantomData<T>);
+
+        impl<T> std::ops::Not for $name<T>
+        where
+            Self: Neu<T>,
+        {
+            type Output = crate::neu::Not<Self, T>;
+
+            fn not(self) -> Self::Output {
+                crate::neu::not(self)
+            }
+        }
+
+        impl<T> $name<T> {
+            pub const fn new() -> Self {
+                Self(std::marker::PhantomData)
+            }
+        }
+
+        impl Neu<char> for $name<char> {
+            #[inline(always)]
+            fn is_match(&self, other: &char) -> bool {
+                trace_retval!($debug, other, other.$func())
+            }
+        }
+
+        impl Neu<u8> for $name<u8> {
+            #[inline(always)]
+            fn is_match(&self, other: &u8) -> bool {
+                trace_retval!($debug, other, other.$func())
+            }
+        }
+    };
+}
+
 use super::Neu;
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Alphabetic;
-
-impl Alphabetic {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Alphabetic {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Alphabetic", other, other.is_alphabetic())
-    }
-}
+setup_unit_ty!(Alphabetic, "Alphabetic", is_alphabetic);
 
 ///
 /// Reference [`is_alphabetic`](std::primitive::char::is_alphabetic).
@@ -41,21 +93,7 @@ pub const fn alphabetic() -> Alphabetic {
     Alphabetic
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Alphanumeric;
-
-impl Alphanumeric {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Alphanumeric {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Alphanumeric", other, other.is_alphanumeric())
-    }
-}
+setup_unit_ty!(Alphanumeric, "Alphanumeric", is_alphanumeric);
 
 ///
 /// Reference [`is_alphanumeric`](std::primitive::char::is_alphanumeric).
@@ -81,28 +119,7 @@ pub const fn alphanumeric() -> Alphanumeric {
     Alphanumeric
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Ascii;
-
-impl Ascii {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Ascii {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Ascii", other, other.is_ascii())
-    }
-}
-
-impl Neu<u8> for Ascii {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("Ascii", other, other.is_ascii())
-    }
-}
+setup_unit_ty2!(Ascii, "Ascii", is_ascii);
 
 ///
 /// Reference [`is_ascii`](std::primitive::char::is_ascii) or [`is_ascii`](std::primitive::u8::is_ascii).
@@ -123,32 +140,11 @@ impl Neu<u8> for Ascii {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii() -> Ascii {
-    Ascii
+pub const fn ascii<T>() -> Ascii<T> {
+    Ascii::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiAlphabetic;
-
-impl AsciiAlphabetic {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiAlphabetic {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiAlphabetic", other, other.is_ascii_alphabetic())
-    }
-}
-
-impl Neu<u8> for AsciiAlphabetic {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiAlphabetic", other, other.is_ascii_alphabetic())
-    }
-}
+setup_unit_ty2!(AsciiAlphabetic, "AsciiAlphabetic", is_ascii_alphabetic);
 
 ///
 /// Reference [`is_ascii_alphabetic`](std::primitive::char::is_ascii_alphabetic) or [`is_ascii_alphabetic`](std::primitive::u8::is_ascii_alphabetic).
@@ -169,32 +165,15 @@ impl Neu<u8> for AsciiAlphabetic {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_alphabetic() -> AsciiAlphabetic {
-    AsciiAlphabetic
+pub const fn ascii_alphabetic<T>() -> AsciiAlphabetic<T> {
+    AsciiAlphabetic::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiAlphanumeric;
-
-impl AsciiAlphanumeric {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiAlphanumeric {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiAlphanumeric", other, other.is_ascii_alphanumeric())
-    }
-}
-
-impl Neu<u8> for AsciiAlphanumeric {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiAlphanumeric", other, other.is_ascii_alphanumeric())
-    }
-}
+setup_unit_ty2!(
+    AsciiAlphanumeric,
+    "AsciiAlphanumeric",
+    is_ascii_alphanumeric
+);
 
 ///
 /// Reference [`is_ascii_alphanumeric`](std::primitive::char::is_ascii_alphanumeric) or [`is_ascii_alphanumeric`](std::primitive::u8::is_ascii_alphanumeric).
@@ -215,32 +194,11 @@ impl Neu<u8> for AsciiAlphanumeric {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_alphanumeric() -> AsciiAlphanumeric {
-    AsciiAlphanumeric
+pub const fn ascii_alphanumeric<T>() -> AsciiAlphanumeric<T> {
+    AsciiAlphanumeric::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiControl;
-
-impl AsciiControl {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiControl {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiControl", other, other.is_ascii_control())
-    }
-}
-
-impl Neu<u8> for AsciiControl {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiControl", other, other.is_ascii_control())
-    }
-}
+setup_unit_ty2!(AsciiControl, "AsciiControl", is_ascii_control);
 
 ///
 /// Reference [`is_ascii_control`](std::primitive::char::is_ascii_control) or [`is_ascii_control`](std::primitive::u8::is_ascii_control).
@@ -261,32 +219,11 @@ impl Neu<u8> for AsciiControl {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_control() -> AsciiControl {
-    AsciiControl
+pub const fn ascii_control<T>() -> AsciiControl<T> {
+    AsciiControl::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiDigit;
-
-impl AsciiDigit {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiDigit {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiDigit", other, other.is_ascii_digit())
-    }
-}
-
-impl Neu<u8> for AsciiDigit {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiDigit", other, other.is_ascii_digit())
-    }
-}
+setup_unit_ty2!(AsciiDigit, "AsciiDigit", is_ascii_digit);
 
 ///
 /// Reference [`is_ascii_digit`](std::primitive::char::is_ascii_digit) or [`is_ascii_digit`](std::primitive::u8::is_ascii_digit).
@@ -307,32 +244,11 @@ impl Neu<u8> for AsciiDigit {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_digit() -> AsciiDigit {
-    AsciiDigit
+pub const fn ascii_digit<T>() -> AsciiDigit<T> {
+    AsciiDigit::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiGraphic;
-
-impl AsciiGraphic {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiGraphic {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiGraphic", other, other.is_ascii_graphic())
-    }
-}
-
-impl Neu<u8> for AsciiGraphic {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiGraphic", other, other.is_ascii_graphic())
-    }
-}
+setup_unit_ty2!(AsciiGraphic, "AsciiGraphic", is_ascii_graphic);
 
 ///
 /// Reference [`is_ascii_graphic`](std::primitive::char::is_ascii_graphic) or [`is_ascii_graphic`](std::primitive::u8::is_ascii_graphic).
@@ -353,32 +269,11 @@ impl Neu<u8> for AsciiGraphic {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_graphic() -> AsciiGraphic {
-    AsciiGraphic
+pub const fn ascii_graphic<T>() -> AsciiGraphic<T> {
+    AsciiGraphic::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiHexDigit;
-
-impl AsciiHexDigit {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiHexDigit {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiHexDigit", other, other.is_ascii_hexdigit())
-    }
-}
-
-impl Neu<u8> for AsciiHexDigit {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiHexDigit", other, other.is_ascii_hexdigit())
-    }
-}
+setup_unit_ty2!(AsciiHexDigit, "AsciiHexDigit", is_ascii_hexdigit);
 
 ///
 /// Reference [`is_ascii_hexdigit`](std::primitive::char::is_ascii_hexdigit) or [`is_ascii_hexdigit`](std::primitive::u8::is_ascii_hexdigit).
@@ -399,32 +294,11 @@ impl Neu<u8> for AsciiHexDigit {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_hexdigit() -> AsciiHexDigit {
-    AsciiHexDigit
+pub const fn ascii_hexdigit<T>() -> AsciiHexDigit<T> {
+    AsciiHexDigit::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiLowercase;
-
-impl AsciiLowercase {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiLowercase {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiLowercase", other, other.is_ascii_lowercase())
-    }
-}
-
-impl Neu<u8> for AsciiLowercase {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiLowercase", other, other.is_ascii_lowercase())
-    }
-}
+setup_unit_ty2!(AsciiLowercase, "AsciiLowercase", is_ascii_lowercase);
 
 ///
 /// Reference [`is_ascii_lowercase`](std::primitive::char::is_ascii_lowercase) or [`is_ascii_lowercase`](std::primitive::u8::is_ascii_lowercase).
@@ -445,32 +319,11 @@ impl Neu<u8> for AsciiLowercase {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_lowercase() -> AsciiLowercase {
-    AsciiLowercase
+pub const fn ascii_lowercase<T>() -> AsciiLowercase<T> {
+    AsciiLowercase::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiPunctuation;
-
-impl AsciiPunctuation {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiPunctuation {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiPunctuation", other, other.is_ascii_punctuation())
-    }
-}
-
-impl Neu<u8> for AsciiPunctuation {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiPunctuation", other, other.is_ascii_punctuation())
-    }
-}
+setup_unit_ty2!(AsciiPunctuation, "AsciiPunctuation", is_ascii_punctuation);
 
 ///
 /// Reference [`is_ascii_punctuation`](std::primitive::char::is_ascii_punctuation) or [`is_ascii_punctuation`](std::primitive::u8::is_ascii_punctuation).
@@ -491,32 +344,11 @@ impl Neu<u8> for AsciiPunctuation {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_punctuation() -> AsciiPunctuation {
-    AsciiPunctuation
+pub const fn ascii_punctuation<T>() -> AsciiPunctuation<T> {
+    AsciiPunctuation::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiUppercase;
-
-impl AsciiUppercase {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiUppercase {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiUppercase", other, other.is_ascii_uppercase())
-    }
-}
-
-impl Neu<u8> for AsciiUppercase {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiUppercase", other, other.is_ascii_uppercase())
-    }
-}
+setup_unit_ty2!(AsciiUppercase, "AsciiUppercase", is_ascii_uppercase);
 
 ///
 /// Reference [`is_ascii_uppercase`](std::primitive::char::is_ascii_uppercase) or [`is_ascii_uppercase`](std::primitive::u8::is_ascii_uppercase).
@@ -537,32 +369,11 @@ impl Neu<u8> for AsciiUppercase {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_uppercase() -> AsciiUppercase {
-    AsciiUppercase
+pub const fn ascii_uppercase<T>() -> AsciiUppercase<T> {
+    AsciiUppercase::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct AsciiWhiteSpace;
-
-impl AsciiWhiteSpace {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for AsciiWhiteSpace {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("AsciiWhiteSpace", other, other.is_ascii_whitespace())
-    }
-}
-
-impl Neu<u8> for AsciiWhiteSpace {
-    #[inline(always)]
-    fn is_match(&self, other: &u8) -> bool {
-        trace_retval!("AsciiWhiteSpace", other, other.is_ascii_whitespace())
-    }
-}
+setup_unit_ty2!(AsciiWhiteSpace, "AsciiWhiteSpace", is_ascii_whitespace);
 
 ///
 /// Reference [`is_ascii_whitespace`](std::primitive::char::is_ascii_whitespace) or [`is_ascii_whitespace`](std::primitive::u8::is_ascii_whitespace).
@@ -585,25 +396,11 @@ impl Neu<u8> for AsciiWhiteSpace {
 ///     Ok(())
 /// }
 /// ```
-pub const fn ascii_whitespace() -> AsciiWhiteSpace {
-    AsciiWhiteSpace
+pub const fn ascii_whitespace<T>() -> AsciiWhiteSpace<T> {
+    AsciiWhiteSpace::new()
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Control;
-
-impl Control {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Control {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Control", other, other.is_control())
-    }
-}
+setup_unit_ty!(Control, "Control", is_control);
 
 ///
 /// Reference [`is_control`](std::primitive::char::is_control).
@@ -630,6 +427,14 @@ pub const fn control() -> Control {
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Digit(u32);
+
+impl std::ops::Not for Digit {
+    type Output = crate::neu::Not<Self, char>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
 
 impl Digit {
     pub const fn new(radix: u32) -> Self {
@@ -667,21 +472,7 @@ pub const fn digit(radix: u32) -> Digit {
     Digit::new(radix)
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Lowercase;
-
-impl Lowercase {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Lowercase {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Lowercase", other, other.is_lowercase())
-    }
-}
+setup_unit_ty!(Lowercase, "Lowercase", is_lowercase);
 
 ///
 /// Reference [`is_lowercase`](std::primitive::char::is_lowercase).
@@ -706,21 +497,7 @@ pub const fn lowercase() -> Lowercase {
     Lowercase
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Numeric;
-
-impl Numeric {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Numeric {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Numeric", other, other.is_numeric())
-    }
-}
+setup_unit_ty!(Numeric, "Numeric", is_numeric);
 
 ///
 /// Reference [`is_numeric`](std::primitive::char::is_numeric).
@@ -745,21 +522,7 @@ pub const fn numeric() -> Numeric {
     Numeric
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Uppercase;
-
-impl Uppercase {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for Uppercase {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("Uppercase", other, other.is_uppercase())
-    }
-}
+setup_unit_ty!(Uppercase, "Uppercase", is_uppercase);
 
 ///
 /// Reference [`is_uppercase`](std::primitive::char::is_uppercase).
@@ -784,21 +547,7 @@ pub const fn uppercase() -> Uppercase {
     Uppercase
 }
 
-#[derive(Debug, Clone, Default, Copy)]
-pub struct WhiteSpace;
-
-impl WhiteSpace {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Neu<char> for WhiteSpace {
-    #[inline(always)]
-    fn is_match(&self, other: &char) -> bool {
-        trace_retval!("WhiteSpace", other, other.is_whitespace())
-    }
-}
+setup_unit_ty!(WhiteSpace, "WhiteSpace", is_whitespace);
 
 ///
 /// Reference [`is_whitespace`](std::primitive::char::is_whitespace).
@@ -827,6 +576,14 @@ pub const fn whitespace() -> WhiteSpace {
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Wild;
+
+impl std::ops::Not for Wild {
+    type Output = crate::neu::Not<Self, char>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
 
 impl Wild {
     pub const fn new() -> Self {
@@ -862,4 +619,77 @@ impl Neu<char> for Wild {
 /// ```
 pub const fn wild() -> Wild {
     Wild
+}
+
+#[derive(Debug, Clone, Default, Copy)]
+pub struct Word<T>(std::marker::PhantomData<T>);
+
+impl<T> std::ops::Not for Word<T>
+where
+    Self: Neu<T>,
+{
+    type Output = crate::neu::Not<Self, T>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
+
+impl<T> Word<T> {
+    pub const fn new() -> Self {
+        Self(std::marker::PhantomData)
+    }
+
+    pub fn contain_ch(other: &char) -> bool {
+        let lower = 'a'..='z';
+        let upper = 'A'..='Z';
+        let digit = '0'..='9';
+
+        lower.contains(other) || upper.contains(other) || digit.contains(other) || *other == '_'
+    }
+
+    pub fn contain_u8(other: &u8) -> bool {
+        let lower = b'a'..=b'z';
+        let upper = b'A'..=b'Z';
+        let digit = b'0'..=b'9';
+
+        lower.contains(other) || upper.contains(other) || digit.contains(other) || *other == b'_'
+    }
+}
+
+impl Neu<char> for Word<char> {
+    #[inline(always)]
+    fn is_match(&self, other: &char) -> bool {
+        trace_retval!("Wild", other, Self::contain_ch(other))
+    }
+}
+
+impl Neu<u8> for Word<u8> {
+    #[inline(always)]
+    fn is_match(&self, other: &u8) -> bool {
+        trace_retval!("Wild", other, Self::contain_u8(other))
+    }
+}
+
+///
+/// Match all the characters except `\n`.
+///
+/// # Example
+///
+/// ```
+/// use neure::prelude::*;
+/// use neu::*;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let word = word();
+///     let word = word.repeat_full();
+///     let mut ctx = CharsCtx::new("TheLolipop_1\r\n");
+///
+///     assert_eq!(ctx.try_mat(&word)?, Span::new(0, 12));
+///     assert!(ctx.try_mat(&word).is_err());
+///     Ok(())
+/// }
+/// ```
+pub const fn word<T>() -> Word<T> {
+    Word::new()
 }

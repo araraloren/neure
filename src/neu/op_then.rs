@@ -59,7 +59,7 @@ where
     L: Neu<T>,
     R: Neu<T>,
 {
-    type Output = crate::regex::RegexNot<Self>;
+    type Output = crate::regex::Not<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)

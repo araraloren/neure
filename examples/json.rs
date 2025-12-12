@@ -37,7 +37,7 @@ impl JsonParser {
                 .or(escape)
                 .repeat(0..)
                 .pat();
-            let str = ctor::Wrap::dyn_box(str_val.quote(b"\"", b"\""));
+            let str = ctor::Wrap::dyn_box(str_val.enclose(b"\"", b"\""));
             let str = str.try_map(|v| Ok(JsonZero::Str(v)));
 
             let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
@@ -48,13 +48,13 @@ impl JsonParser {
             let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
 
             let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
-            let key = key.quote(b"\"", b"\"");
+            let key = key.enclose(b"\"", b"\"");
             let key = key.suffix(ws).prefix(ws);
             let obj = key.sep_once(b":", ele.clone());
-            let obj = ctor::Wrap::dyn_box(obj.sep(b",").quote(b"{", b"}"))
+            let obj = ctor::Wrap::dyn_box(obj.sep(b",").enclose(b"{", b"}"))
                 .try_map(|v| Ok(JsonZero::Object(v)));
 
-            let array = ele.clone().sep(b",").quote(b"[", b"]");
+            let array = ele.clone().sep(b",").enclose(b"[", b"]");
             let array = array.try_map(|v| Ok(JsonZero::Array(v)));
 
             obj.or(array)

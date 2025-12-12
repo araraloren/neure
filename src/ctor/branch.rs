@@ -14,7 +14,7 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -104,7 +104,7 @@ pub struct Branch<C, P, F, E> {
     marker: PhantomData<C>,
 }
 
-def_not!(Branch<C, P, I, E>);
+impl_not_for_regex!(Branch<C, P, I, E>);
 
 impl<C, P, F, E> Debug for Branch<C, P, F, E>
 where

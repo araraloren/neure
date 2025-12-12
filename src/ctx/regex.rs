@@ -169,7 +169,7 @@ impl<'a> RegexCtx<'a, [u8]> {
             0,
             { usize::MAX },
             Self,
-            crate::neu::AsciiWhiteSpace,
+            crate::neu::AsciiWhiteSpace<u8>,
             crate::neu::NullCond,
         >,
     > {
@@ -297,7 +297,7 @@ impl<'a> RegexCtx<'a, str> {
             0,
             { usize::MAX },
             Self,
-            crate::neu::AsciiWhiteSpace,
+            crate::neu::AsciiWhiteSpace<char>,
             crate::neu::NullCond,
         >,
     > {

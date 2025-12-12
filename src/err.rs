@@ -5,7 +5,7 @@ use std::fmt::Display;
 pub enum Error {
     Null,
 
-    RegexNot,
+    Not,
 
     Consume,
 
@@ -78,7 +78,7 @@ impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Null => write!(f, "Error::Null"),
-            Error::RegexNot => write!(f, "RegexNot: internal pattern match succeeded"),
+            Error::Not => write!(f, "Not: internal pattern match succeeded"),
             Error::Consume => write!(f, "Consume: remaining data length is insufficient"),
             Error::Slice => write!(f, "Slice: all slices failed to match"),
             Error::LitSlice => write!(f, "LitSlice: slice failed to match"),

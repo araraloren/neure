@@ -14,6 +14,14 @@ pub struct CRange<T> {
     end: Bound<T>,
 }
 
+impl<T: PartialOrd + MayDebug> std::ops::Not for CRange<T> {
+    type Output = crate::neu::Not<Self, T>;
+
+    fn not(self) -> Self::Output {
+        crate::neu::not(self)
+    }
+}
+
 impl<T: Clone> Clone for CRange<T> {
     fn clone(&self) -> Self {
         Self {

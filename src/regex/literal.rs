@@ -6,7 +6,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 /// Match given slice in the [`Context`].
@@ -19,7 +19,7 @@ pub struct LitSlice<'a, T> {
     val: &'a [T],
 }
 
-def_not!(LitSlice<'a, T>);
+impl_not_for_regex!(LitSlice<'a, T>);
 
 impl<'a, T> LitSlice<'a, T> {
     pub fn new(val: &'a [T]) -> Self {
@@ -70,7 +70,7 @@ pub struct LitString<'a> {
     val: &'a str,
 }
 
-def_not!(LitString<'a>);
+impl_not_for_regex!(LitString<'a>);
 
 impl<'a> LitString<'a> {
     pub fn new(val: &'a str) -> Self {

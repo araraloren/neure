@@ -14,7 +14,7 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -118,7 +118,7 @@ pub struct Or<C, L, R> {
     marker: PhantomData<C>,
 }
 
-def_not!(Or<C, L, R>);
+impl_not_for_regex!(Or<C, L, R>);
 
 impl<C, L, R> Debug for Or<C, L, R>
 where

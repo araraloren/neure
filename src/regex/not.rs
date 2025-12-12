@@ -5,7 +5,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 /// Reverse the result, return zero length [`Span`] if match failed.
@@ -14,19 +14,19 @@ use crate::regex::Regex;
 ///
 /// Return zero length [`Span`] if `T` match failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct RegexNot<T> {
+pub struct Not<T> {
     val: T,
 }
 
-impl<T> RegexNot<T> {
+impl<T> Not<T> {
     pub fn new(val: T) -> Self {
         Self { val }
     }
 }
 
-def_not!(RegexNot<T>);
+impl_not_for_regex!(Not<T>);
 
-impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for RegexNot<T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for Not<T>
 where
     T: Regex<C>,
     C: Match<'a>,
@@ -40,7 +40,7 @@ where
     }
 }
 
-impl<'a, C, T> Regex<C> for RegexNot<T>
+impl<'a, C, T> Regex<C> for Not<T>
 where
     T: Regex<C>,
     C: Match<'a>,
@@ -48,12 +48,12 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut g = CtxGuard::new(ctx);
-        let mut ret = Err(Error::RegexNot);
+        let mut ret = Err(Error::Not);
 
-        crate::debug_regex_beg!("RegexNot", g.beg());
+        crate::debug_regex_beg!("Not", g.beg());
         if g.try_mat(&self.val).is_err() {
             ret = Ok(Span::new(g.beg(), 0));
         }
-        crate::debug_regex_reval!("RegexNot", ret)
+        crate::debug_regex_reval!("Not", ret)
     }
 }

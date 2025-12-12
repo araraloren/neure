@@ -21,7 +21,7 @@ pub use self::consume::Consume;
 pub use self::consume::ConsumeAll;
 pub use self::literal::LitSlice;
 pub use self::literal::LitString;
-pub use self::not::RegexNot;
+pub use self::not::Not;
 pub use self::null::NullRegex;
 pub use self::rec::rec_parser;
 pub use self::rec::rec_parser_sync;
@@ -613,8 +613,8 @@ pub fn null() -> NullRegex {
 ///     Ok(())
 /// # }
 /// ```
-pub fn not<T>(re: T) -> RegexNot<T> {
-    RegexNot::new(re)
+pub fn not<T>(re: T) -> crate::regex::Not<T> {
+    crate::regex::Not::new(re)
 }
 
 /// Iterate over the vector and match the regex against the [`Context`].
@@ -796,34 +796,34 @@ where
     }
 }
 
-macro_rules! def_not {
+macro_rules! impl_not_for_regex {
     (@$ty:ident [ ]  [ ]) => {
         impl std::ops::Not for $ty {
-            type Output = $crate::regex::RegexNot<Self>;
+            type Output = $crate::regex::Not<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     (@$ty:ident [ ]  [ $($p:ident),+ ]) => {
         impl<$($p),+> std::ops::Not for $ty<$($p),+> {
-            type Output = $crate::regex::RegexNot<Self>;
+            type Output = $crate::regex::Not<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     (@$ty:ident [ $($l:lifetime),+ ]  [ $($p:ident),* ]) => {
         impl<$($l),+ , $($p),*> std::ops::Not for $ty<$($l),+ , $($p),*> {
-            type Output = $crate::regex::RegexNot<Self>;
+            type Output = $crate::regex::Not<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     ($ty:ident) => {
-        def_not! { @$ty [ ] [ ] }
+        impl_not_for_regex! { @$ty [ ] [ ] }
     };
     ($ty:ident < $($l:lifetime),* $(,)? $($p:ident),* >) => {
-        def_not! { @$ty [$($l),*] [$($p),*] }
+        impl_not_for_regex! { @$ty [$($l),*] [$($p),*] }
     };
 }
 
-pub(crate) use def_not;
+pub(crate) use impl_not_for_regex;

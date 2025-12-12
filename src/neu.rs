@@ -76,6 +76,7 @@ pub use self::units::numeric;
 pub use self::units::uppercase;
 pub use self::units::whitespace;
 pub use self::units::wild;
+pub use self::units::word;
 pub use self::units::Alphabetic;
 pub use self::units::Alphanumeric;
 pub use self::units::Ascii;
@@ -96,6 +97,7 @@ pub use self::units::Numeric;
 pub use self::units::Uppercase;
 pub use self::units::WhiteSpace;
 pub use self::units::Wild;
+pub use self::units::Word;
 
 pub trait Neu<T: ?Sized> {
     fn is_match(&self, other: &T) -> bool;
@@ -607,45 +609,45 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
     }
 }
 
-pub trait NeuOp<C> {
-    fn or<U>(self, unit: U) -> Or<Self, U, C>
+pub trait NeuOp<T> {
+    fn or<U>(self, unit: U) -> Or<Self, U, T>
     where
-        U: Neu<C>,
-        Self: Neu<C> + Sized;
+        U: Neu<T>,
+        Self: Neu<T> + Sized;
 
-    fn and<U>(self, unit: U) -> And<Self, U, C>
+    fn and<U>(self, unit: U) -> And<Self, U, T>
     where
-        U: Neu<C>,
-        Self: Neu<C> + Sized;
+        U: Neu<T>,
+        Self: Neu<T> + Sized;
 
-    fn not(self) -> Not<Self, C>
+    fn not(self) -> Not<Self, T>
     where
-        Self: Neu<C> + Sized;
+        Self: Neu<T> + Sized;
 }
 
-impl<C, T> NeuOp<C> for T
+impl<T, V> NeuOp<T> for V
 where
-    T: Neu<C>,
+    V: Neu<T>,
 {
-    fn or<U>(self, unit: U) -> Or<Self, U, C>
+    fn or<U>(self, unit: U) -> Or<Self, U, T>
     where
-        U: Neu<C>,
-        Self: Neu<C> + Sized,
+        U: Neu<T>,
+        Self: Neu<T> + Sized,
     {
         Or::new(self, unit)
     }
 
-    fn and<U>(self, unit: U) -> And<Self, U, C>
+    fn and<U>(self, unit: U) -> And<Self, U, T>
     where
-        U: Neu<C>,
-        Self: Neu<C> + Sized,
+        U: Neu<T>,
+        Self: Neu<T> + Sized,
     {
         And::new(self, unit)
     }
 
-    fn not(self) -> Not<Self, C>
+    fn not(self) -> Not<Self, T>
     where
-        Self: Neu<C> + Sized,
+        Self: Neu<T> + Sized,
     {
         Not::new(self)
     }

@@ -8,7 +8,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::def_not;
+use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
 ///
@@ -78,7 +78,7 @@ pub struct Collect<C, P, O, V> {
     marker: PhantomData<(O, V, C)>,
 }
 
-def_not!(Collect<C, P, O, V>);
+impl_not_for_regex!(Collect<C, P, O, V>);
 
 impl<C, P, O, V> Debug for Collect<C, P, O, V>
 where

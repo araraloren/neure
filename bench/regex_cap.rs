@@ -80,7 +80,7 @@ mod email_neure {
         let email = name
             .sep_once("@", domain.sep_once(".", post))
             .try_map(|(v1, (v2, v3))| Ok((v1, v2, v3)))
-            .quote(regex::start(), regex::end());
+            .enclose(regex::start(), regex::end());
         let mut ctx = RegexCtx::new(str);
 
         ctx.ctor(&email)
