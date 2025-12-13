@@ -17,7 +17,7 @@ use super::impl_not_for_regex;
 /// [`EmptyRegex`] is a fundamental building block that matches the empty string at any position
 /// in the input stream. It always succeeds (never fails) and consumes zero elements, making it
 /// ideal for building optional patterns, zero-width assertions, and serving as a neutral element
-/// in parser composition. Unlike position-constrained anchors (e.g., [`AnchorEnd`]), [`EmptyRegex`]
+/// in parser composition. Unlike position-constrained anchors (e.g., [`AnchorEnd`](crate::regex::AnchorEnd)), [`EmptyRegex`]
 /// succeeds at every position regardless of context.
 ///
 /// # Regex

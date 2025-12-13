@@ -29,11 +29,6 @@ use crate::regex::Regex;
 /// # Ctor
 ///
 /// Uses identical matching logic as regex mode, then constructs a value from the result.
-///
-/// # Example
-///
-/// ```
-/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Assert<T> {
     pat: T,
@@ -118,6 +113,15 @@ where
 /// # Example
 ///
 /// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let langs = regex::array([b"rust".as_ref(), b"jawa", b"golang"]);
+///     let mut ctx = BytesCtx::new(b"javascript is not awesome!");
+///
+///     assert_eq!(ctx.try_mat(&regex::assert(langs, false))?, Span::new(0, 0));
+/// #   Ok(())
+/// # }
 /// ```
 pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
     Assert::new(pat, value)

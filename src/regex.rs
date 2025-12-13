@@ -541,7 +541,7 @@ pub fn pair_vector<K, V: Clone>(val: impl IntoIterator<Item = (K, V)>) -> PairVe
     PairVector::new(val.into_iter().collect())
 }
 
-/// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`](crate::ctx::Context).
+/// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`].
 ///
 /// # Example
 /// ```
@@ -578,7 +578,7 @@ pub fn slice<const N: usize, T>(val: &[T; N]) -> Slice<'_, N, T> {
     Slice::new(val)
 }
 
-/// Iterate over the array and match the regex against the [`Context`](crate::ctx::Context).
+/// Iterate over the array and match the regex against the [`Context`].
 ///
 /// # Example
 /// ```
