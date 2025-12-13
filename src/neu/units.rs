@@ -672,7 +672,7 @@ impl Neu<u8> for Word<u8> {
 }
 
 ///
-/// Match all the characters except `\n`.
+/// Match the character 'a' ..= 'z', 'A' ..= 'Z', '0' ..= '9' or '_'.
 ///
 /// # Example
 ///

@@ -94,6 +94,30 @@ where
     }
 }
 
+impl<'a, 'b, C, O, H> Ctor<'a, C, O, O, H> for Box<dyn Regex<C> + Send + 'b>
+where
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
+{
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        let ret = ctx.try_mat(self.as_ref())?;
+
+        handler.invoke(ctx, &ret).map_err(Into::into)
+    }
+}
+
+impl<'a, 'b, C, O, H> Ctor<'a, C, O, O, H> for Box<dyn Regex<C> + Send + Sync + 'b>
+where
+    C: Match<'a>,
+    H: Handler<C, Out = O>,
+{
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        let ret = ctx.try_mat(self.as_ref())?;
+
+        handler.invoke(ctx, &ret).map_err(Into::into)
+    }
+}
+
 impl<'a, C, O, H> Ctor<'a, C, O, O, H> for &str
 where
     C: Context<'a, Orig<'a> = &'a str> + Match<'a>,
@@ -258,6 +282,12 @@ impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Box<dyn Ctor<'a, C, M, O, H> +
     }
 }
 
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.as_ref(), ctx, handler)
+    }
+}
+
 impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Arc<dyn Ctor<'a, C, M, O, H> + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
@@ -265,6 +295,12 @@ impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Arc<dyn Ctor<'a, C, M, O, H> +
 }
 
 impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Arc<dyn Ctor<'a, C, M, O, H> + Send + 'b> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.as_ref(), ctx, handler)
+    }
+}
+
+impl<'a, 'b, C, M, O, H> Ctor<'a, C, M, O, H> for Arc<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.as_ref(), ctx, handler)
     }
@@ -528,7 +564,7 @@ where
     ///         S(&'a str),
     ///     }
     ///
-    ///     let cond = neu::re_cond(regex::not("\\\""));
+    ///     let cond = neu::regex_cond(regex::not("\\\""));
     ///     let str = regex!([^ '"' ]+).set_cond(cond).or("\\\"").repeat(1..).pat();
     ///     let str = str.enclose("\"", "\"");
     ///     let str = str.map(V::S);
@@ -839,11 +875,6 @@ where
         Self: Ctor<'a, C, M, O, H> + 'b;
 
     #[allow(clippy::complexity)]
-    fn into_dyn_sync<'a, 'b, M, O, H>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C>
-    where
-        Self: Ctor<'a, C, M, O, H> + Send + 'b;
-
-    #[allow(clippy::complexity)]
     fn into_dyn_arc<'a, 'b, M, O, H>(
         self,
     ) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C>
@@ -960,13 +991,6 @@ where
         Self: Ctor<'a, C, M, O, H> + 'b,
     {
         Wrap::dyn_box(self)
-    }
-
-    fn into_dyn_sync<'a, 'b, M, O, H>(self) -> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C>
-    where
-        Self: Ctor<'a, C, M, O, H> + Send + 'b,
-    {
-        Wrap::dyn_box_sync(self)
     }
 
     fn into_dyn_arc<'a, 'b, M, O, H>(self) -> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C>

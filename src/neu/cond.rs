@@ -19,7 +19,7 @@ where
 {
     type Out<F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>;
 }
@@ -140,7 +140,7 @@ where
 ///     let str = neu::not(b'"')
 ///         .repeat_one_more()
 ///         // avoid match escape sequence
-///         .set_cond(neu::re_cond(regex::not(escape)))
+///         .set_cond(neu::regex_cond(regex::not(escape)))
 ///         // match the escape sequence in another regex
 ///         .or(escape)
 ///         .repeat(1..)
@@ -151,6 +151,6 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn re_cond<'a, C, T>(regex: T) -> RegexCond<'a, C, T> {
+pub fn regex_cond<'a, C, T>(regex: T) -> RegexCond<'a, C, T> {
     RegexCond::new(regex)
 }

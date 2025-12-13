@@ -7,7 +7,19 @@ use crate::err::Error;
 use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
-/// Implement the [`Ctor`] and placehoder implementation [`Regex`] traits for any type implements [`Ctor`].
+///
+/// Adapter that restricts a type to constructor-only contexts while satisfying compiler trait requirements.
+///
+/// [`Wrap`] solves a specific compiler limitation when working with generic combinators that require both [`Regex`]
+/// and [`Ctor`] trait implementations, but your type only meaningfully implements [`Ctor`].
+///
+/// # Regex
+///
+/// Explicitly unsupported - any attempt to use regex operations will panic at runtime.
+///
+/// # Ctor
+///
+/// Delegates all operations to the inner value (fully functional).
 #[derive(Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Wrap<I, C> {
     inner: I,
@@ -294,6 +306,24 @@ impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C> 
 }
 
 ///
+/// Return a type that wrap `dyn Ctor + Send` with [`std::sync::Arc`].
+///
+impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C> {
+    pub fn dyn_arc_send(ctor: impl Ctor<'a, C, M, O, H> + Send + 'b) -> Self {
+        Self::new(std::sync::Arc::new(ctor))
+    }
+}
+
+///
+/// Return a type that wrap `dyn Ctor + Send + Sync` with [`std::sync::Arc`].
+///
+impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, C> {
+    pub fn dyn_arc_sync(ctor: impl Ctor<'a, C, M, O, H> + Send + Sync + 'b) -> Self {
+        Self::new(std::sync::Arc::new(ctor))
+    }
+}
+
+///
 /// Return a type that wrap `dyn Ctor` with [`Box`].
 ///
 /// ```
@@ -342,7 +372,7 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
 ///         let name = char::is_ascii_alphabetic.repeat_one_more();
 ///         let time = char::is_ascii_digit.repeat_one_more();
 ///         let parser = name.sep_once("_", time).sep_once(".", "txt")._0();
-///         ctor::Wrap::dyn_box_sync(parser)
+///         ctor::Wrap::dyn_box_send(parser)
 ///     })?;
 ///
 ///     handler.join().unwrap();
@@ -351,7 +381,16 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
 /// # }
 /// ```
 impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C> {
-    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, M, O, H> + Send + 'b) -> Self {
+    pub fn dyn_box_send(ctor: impl Ctor<'a, C, M, O, H> + Send + 'b) -> Self {
+        Self::new(Box::new(ctor))
+    }
+}
+
+///
+/// Return a type that wrap `dyn Ctor + Send + Sync` with [`Box`].
+///
+impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, C> {
+    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, M, O, H> + Send + Sync + 'b) -> Self {
         Self::new(Box::new(ctor))
     }
 }

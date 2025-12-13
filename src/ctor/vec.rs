@@ -16,23 +16,68 @@ use crate::regex::Regex;
 use super::Ctor;
 
 ///
-/// Iterate over the vector and match the regex against the [`Context`].
+/// Matches the **first successful expression** from a dynamic sequence of alternatives.
 ///
-/// # Ctor
+/// [`Vector`] provides ordered choice behavior over a runtime-defined collection of expressions:
+/// 1. Tries expressions **in sequence** from the vector
+/// 2. Returns immediately on the **first successful match**
+/// 3. Fails only if **all expressions fail**
 ///
-/// Return the result of first regex that matches.
+/// This is the dynamic counterpart to static alternatives like nested [`Or`](crate::ctor::Or) combinators.
 ///
-/// # Example
+/// # Regex
 ///
+/// Returns the [`Span`] of the first successfully matched expression.
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let tuple = regex::vector(["a".into_dyn_regex(), "b".into_dyn_regex(), "c".into_dyn_regex()]);
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let keywords = regex::vector(["for", "while", "repeat"]);
 ///
-///     assert_eq!(CharsCtx::new("abc").ctor_span(&tuple)?, Span::new(0, 1));
-///     Ok(())
+///     assert_eq!(CharsCtx::new("while").try_mat(&keywords)?, Span::new(0, 5));
+///     assert_eq!(CharsCtx::new("repeat").try_mat(&keywords)?, Span::new(0, 6));
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Ctor
+///
+/// Returns the constructed value from the first successfully matched expression.
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let year = neu::digit(10).repeat_times::<4>();
+///     let month = neu::digit(10).repeat_times::<2>();
+///     let day = month;
+///
+///     let style1 = year.sep_once("-", month.sep_once("-", day));
+///     let style1 = style1.map(|(y, (m, d))| (y, m, d));
+///
+///     let style2 = day.sep_once("/", month.sep_once("/", year));
+///     let style2 = style2.map(|(d, (m, y))| (y, m, d));
+///
+///     let style3 = year.then(month.then(day));
+///     let style3 = style3.map(|(y, (m, d))| (y, m, d));
+///
+///     let date = regex::vector([style1.into_dyn(), style2.into_dyn(), style3.into_dyn()]);
+///
+///     assert_eq!(CharsCtx::new("20251112").ctor(&date)?, ("2025", "11", "12"));
+///     assert_eq!(
+///         CharsCtx::new("12/10/2025").ctor(&date)?,
+///         ("2025", "10", "12")
+///     );
+///     assert_eq!(
+///         CharsCtx::new("2025-10-08").ctor(&date)?,
+///         ("2025", "10", "08")
+///     );
+///
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Debug, Clone)]
@@ -111,32 +156,84 @@ where
 }
 
 ///
-/// Iterate over the vector and match the regex against the [`Context`].
+/// Matches the first successful expression from a dynamic sequence while carrying associated data.
 ///
-/// # Ctor
+/// [`PairVector`] extends ordered choice behavior by associating a value with each expression:
+/// 1. Tries expressions **in sequence** from the vector of `(expression, value)` pairs
+/// 2. Returns immediately on the **first successful match**
+/// 3. Carries the associated value alongside the match result when successful
 ///
-/// Return a pair of result and the value of first pair that matches.
+/// This combinator is particularly useful for mapping patterns to semantic values at runtime.
 ///
-/// # Example
+/// # Regex
 ///
+/// Returns the [`Span`] of the first successfully matched expression, **ignoring associated values**.
+///
+/// ## Example
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-///     pub enum Kind {
-///         A,
-///         B,
-///         C,
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     #[derive(Debug, Clone, Copy)]
+///     enum Keyword {
+///         For,
+///         While,
+///         Repeat,
 ///     }
-///     let vec = regex::pair_vector([("a", Kind::A), ("b", Kind::B), ("c", Kind::C)]);
 ///
-///     assert_eq!(CharsCtx::new("cab").ctor(&vec)?, ("c", Kind::C));
+///     let keywords = regex::pair_vector([
+///         ("for", Keyword::For),
+///         ("while", Keyword::While),
+///         ("repeat", Keyword::Repeat),
+///     ]);
 ///
-///     Ok(())
+///     assert_eq!(CharsCtx::new("while").try_mat(&keywords)?, Span::new(0, 5));
+///     assert_eq!(CharsCtx::new("repeat").try_mat(&keywords)?, Span::new(0, 6));
+///
+/// #   Ok(())
 /// # }
 /// ```
+///
+/// # Ctor
+/// Returns a tuple `(O, V)` where:
+/// - `O` is the constructed value from the matched expression
+/// - `V` is the **cloned associated value** from the successful pair
+///
+/// ## Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     #[derive(Debug, Clone, Copy, PartialEq)]
+///     enum Keyword {
+///         For,
+///         While,
+///         Repeat,
+///     }
+///
+///     let keywords = regex::pair_vector([
+///         ("for", Keyword::For),
+///         ("while", Keyword::While),
+///         ("repeat", Keyword::Repeat),
+///     ]);
+///
+///     assert_eq!(
+///         CharsCtx::new("while").ctor(&keywords)?,
+///         ("while", Keyword::While)
+///     );
+///     assert_eq!(
+///         CharsCtx::new("repeat").ctor(&keywords)?,
+///         ("repeat", Keyword::Repeat)
+///     );
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Key Requirements
+///
+/// - `V` must implement [`Clone`] for Ctor mode (to return owned values)
+/// - All expressions must produce values of the same type in [`Ctor`] mode
 #[derive(Debug, Clone)]
 pub struct PairVector<K, V>(Vec<(K, V)>);
 

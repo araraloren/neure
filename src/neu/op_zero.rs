@@ -17,26 +17,47 @@ use super::Neu;
 use super::NeuCond;
 
 ///
-/// Repeat the unit `U` zero or one time.
+/// Matches zero or one context-sensitive element with guaranteed success.
+///
+/// `NeureZeroOne` provides optional matching with full context validation, always succeeding in one of two ways:
+/// - **One element**: When the first element satisfies both pattern and context conditions
+/// - **Zero elements**: When no valid element exists at current position (returns empty span)
+///
+/// This combinator is the context-aware equivalent of the `?` (optional) operator in regular expressions,
+/// but with runtime context validation for the potential match. Unlike standard optional patterns,
+/// it performs deep validation of parser state when attempting to match an element.
+///
+/// # Regex
+///
+/// Always succeeds with one of two outcomes:
+/// - **Single element match**: Returns span covering the matched element
+///   - Requires the first element to satisfy BOTH:
+///     a. `unit.is_match(item)` returns true
+///     b. `cond.check()` returns true for the context
+/// - **Empty match**: Returns zero-length span at current position when:
+///   - No elements available
+///   - First element fails either condition
+///   - Context conditions reject the potential match
 ///
 /// # Ctor
 ///
-/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// Handler implementations must handle both cases:
+/// - Present value (when one element matched)
+/// - Absent value (when zero elements matched)
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_zero_one();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Copy)]
@@ -53,7 +74,7 @@ impl<C, U, T, I> std::ops::Not for NeureZeroOne<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -91,10 +112,10 @@ impl<C, U, T, I> NeureZeroOne<C, U, T, I>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U, r#if: I) -> Self {
+    pub fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
-            cond: r#if,
+            cond,
             marker: PhantomData,
         }
     }
@@ -120,11 +141,11 @@ where
 {
     type Out<F> = NeureZeroOne<C, U, C::Item, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureZeroOne::new(self.unit, r#if)
+        NeureZeroOne::new(self.unit, cond)
     }
 }
 
@@ -171,26 +192,49 @@ where
 }
 
 ///
-/// Repeat the unit `U` zero or more times.
+/// Matches zero or more context-sensitive elements with guaranteed success.
+///
+/// `NeureZeroMore` provides greedy repetition with full context validation, always succeeding in one of two ways:
+/// - **Sequence match**: Longest possible sequence where every element satisfies both pattern and context conditions
+/// - **Empty match**: Zero-length span when no valid elements exist at current position
+///
+/// This combinator is the context-aware equivalent of the `*` (Kleene star) operator in regular expressions,
+/// but with per-element runtime context validation. It maintains parser state consistency through complex
+/// context conditions during repetition, enabling sophisticated token-skipping and sequence recognition.
+///
+/// # Regex
+///
+/// Always succeeds with one of two outcomes:
+/// - **Non-empty sequence**: Returns span covering all matched elements
+///   - **Every element** in the sequence must satisfy BOTH:
+///     a. `unit.is_match(item)` returns true
+///     b. `cond.check()` returns true for the context
+///   - Stops at first element that fails either condition
+///   - Greedily consumes the longest valid sequence
+/// - **Empty sequence**: Returns zero-length span at current position when:
+///   - No elements available
+///   - First element fails either condition
+///   - Context conditions reject the potential match
 ///
 /// # Ctor
 ///
-/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// Handler implementations must handle both cases:
+/// - Non-empty sequence (when elements matched)
+/// - Empty sequence (when zero elements matched)
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_zero_more();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Copy)]
@@ -207,7 +251,7 @@ impl<C, U, T, I> std::ops::Not for NeureZeroMore<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -245,10 +289,10 @@ impl<C, U, T, I> NeureZeroMore<C, U, T, I>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U, r#if: I) -> Self {
+    pub fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
-            cond: r#if,
+            cond,
             marker: PhantomData,
         }
     }
@@ -274,11 +318,11 @@ where
 {
     type Out<F> = NeureZeroMore<C, U, C::Item, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureZeroMore::new(self.unit, r#if)
+        NeureZeroMore::new(self.unit, cond)
     }
 }
 

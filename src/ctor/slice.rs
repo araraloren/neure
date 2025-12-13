@@ -92,7 +92,7 @@ use super::Ctor;
 pub struct Slice<'a, const N: usize, T>(&'a [T; N]);
 
 impl<const N: usize, T> std::ops::Not for Slice<'_, N, T> {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -248,7 +248,7 @@ where
 pub struct PairSlice<'a, const N: usize, K, V>(&'a [(K, V); N]);
 
 impl<const N: usize, K, V> std::ops::Not for PairSlice<'_, N, K, V> {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)

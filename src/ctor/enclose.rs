@@ -80,7 +80,7 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let cond = neu::re_cond(!('r'.then('#')));
+///     let cond = neu::regex_cond(!('r'.then('#')));
 ///     let str_val = '#'.not().repeat_one_more().set_cond(cond);
 ///     let str = str_val.enclose("r#", "#");
 ///

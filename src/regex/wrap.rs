@@ -9,7 +9,22 @@ use crate::err::Error;
 use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
-/// Implement the [`Regex`] and [`Ctor`] traits any type implements [`Regex`].
+///
+/// Transparent adapter that elevates Regex combinators to Ctor-enabled combinators.
+///
+/// [`Wrap<I, C>`] serves as a zero-cost abstraction layer that allows any [`Regex`] combinator to
+/// participate in constructor-based parsing chains. It preserves the exact matching behavior of
+/// the inner combinator while enabling value construction through handler functions. This adapter
+/// is essential when composing parsers that mix pure matching combinators with value-producing
+/// combinators in sequence chains.
+///
+/// # Regex
+///
+/// Forwards parsing directly to inner combinator
+///
+/// # Ctor
+///
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
 #[derive(Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Wrap<I, C> {
     inner: I,
@@ -105,6 +120,23 @@ where
     }
 }
 
+///
+/// Return a type that wrap `Regex` with [`Box`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"who");
+///     let regex = regex::Wrap::r#box(regex); // ERROR if comment this line
+///
+///     assert_eq!(CharsCtx::new("who are you?").ctor(&regex)?, "who");
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<T, C> Wrap<BoxedRegex<T>, C>
 where
     T: Regex<C>,
@@ -116,6 +148,25 @@ where
     }
 }
 
+///
+/// Return a type that wrap `Regex` with [`std::rc::Rc`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"@");
+///     let regex = regex::Wrap::rc(regex); // ERROR if comment this line
+///     let snd = regex.clone();
+///     let fst = regex;
+///
+///     assert_eq!(CharsCtx::new("@@").ctor(&fst.then(snd))?, ("@", "@"));
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<T, C> Wrap<std::rc::Rc<T>, C>
 where
     T: Regex<C>,
@@ -125,6 +176,25 @@ where
     }
 }
 
+///
+/// Return a type that wrap `Regex` with [`std::sync::Arc`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"@");
+///     let regex = regex::Wrap::arc(regex); // ERROR if comment this line
+///     let snd = regex.clone();
+///     let fst = regex;
+///
+///     assert_eq!(CharsCtx::new("@@").ctor(&fst.then(snd))?, ("@", "@"));
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<T, C> Wrap<std::sync::Arc<T>, C>
 where
     T: Regex<C>,
@@ -134,6 +204,25 @@ where
     }
 }
 
+///
+/// Return a type that wrap `Regex` with [`std::cell::Cell`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = move |ctx: &mut CharsCtx| ctx.try_mat(&"@");
+///     let regex = regex::Wrap::cell(regex); // ERROR if comment this line
+///     let snd = regex.clone();
+///     let fst = regex;
+///
+///     assert_eq!(CharsCtx::new("@@").ctor(&fst.then(snd))?, ("@", "@"));
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<T, C> Wrap<std::cell::Cell<T>, C>
 where
     T: Regex<C>,
@@ -143,6 +232,29 @@ where
     }
 }
 
+///
+/// Return a type that wrap `Regex` with [`std::sync::Mutex`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = std::cell::RefCell::new("where");
+///     let regex = regex::Wrap::mutex(regex); // ERROR if comment this line
+///
+///     std::thread::scope(|scope| {
+///         let handler1 = scope.spawn(|| CharsCtx::new("where are you from?").ctor(&regex));
+///         let handler2 = scope.spawn(|| CharsCtx::new("where are you from?").ctor(&regex));
+///
+///         assert_eq!(handler1.join().unwrap()?, handler2.join().unwrap()?);
+///         Ok::<_, neure::err::Error>(())
+///     })?;
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<T, C> Wrap<std::sync::Mutex<T>, C>
 where
     T: Regex<C>,
@@ -152,6 +264,23 @@ where
     }
 }
 
+///
+/// Return a type that wrap `Regex` with [`std::cell::RefCell`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("where"));
+///     let regex = regex::Wrap::refcell(regex); // ERROR if comment this line
+///
+///     assert_eq!(CharsCtx::new("where are you from?").ctor(&regex)?, "where");
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<T, C> Wrap<std::cell::RefCell<T>, C>
 where
     T: Regex<C>,
@@ -161,18 +290,155 @@ where
     }
 }
 
+///
+/// Return a type that wrap `dyn Regex` with [`std::sync::Arc`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
+///     let regex = regex::Wrap::arc(regex); // ERROR if comment this line
+///
+///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<'a, C> Wrap<std::sync::Arc<dyn Regex<C> + 'a>, C> {
     pub fn dyn_arc(regex: impl Regex<C> + 'a) -> Self {
         Self::new(std::sync::Arc::new(regex))
     }
 }
 
+///
+/// Return a type that wrap `dyn Regex + Send` with [`std::sync::Arc`].
+///
+impl<'a, C> Wrap<std::sync::Arc<dyn Regex<C> + Send + 'a>, C> {
+    pub fn dyn_arc_send(regex: impl Regex<C> + Send + 'a) -> Self {
+        Self::new(std::sync::Arc::new(regex))
+    }
+}
+
+///
+/// Return a type that wrap `dyn Regex + Send + Sync` with [`std::sync::Arc`].
+///
+/// # Example
+/// ```
+/// # use std::sync::mpsc::channel;
+/// #
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
+///     let regex = regex::Wrap::dyn_arc_sync(regex); // ERROR if comment this line
+///     let (send, recv) = channel();
+///
+///     std::thread::spawn(move || {
+///         if let Ok(regex) = recv.recv() {
+///             assert_eq!(
+///                 CharsCtx::new("where are you from?").ctor(&regex).unwrap(),
+///                 "where"
+///             );
+///         }
+///     });
+///
+///     send.send(regex)?;
+///
+/// #    Ok(())
+/// # }
+/// ```
+impl<'a, C> Wrap<std::sync::Arc<dyn Regex<C> + Send + Sync + 'a>, C> {
+    pub fn dyn_arc_sync(regex: impl Regex<C> + Send + Sync + 'a) -> Self {
+        Self::new(std::sync::Arc::new(regex))
+    }
+}
+
+///
+/// Return a type that wrap `dyn Regex` with [`Box`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
+///     let regex = regex::Wrap::dyn_box(regex); // ERROR if comment this line
+///
+///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<'a, C> Wrap<Box<dyn Regex<C> + 'a>, C> {
     pub fn dyn_box(regex: impl Regex<C> + 'a) -> Self {
         Self::new(Box::new(regex))
     }
 }
 
+///
+/// Return a type that wrap `dyn Regex + Send` with [`Box`].
+///
+impl<'a, C> Wrap<Box<dyn Regex<C> + Send + 'a>, C> {
+    pub fn dyn_box_send(regex: impl Regex<C> + Send + 'a) -> Self {
+        Self::new(Box::new(regex))
+    }
+}
+
+///
+/// Return a type that wrap `dyn Regex + Send + Sync` with [`Box`].
+///
+/// # Example
+/// ```
+/// # use std::sync::mpsc::channel;
+/// #
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
+///     let regex = regex::Wrap::dyn_box_sync(regex); // ERROR if comment this line
+///     let (send, recv) = channel();
+///
+///     std::thread::spawn(move || {
+///         if let Ok(regex) = recv.recv() {
+///             assert_eq!(
+///                 CharsCtx::new("where are you from?").ctor(&regex).unwrap(),
+///                 "where"
+///             );
+///         }
+///     });
+///
+///     send.send(regex)?;
+///
+/// #    Ok(())
+/// # }
+/// ```
+impl<'a, C> Wrap<Box<dyn Regex<C> + Send + Sync + 'a>, C> {
+    pub fn dyn_box_sync(regex: impl Regex<C> + Send + Sync + 'a) -> Self {
+        Self::new(Box::new(regex))
+    }
+}
+
+///
+/// Return a type that wrap `dyn Regex` with [`std::rc::Rc`].
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
+///     let regex = regex::Wrap::rc(regex); // ERROR if comment this line
+///
+///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<'a, C> Wrap<std::rc::Rc<dyn Regex<C> + 'a>, C> {
     pub fn dyn_rc(regex: impl Regex<C> + 'a) -> Self {
         Self::new(std::rc::Rc::new(regex))

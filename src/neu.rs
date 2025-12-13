@@ -28,7 +28,7 @@ pub use self::bool::any;
 pub use self::bool::none;
 pub use self::bool::False;
 pub use self::bool::True;
-pub use self::cond::re_cond;
+pub use self::cond::regex_cond;
 pub use self::cond::Condition;
 pub use self::cond::NeuCond;
 pub use self::cond::NullCond;
@@ -237,7 +237,7 @@ impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
 /// #
 /// # fn main() {
 ///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-///   let arr = Neu2Re::repeat_range(arr, 2..6);
+///   let arr = NeuIntoRegexOps::repeat_range(arr, 2..6);
 ///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
 ///   let mut ctx2 = BytesCtx::new(b"acdde");
 ///
@@ -659,7 +659,7 @@ pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option
     next_offset - offset
 }
 
-pub trait Neu2Re<'a, C>
+pub trait NeuIntoRegexOps<'a, C>
 where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
@@ -689,7 +689,7 @@ where
     fn repeat_range(self, range: impl Into<CRange<usize>>) -> NeureRepeatRange<C, Self, NullCond>;
 }
 
-impl<'a, C, U> Neu2Re<'a, C> for U
+impl<'a, C, U> NeuIntoRegexOps<'a, C> for U
 where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,

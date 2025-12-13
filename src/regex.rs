@@ -2,9 +2,8 @@ mod anchor;
 mod assert;
 mod builder;
 mod consume;
+mod empty;
 mod literal;
-mod not;
-mod null;
 mod rec;
 mod wrap;
 
@@ -14,17 +13,26 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+pub use self::anchor::end;
+pub use self::anchor::start;
 pub use self::anchor::AnchorEnd;
 pub use self::anchor::AnchorStart;
+pub use self::assert::assert;
+pub use self::assert::not;
+pub use self::assert::peek;
 pub use self::assert::Assert;
 pub use self::builder::into_regex_builder;
 pub use self::builder::DynamicRegexBuilderHelper;
+pub use self::consume::consume;
+pub use self::consume::consume_all;
 pub use self::consume::Consume;
 pub use self::consume::ConsumeAll;
+pub use self::empty::empty;
+pub use self::empty::EmptyRegex;
+pub use self::literal::lit_slice;
+pub use self::literal::string;
 pub use self::literal::LitSlice;
 pub use self::literal::LitString;
-pub use self::not::Not;
-pub use self::null::NullRegex;
 pub use self::rec::rec_parser;
 pub use self::rec::rec_parser_sync;
 pub use self::rec::rec_parser_with;
@@ -50,7 +58,7 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::Condition;
 use crate::neu::Neu;
-use crate::neu::Neu2Re;
+use crate::neu::NeuIntoRegexOps;
 use crate::neu::NeureOne;
 use crate::neu::NeureOneMore;
 use crate::neu::NeureZeroMore;
@@ -231,13 +239,43 @@ impl<'b, C> Regex<C> for Box<dyn Regex<C> + 'b> {
     }
 }
 
+impl<'b, C> Regex<C> for Box<dyn Regex<C> + Send + 'b> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        self.as_ref().try_parse(ctx)
+    }
+}
+
+impl<'b, C> Regex<C> for Box<dyn Regex<C> + Send + Sync + 'b> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        self.as_ref().try_parse(ctx)
+    }
+}
+
 impl<'b, C> Regex<C> for Arc<dyn Regex<C> + 'b> {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
 }
 
+impl<'b, C> Regex<C> for Arc<dyn Regex<C> + Send + 'b> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        self.as_ref().try_parse(ctx)
+    }
+}
+
+impl<'b, C> Regex<C> for Arc<dyn Regex<C> + Send + Sync + 'b> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        self.as_ref().try_parse(ctx)
+    }
+}
+
 impl<'b, C> Regex<C> for Rc<dyn Regex<C> + 'b> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        self.as_ref().try_parse(ctx)
+    }
+}
+
+impl<'b, C> Regex<C> for Rc<dyn Regex<C> + Send + 'b> {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         self.as_ref().try_parse(ctx)
     }
@@ -424,215 +462,25 @@ where
 /// ```
 ///
 pub fn count_if<'a, const M: usize, const N: usize, C, U, F>(
-    re: U,
-    r#if: F,
+    unit: U,
+    test: F,
 ) -> crate::neu::NeureRepeat<M, N, C, U, F>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     F: crate::neu::NeuCond<'a, C>,
 {
-    re.repeat::<M, N>().set_cond(r#if)
+    unit.repeat::<M, N>().set_cond(test)
 }
 
-///
-/// Match the start position of data.
+/// Matches the **first successful expression** from a dynamic sequence of alternatives.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let pos = regex::start();
-///     let rust = regex::string("rust");
-///     let year = neu::digit(10).repeat_times::<4>();
-///     let mut ctx = CharsCtx::new("rust2023");
-///
-///     assert_eq!(ctx.try_mat(&pos)?, Span::new(0, 0));
-///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
-///     assert_eq!(ctx.try_mat(&year)?, Span::new(4, 4));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn start() -> AnchorStart {
-    AnchorStart::new()
-}
-
-///
-/// Match the end position of data.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let rust = regex::string("rust");
-///     let year = neu::digit(10).repeat_times::<4>();
-///     let end = regex::end();
-///     let mut ctx = CharsCtx::new("rust2023");
-///
-///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
-///     assert_eq!(ctx.try_mat(&year)?, Span::new(4, 4));
-///     assert_eq!(ctx.try_mat(&end)?, Span::new(8, 0));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn end() -> AnchorEnd {
-    AnchorEnd::new()
-}
-
-///
-/// Match given string.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let rust = regex::string("rust");
-///     let mut ctx = CharsCtx::new("rust2023");
-///
-///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn string(lit: &str) -> LitString<'_> {
-    LitString::new(lit)
-}
-
-///
-/// Match given data.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let head = regex::lit_slice(&[0xff, 0xff]);
-///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
-///
-///     assert_eq!(ctx.try_mat(&head)?, Span::new(0, 2));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn lit_slice<T>(lit: &[T]) -> LitSlice<'_, T> {
-    LitSlice::new(lit)
-}
-
-///
-/// Consume given length datas.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let null = regex::consume(6);
-///     let mut ctx = CharsCtx::new("aabbccgg");
-///
-///     assert_eq!(ctx.try_mat(&null)?, Span::new(0, 6));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn consume(len: usize) -> Consume {
-    Consume::new(len)
-}
-
-///
-/// Consume all the left datas.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let str = regex::string("aabb");
-///     let mut ctx = CharsCtx::new("aabbccgg");
-///
-///     assert_eq!(ctx.try_mat(&str.then(regex::consume_all()))?, Span::new(0, 8));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn consume_all() -> ConsumeAll {
-    ConsumeAll::new()
-}
-
-///
-/// Match nothing, simple return `R::from(_, (0, 0))`.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let null = regex::null();
-///     let mut ctx = CharsCtx::new("aabbccgg");
-///
-///     assert_eq!(ctx.try_mat(&null)?, Span::new(0, 0));
-///
-///     Ok(())
-/// # }
-/// ```
-pub fn null() -> NullRegex {
-    NullRegex::new()
-}
-
-///
-/// Return a regex that reverses the result of `re`.
-/// It will return zero-length [`Span`] when matches.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
-///     let re = regex::not("]]]");
-///     let mut ctx = CharsCtx::new("[123,456,789]");
-///
-///     assert_eq!(ctx.try_mat(&re)?, Span::new(0, 0));
-///     Ok(())
-/// # }
-/// ```
-pub fn not<T>(re: T) -> crate::regex::Not<T> {
-    crate::regex::Not::new(re)
-}
-
-pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
-    Assert::new(pat, value)
-}
-
-/// Iterate over the vector and match the regex against the [`Context`].
-/// It will return the result of first regex that matches.
-///
-/// # Example
-///
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ty = neu::ascii_alphabetic().repeat_one_more();
 ///     let id = neu::ascii_alphabetic().repeat_one_more();
 ///     let var = ty.sep_once("", id);
@@ -644,23 +492,21 @@ pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
 ///     assert_eq!(CharsCtx::new("int a").skip_before(sp).ctor(&vec)?, ("int", "a"));
 ///     assert_eq!(CharsCtx::new("int *a").skip_before(sp).ctor(&vec)?, ("int", "a"));
 ///     assert_eq!(CharsCtx::new("int &a").skip_before(sp).ctor(&vec)?, ("int", "a"));
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
     Vector::new(val.into_iter().collect())
 }
 
-/// Iterate over the vector and match the regex against the [`Context`].
-/// It will return the value of first pair that matches.
+/// Matches the first successful expression from a dynamic sequence while carrying associated data.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum C {
 ///         Var,
@@ -688,25 +534,105 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 ///         CharsCtx::new("int &a").skip_before(sp).ctor(&vec)?,
 ///         (("int", "a"), C::Ref)
 ///     );
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 pub fn pair_vector<K, V: Clone>(val: impl IntoIterator<Item = (K, V)>) -> PairVector<K, V> {
     PairVector::new(val.into_iter().collect())
 }
 
+/// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`](crate::ctx::Context).
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let parser = regex::array([b"rust".as_ref(), b"jawa", b"golang"]);
+///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 4));
+/// #   Ok(())
+/// # }
+/// ```
 pub fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
     Array::new(val)
 }
 
+/// Attempts patterns in sequence, returning the first successful match from a **compile-time fixed array**.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let slice = [b"rust".as_ref(), b"jawa", b"golang"];
+///     let parser = regex::slice(&slice);
+///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 4));
+/// #   Ok(())
+/// # }
+/// ```
 pub fn slice<const N: usize, T>(val: &[T; N]) -> Slice<'_, N, T> {
     Slice::new(val)
 }
 
+/// Iterate over the array and match the regex against the [`Context`](crate::ctx::Context).
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     #[derive(Debug, Clone, PartialEq)]
+///     enum Lang {
+///         Rust,
+///         Java,
+///         Golang,
+///     }
+///
+///     let parser = regex::pair_array([
+///         (b"rust".as_ref(), Lang::Rust),
+///         (b"jawa", Lang::Java),
+///         (b"golang", Lang::Golang),
+///     ]);
+///     let mut ctx = BytesCtx::new(b"golang is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 6));
+/// #   Ok(())
+/// # }
+/// ```
 pub fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> {
     PairArray::new(val)
 }
 
+/// Maps patterns to associated values, returning the first successful match with its paired value.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     #[derive(Debug, Clone, PartialEq)]
+///     enum Lang {
+///         Rust,
+///         Java,
+///         Golang,
+///     }
+///
+///     let slice = [
+///         (b"rust".as_ref(), Lang::Rust),
+///         (b"jawa", Lang::Java),
+///         (b"golang", Lang::Golang),
+///     ];
+///     let parser = regex::pair_slice(&slice);
+///     let mut ctx = BytesCtx::new(b"jawa is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 4));
+/// #   Ok(())
+/// # }
+/// ```
 pub fn pair_slice<const N: usize, K, V>(val: &[(K, V); N]) -> PairSlice<'_, N, K, V> {
     PairSlice::new(val)
 }
@@ -805,21 +731,21 @@ where
 macro_rules! impl_not_for_regex {
     (@$ty:ident [ ]  [ ]) => {
         impl std::ops::Not for $ty {
-            type Output = $crate::regex::Not<Self>;
+            type Output = $crate::regex::Assert<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     (@$ty:ident [ ]  [ $($p:ident),+ ]) => {
         impl<$($p),+> std::ops::Not for $ty<$($p),+> {
-            type Output = $crate::regex::Not<Self>;
+            type Output = $crate::regex::Assert<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     (@$ty:ident [ $($l:lifetime),+ ]  [ $($p:ident),* ]) => {
         impl<$($l),+ , $($p),*> std::ops::Not for $ty<$($l),+ , $($p),*> {
-            type Output = $crate::regex::Not<Self>;
+            type Output = $crate::regex::Assert<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }

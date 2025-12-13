@@ -81,7 +81,7 @@ use crate::regex::Regex;
 ///     let bin = digit!("0b",  2);
 ///     let pos = "+".map(|_| 1);
 ///     let neg = "-".map(|_| -1);
-///     let sign = pos.or(neg.or(regex::null().map(|_| 1)));
+///     let sign = pos.or(neg.or(regex::empty().map(|_| 1)));
 ///     let num = bin.or(oct.or(dec.or(hex)));
 ///     let num = sign.then(num).map(|(s, v)| s * v);
 ///     let parser = num.sep(",".ws());

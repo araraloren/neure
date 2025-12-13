@@ -20,26 +20,50 @@ use super::Neu;
 use super::NeuCond;
 
 ///
-/// Repeat the match unit `U` at least `M` times and at most `N` times.
+/// Matches a sequence of elements with compile-time bounded repetition and context validation.
+///
+/// [`NeureRepeat`] provides precise control over sequence length while maintaining per-element
+/// context awareness, enforcing that every matched element satisfies both:
+/// 1. **Base pattern match**: Core element validation ([`Neu`])
+/// 2. **Context condition**: Runtime constraints ([`NeuCond`])
+///
+/// Matching occurs within the compile-time defined range `[M, N)`, meaning:
+/// - **Minimum**: Exactly `M` elements must match
+/// - **Maximum**: Matching stops after `N-1` elements (inclusive)
+///
+/// # Regex
+///
+/// Matches between `M` (inclusive) and `N` (exclusive) consecutive elements:
+/// - **Success**: Returns span covering all matched elements
+///   - Requires `M <= matched_count < N`
+///   - **Every element** must satisfy BOTH conditions:
+///     a. `unit.is_match(item)` returns true
+///     b. `cond.check()` returns true for the context
+///   - Stops early when:
+///     - Maximum count (`N-1`) is reached
+///     - An element fails either condition
+/// - **Failure**: Returns error if:
+///   - Total matched elements < `M`
+///   - First element fails when `M > 0`
+/// - **Special case**: When `M = 0`, empty matches succeed (returns zero-length span)
 ///
 /// # Ctor
 ///
-/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// The specific constructed value depends on the active handler implementation.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat::<1, 6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 ///
@@ -48,15 +72,13 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_full();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 ///
@@ -65,15 +87,13 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_to::<6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 ///
@@ -82,15 +102,13 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_from::<1>();
+///     let hex = hex.repeat_from::<2>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Copy)]
@@ -101,7 +119,7 @@ pub struct NeureRepeat<const M: usize, const N: usize, C, U, I> {
 }
 
 impl<const M: usize, const N: usize, C, U, I> std::ops::Not for NeureRepeat<M, N, C, U, I> {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -136,10 +154,10 @@ where
 }
 
 impl<const M: usize, const N: usize, C, U, I> NeureRepeat<M, N, C, U, I> {
-    pub fn new(unit: U, r#if: I) -> Self {
+    pub fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
-            cond: r#if,
+            cond,
             marker: PhantomData,
         }
     }
@@ -166,11 +184,11 @@ where
 {
     type Out<F> = NeureRepeat<M, N, C, U, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureRepeat::<M, N, C, U, F>::new(self.unit, r#if)
+        NeureRepeat::<M, N, C, U, F>::new(self.unit, cond)
     }
 }
 
@@ -233,26 +251,53 @@ where
 }
 
 ///
-/// Repeat the unit `U` and the number of matches meet the given range.
+/// Matches a sequence of elements with runtime-specified repetition bounds and context validation.
+///
+/// [`NeureRepeatRange`] provides dynamic control over sequence length while maintaining per-element
+/// context awareness, enforcing that every matched element satisfies both:
+/// 1. **Base pattern match**: Core element validation ([`Neu`])
+/// 2. **Context condition**: Runtime constraints ([`NeuCond`])
+///
+/// Matching occurs within the runtime-defined range specified by `range`, supporting all standard
+/// range types (inclusive/exclusive bounds, unbounded ranges). This combinator bridges the gap between
+/// strict compile-time patterns and dynamic runtime requirements.
+///
+/// # Regex
+///
+/// Matches elements according to the specified range bounds:
+/// - **Success**: Returns span covering all matched elements
+///   - Requires element count `cnt` where `range.contains(&cnt)` is true
+///   - **Every element** must satisfy BOTH conditions:
+///     a. `unit.is_match(item)` returns true
+///     b. `cond.check()` returns true for the context
+///   - Stops early when:
+///     - Range upper bound is reached (based on bound type)
+///     - An element fails either condition
+/// - **Failure**: Returns error if:
+///   - Total matched elements not in specified range
+///   - First element fails when minimum bound > 0
+/// - **Special cases**:
+///   - Empty ranges (e.g., `5..3`) always fail
+///   - Unbounded ranges (e.g., `3..`) match as many as possible
+///   - Zero-length ranges (e.g., `0..0`) only match empty sequences
 ///
 /// # Ctor
 ///
-/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// The specific constructed value depends on the active handler implementation.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_range(1..7);
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Copy)]
@@ -339,11 +384,11 @@ where
 {
     type Out<F> = NeureRepeatRange<C, U, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureRepeatRange::<C, U, F>::new(self.unit, self.range, r#if)
+        NeureRepeatRange::<C, U, F>::new(self.unit, self.range, cond)
     }
 }
 

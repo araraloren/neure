@@ -11,7 +11,7 @@ use crate::regex::Regex;
 use super::Ctor;
 
 ///
-/// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`].
+/// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`](crate::ctx::Context).
 ///
 /// Attempts to match each element in the array sequentially until one succeeds.
 /// If a match succeeds, returns immediately with that result. If all elements
@@ -75,7 +75,7 @@ use super::Ctor;
 pub struct Array<const N: usize, T>([T; N]);
 
 impl<const N: usize, T> std::ops::Not for Array<N, T> {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -158,7 +158,7 @@ where
 }
 
 ///
-/// Iterate over the array and match the regex against the [`Context`].
+/// Iterate over the array and match the regex against the [`Context`](crate::ctx::Context).
 ///
 /// # Ctor
 ///
@@ -188,7 +188,7 @@ where
 pub struct PairArray<const N: usize, K, V>([(K, V); N]);
 
 impl<const N: usize, K, V> std::ops::Not for PairArray<N, K, V> {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)

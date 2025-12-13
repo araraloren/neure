@@ -8,11 +8,32 @@ use crate::err::Error;
 use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
-/// Reverse the result, return zero length [`Span`] if match failed.
+///
+/// Conditional zero-width assertion combinator that validates pattern match outcomes.
+///
+/// [`Assert<T>`] provides a generalized zero-width assertion that succeeds only when an inner pattern's
+/// match result (success/failure) exactly matches an expected boolean condition. It never consumes
+/// input regardless of outcome, and serves as a unified implementation for both positive (`Peek`) and
+/// negative (`Not`) lookahead assertions. This combinator is essential for implementing contextual
+/// constraints where specific patterns must either appear or be absent at particular positions.
 ///
 /// # Regex
+/// - **Success condition**: When `(inner_pattern.matches() == expected_value)` evaluates to `true`
+///   - Returns zero-length span at current position (`Span::new(ctx.beg(), 0)`)
+///   - Parser position remains unchanged
+/// - **Failure condition**: When actual match result contradicts expected value
+///   - Returns `Error::Assert` without consuming input
+///   - Context position is reset to pre-match state
+/// - **Zero-width guarantee**: Never advances parser position in any scenario
 ///
-/// Return zero length [`Span`] if `T` match failed.
+/// # Ctor
+///
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+///
+/// # Example
+///
+/// ```
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Assert<T> {
     pat: T,
@@ -80,11 +101,64 @@ where
         crate::debug_regex_beg!("Assert", ctx.beg());
         let ret = if ctx.try_mat(&self.pat).is_ok() == self.value {
             Ok(Span::new(ctx.beg(), 0))
+        } else if self.value {
+            Err(Error::AssertTrue)
         } else {
-            Err(Error::Assert)
+            Err(Error::AssertFalse)
         };
 
         ctx.reset(); // force reset the offset
         crate::debug_regex_reval!("Assert", ret)
     }
+}
+
+///
+/// Conditional zero-width assertion combinator that validates pattern match outcomes.
+///
+/// # Example
+///
+/// ```
+/// ```
+pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
+    Assert::new(pat, value)
+}
+
+///
+/// Negative lookahead assertion combinator that succeeds when its pattern fails to match.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let re = regex::not("]]]");
+///     let mut ctx = CharsCtx::new("[123,456,789]");
+///
+///     assert_eq!(ctx.try_mat(&re)?, Span::new(0, 0));
+///     Ok(())
+/// # }
+/// ```
+pub fn not<T>(pat: T) -> crate::regex::Assert<T> {
+    crate::regex::Assert::new(pat, false)
+}
+
+///
+/// Negative lookahead assertion combinator that succeeds when its pattern fails to match.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let parser = regex::peek(b"rust");
+///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 0));
+/// #   Ok(())
+/// # }
+/// ```
+pub fn peek<T>(pat: T) -> crate::regex::Assert<T> {
+    crate::regex::Assert::new(pat, true)
 }

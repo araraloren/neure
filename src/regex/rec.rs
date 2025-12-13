@@ -14,12 +14,12 @@ pub type RecursiveCtorWith<'a, 'b, C, M, O, H> =
     Rc<RefCell<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C>>>>;
 
 pub type RecursiveCtorWithSync<'a, 'b, C, M, O, H> =
-    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C>>>>;
+    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, C>>>>;
 
 pub type RecursiveCtor<'a, 'b, C, M, O> = RecursiveCtorWith<'a, 'b, C, M, O, Extract<M>>;
 
 pub type RecursiveCtorSync<'a, 'b, C, M, O> =
-    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, Extract<M>> + Send + 'b>, C>>>>;
+    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, Extract<M>> + Send + Sync + 'b>, C>>>>;
 
 ///
 /// # Example
@@ -139,7 +139,7 @@ pub fn rec_parser_with_sync<'a, 'b, C, M, O, I, H>(
 where
     C: Match<'a>,
     H: Handler<C, Out = M>,
-    I: Ctor<'a, C, M, O, H> + Send + 'b,
+    I: Ctor<'a, C, M, O, H> + Send + Sync + 'b,
 {
     let r_ctor: RecursiveCtorWithSync<'a, 'b, C, M, O, H> = Arc::new(Mutex::new(None));
     let r_ctor_clone = r_ctor.clone();
@@ -157,8 +157,8 @@ pub fn rec_parser_sync<'a, 'b, C, M, O, I>(
 ) -> RecursiveCtorSync<'a, 'b, C, M, O>
 where
     C: Match<'a>,
-    Extract<M>: Handler<C, Out = M> + Send,
-    I: Ctor<'a, C, M, O, Extract<M>> + Send + 'b,
+    Extract<M>: Handler<C, Out = M> + Send + Sync,
+    I: Ctor<'a, C, M, O, Extract<M>> + Send + Sync + 'b,
 {
     let r_ctor: RecursiveCtorSync<'a, 'b, C, M, O> = Arc::new(Mutex::new(None));
     let r_ctor_clone = r_ctor.clone();
@@ -220,14 +220,14 @@ where
     ) -> Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
     where
         F: FnMut(Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + 'b;
+        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + Sync + 'b;
 
     fn build<O, I, F>(
         func: F,
     ) -> Self::Ctor<'c, 'static, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
     where
         F: FnMut(Self::Ctor<'c, 'static, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + 'static,
+        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + Sync + 'static,
     {
         Self::build_with(func)
     }
@@ -250,7 +250,7 @@ where
     ) -> Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
     where
         F: FnMut(Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + 'b,
+        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + Sync + 'b,
     {
         rec_parser_with_sync(func)
     }

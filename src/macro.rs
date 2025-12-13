@@ -193,7 +193,7 @@ macro_rules! escape_strval {
     ($quote:literal, $prefix:literal, $escape:expr) => {{
         let escape = $escape;
         let escape = $prefix.then(escape);
-        let cond = $crate::neu::re_cond($crate::regex::not(escape.clone()));
+        let cond = $crate::neu::regex_cond($crate::regex::not(escape.clone()));
 
         $quote
             .not()

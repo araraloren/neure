@@ -43,8 +43,8 @@ pub mod prelude {
     pub use crate::neu;
     pub use crate::neu::Condition;
     pub use crate::neu::Neu;
-    pub use crate::neu::Neu2Re;
     pub use crate::neu::NeuCond;
+    pub use crate::neu::NeuIntoRegexOps;
     pub use crate::neu::NeuOp;
     pub use crate::regex;
     pub use crate::regex::Regex;

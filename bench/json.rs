@@ -62,7 +62,7 @@ mod neure_json {
                 let sign = b'+'.or(b'-').repeat_zero_one();
                 let digit = neu::range(b'0'..=b'9').repeat_one_more();
                 let dec = b".".then(digit).pat();
-                let num = sign.then(digit).then(dec.or(regex::null()));
+                let num = sign.then(digit).then(dec.or(regex::empty()));
                 let num = ctor::Wrap::dyn_box(
                     num.pat()
                         .try_map(to_str)
@@ -72,7 +72,7 @@ mod neure_json {
 
                 let escape = b'\r'.or(b'\t').or(b'\n').or(b'\\').or(b'\"');
                 let escape = b'\\'.then(escape);
-                let cond = neu::re_cond(regex::not(escape));
+                let cond = neu::regex_cond(regex::not(escape));
                 let str_val = b'\"'
                     .not()
                     .repeat_one_more()
@@ -90,9 +90,9 @@ mod neure_json {
 
                 let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(Json::Bool(true)));
                 let bool_f = regex::lit_slice(b"false").try_map(|_| Ok(Json::Bool(false)));
-                let null = regex::lit_slice(b"null").try_map(|_| Ok(Json::Null));
+                let empty = regex::lit_slice(b"empty").try_map(|_| Ok(Json::Null));
 
-                let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
+                let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
                 let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
 
                 let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+)
@@ -132,12 +132,12 @@ mod neure_json_zero {
                 let sign = regex!((b'+', b'-'){0,1});
                 let digit = neu::range(b'0'..=b'9').repeat_one_more();
                 let dec = b".".then(digit).pat();
-                let num = sign.then(digit).then(dec.or(regex::null()));
+                let num = sign.then(digit).then(dec.or(regex::empty()));
                 let num = ctor::Wrap::dyn_box(num.pat()).try_map(&Self::to_digit);
 
                 let escape = neu!((b'\r', b'\t', b'\n', b'\\', b'\"'));
                 let escape = b'\\'.then(escape);
-                let cond = neu::re_cond(regex::not(escape));
+                let cond = neu::regex_cond(regex::not(escape));
                 let str_val = b'\"'
                     .not()
                     .repeat_one_more()
@@ -150,9 +150,9 @@ mod neure_json_zero {
 
                 let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
                 let bool_f = regex::lit_slice(b"false").try_map(|_| Ok(JsonZero::Bool(false)));
-                let null = regex::lit_slice(b"null").try_map(|_| Ok(JsonZero::Null));
+                let empty = regex::lit_slice(b"empty").try_map(|_| Ok(JsonZero::Null));
 
-                let ele = num.or(str.or(bool_t.or(bool_f.or(null.or(ctor.clone())))));
+                let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
                 let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
 
                 let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);

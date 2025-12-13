@@ -9,7 +9,7 @@ use super::Span;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
-use crate::neu::Neu2Re;
+use crate::neu::NeuIntoRegexOps;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
@@ -88,7 +88,7 @@ where
     T: ?Sized,
 {
     ///
-    /// Setting a policy(which implemented [`BPolicy`]) will invoked before any match occurs.
+    /// Setting a policy will invoked before any match occurs.
     ///
     /// # Example
     ///

@@ -59,7 +59,7 @@ where
     L: Neu<T>,
     R: Neu<T>,
 {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -102,10 +102,10 @@ where
     L: Neu<T>,
     R: Neu<T>,
 {
-    pub fn new(left: L, right: R, r#if: I) -> Self {
+    pub fn new(left: L, right: R, cond: I) -> Self {
         Self {
             left,
-            cond: r#if,
+            cond,
             right,
             marker: PhantomData,
         }
@@ -146,11 +146,11 @@ where
 {
     type Out<F> = NeureThen<C, L, R, C::Item, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureThen::new(self.left, self.right, r#if)
+        NeureThen::new(self.left, self.right, cond)
     }
 }
 

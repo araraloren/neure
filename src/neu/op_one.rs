@@ -16,26 +16,38 @@ use super::Neu;
 use super::NeuCond;
 
 ///
-/// Repeat the unit `U` one time.
+/// Matches a single context-sensitive element using combined pattern and condition checks.
+///
+/// [`NeureOne`] provides atomic element matching with two-stage validation:
+/// 1. **Base pattern match**: Verifies the element satisfies a core pattern ([`Neu`])
+/// 2. **Context condition**: Validates additional runtime constraints ([`NeuCond`])
+///
+/// # Regex
+///
+/// Attempts to match exactly one element at the current position:
+/// - **Success**: Returns a span covering the single matched element
+///   - Requires BOTH conditions to pass:
+///     a. `unit.is_match(item)` returns true for the element
+///     b. `cond.check()` returns true for the context
+/// - **Failure**: Returns error immediately if either condition fails
+/// - **Zero-width**: Consumes no input on failure
 ///
 /// # Ctor
-///
-/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// The specific constructed value depends on the active handler implementation.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_one();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Copy)]
@@ -52,7 +64,7 @@ impl<C, U, T, I> std::ops::Not for NeureOne<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -90,10 +102,10 @@ impl<C, U, T, I> NeureOne<C, U, T, I>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U, r#if: I) -> Self {
+    pub fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
-            cond: r#if,
+            cond,
             marker: PhantomData,
         }
     }
@@ -119,11 +131,11 @@ where
 {
     type Out<F> = NeureOne<C, U, C::Item, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureOne::new(self.unit, r#if)
+        NeureOne::new(self.unit, cond)
     }
 }
 
@@ -169,26 +181,48 @@ where
 }
 
 ///
-/// Repeat the unit `U` one or more times.
+/// Matches one or more consecutive context-sensitive elements using combined pattern and condition checks.
+///
+/// [`NeureOneMore`] extends [`NeureOne`]'s validation model to sequences, requiring every element to satisfy:
+/// 1. **Base pattern match**: Core element validation ([`Neu`])
+/// 2. **Context condition**: Runtime constraints ([`NeuCond`])
+///
+/// This combinator enables context-aware repetition with strict per-element validation, forming the basis
+/// for complex token recognition where every character's validity depends on dynamic parser state.
+///
+/// # Core Behavior
+///
+/// # Regex
+///
+/// Matches one or more consecutive elements:
+/// - **Success**: Returns span covering all matched elements
+///   - Requires **at least one element** to match
+///   - **Every element** must satisfy BOTH conditions:
+///     a. `unit.is_match(item)` returns true
+///     b. `cond.check()` returns true for the context
+///   - Stops at first failing element (greedy match)
+/// - **Failure**: Returns error if:
+///   - No elements match (fails minimum length requirement)
+///   - First element fails either condition
+/// - **Zero-width**: Consumes no input on failure
 ///
 /// # Ctor
 ///
-/// Return [`Orig`](crate::ctx::Context::Orig) with the [`Span`] as the index if the match is found.
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// The specific constructed value depends on the active handler implementation.
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> color_eyre::Result<()> {
-/// #     color_eyre::install()?;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.repeat_one_more();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
-///
-///     Ok(())
+/// #   Ok(())
 /// # }
 /// ```
 #[derive(Copy)]
@@ -205,7 +239,7 @@ impl<C, U, T, I> std::ops::Not for NeureOneMore<C, U, T, I>
 where
     U: Neu<T>,
 {
-    type Output = crate::regex::Not<Self>;
+    type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
         crate::regex::not(self)
@@ -243,10 +277,10 @@ impl<C, U, T, I> NeureOneMore<C, U, T, I>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U, r#if: I) -> Self {
+    pub fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
-            cond: r#if,
+            cond,
             marker: PhantomData,
         }
     }
@@ -272,11 +306,11 @@ where
 {
     type Out<F> = NeureOneMore<C, U, C::Item, F>;
 
-    fn set_cond<F>(self, r#if: F) -> Self::Out<F>
+    fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureOneMore::new(self.unit, r#if)
+        NeureOneMore::new(self.unit, cond)
     }
 }
 

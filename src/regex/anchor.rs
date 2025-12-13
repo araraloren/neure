@@ -11,7 +11,38 @@ use crate::err::Error;
 use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
-/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to 0.
+///
+/// Matches the absolute start of input (position zero).
+///
+/// [`AnchorStart`] is a zero-width assertion that succeeds only at the very beginning of the input stream,
+/// analogous to the `^` anchor in regular expressions but without multi-line support. It consumes no input
+/// on success and serves as a positional constraint rather than a content matcher.
+///
+/// # Regex
+///
+/// - **Success**: At position zero (offset 0)
+///   - Returns zero-length span at start position
+///   - Does not consume any input
+/// - **Failure**: At any position greater than zero
+///   - Returns [`Error::AnchorStart`]
+///
+/// # Ctor
+///
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// The constructed value typically represents a positional marker rather than content.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let anchor = regex::start();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&anchor)?, Span::new(0, 0));
+/// #   Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AnchorStart;
 
@@ -56,7 +87,65 @@ where
     }
 }
 
-/// Success if the [`offset`](crate::ctx::Context#tymethod.offset) of [`Context`] is equal to [`len`](crate::ctx::Context#tymethod.len).
+///
+/// Matches the absolute start of input (position zero).
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+/// #     color_eyre::install()?;
+///     let pos = regex::start();
+///     let rust = regex::string("rust");
+///     let year = neu::digit(10).repeat_times::<4>();
+///     let mut ctx = CharsCtx::new("rust2023");
+///
+///     assert_eq!(ctx.try_mat(&pos)?, Span::new(0, 0));
+///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
+///     assert_eq!(ctx.try_mat(&year)?, Span::new(4, 4));
+///
+///     Ok(())
+/// # }
+/// ```
+pub fn start() -> AnchorStart {
+    AnchorStart::new()
+}
+
+///
+/// Matches the absolute end of input (position equal to input length).
+///
+/// [`AnchorEnd`] is a zero-width assertion that succeeds only at the very end of the input stream,
+/// analogous to the `$` anchor in regular expressions but without multi-line support. It consumes no input
+/// on success and serves as a positional constraint rather than a content matcher.
+///
+/// # Regex
+///
+/// - **Success**: At position equal to input length
+///   - Returns zero-length span at end position
+///   - Does not consume any input
+/// - **Failure**: At any position before the end
+///   - Returns [`Error::AnchorEnd`]
+///
+/// # Ctor
+///
+/// Uses identical matching logic as regex mode, then constructs a value from the result.
+/// The constructed value typically represents a positional marker rather than content.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let anchor = regex::end();
+///     let mut ctx = CharsCtx::new("aabbccgg");
+///
+///     assert_eq!(ctx.try_mat(&regex::consume(8))?, Span::new(0, 8));
+///     assert_eq!(ctx.try_mat(&anchor)?, Span::new(8, 0));
+/// #   Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AnchorEnd;
 
@@ -99,4 +188,30 @@ where
 
         debug_regex_reval!("AnchorEnd", ret)
     }
+}
+
+///
+/// Matches the absolute end of input (position equal to input length).
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> color_eyre::Result<()> {
+/// #     color_eyre::install()?;
+///     let rust = regex::string("rust");
+///     let year = neu::digit(10).repeat_times::<4>();
+///     let end = regex::end();
+///     let mut ctx = CharsCtx::new("rust2023");
+///
+///     assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
+///     assert_eq!(ctx.try_mat(&year)?, Span::new(4, 4));
+///     assert_eq!(ctx.try_mat(&end)?, Span::new(8, 0));
+///
+///     Ok(())
+/// # }
+/// ```
+pub fn end() -> AnchorEnd {
+    AnchorEnd::new()
 }
