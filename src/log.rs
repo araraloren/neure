@@ -1,12 +1,9 @@
 #[cfg(not(feature = "log"))]
 mod macro_for_log {
-
-    #[macro_export]
     macro_rules! neure_trace {
         ($($arg:tt)*) => {{}};
     }
 
-    #[macro_export]
     macro_rules! neure_debug {
         ($($arg:tt)*) => {{}};
     }

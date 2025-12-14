@@ -25,11 +25,12 @@ color-eyre = "0.6"
 criterion = "0.8"
 
 [dependencies]
-charize = "0.0.2"
+charize = "0.0.3"
 tracing = { version = "0.1", optional = true }
 
 [features]
 log = ["tracing"]
+default = ["log"]
 
 [[bench]]
 name = "nom_cap"

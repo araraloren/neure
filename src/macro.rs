@@ -1,3 +1,98 @@
+///
+/// Construct [`Regex`](crate::regex::Regex) element
+///
+/// # Match whitespace
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ws1 = regex!();
+///     let ws2 = regex!(+);
+///     let ws3 = regex!(*);
+///
+///     assert_eq!(CharsCtx::new("  !").ctor(&ws1)?, " ");
+///     assert_eq!(CharsCtx::new("  !").ctor(&ws2)?, "  ");
+///     assert_eq!(CharsCtx::new("!").ctor(&ws3)?, "");
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Match single character
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let ch1 = regex!(a?);
+///     let ch2 = regex!('a'*);
+///     let ch3 = regex!(a+);
+///
+///     assert_eq!(CharsCtx::new("assert!").ctor(&ch1)?, "a");
+///     assert_eq!(CharsCtx::new("ssert!").ctor(&ch2)?, "");
+///     assert_eq!(CharsCtx::new("aaaassert!").ctor(&ch3)?, "aaaa");
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Match wild character(except '\n')
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let wild1 = regex!(.+);
+///     let wild2 = regex!(^*);
+///
+///     assert_eq!(CharsCtx::new("hello world!").ctor(&wild1)?, "hello world!");
+///     assert_eq!(CharsCtx::new("hello world!").ctor(&wild2)?, "hello");
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Match character in the set
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let set1 = regex!([h e l o]);
+///     let set2 = regex!([h e l o]+);
+///
+///     assert_eq!(CharsCtx::new("hello world!").ctor(&set1)?, "h");
+///     assert_eq!(CharsCtx::new("hello world!").ctor(&set2)?, "hello");
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Match character in the range
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let set1 = regex!([a - z]*);
+///     let set2 = regex!([^ a - g]+);
+///
+///     assert_eq!(CharsCtx::new("hello world!").ctor(&set1)?, "hello");
+///     assert_eq!(CharsCtx::new("hello world!").ctor(&set2)?, "h");
+///
+/// #   Ok(())
+/// # }
+/// ```
+///
+/// # Match multiple units
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let lower = 'a'..='z';
+///     let regex = regex!((lower, 'A' ..= 'W', ' ')+);
+///
+///     assert_eq!(CharsCtx::new("hello World!").ctor(&regex)?, "hello World");
+///
+/// #   Ok(())
+/// # }
+/// ```
 #[macro_export]
 macro_rules! regex {
     (@q * $($res:tt)*) => {

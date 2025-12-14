@@ -3,15 +3,13 @@ pub mod ctor;
 pub mod ctx;
 pub mod err;
 pub mod iter;
-pub mod r#macro;
 pub mod map;
 pub mod neu;
 pub mod regex;
 pub mod span;
 
-#[macro_use]
 pub(crate) mod log;
-
+pub(crate) mod r#macro;
 pub(crate) use log::*;
 
 #[cfg(feature = "log")]
