@@ -532,7 +532,7 @@ where
 ///     let digit = neu::digit(10).many1();
 ///     let val = digit;
 ///     // using sep_collect is inconvenient for Regex
-///     let vals = val.sep_collect::<_, &str, Vec<&str>>(",".ws());
+///     let vals = val.sep_collect::<_, &str, Vec<&str>>(",".skip_ws());
 ///     let array = vals.enclose("[", "]");
 ///     let mut ctx = CharsCtx::new("[18, 24, 42, 58, 69]");
 ///

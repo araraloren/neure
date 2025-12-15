@@ -38,7 +38,7 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let protocol = "http".ltm("https");
+///     let protocol = "http".longest("https");
 ///
 ///     assert_eq!(
 ///         CharsCtx::new(r#"https://docs.rs"#).try_mat(&protocol)?,
@@ -70,8 +70,8 @@ use crate::regex::Regex;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let dec = regex!((neu::digit(10))+).try_map(map::from_str_radix::<i32>(10));
 ///     let hex = regex!((neu::digit(16))+).try_map(map::from_str_radix(16));
-///     let num = dec.ltm(hex);
-///     let val = num.sep(",".ws()).enclose("{", "}");
+///     let num = dec.longest(hex);
+///     let val = num.sep(",".skip_ws()).enclose("{", "}");
 ///     let mut ctx = CharsCtx::new(r#"{12, 1E, A8, 88, 2F}"#);
 ///
 ///     assert_eq!(ctx.ctor(&val)?, [12, 0x1e, 0xa8, 88, 0x2f]);

@@ -234,7 +234,7 @@ where
 ///
 /// Conditionally extends a match with an optional suffix **only if** a test expression succeeds.
 ///
-/// [`ThenIf`] implements a **conditional sequence** pattern where:
+/// [`IfThen`] implements a **conditional sequence** pattern where:
 /// 1. First matches the `left` expression (required)
 /// 2. Then tests the `test` expression at the current position
 /// 3. **Only if `test` succeeds**, matches the `right` expression
@@ -259,7 +259,7 @@ where
 ///     let name = neu::word().many1();
 ///     let paras = name.sep(", ").enclose("<", ">");
 ///     let test = regex::assert("<", true);
-///     let parser = name.then_if(test, paras);
+///     let parser = name.if_then(test, paras);
 ///
 ///     assert_eq!(CharsCtx::new("Vec").try_mat(&parser)?, Span::new(0, 3));
 ///     assert_eq!(
@@ -284,7 +284,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let val = neu::ascii_alphabetic().many1();
-///     let tuple = val.then_if(",".ws(), val).enclose("(", ")");
+///     let tuple = val.if_then(",".skip_ws(), val).enclose("(", ")");
 ///
 ///     assert_eq!(CharsCtx::new("(abc)").ctor(&tuple)?, ("abc", None));
 ///     assert_eq!(
@@ -296,23 +296,23 @@ where
 /// # }
 /// ```
 #[derive(Default, Copy)]
-pub struct ThenIf<C, L, I, R> {
+pub struct IfThen<C, L, I, R> {
     left: L,
     test: I,
     right: R,
     marker: PhantomData<C>,
 }
 
-impl_not_for_regex!(ThenIf<C, L, I, R>);
+impl_not_for_regex!(IfThen<C, L, I, R>);
 
-impl<C, L, I, R> Debug for ThenIf<C, L, I, R>
+impl<C, L, I, R> Debug for IfThen<C, L, I, R>
 where
     L: Debug,
     R: Debug,
     I: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ThenIf")
+        f.debug_struct("IfThen")
             .field("left", &self.left)
             .field("test", &self.test)
             .field("right", &self.right)
@@ -320,7 +320,7 @@ where
     }
 }
 
-impl<C, L, I, R> Clone for ThenIf<C, L, I, R>
+impl<C, L, I, R> Clone for IfThen<C, L, I, R>
 where
     L: Clone,
     R: Clone,
@@ -336,7 +336,7 @@ where
     }
 }
 
-impl<C, L, I, R> ThenIf<C, L, I, R> {
+impl<C, L, I, R> IfThen<C, L, I, R> {
     pub fn new(left: L, test: I, right: R) -> Self {
         Self {
             test,
@@ -398,7 +398,7 @@ impl<C, L, I, R> ThenIf<C, L, I, R> {
     }
 }
 
-impl<'a, C, L, I, R, M, O1, O2, H> Ctor<'a, C, M, (O1, Option<O2>), H> for ThenIf<C, L, I, R>
+impl<'a, C, L, I, R, M, O1, O2, H> Ctor<'a, C, M, (O1, Option<O2>), H> for IfThen<C, L, I, R>
 where
     L: Ctor<'a, C, M, O1, H>,
     R: Ctor<'a, C, M, O2, H>,
@@ -410,13 +410,13 @@ where
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
         let mut g = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("ThenIf", g.beg());
+        debug_ctor_beg!("IfThen", g.beg());
 
-        let r_l = debug_ctor_stage!("ThenIf", "l", self.left.construct(g.ctx(), func));
+        let r_l = debug_ctor_stage!("IfThen", "l", self.left.construct(g.ctx(), func));
         let r_l = g.process_ret(r_l)?;
-        let r_i = debug_ctor_stage!("ThenIf", "test", g.try_mat(&self.test));
+        let r_i = debug_ctor_stage!("IfThen", "test", g.try_mat(&self.test));
         let ret = if r_i.is_ok() {
-            let r_r = debug_ctor_stage!("ThenIf", "r", self.right.construct(g.ctx(), func));
+            let r_r = debug_ctor_stage!("IfThen", "r", self.right.construct(g.ctx(), func));
             let r_r = g.process_ret(r_r)?;
 
             // if matched, return (01, Some(O2))
@@ -426,12 +426,12 @@ where
             (r_l, None)
         };
 
-        debug_ctor_reval!("ThenIf", g.beg(), g.end(), true);
+        debug_ctor_reval!("IfThen", g.beg(), g.end(), true);
         Ok(ret)
     }
 }
 
-impl<'a, C, L, I, R> Regex<C> for ThenIf<C, L, I, R>
+impl<'a, C, L, I, R> Regex<C> for IfThen<C, L, I, R>
 where
     I: Regex<C>,
     L: Regex<C>,
@@ -442,14 +442,14 @@ where
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         let mut g = CtxGuard::new(ctx);
 
-        debug_regex_beg!("ThenIf", g.beg());
+        debug_regex_beg!("IfThen", g.beg());
 
-        let mut ret = debug_regex_stage!("ThenIf", "l", g.try_mat(&self.left)?);
+        let mut ret = debug_regex_stage!("IfThen", "l", g.try_mat(&self.left)?);
 
-        if let Ok(span) = debug_regex_stage!("ThenIf", "test", g.try_mat(&self.test)) {
+        if let Ok(span) = debug_regex_stage!("IfThen", "test", g.try_mat(&self.test)) {
             ret.add_assign(span);
-            ret.add_assign(debug_regex_stage!("ThenIf", "r", g.try_mat(&self.right)?));
+            ret.add_assign(debug_regex_stage!("IfThen", "r", g.try_mat(&self.right)?));
         }
-        debug_regex_reval!("ThenIf", Ok(ret))
+        debug_regex_reval!("IfThen", Ok(ret))
     }
 }

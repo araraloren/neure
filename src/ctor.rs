@@ -5,7 +5,7 @@ mod collect;
 mod dthen;
 mod enclose;
 mod extract;
-mod ltm;
+mod longest;
 mod map;
 mod opt;
 mod or;
@@ -40,7 +40,7 @@ pub use self::enclose::Enclose;
 pub use self::extract::extract;
 pub use self::extract::Extract;
 pub use self::extract::Handler;
-pub use self::ltm::LongestTokenMatch;
+pub use self::longest::LongestTokenMatch;
 pub use self::map::Map;
 pub use self::opt::OptionPat;
 pub use self::or::Or;
@@ -51,8 +51,8 @@ pub use self::sep::SepOnce;
 pub use self::sep::Separate;
 pub use self::slice::PairSlice;
 pub use self::slice::Slice;
+pub use self::then::IfThen;
 pub use self::then::Then;
-pub use self::then::ThenIf;
 pub use self::vec::PairVector;
 pub use self::vec::Vector;
 pub use self::wrap::Wrap;
@@ -342,17 +342,17 @@ where
 
     fn or<P>(self, pat: P) -> Or<C, Self, P>;
 
-    fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P>;
+    fn longest<P>(self, pat: P) -> LongestTokenMatch<C, Self, P>;
 
     fn then<T>(self, then: T) -> Then<C, Self, T>;
 
-    fn then_if<I, T>(self, test: I, then: T) -> ThenIf<C, Self, I, T>;
+    fn if_then<I, T>(self, test: I, then: T) -> IfThen<C, Self, I, T>;
 
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
 
     fn collect<O, T>(self) -> Collect<C, Self, O, T>;
 
-    fn branch<I, E>(self, r#if: I, r#else: E) -> Branch<C, Self, I, E>
+    fn if_else<I, E>(self, test: I, other: E) -> Branch<C, Self, I, E>
     where
         I: Fn(&C) -> Result<bool, Error>;
 
@@ -361,12 +361,12 @@ where
     fn prefix<T>(self, prefix: T) -> Prefix<C, Self, T>;
 
     #[allow(clippy::type_complexity)]
-    fn ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item, EmptyCond>>
+    fn skip_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item>>
     where
         C: Context<'a, Item = char>;
 
     #[allow(clippy::type_complexity)]
-    fn ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item, EmptyCond>>
+    fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item>>
     where
         C: Context<'a, Item = u8>;
 }
@@ -391,7 +391,7 @@ where
     /// #     color_eyre::install()?;
     ///     let digit = regex!(['0' - '9']+);
     ///     let digit = digit.map(|v: &str| v.parse::<i64>().unwrap());
-    ///     let digits = digit.sep(",".ws());
+    ///     let digits = digit.sep(",".skip_ws());
     ///     let array = digits.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new("[2, 4, 8, 16, 42]");
     ///
@@ -441,7 +441,7 @@ where
     /// #     color_eyre::install()?;
     ///     let ascii = neu::ascii().once();
     ///     let lit = ascii.enclose("'", "'");
-    ///     let ele = lit.sep(",".ws());
+    ///     let ele = lit.sep(",".skip_ws());
     ///     let arr = ele.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new("['a', 'c', 'd', 'f']");
     ///
@@ -465,7 +465,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let name = regex!([^ ',' ']' '[']+);
-    ///     let sep = ','.once().ws();
+    ///     let sep = ','.once().skip_ws();
     ///     let arr = name.sep(sep);
     ///     let arr = arr.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new(r#"[c, rust, java, c++]"#);
@@ -488,11 +488,11 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let key = neu::alphabetic().many1().ws();
-    ///     let val = neu::whitespace().or(',').not().many1().ws();
-    ///     let sep = "=>".ws();
+    ///     let key = neu::alphabetic().many1().skip_ws();
+    ///     let val = neu::whitespace().or(',').not().many1().skip_ws();
+    ///     let sep = "=>".skip_ws();
     ///     let ele = key.sep_once(sep, val);
-    ///     let hash = ele.sep(",".ws()).enclose("{".ws(), "}");
+    ///     let hash = ele.sep(",".skip_ws()).enclose("{".skip_ws(), "}");
     ///     let mut ctx = CharsCtx::new(
     ///         r#"{
     ///         c => c11,
@@ -524,11 +524,11 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let key = neu::alphabetic().many1().ws();
-    ///     let val = neu::whitespace().or(',').not().many1().ws();
-    ///     let sep = "=>".ws();
+    ///     let key = neu::alphabetic().many1().skip_ws();
+    ///     let val = neu::whitespace().or(',').not().many1().skip_ws();
+    ///     let sep = "=>".skip_ws();
     ///     let ele = key.sep_once(sep, val);
-    ///     let hash = ele.sep_collect(",".ws()).enclose("{".ws(), "}");
+    ///     let hash = ele.sep_collect(",".skip_ws()).enclose("{".skip_ws(), "}");
     ///     let mut ctx = CharsCtx::new(
     ///         r#"{
     ///         c => c11,
@@ -568,7 +568,7 @@ where
     ///     let str = regex!([^ '"' ]+).set_cond(cond).or("\\\"").repeat(1..).pat();
     ///     let str = str.enclose("\"", "\"");
     ///     let str = str.map(V::S);
-    ///     let vals = str.sep(",".ws());
+    ///     let vals = str.sep(",".skip_ws());
     ///     let text = r#""lily\"", "lilei", "lucy""#;
     ///     let mut ctx = CharsCtx::new(text);
     ///
@@ -596,9 +596,9 @@ where
     ///     #[derive(Debug, PartialEq, Eq)]
     ///     pub struct Val<'a>(&'a str);
     ///
-    ///     let val = "v".ltm("val".ltm("value"));
+    ///     let val = "v".longest("val".longest("value"));
     ///     let val = val.map(Val);
-    ///     let val = val.sep(",".ws());
+    ///     let val = val.sep(",".skip_ws());
     ///     let val = val.enclose("{", "}");
     ///     let mut ctx = CharsCtx::new(r#"{val, v, value}"#);
     ///
@@ -606,7 +606,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn ltm<P>(self, pat: P) -> LongestTokenMatch<C, Self, P> {
+    fn longest<P>(self, pat: P) -> LongestTokenMatch<C, Self, P> {
         LongestTokenMatch::new(self, pat)
     }
 
@@ -622,10 +622,10 @@ where
     /// #     color_eyre::install()?;
     ///     let ws = neu::whitespace().many0();
     ///     let id = neu::ascii_alphabetic().many1();
-    ///     let st = "struct".ws().then(id)._1();
-    ///     let en = "enum".ws().then(id)._1();
+    ///     let st = "struct".skip_ws().then(id)._1();
+    ///     let en = "enum".skip_ws().then(id)._1();
     ///     let ty = st.or(en);
-    ///     let ty = ty.ws().then(ws.enclose("{", "}"))._0();
+    ///     let ty = ty.skip_ws().then(ws.enclose("{", "}"))._0();
     ///     let mut ctx = CharsCtx::new(r#"struct widget { }"#);
     ///
     ///     assert_eq!(ctx.ctor(&ty)?, "widget");
@@ -658,7 +658,7 @@ where
     ///                 .sep("::"),
     ///         )
     ///         ._1()
-    ///         .then_if("as", neu::ascii_alphanumeric().many1());
+    ///         .if_then("as", neu::ascii_alphanumeric().many1());
     ///
     ///     for (str, res) in [
     ///         (
@@ -673,8 +673,8 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn then_if<I, P>(self, test: I, then: P) -> ThenIf<C, Self, I, P> {
-        ThenIf::new(self, test, then)
+    fn if_then<I, P>(self, test: I, then: P) -> IfThen<C, Self, I, P> {
+        IfThen::new(self, test, then)
     }
 
     ///
@@ -689,7 +689,7 @@ where
     /// #     color_eyre::install()?;
     ///     let int = neu::digit(10).many1();
     ///     let int = int.try_map(map::from_str_radix::<i32>(10));
-    ///     let num = int.ws().repeat(3..5);
+    ///     let num = int.skip_ws().repeat(3..5);
     ///     let mut ctx = CharsCtx::new(r#"1 2 3 4"#);
     ///
     ///     assert_eq!(ctx.ctor(&num)?, [1, 2, 3, 4]);
@@ -736,7 +736,7 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let val = "file://".branch(
+    ///     let val = "file://".if_else(
     ///         // test if it is a file url
     ///         |ctx: &CharsCtx| Ok(ctx.orig()?.starts_with("file")),
     ///         "http://",
@@ -748,7 +748,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn branch<F, E>(self, test: F, other: E) -> Branch<C, Self, F, E>
+    fn if_else<F, E>(self, test: F, other: E) -> Branch<C, Self, F, E>
     where
         F: Fn(&C) -> Result<bool, Error>,
     {
@@ -768,7 +768,7 @@ where
     ///     let sep = neu!(['，' ';']);
     ///     let end = neu!(['。' '？' '！']);
     ///     let word = sep.or(end).not().many1();
-    ///     let sent = word.sep(sep.once().ws()).suffix(end.once());
+    ///     let sent = word.sep(sep.once().skip_ws()).suffix(end.once());
     ///     let sent = sent.repeat(1..);
     ///     let mut ctx = CharsCtx::new(
     ///         r#"暖日晴风初破冻。柳眼眉腮，已觉春心动。酒意诗情谁与共。泪融残粉花钿重。乍试夹衫金缕缝。山枕斜敧，枕损钗头凤。独抱浓愁无好梦。夜阑犹剪灯花弄。"#,
@@ -795,10 +795,10 @@ where
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10).count::<2>();
     ///     let time = num.sep_once(":", num);
-    ///     let time = time.enclose("[", "]").ws();
-    ///     let star = '*'.count::<3>().ws();
-    ///     let name = neu::whitespace().not().many1().ws();
-    ///     let status = "left".or("joined").ws();
+    ///     let time = time.enclose("[", "]").skip_ws();
+    ///     let star = '*'.count::<3>().skip_ws();
+    ///     let name = neu::whitespace().not().many1().skip_ws();
+    ///     let status = "left".or("joined").skip_ws();
     ///     let record = name.prefix(star).then(status);
     ///     let record = time.then(record).repeat(1..);
     ///     let mut ctx = CharsCtx::new(
@@ -830,7 +830,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let str = "file://      ";
-    ///     let val = "file://".ws();
+    ///     let val = "file://".skip_ws();
     ///
     ///     assert_eq!(CharsCtx::new(str).ctor(&val)?, "file://");
     ///     assert_eq!(CharsCtx::new(str).try_mat(&val)?, Span::new(0, 13));
@@ -838,14 +838,14 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item, EmptyCond>>
+    fn skip_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item>>
     where
         C: Context<'a, Item = char>,
     {
         Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 
-    fn ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item, EmptyCond>>
+    fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item>>
     where
         C: Context<'a, Item = u8>,
     {

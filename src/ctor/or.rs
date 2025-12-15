@@ -84,7 +84,7 @@ use crate::regex::Regex;
 ///     let sign = pos.or(neg.or(regex::empty().map(|_| 1)));
 ///     let num = bin.or(oct.or(dec.or(hex)));
 ///     let num = sign.then(num).map(|(s, v)| s * v);
-///     let parser = num.sep(",".ws());
+///     let parser = num.sep(",".skip_ws());
 ///
 ///     assert_eq!(
 ///         CharsCtx::new(r#"0d18, +0o17, -0x18, -0b1010"#).ctor(&parser)?,

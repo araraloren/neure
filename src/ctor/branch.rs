@@ -66,7 +66,7 @@ use crate::regex::Regex;
 ///     let re2 = "google"
 ///         .sep_once(".", "co".sep_once(".", "kr".or("jp")))
 ///         .pat();
-///     let regex = re2.branch(
+///     let regex = re2.if_else(
 ///         |ctx: &CharsCtx| ctx.orig().map(|v| v.ends_with("jp") || v.ends_with("kr")),
 ///         re1,
 ///     );
