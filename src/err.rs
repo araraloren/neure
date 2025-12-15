@@ -3,7 +3,7 @@ use std::fmt::Display;
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy)]
 pub enum Error {
-    Null,
+    Fail,
 
     AssertFalse,
 
@@ -39,13 +39,13 @@ pub enum Error {
 
     Repeat,
 
-    NeureRepeatRange,
+    Times,
 
-    NeureRepeat,
+    Between,
 
-    NeureOneMore,
+    Many1,
 
-    NeureOne,
+    Once,
 
     NeureThen,
 
@@ -79,7 +79,7 @@ impl std::error::Error for Error {}
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Null => write!(f, "Error::Null"),
+            Error::Fail => write!(f, "Fail: always failed"),
             Error::AssertFalse => write!(f, "AssertFalse: internal pattern match succeeded"),
             Error::AssertTrue => write!(f, "AssertTrue: internal pattern match failed"),
             Error::Consume => write!(f, "Consume: remaining data length is insufficient"),
@@ -109,21 +109,21 @@ impl Display for Error {
                 f,
                 "Repeat: number of matched patterns does not meet the requirement"
             ),
-            Error::NeureRepeatRange => write!(
+            Error::Times => write!(
                 f,
-                "NeureRepeatRange: number of matched units does not meet the requirement"
+                "Times: number of matched units does not meet the requirement"
             ),
-            Error::NeureRepeat => write!(
+            Error::Between => write!(
                 f,
-                "NeureRepeat: number of matched units does not meet the requirement"
+                "Between: number of matched units does not meet the requirement"
             ),
-            Error::NeureOneMore => write!(
+            Error::Many1 => write!(
                 f,
-                "NeureOneMore: number of matched units does not meet the requirement"
+                "Many1: number of matched units does not meet the requirement"
             ),
-            Error::NeureOne => write!(
+            Error::Once => write!(
                 f,
-                "NeureOne: number of matched units does not meet the requirement"
+                "Once: number of matched units does not meet the requirement"
             ),
             Error::NeureThen => write!(f, "NeureThen: unit failed to match"),
             Error::Array => write!(f, "Array: all patterns failed to match"),

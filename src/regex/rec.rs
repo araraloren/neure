@@ -37,7 +37,7 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O> =
 ///
 ///     let xml = regex::rec_parser(|ctor| {
 ///         let alpha = neu::alphabetic()
-///             .repeat_full()
+///             .many0()
 ///             .map(|v: &str| v.to_string());
 ///         let s = alpha.enclose("<", ">");
 ///         let e = alpha.enclose("</", ">");
@@ -102,7 +102,7 @@ where
 /// #    color_eyre::install()?;
 ///     // into_dyn_ctor using by rec_parser
 ///     let parser = rec_parser(|ctor| {
-///         let re = u8::is_ascii_lowercase.repeat_one();
+///         let re = u8::is_ascii_lowercase.once();
 ///
 ///         ctor.clone()
 ///             .or(re)

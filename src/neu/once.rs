@@ -8,6 +8,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::EmptyCond;
 use crate::regex::Regex;
 
 use super::length_of;
@@ -18,7 +19,7 @@ use super::NeuCond;
 ///
 /// Matches a single context-sensitive element using combined pattern and condition checks.
 ///
-/// [`NeureOne`] provides atomic element matching with two-stage validation:
+/// [`Once`] provides atomic element matching with two-stage validation:
 /// 1. **Base pattern match**: Verifies the element satisfies a core pattern ([`Neu`])
 /// 2. **Context condition**: Validates additional runtime constraints ([`NeuCond`])
 ///
@@ -43,7 +44,7 @@ use super::NeuCond;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_one();
+///     let hex = hex.once();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
@@ -51,7 +52,7 @@ use super::NeuCond;
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct NeureOne<C, U, T, I>
+pub struct Once<C, U, T, I = EmptyCond>
 where
     U: Neu<T>,
 {
@@ -60,7 +61,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> std::ops::Not for NeureOne<C, U, T, I>
+impl<C, U, T, I> std::ops::Not for Once<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -71,20 +72,20 @@ where
     }
 }
 
-impl<C, U, T, I> Debug for NeureOne<C, U, T, I>
+impl<C, U, T, I> Debug for Once<C, U, T, I>
 where
     I: Debug,
     U: Neu<T> + Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("NeureOne")
+        f.debug_struct("Once")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .finish()
     }
 }
 
-impl<C, U, T, I> Clone for NeureOne<C, U, T, I>
+impl<C, U, T, I> Clone for Once<C, U, T, I>
 where
     I: Clone,
     U: Neu<T> + Clone,
@@ -98,7 +99,7 @@ where
     }
 }
 
-impl<C, U, T, I> NeureOne<C, U, T, I>
+impl<C, U, T, I> Once<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -124,22 +125,22 @@ where
     }
 }
 
-impl<'a, C, U, I> Condition<'a, C> for NeureOne<C, U, C::Item, I>
+impl<'a, C, U, I> Condition<'a, C> for Once<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     C: Match<'a> + 'a,
 {
-    type Out<F> = NeureOne<C, U, C::Item, F>;
+    type Out<F> = Once<C, U, C::Item, F>;
 
     fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureOne::new(self.unit, cond)
+        Once::new(self.unit, cond)
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureOne<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Once<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -155,7 +156,7 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for NeureOne<C, U, C::Item, I>
+impl<'a, U, C, I> Regex<C> for Once<C, U, C::Item, I>
 where
     C: Match<'a> + 'a,
     U: Neu<C::Item>,
@@ -164,10 +165,10 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
-        let mut ret = Err(Error::NeureOne);
+        let mut ret = Err(Error::Once);
         let mut iter = ctx.peek()?;
 
-        crate::debug_regex_beg!("NeureOne", ctx.beg());
+        crate::debug_regex_beg!("Once", ctx.beg());
         if let Some((offset, item)) = iter.next() {
             if self.unit.is_match(&item) && self.cond.check(ctx.ctx(), &(offset, item))? {
                 let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
@@ -176,14 +177,14 @@ where
             }
         }
 
-        crate::debug_regex_reval!("NeureOne", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Once", ctx.process_ret(ret))
     }
 }
 
 ///
 /// Matches one or more consecutive context-sensitive elements using combined pattern and condition checks.
 ///
-/// [`NeureOneMore`] extends [`NeureOne`]'s validation model to sequences, requiring every element to satisfy:
+/// [`Many1`] extends [`Once`]'s validation model to sequences, requiring every element to satisfy:
 /// 1. **Base pattern match**: Core element validation ([`Neu`])
 /// 2. **Context condition**: Runtime constraints ([`NeuCond`])
 ///
@@ -218,7 +219,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_one_more();
+///     let hex = hex.many1();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -226,7 +227,7 @@ where
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct NeureOneMore<C, U, T, I>
+pub struct Many1<C, U, T, I = EmptyCond>
 where
     U: Neu<T>,
 {
@@ -235,7 +236,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> std::ops::Not for NeureOneMore<C, U, T, I>
+impl<C, U, T, I> std::ops::Not for Many1<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -246,20 +247,20 @@ where
     }
 }
 
-impl<C, U, T, I> Debug for NeureOneMore<C, U, T, I>
+impl<C, U, T, I> Debug for Many1<C, U, T, I>
 where
     I: Debug,
     U: Neu<T> + Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("NeureOneMore")
+        f.debug_struct("Many1")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .finish()
     }
 }
 
-impl<C, U, T, I> Clone for NeureOneMore<C, U, T, I>
+impl<C, U, T, I> Clone for Many1<C, U, T, I>
 where
     I: Clone,
     U: Neu<T> + Clone,
@@ -273,7 +274,7 @@ where
     }
 }
 
-impl<C, U, T, I> NeureOneMore<C, U, T, I>
+impl<C, U, T, I> Many1<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -299,22 +300,22 @@ where
     }
 }
 
-impl<'a, C, U, I> Condition<'a, C> for NeureOneMore<C, U, C::Item, I>
+impl<'a, C, U, I> Condition<'a, C> for Many1<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     C: Match<'a> + 'a,
 {
-    type Out<F> = NeureOneMore<C, U, C::Item, F>;
+    type Out<F> = Many1<C, U, C::Item, F>;
 
     fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureOneMore::new(self.unit, cond)
+        Many1::new(self.unit, cond)
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureOneMore<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Many1<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -330,7 +331,7 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for NeureOneMore<C, U, C::Item, I>
+impl<'a, U, C, I> Regex<C> for Many1<C, U, C::Item, I>
 where
     C: Match<'a> + 'a,
     U: Neu<C::Item>,
@@ -341,10 +342,10 @@ where
         let mut ctx = CtxGuard::new(ctx);
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::NeureOneMore);
+        let mut ret = Err(Error::Many1);
         let mut iter = ctx.peek()?;
 
-        crate::debug_regex_beg!("NeureOneMore", ctx.beg());
+        crate::debug_regex_beg!("Many1", ctx.beg());
         for pair in iter.by_ref() {
             if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
                 end = Some(pair);
@@ -361,6 +362,6 @@ where
             ret = Ok(ctx.inc(len))
         }
 
-        crate::debug_regex_reval!("NeureOneMore", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Many1", ctx.process_ret(ret))
     }
 }

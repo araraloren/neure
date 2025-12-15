@@ -119,7 +119,7 @@ where
 ///     let re = b'+'
 ///         .or(b'-')
 ///         .then(u8::is_ascii_hexdigit)
-///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
+///         .then(u8::is_ascii_hexdigit.count::<3>())
 ///         .pat()
 ///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)));
 ///    let re = ctor::Wrap::r#box(re);
@@ -148,8 +148,8 @@ impl<T, C> Wrap<BoxedCtor<T>, C> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
-///     let year = char::is_ascii_digit.repeat_times::<4>();
-///     let num = char::is_ascii_digit.repeat_times::<2>();
+///     let year = char::is_ascii_digit.count::<4>();
+///     let num = char::is_ascii_digit.count::<2>();
 ///     let date = ctor::Wrap::rc(year.sep_once("-", num.sep_once("-", num)));
 ///     let time = num.sep_once(":", num.sep_once(":", num));
 ///     let datetime = date.clone().sep_once(" ", time);
@@ -206,7 +206,7 @@ impl<T, C> Wrap<std::sync::Arc<T>, C> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
-///     let num = char::is_ascii_digit.repeat_one_more();
+///     let num = char::is_ascii_digit.many1();
 ///     let float = num.sep_once(".", num).pat();
 ///     let float = float.try_map(map::from_str::<f64>());
 ///     let ctor = ctor::Wrap::cell(float);
@@ -233,7 +233,7 @@ impl<T, C> Wrap<std::cell::Cell<T>, C> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
-///     let cnt = char::is_ascii_digit.repeat_from::<3>();
+///     let cnt = char::is_ascii_digit.at_least::<3>();
 ///     let prog = cnt.sep_once("/", cnt);
 ///     let ctor = ctor::Wrap::cell(prog);
 ///
@@ -260,7 +260,7 @@ impl<T, C> Wrap<std::sync::Mutex<T>, C> {
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 ///     let cjk = |ch: &char| ('\u{4e00}'..='\u{9fff}').contains(ch);
-///     let scentence = cjk.repeat_one_more();
+///     let scentence = cjk.many1();
 ///     let parser = scentence.enclose("《", "》");
 ///     let ctor = ctor::Wrap::refcell(parser);
 ///
@@ -286,8 +286,8 @@ impl<C, T> Wrap<std::cell::RefCell<T>, C> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
-///     let name = char::is_ascii_alphabetic.repeat_one_more();
-///     let time = char::is_ascii_digit.repeat_times::<10>();
+///     let name = char::is_ascii_alphabetic.many1();
+///     let time = char::is_ascii_digit.count::<10>();
 ///     let parser = name.sep_once("_", time).sep_once(".", "txt")._0();
 ///     let ctor = ctor::Wrap::refcell(parser);
 ///
@@ -332,7 +332,7 @@ impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + S
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 ///     let num = u8::is_ascii_digit
-///         .repeat_one()
+///         .once()
 ///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
 ///         .try_map(map::from_str::<usize>());
 ///     let num = num.clone().sep_once(b",", num);
@@ -369,8 +369,8 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
 ///     });
 ///
 ///     send.send({
-///         let name = char::is_ascii_alphabetic.repeat_one_more();
-///         let time = char::is_ascii_digit.repeat_one_more();
+///         let name = char::is_ascii_alphabetic.many1();
+///         let time = char::is_ascii_digit.many1();
 ///         let parser = name.sep_once("_", time).sep_once(".", "txt")._0();
 ///         ctor::Wrap::dyn_box_send(parser)
 ///     })?;
@@ -407,7 +407,7 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, 
 ///         .init();
 ///
 ///     let root = "/".opt();
-///     let name = '/'.not().repeat_one_more();
+///     let name = '/'.not().many1();
 ///     let path = name.sep("/").opt();
 ///     let path = root.then(path);
 ///     let parser = ctor::Wrap::rc(path);

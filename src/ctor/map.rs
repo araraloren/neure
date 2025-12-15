@@ -32,9 +32,9 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let str = neu::ascii_alphabetic().repeat_times::<3>();
+///     let str = neu::ascii_alphabetic().count::<3>();
 ///     let num = neu::digit(10)
-///         .repeat_times::<3>()
+///         .count::<3>()
 ///         .try_map::<_, (Span, i32)>(|v: (Span, &str)| {
 ///             v.1.parse::<i32>()
 ///                 .map_err(|_| Error::Uid(0))
@@ -62,7 +62,7 @@ use crate::regex::Regex;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let str = regex!((neu::ascii_alphabetic()){3}).map(String::from);
 ///     let num = neu::digit(10)
-///         .repeat_times::<3>()
+///         .count::<3>()
 ///         // map &str to i32
 ///         .try_map(map::from_str::<i32>());
 ///     let re = str.then(num);
@@ -90,7 +90,7 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let num = neu::digit(10).repeat_times::<3>();
+///     let num = neu::digit(10).count::<3>();
 ///     let id =
 ///         CharsCtx::new("777").map(&num, |v: &str| v.parse::<i32>().map_err(|_| Error::Uid(0)))?;
 ///

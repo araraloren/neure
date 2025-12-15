@@ -140,7 +140,7 @@ where
 ///         let bin = neu::prefix('b', bin);
 ///         let hex = neu::prefix('x', hex);
 ///         let num = neu::prefix('0', oct.or(hex).or(bin));
-///         let num = num.repeat_one_more().or(dec.repeat_one_more());
+///         let num = num.many1().or(dec.many1());
 ///         let mut ctx = CharsCtx::new(test.0);
 ///
 ///         if let Some(span) = test.1 {
@@ -192,14 +192,14 @@ where
 ///     ];
 ///
 ///     let new_prefix = |n: usize, i: usize| {
-///         neu::prefix_cnt('A', n, neu::none())
-///             .repeat_range(n..=n)
+///         neu::prefix_cnt('A', n, neu::never())
+///             .times(n..=n)
 ///             .map(move |_| replys[i])
 ///     };
 ///
 ///     for test in tests {
 ///         // `prefix` is not reuseable, make new one in every match
-///         let name = neu::any().repeat_one_more();
+///         let name = neu::always().many1();
 ///         let ultra = new_prefix(5, 3);
 ///         let max = new_prefix(4, 3);
 ///         let plus = new_prefix(3, 2);

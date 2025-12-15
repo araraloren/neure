@@ -117,10 +117,10 @@ where
     ///      "#;
     ///
     ///     // match "\n" or anything not 'X'
-    ///     let text = "\n".or('X'.not().repeat_one_more());
+    ///     let text = "\n".or('X'.not().many1());
     ///     let mut ctx = CharsCtx::new(DATA).skip_before(|ctx: &mut CharsCtx| {
     ///         let mut g = CtxGuard::new(ctx);
-    ///         let ret = g.try_mat(&'X'.repeat_full());
+    ///         let ret = g.try_mat(&'X'.many0());
     ///
     ///         g.process_ret(ret)
     ///     });
@@ -163,17 +163,8 @@ where
 impl<'a> RegexCtx<'a, [u8]> {
     pub fn skip_ascii_whitespace(
         self,
-    ) -> PolicyCtx<
-        Self,
-        crate::neu::NeureRepeat<
-            0,
-            { usize::MAX },
-            Self,
-            crate::neu::AsciiWhiteSpace<u8>,
-            crate::neu::NullCond,
-        >,
-    > {
-        self.skip_before(crate::neu::ascii_whitespace().repeat_full())
+    ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::AsciiWhiteSpace<u8>, u8>> {
+        self.skip_before(crate::neu::ascii_whitespace().many0())
     }
 }
 
@@ -234,8 +225,8 @@ impl<'a> RegexCtx<'a, str> {
     /// NOT y -> i
     ///      "#;
     ///
-    ///     let sig = neu::digit(10).repeat_one_more().map(Op::Sig);
-    ///     let wire = neu::ascii_lowercase().repeat_one_more();
+    ///     let sig = neu::digit(10).many1().map(Op::Sig);
+    ///     let wire = neu::ascii_lowercase().many1();
     ///     let op = sig.or(wire.map(Op::Wire));
     ///     let and = op.sep_once("AND", op).map(Inst::And);
     ///     let or = op.sep_once("OR", op).map(Inst::Or);
@@ -291,34 +282,16 @@ impl<'a> RegexCtx<'a, str> {
     /// ```
     pub fn skip_ascii_whitespace(
         self,
-    ) -> PolicyCtx<
-        Self,
-        crate::neu::NeureRepeat<
-            0,
-            { usize::MAX },
-            Self,
-            crate::neu::AsciiWhiteSpace<char>,
-            crate::neu::NullCond,
-        >,
-    > {
-        self.skip_before(crate::neu::ascii_whitespace().repeat_full())
+    ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::AsciiWhiteSpace<char>, char>> {
+        self.skip_before(crate::neu::ascii_whitespace().many0())
     }
 }
 
 impl<'a> RegexCtx<'a, str> {
     pub fn skip_whitespace(
         self,
-    ) -> PolicyCtx<
-        Self,
-        crate::neu::NeureRepeat<
-            0,
-            { usize::MAX },
-            Self,
-            crate::neu::WhiteSpace,
-            crate::neu::NullCond,
-        >,
-    > {
-        self.skip_before(crate::neu::whitespace().repeat_full())
+    ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::WhiteSpace, char>> {
+        self.skip_before(crate::neu::whitespace().many0())
     }
 }
 

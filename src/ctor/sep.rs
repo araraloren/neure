@@ -48,7 +48,7 @@ use crate::debug_regex_reval;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let key = '='.not().repeat_one_more();
+///     let key = '='.not().many1();
 ///     let val = key;
 ///     let pair = key.sep_once("=", val);
 ///
@@ -74,7 +74,7 @@ use crate::debug_regex_reval;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let ele = neu::digit(10).repeat_times::<2>();
+///     let ele = neu::digit(10).count::<2>();
 ///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
 ///     let time = time.map(|((h, m), s)| (h, m, s));
@@ -259,8 +259,8 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let ws = neu::whitespace().repeat_full();
-///     let num = neu::digit(10).repeat_one_more();
+///     let ws = neu::whitespace().many0();
+///     let num = neu::digit(10).many1();
 ///     let ele = num.sep(",".suffix(ws));
 ///     let arr = ele.enclose("{", "}");
 ///     let mut ctx = CharsCtx::new("{11, 42, 8, 99}");
@@ -286,9 +286,9 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let ws = neu::whitespace().repeat_full();
-///     let ty = ('a'..='z').or('A'..='Z').repeat_one();
-///     let ty = ty.then(neu::word().repeat_full()).pat();
+///     let ws = neu::whitespace().many0();
+///     let ty = ('a'..='z').or('A'..='Z').once();
+///     let ty = ty.then(neu::word().many0()).pat();
 ///     let ele = ty.sep(",".suffix(ws));
 ///     let arr = ele.enclose("<", ">");
 ///     let mut ctx = CharsCtx::new("<Ctx, T, O1, O2>");
@@ -529,7 +529,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let digit = neu::digit(10).repeat_one_more();
+///     let digit = neu::digit(10).many1();
 ///     let val = digit;
 ///     // using sep_collect is inconvenient for Regex
 ///     let vals = val.sep_collect::<_, &str, Vec<&str>>(",".ws());
@@ -561,8 +561,8 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let name = neu::word().repeat_one_more();
-///     let year = neu::digit(10).repeat_one_more();
+///     let name = neu::word().many1();
+///     let year = neu::digit(10).many1();
 ///     let year = year.try_map(map::from_str::<u32>());
 ///     let pair = name.sep_once(" => ", year);
 ///     let pairs = pair.sep_collect(", ");

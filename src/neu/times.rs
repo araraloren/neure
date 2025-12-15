@@ -10,6 +10,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::EmptyCond;
 use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
 
@@ -22,7 +23,7 @@ use super::NeuCond;
 ///
 /// Matches a sequence of elements with compile-time bounded repetition and context validation.
 ///
-/// [`NeureRepeat`] provides precise control over sequence length while maintaining per-element
+/// [`Between`] provides precise control over sequence length while maintaining per-element
 /// context awareness, enforcing that every matched element satisfies both:
 /// 1. **Base pattern match**: Core element validation ([`Neu`])
 /// 2. **Context condition**: Runtime constraints ([`NeuCond`])
@@ -59,7 +60,7 @@ use super::NeuCond;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat::<1, 6>();
+///     let hex = hex.between::<1, 6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -74,7 +75,7 @@ use super::NeuCond;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_full();
+///     let hex = hex.many0();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -89,7 +90,7 @@ use super::NeuCond;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_to::<6>();
+///     let hex = hex.at_most::<6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -104,7 +105,7 @@ use super::NeuCond;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_from::<2>();
+///     let hex = hex.at_least::<2>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -112,13 +113,13 @@ use super::NeuCond;
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct NeureRepeat<const M: usize, const N: usize, C, U, I> {
+pub struct Between<const M: usize, const N: usize, C, U, I = EmptyCond> {
     unit: U,
     cond: I,
     marker: PhantomData<C>,
 }
 
-impl<const M: usize, const N: usize, C, U, I> std::ops::Not for NeureRepeat<M, N, C, U, I> {
+impl<const M: usize, const N: usize, C, U, I> std::ops::Not for Between<M, N, C, U, I> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
@@ -126,20 +127,20 @@ impl<const M: usize, const N: usize, C, U, I> std::ops::Not for NeureRepeat<M, N
     }
 }
 
-impl<const M: usize, const N: usize, C, U, I> Debug for NeureRepeat<M, N, C, U, I>
+impl<const M: usize, const N: usize, C, U, I> Debug for Between<M, N, C, U, I>
 where
     I: Debug,
     U: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("NeureRepeat")
+        f.debug_struct("Between")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .finish()
     }
 }
 
-impl<const M: usize, const N: usize, C, U, I> Clone for NeureRepeat<M, N, C, U, I>
+impl<const M: usize, const N: usize, C, U, I> Clone for Between<M, N, C, U, I>
 where
     I: Clone,
     U: Clone,
@@ -153,7 +154,7 @@ where
     }
 }
 
-impl<const M: usize, const N: usize, C, U, I> NeureRepeat<M, N, C, U, I> {
+impl<const M: usize, const N: usize, C, U, I> Between<M, N, C, U, I> {
     pub fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
@@ -176,24 +177,24 @@ impl<const M: usize, const N: usize, C, U, I> NeureRepeat<M, N, C, U, I> {
     }
 }
 
-impl<'a, const M: usize, const N: usize, C, U, I> Condition<'a, C> for NeureRepeat<M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, C, U, I> Condition<'a, C> for Between<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + 'a,
 {
-    type Out<F> = NeureRepeat<M, N, C, U, F>;
+    type Out<F> = Between<M, N, C, U, F>;
 
     fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureRepeat::<M, N, C, U, F>::new(self.unit, cond)
+        Between::<M, N, C, U, F>::new(self.unit, cond)
     }
 }
 
 impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<'a, C, O, O, H>
-    for NeureRepeat<M, N, C, U, I>
+    for Between<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -209,7 +210,7 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, I> Regex<C> for NeureRepeat<M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, U, C, I> Regex<C> for Between<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -221,11 +222,11 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::NeureRepeat);
+        let mut ret = Err(Error::Between);
         let mut iter = ctx.peek()?;
         let range = M..N;
 
-        crate::debug_regex_beg!("NeureRepeat", &range, ctx.beg());
+        crate::debug_regex_beg!("Between", &range, ctx.beg());
         while cnt < N {
             if let Some(pair) = iter.next() {
                 if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
@@ -246,14 +247,14 @@ where
 
             ret = Ok(ctx.inc(len));
         }
-        crate::debug_regex_reval!("NeureRepeat", cnt, ctx.process_ret(ret))
+        crate::debug_regex_reval!("Between", cnt, ctx.process_ret(ret))
     }
 }
 
 ///
 /// Matches a sequence of elements with runtime-specified repetition bounds and context validation.
 ///
-/// [`NeureRepeatRange`] provides dynamic control over sequence length while maintaining per-element
+/// [`Times`] provides dynamic control over sequence length while maintaining per-element
 /// context awareness, enforcing that every matched element satisfies both:
 /// 1. **Base pattern match**: Core element validation ([`Neu`])
 /// 2. **Context condition**: Runtime constraints ([`NeuCond`])
@@ -293,7 +294,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_range(1..7);
+///     let hex = hex.times(1..7);
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -301,22 +302,22 @@ where
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct NeureRepeatRange<C, U, I> {
+pub struct Times<C, U, I = EmptyCond> {
     unit: U,
     cond: I,
     range: CRange<usize>,
     marker: PhantomData<C>,
 }
 
-impl_not_for_regex!(NeureRepeatRange<C, U, I>);
+impl_not_for_regex!(Times<C, U, I>);
 
-impl<C, U, I> Debug for NeureRepeatRange<C, U, I>
+impl<C, U, I> Debug for Times<C, U, I>
 where
     U: Debug,
     I: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("NeureRepeatRange")
+        f.debug_struct("Times")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .field("range", &self.range)
@@ -324,7 +325,7 @@ where
     }
 }
 
-impl<C, U, I> Clone for NeureRepeatRange<C, U, I>
+impl<C, U, I> Clone for Times<C, U, I>
 where
     U: Clone,
     I: Clone,
@@ -339,7 +340,7 @@ where
     }
 }
 
-impl<C, U, I> NeureRepeatRange<C, U, I> {
+impl<C, U, I> Times<C, U, I> {
     pub fn new(unit: U, range: CRange<usize>, cond: I) -> Self {
         Self {
             unit,
@@ -376,23 +377,23 @@ impl<C, U, I> NeureRepeatRange<C, U, I> {
     }
 }
 
-impl<'a, C, U, I> Condition<'a, C> for NeureRepeatRange<C, U, I>
+impl<'a, C, U, I> Condition<'a, C> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Context<'a> + 'a,
 {
-    type Out<F> = NeureRepeatRange<C, U, F>;
+    type Out<F> = Times<C, U, F>;
 
     fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureRepeatRange::<C, U, F>::new(self.unit, self.range, cond)
+        Times::<C, U, F>::new(self.unit, self.range, cond)
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureRepeatRange<C, U, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -408,7 +409,7 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for NeureRepeatRange<C, U, I>
+impl<'a, U, C, I> Regex<C> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -420,7 +421,7 @@ where
         let mut cnt = 0;
         let mut beg = None;
         let mut end = None;
-        let mut ret = Err(Error::NeureRepeatRange);
+        let mut ret = Err(Error::Times);
         let mut iter = ctx.peek()?;
 
         fn bound_checker(max: Option<usize>) -> impl Fn(usize) -> bool {
@@ -433,7 +434,7 @@ where
             std::ops::Bound::Unbounded => None,
         });
 
-        crate::debug_regex_beg!("NeureRepeatRange", self.range, ctx.beg());
+        crate::debug_regex_beg!("Times", self.range, ctx.beg());
         while cond(cnt) {
             if let Some(pair) = iter.next() {
                 if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
@@ -454,6 +455,6 @@ where
 
             ret = Ok(ctx.inc(len));
         }
-        crate::debug_regex_reval!("NeureRepeatRange", cnt, ctx.process_ret(ret))
+        crate::debug_regex_reval!("Times", cnt, ctx.process_ret(ret))
     }
 }

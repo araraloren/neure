@@ -38,7 +38,7 @@ use crate::regex::Regex;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.suffix("://");
-///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = neu::alphabetic().many1();
 ///     let domain = domain.sep(".").at_least(2);
 ///     let url = protocol.then(domain);
 ///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernel.org"#);
@@ -62,7 +62,7 @@ use crate::regex::Regex;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.suffix("://");
-///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = neu::alphabetic().many1();
 ///     let domain = domain.sep(".").at_least(2);
 ///     let url = protocol.then(domain);
 ///     let mut ctx = CharsCtx::new(r#"https://www.mozilla.org"#);
@@ -228,7 +228,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp")).suffix("://");
-///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = neu::alphabetic().many1();
 ///     let domain = domain.sep(".").at_least(2);
 ///     let url = domain.prefix(protocol);
 ///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernel.org"#);
@@ -251,7 +251,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp")).suffix("://");
-///     let domain = neu::alphabetic().repeat_one_more();
+///     let domain = neu::alphabetic().many1();
 ///     let domain = domain.sep(".").at_least(2);
 ///     let url = domain.prefix(protocol);
 ///     let mut ctx = CharsCtx::new(r#"ftp://ftp.kernel.org"#);

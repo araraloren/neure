@@ -7,8 +7,8 @@ fn sep() {
 
 fn sep_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let comma = ','.repeat_one();
-    let digit = neu::range('0'..='9').repeat_one_more().sep(comma);
+    let comma = ','.once();
+    let digit = neu::range('0'..='9').many1().sep(comma);
     let mut ctx = CharsCtx::new("123,456,789");
 
     assert_eq!(

@@ -37,9 +37,9 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let digits = neu::digit(16).repeat_one_more();
+///     let digits = neu::digit(16).many1();
 ///     let strs = ('a'..='z').or('A'..='Z');
-///     let strs = strs.repeat_one_more();
+///     let strs = strs.many1();
 ///     let parser = digits.or(strs);
 ///
 ///     assert_eq!(CharsCtx::new(r#"8848"#).try_mat(&parser)?, Span::new(0, 4));
@@ -68,7 +68,7 @@ use crate::regex::Regex;
 ///         ($p:expr, $r:literal) => {
 ///             $p.then(
 ///                 neu::digit($r)
-///                     .repeat_one_more()
+///                     .many1()
 ///                     .try_map(map::from_str_radix::<i64>($r)),
 ///             )
 ///             ._1()

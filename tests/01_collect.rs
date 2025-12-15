@@ -7,7 +7,7 @@ fn collect() {
 
 fn collect_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let val = neu::ascii_alphabetic().repeat_one();
+    let val = neu::ascii_alphabetic().once();
     let vec = val.collect::<_, Vec<_>>();
 
     assert_eq!(

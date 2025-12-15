@@ -1,15 +1,15 @@
 mod bool;
 mod cond;
 mod equal;
+mod once;
 mod op_and;
 mod op_not;
-mod op_one;
 mod op_or;
-mod op_repeat;
-mod op_then;
-mod op_zero;
+mod opt;
 mod prefix;
 mod range;
+mod then;
+mod times;
 mod units;
 
 use crate::ctx::Context;
@@ -24,30 +24,27 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::bool::any;
-pub use self::bool::none;
-pub use self::bool::False;
-pub use self::bool::True;
+pub use self::bool::always;
+pub use self::bool::never;
+pub use self::bool::Always;
+pub use self::bool::Never;
 pub use self::cond::regex_cond;
 pub use self::cond::Condition;
+pub use self::cond::EmptyCond;
 pub use self::cond::NeuCond;
-pub use self::cond::NullCond;
 pub use self::cond::RegexCond;
 pub use self::equal::equal;
 pub use self::equal::Equal;
+pub use self::once::Many1;
+pub use self::once::Once;
 pub use self::op_and::and;
 pub use self::op_and::And;
 pub use self::op_not::not;
 pub use self::op_not::Not;
-pub use self::op_one::NeureOne;
-pub use self::op_one::NeureOneMore;
 pub use self::op_or::or;
 pub use self::op_or::Or;
-pub use self::op_repeat::NeureRepeat;
-pub use self::op_repeat::NeureRepeatRange;
-pub use self::op_then::NeureThen;
-pub use self::op_zero::NeureZeroMore;
-pub use self::op_zero::NeureZeroOne;
+pub use self::opt::Many0;
+pub use self::opt::Opt;
 pub use self::prefix::prefix;
 pub use self::prefix::prefix_cnt;
 pub use self::prefix::prefix_sync;
@@ -56,6 +53,9 @@ pub use self::prefix::Prefix;
 pub use self::prefix::PrefixSync;
 pub use self::range::range;
 pub use self::range::CRange;
+pub use self::then::NeureThen;
+pub use self::times::Between;
+pub use self::times::Times;
 pub use self::units::alphabetic;
 pub use self::units::alphanumeric;
 pub use self::units::ascii;
@@ -217,8 +217,8 @@ impl<T> Neu<T> for Rc<dyn Neu<T>> {
 ///   let mut ctx1 = CharsCtx::new("aaffeeeaccc");
 ///   let mut ctx2 = CharsCtx::new("acdde");
 ///
-///   assert_eq!(ctx1.try_mat(&arr.repeat_range(2..6)).unwrap(), Span::new(0, 5));
-///   assert_eq!(ctx2.try_mat(&arr.repeat_range(2..6)).unwrap(), Span::new(0, 2));
+///   assert_eq!(ctx1.try_mat(&arr.times(2..6)).unwrap(), Span::new(0, 5));
+///   assert_eq!(ctx2.try_mat(&arr.times(2..6)).unwrap(), Span::new(0, 2));
 /// # }
 /// ```
 impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
@@ -237,7 +237,7 @@ impl<const N: usize, T: PartialEq + MayDebug> Neu<T> for [T; N] {
 /// #
 /// # fn main() {
 ///   let arr = &[b'a', b'c', b'f', b'e'] as &[u8];
-///   let arr = NeuIntoRegexOps::repeat_range(arr, 2..6);
+///   let arr = NeuIntoRegexOps::times(arr, 2..6);
 ///   let mut ctx1 = BytesCtx::new(b"aaffeeeaccc");
 ///   let mut ctx2 = BytesCtx::new(b"acdde");
 ///
@@ -664,29 +664,33 @@ where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
 {
-    fn then<R>(self, unit: R) -> NeureThen<C, Self, R, C::Item, NullCond>
+    fn then<R>(self, unit: R) -> NeureThen<C, Self, R, C::Item, EmptyCond>
     where
         R: Neu<C::Item>;
 
-    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<M, N, C, Self, NullCond>;
+    fn between<const M: usize, const N: usize>(self) -> Between<M, N, C, Self>;
 
-    fn repeat_times<const M: usize>(self) -> NeureRepeat<M, M, C, Self, NullCond>;
+    fn count<const M: usize>(self) -> Between<M, M, C, Self> {
+        self.between::<M, M>()
+    }
 
-    fn repeat_from<const M: usize>(self) -> NeureRepeat<M, { usize::MAX }, C, Self, NullCond>;
+    fn at_least<const M: usize>(self) -> Between<M, { usize::MAX }, C, Self> {
+        self.between::<M, _>()
+    }
 
-    fn repeat_to<const N: usize>(self) -> NeureRepeat<0, N, C, Self, NullCond>;
+    fn at_most<const N: usize>(self) -> Between<0, N, C, Self> {
+        self.between::<0, N>()
+    }
 
-    fn repeat_full(self) -> NeureRepeat<0, { usize::MAX }, C, Self, NullCond>;
+    fn once(self) -> Once<C, Self, C::Item>;
 
-    fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond>;
+    fn many1(self) -> Many1<C, Self, C::Item>;
 
-    fn repeat_one_more(self) -> NeureOneMore<C, Self, C::Item, NullCond>;
+    fn opt(self) -> Opt<C, Self, C::Item>;
 
-    fn repeat_zero_one(self) -> NeureZeroOne<C, Self, C::Item, NullCond>;
+    fn many0(self) -> Many0<C, Self, C::Item>;
 
-    fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond>;
-
-    fn repeat_range(self, range: impl Into<CRange<usize>>) -> NeureRepeatRange<C, Self, NullCond>;
+    fn times(self, range: impl Into<CRange<usize>>) -> Times<C, Self>;
 }
 
 impl<'a, C, U> NeuIntoRegexOps<'a, C> for U
@@ -694,50 +698,37 @@ where
     C: Context<'a>,
     Self: Sized + Neu<C::Item>,
 {
-    fn then<R>(self, unit: R) -> NeureThen<C, Self, R, C::Item, NullCond>
+    fn then<R>(self, unit: R) -> NeureThen<C, Self, R, C::Item, EmptyCond>
     where
         R: Neu<C::Item>,
     {
-        NeureThen::new(self, unit, NullCond)
+        NeureThen::new(self, unit, EmptyCond)
     }
 
-    fn repeat<const M: usize, const N: usize>(self) -> NeureRepeat<M, N, C, Self, NullCond> {
-        NeureRepeat::new(self, NullCond)
+    fn between<const M: usize, const N: usize>(self) -> Between<M, N, C, Self> {
+        Between::new(self, EmptyCond)
     }
 
-    fn repeat_times<const M: usize>(self) -> NeureRepeat<M, M, C, Self, NullCond> {
-        NeureRepeat::new(self, NullCond)
+    fn once(self) -> Once<C, Self, C::Item> {
+        Once::new(self, EmptyCond)
     }
 
-    fn repeat_from<const M: usize>(self) -> NeureRepeat<M, { usize::MAX }, C, Self, NullCond> {
-        NeureRepeat::new(self, NullCond)
+    fn many1(self) -> Many1<C, Self, C::Item> {
+        Many1::new(self, EmptyCond)
     }
 
-    fn repeat_to<const N: usize>(self) -> NeureRepeat<0, N, C, Self, NullCond> {
-        NeureRepeat::new(self, NullCond)
+    fn opt(self) -> Opt<C, Self, C::Item> {
+        Opt::new(self, EmptyCond)
     }
 
-    fn repeat_full(self) -> NeureRepeat<0, { usize::MAX }, C, Self, NullCond> {
-        NeureRepeat::new(self, NullCond)
+    fn many0(self) -> Many0<C, Self, C::Item> {
+        Many0::new(self, EmptyCond)
     }
 
-    fn repeat_one(self) -> NeureOne<C, Self, C::Item, NullCond> {
-        NeureOne::new(self, NullCond)
-    }
+    fn times(self, range: impl Into<CRange<usize>>) -> Times<C, Self> {
+        let range = range.into();
 
-    fn repeat_one_more(self) -> NeureOneMore<C, Self, C::Item, NullCond> {
-        NeureOneMore::new(self, NullCond)
-    }
-
-    fn repeat_zero_one(self) -> NeureZeroOne<C, Self, C::Item, NullCond> {
-        NeureZeroOne::new(self, NullCond)
-    }
-
-    fn repeat_zero_more(self) -> NeureZeroMore<C, Self, C::Item, NullCond> {
-        NeureZeroMore::new(self, NullCond)
-    }
-
-    fn repeat_range(self, range: impl Into<CRange<usize>>) -> NeureRepeatRange<C, Self, NullCond> {
-        NeureRepeatRange::new(self, range.into(), NullCond)
+        debug_assert!(!range.is_empty(), "Invalid CRange for Times");
+        Times::new(self, range, EmptyCond)
     }
 }

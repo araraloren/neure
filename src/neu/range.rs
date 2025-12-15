@@ -64,6 +64,28 @@ impl<T> CRange<T> {
     }
 }
 
+impl CRange<usize> {
+    pub fn is_empty(&self) -> bool {
+        match &self.start {
+            Bound::Included(start) => match &self.end {
+                Bound::Included(end) => end < start,
+                Bound::Excluded(end) => end <= start,
+                Bound::Unbounded => start == &usize::MAX,
+            },
+            Bound::Excluded(start) => match &self.end {
+                Bound::Included(end) => end <= start,
+                Bound::Excluded(end) => *end <= *start + 1,
+                Bound::Unbounded => false,
+            },
+            Bound::Unbounded => match &self.end {
+                Bound::Included(_) => false,
+                Bound::Excluded(end) => *end == 0,
+                Bound::Unbounded => false,
+            },
+        }
+    }
+}
+
 impl<T: Clone> CRange<T> {
     pub fn clone_from(range: impl RangeBounds<T>) -> Self {
         Self {
@@ -194,7 +216,7 @@ impl<T> From<std::ops::RangeToInclusive<T>> for CRange<T> {
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let letter = neu::range('a' ..= 'f');
-///     let letter = letter.repeat_times::<3>();
+///     let letter = letter.count::<3>();
 ///     let mut ctx = CharsCtx::new("adfwgh");
 ///
 ///     assert_eq!(ctx.try_mat(&letter)?, Span::new(0, 3));

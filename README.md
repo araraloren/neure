@@ -22,7 +22,7 @@ use neure::prelude::*;
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let year = regex!(['0' - '9']+); // match digit from 0 to 9 more than once
     let year = year.try_map(map::from_str::<i32>()); // map it to i32
-    let name = neu::ascii_alphabetic().repeat_one_more(); // match ascii alphabetic
+    let name = neu::ascii_alphabetic().many1(); // match ascii alphabetic
     let mut ctx = CharsCtx::new("2024rust");
 
     // .then construct a tuple
@@ -43,19 +43,19 @@ mod neure_ {
         let alpha = neu::range('a'..='z');
         let num = neu::digit(10);
         let name = regex!((alpha, num, '_', '.', '+', '-')+);
-        let cond = ".".then('.'.not().repeat_full()).then(regex::end());
+        let cond = ".".then('.'.not().many0()).then(regex::end());
         let cond = neu::regex_cond(regex::not(cond));
         let domain = alpha
             .or(num)
             .or('.')
             .or('-')
-            .repeat_to::<256>()
+            .at_most::<256>()
             .set_cond(cond);
         let email = regex::start()
             .then(name)
             .sep_once(
                 "@",
-                domain.sep_once(".", neu!((alpha, '.')).repeat::<2, 6>()),
+                domain.sep_once(".", neu!((alpha, '.')).between::<2, 6>()),
             )
             .then(regex::end());
 

@@ -20,9 +20,9 @@ pub struct JsonParser;
 impl JsonParser {
     pub fn parse(pat: &[u8]) -> Result<JsonZero<'_>, Error> {
         let parser = regex::rec_parser_with(|ctor| {
-            let ws = u8::is_ascii_whitespace.repeat_full();
-            let sign = neu!((b'+', b'-')).repeat_zero_one();
-            let digit = range(b'0'..=b'9').repeat_one_more();
+            let ws = u8::is_ascii_whitespace.many0();
+            let sign = neu!((b'+', b'-')).opt();
+            let digit = range(b'0'..=b'9').many1();
             let dec = b".".then(digit).pat();
             let num = sign.then(digit).then(dec.or(regex::empty()));
             let num = ctor::Wrap::dyn_box(num.pat().try_map(&Self::to_digit));
@@ -32,7 +32,7 @@ impl JsonParser {
             let cond = neu::regex_cond(regex::not(escape));
             let str_val = b'\"'
                 .not()
-                .repeat_one_more()
+                .many1()
                 .set_cond(cond)
                 .or(escape)
                 .repeat(0..)

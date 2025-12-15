@@ -65,8 +65,8 @@ use crate::map::mapper;
 use crate::map::Mapper;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
-use crate::neu::NeureZeroMore;
-use crate::neu::NullCond;
+use crate::neu::EmptyCond;
+use crate::neu::Many0;
 use crate::regex::Regex;
 
 pub trait Ctor<'a, C, M, O, H> {
@@ -361,12 +361,12 @@ where
     fn prefix<T>(self, prefix: T) -> Prefix<C, Self, T>;
 
     #[allow(clippy::type_complexity)]
-    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<char>, C::Item, NullCond>>
+    fn ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item, EmptyCond>>
     where
         C: Context<'a, Item = char>;
 
     #[allow(clippy::type_complexity)]
-    fn ascii_ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<u8>, C::Item, NullCond>>
+    fn ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item, EmptyCond>>
     where
         C: Context<'a, Item = u8>;
 }
@@ -415,7 +415,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let num = neu::digit(10)
-    ///         .repeat_one_more()
+    ///         .many1()
     ///         .try_map(map::from_str::<usize>())
     ///         .opt();
     ///
@@ -439,7 +439,7 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let ascii = neu::ascii().repeat_one();
+    ///     let ascii = neu::ascii().once();
     ///     let lit = ascii.enclose("'", "'");
     ///     let ele = lit.sep(",".ws());
     ///     let arr = ele.enclose("[", "]");
@@ -465,7 +465,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
     ///     let name = regex!([^ ',' ']' '[']+);
-    ///     let sep = ','.repeat_one().ws();
+    ///     let sep = ','.once().ws();
     ///     let arr = name.sep(sep);
     ///     let arr = arr.enclose("[", "]");
     ///     let mut ctx = CharsCtx::new(r#"[c, rust, java, c++]"#);
@@ -488,8 +488,8 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let key = neu::alphabetic().repeat_one_more().ws();
-    ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
+    ///     let key = neu::alphabetic().many1().ws();
+    ///     let val = neu::whitespace().or(',').not().many1().ws();
     ///     let sep = "=>".ws();
     ///     let ele = key.sep_once(sep, val);
     ///     let hash = ele.sep(",".ws()).enclose("{".ws(), "}");
@@ -524,8 +524,8 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let key = neu::alphabetic().repeat_one_more().ws();
-    ///     let val = neu::whitespace().or(',').not().repeat_one_more().ws();
+    ///     let key = neu::alphabetic().many1().ws();
+    ///     let val = neu::whitespace().or(',').not().many1().ws();
     ///     let sep = "=>".ws();
     ///     let ele = key.sep_once(sep, val);
     ///     let hash = ele.sep_collect(",".ws()).enclose("{".ws(), "}");
@@ -620,8 +620,8 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let ws = neu::whitespace().repeat_full();
-    ///     let id = neu::ascii_alphabetic().repeat_one_more();
+    ///     let ws = neu::whitespace().many0();
+    ///     let id = neu::ascii_alphabetic().many1();
     ///     let st = "struct".ws().then(id)._1();
     ///     let en = "enum".ws().then(id)._1();
     ///     let ty = st.or(en);
@@ -647,18 +647,18 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let sp = neu::whitespace().repeat_full();
+    ///     let sp = neu::whitespace().many0();
     ///     let using = "use"
     ///         .sep_once(
     ///             "",
     ///             neu::ascii_alphanumeric()
     ///                 .or('*')
     ///                 .or('_')
-    ///                 .repeat_one_more()
+    ///                 .many1()
     ///                 .sep("::"),
     ///         )
     ///         ._1()
-    ///         .then_if("as", neu::ascii_alphanumeric().repeat_one_more());
+    ///         .then_if("as", neu::ascii_alphanumeric().many1());
     ///
     ///     for (str, res) in [
     ///         (
@@ -687,7 +687,7 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let int = neu::digit(10).repeat_one_more();
+    ///     let int = neu::digit(10).many1();
     ///     let int = int.try_map(map::from_str_radix::<i32>(10));
     ///     let num = int.ws().repeat(3..5);
     ///     let mut ctx = CharsCtx::new(r#"1 2 3 4"#);
@@ -767,8 +767,8 @@ where
     /// #     color_eyre::install()?;
     ///     let sep = neu!(['，' ';']);
     ///     let end = neu!(['。' '？' '！']);
-    ///     let word = sep.or(end).not().repeat_one_more();
-    ///     let sent = word.sep(sep.repeat_one().ws()).suffix(end.repeat_one());
+    ///     let word = sep.or(end).not().many1();
+    ///     let sent = word.sep(sep.once().ws()).suffix(end.once());
     ///     let sent = sent.repeat(1..);
     ///     let mut ctx = CharsCtx::new(
     ///         r#"暖日晴风初破冻。柳眼眉腮，已觉春心动。酒意诗情谁与共。泪融残粉花钿重。乍试夹衫金缕缝。山枕斜敧，枕损钗头凤。独抱浓愁无好梦。夜阑犹剪灯花弄。"#,
@@ -793,11 +793,11 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     /// #     color_eyre::install()?;
-    ///     let num = neu::digit(10).repeat_times::<2>();
+    ///     let num = neu::digit(10).count::<2>();
     ///     let time = num.sep_once(":", num);
     ///     let time = time.enclose("[", "]").ws();
-    ///     let star = '*'.repeat_times::<3>().ws();
-    ///     let name = neu::whitespace().not().repeat_one_more().ws();
+    ///     let star = '*'.count::<3>().ws();
+    ///     let name = neu::whitespace().not().many1().ws();
     ///     let status = "left".or("joined").ws();
     ///     let record = name.prefix(star).then(status);
     ///     let record = time.then(record).repeat(1..);
@@ -838,18 +838,18 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<char>, C::Item, NullCond>>
+    fn ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item, EmptyCond>>
     where
         C: Context<'a, Item = char>,
     {
-        Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace::new(), NullCond))
+        Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 
-    fn ascii_ws(self) -> Suffix<C, Self, NeureZeroMore<C, AsciiWhiteSpace<u8>, C::Item, NullCond>>
+    fn ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item, EmptyCond>>
     where
         C: Context<'a, Item = u8>,
     {
-        Suffix::new(self, NeureZeroMore::new(AsciiWhiteSpace::new(), NullCond))
+        Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 }
 
@@ -904,7 +904,7 @@ where
     ///     let re = b'+'
     ///         .or(b'-')
     ///         .then(u8::is_ascii_hexdigit)
-    ///         .then(u8::is_ascii_hexdigit.repeat_times::<3>())
+    ///         .then(u8::is_ascii_hexdigit.count::<3>())
     ///         .pat()
     ///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
     ///         .into_box();
@@ -929,8 +929,8 @@ where
     /// #
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
-    ///     let year = char::is_ascii_digit.repeat_times::<4>();
-    ///     let num = char::is_ascii_digit.repeat_times::<2>();
+    ///     let year = char::is_ascii_digit.count::<4>();
+    ///     let num = char::is_ascii_digit.count::<2>();
     ///     let date = year.sep_once("-", num.sep_once("-", num)).into_rc();
     ///     let time = num.sep_once(":", num.sep_once(":", num));
     ///     let datetime = date.clone().sep_once(" ", time);
@@ -974,7 +974,7 @@ where
     /// # fn main() -> color_eyre::Result<()> {
     ///     color_eyre::install()?;
     ///     let num = u8::is_ascii_digit
-    ///         .repeat_one()
+    ///         .once()
     ///         .try_map(|v: &[u8]| String::from_utf8(v.to_vec()).map_err(|_| Error::Uid(0)))
     ///         .try_map(map::from_str::<usize>());
     ///     let num = num.clone().sep_once(b",", num);

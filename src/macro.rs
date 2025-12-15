@@ -134,7 +134,7 @@ macro_rules! regex {
     };
     (@r ($($regex:expr),+) $($res:tt)*) => {
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($regex);
             )+
@@ -172,7 +172,7 @@ macro_rules! neu {
 
     ([^$($l:literal - $r:literal)+] ) => {// [ ^ 'a'-'z' 'A'-'Z' ]
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::range($l..=$r));
             )+
@@ -181,7 +181,7 @@ macro_rules! neu {
     };
     ([^$($l:ident - $r:ident)+] ) => { // [ ^ a-z A-Z ]
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::range($crate::charize!($l)..=$crate::charize!($r)));
             )+
@@ -190,7 +190,7 @@ macro_rules! neu {
     };
     ([$($l:literal - $r:literal)+] ) => { // [ 'a'-'Z' 'A'-'Z' ]
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::range($l..=$r));
             )+
@@ -199,7 +199,7 @@ macro_rules! neu {
     };
     ([$($l:ident - $r:ident)+] ) => { // [ a-Z A-Z ]
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::range($crate::charize!($l)..=$crate::charize!($r)));
             )+
@@ -210,7 +210,7 @@ macro_rules! neu {
 
     ([ ^ $($ch:literal)+ ] ) => { // [ ^ 'a' 'b' 'c']
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::equal($ch));
             )+
@@ -219,7 +219,7 @@ macro_rules! neu {
     };
     ([ ^ $($ch:ident)+ ] ) => { // [^ a b c]
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::equal($crate::charize!($ch)));
             )+
@@ -228,7 +228,7 @@ macro_rules! neu {
     };
     ([ $($ch:literal)+ ] ) => { // ['a' 'b' 'c']
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::equal($ch));
             )+
@@ -237,7 +237,7 @@ macro_rules! neu {
     };
     ([ $($ch:ident)+ ] ) => { // [a b c]
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($crate::neu::equal($crate::charize!($ch)));
             )+
@@ -246,7 +246,7 @@ macro_rules! neu {
     };
     (($($regex:expr),+)) => {
         {
-            let re = $crate::neu::none();
+            let re = $crate::neu::never();
             $(
                 let re = re.or($regex);
             )+
@@ -292,7 +292,7 @@ macro_rules! escape_strval {
 
         $quote
             .not()
-            .repeat_one_more()
+            .many1()
             .set_cond(cond)
             .or(escape)
             .repeat(0..)

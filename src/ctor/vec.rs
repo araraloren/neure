@@ -52,8 +52,8 @@ use super::Ctor;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let year = neu::digit(10).repeat_times::<4>();
-///     let month = neu::digit(10).repeat_times::<2>();
+///     let year = neu::digit(10).count::<4>();
+///     let month = neu::digit(10).count::<2>();
 ///     let day = month;
 ///
 ///     let style1 = year.sep_once("-", month.sep_once("-", day));

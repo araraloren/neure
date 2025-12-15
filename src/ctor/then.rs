@@ -54,9 +54,9 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let str = neu::ascii_alphabetic().repeat_one_more();
+///     let str = neu::ascii_alphabetic().many1();
 ///     let str = str.enclose("\"", "\"");
-///     let int = neu::digit(10).repeat_one_more();
+///     let int = neu::digit(10).many1();
 ///     let tuple = str.then(int.prefix(" "));
 ///
 ///     assert_eq!(
@@ -90,9 +90,9 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let year = neu::digit(10).repeat_one_more();
-///     let desc = neu::word().repeat_one_more();
-///     let desc = desc.sep(neu::whitespace().repeat_full()).prefix(" ");
+///     let year = neu::digit(10).many1();
+///     let desc = neu::word().many1();
+///     let desc = desc.sep(neu::whitespace().many0()).prefix(" ");
 ///
 ///     let parser = year.then(desc);
 ///     let (answer, desc) = CharsCtx::new("42 is the answer").ctor(&parser)?;
@@ -256,7 +256,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let name = neu::word().repeat_one_more();
+///     let name = neu::word().many1();
 ///     let paras = name.sep(", ").enclose("<", ">");
 ///     let test = regex::assert("<", true);
 ///     let parser = name.then_if(test, paras);
@@ -283,7 +283,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let val = neu::ascii_alphabetic().repeat_one_more();
+///     let val = neu::ascii_alphabetic().many1();
 ///     let tuple = val.then_if(",".ws(), val).enclose("(", ")");
 ///
 ///     assert_eq!(CharsCtx::new("(abc)").ctor(&tuple)?, ("abc", None));

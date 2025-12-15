@@ -11,14 +11,14 @@ fn policy_impl() -> color_eyre::Result<()> {
     let dat = read_to_string(file!())?;
     let ident = char::is_ascii_alphabetic
         .or('_')
-        .repeat_one()
-        .then(char::is_ascii_alphanumeric.or('_').repeat_zero_more())
+        .once()
+        .then(char::is_ascii_alphanumeric.or('_').many0())
         .pat();
     let path = ident.sep("::").with_skip(true);
     let use_parser = path.then("*".opt()).prefix("use").suffix(";");
 
     // ignore white space using re_policy
-    let mut ctx = CharsCtx::new(&dat).skip_before(neu::whitespace().repeat_full());
+    let mut ctx = CharsCtx::new(&dat).skip_before(neu::whitespace().many0());
 
     let uses = ctx.ctor(&use_parser.collect::<_, Vec<_>>())?;
 

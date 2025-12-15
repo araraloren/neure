@@ -81,7 +81,7 @@ setup_unit_ty!(Alphabetic, "Alphabetic", is_alphabetic);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let alpha = alphabetic();
-///     let alpha = alpha.repeat_times::<1>();
+///     let alpha = alpha.count::<1>();
 ///     let mut ctx = CharsCtx::new("a💝abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&alpha)?, Span::new(0, 1));
@@ -106,7 +106,7 @@ setup_unit_ty!(Alphanumeric, "Alphanumeric", is_alphanumeric);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let alphanumeric = alphanumeric();
-///     let alphanumeric = alphanumeric.repeat_times::<2>();
+///     let alphanumeric = alphanumeric.count::<2>();
 ///     let mut ctx = CharsCtx::new("①7Kوf");
 ///
 ///     assert_eq!(ctx.try_mat(&alphanumeric)?, Span::new(0, 4));
@@ -132,7 +132,7 @@ setup_unit_ty2!(Ascii, "Ascii", is_ascii);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii = ascii();
-///     let ascii = ascii.repeat_times::<2>();
+///     let ascii = ascii.count::<2>();
 ///     let mut ctx = CharsCtx::new("ab❤e");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii)?, Span::new(0, 2));
@@ -157,7 +157,7 @@ setup_unit_ty2!(AsciiAlphabetic, "AsciiAlphabetic", is_ascii_alphabetic);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_alphabetic = ascii_alphabetic();
-///     let ascii_alphabetic = ascii_alphabetic.repeat_times::<2>();
+///     let ascii_alphabetic = ascii_alphabetic.count::<2>();
 ///     let mut ctx = CharsCtx::new("ab%e");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_alphabetic)?, Span::new(0, 2));
@@ -186,7 +186,7 @@ setup_unit_ty2!(
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_alphanumeric = ascii_alphanumeric();
-///     let ascii_alphanumeric = ascii_alphanumeric.repeat_times::<2>();
+///     let ascii_alphanumeric = ascii_alphanumeric.count::<2>();
 ///     let mut ctx = CharsCtx::new("8a%e");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_alphanumeric)?, Span::new(0, 2));
@@ -211,7 +211,7 @@ setup_unit_ty2!(AsciiControl, "AsciiControl", is_ascii_control);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_control = ascii_control();
-///     let ascii_control = ascii_control.repeat_times::<2>();
+///     let ascii_control = ascii_control.count::<2>();
 ///     let mut ctx = CharsCtx::new("\r\n%e");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_control)?, Span::new(0, 2));
@@ -236,7 +236,7 @@ setup_unit_ty2!(AsciiDigit, "AsciiDigit", is_ascii_digit);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_digit = ascii_digit();
-///     let ascii_digit = ascii_digit.repeat_times::<2>();
+///     let ascii_digit = ascii_digit.count::<2>();
 ///     let mut ctx = CharsCtx::new("90fe");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_digit)?, Span::new(0, 2));
@@ -261,7 +261,7 @@ setup_unit_ty2!(AsciiGraphic, "AsciiGraphic", is_ascii_graphic);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_graphic = ascii_graphic();
-///     let ascii_graphic = ascii_graphic.repeat_times::<2>();
+///     let ascii_graphic = ascii_graphic.count::<2>();
 ///     let mut ctx = CharsCtx::new("a%\r\n");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_graphic)?, Span::new(0, 2));
@@ -286,7 +286,7 @@ setup_unit_ty2!(AsciiHexDigit, "AsciiHexDigit", is_ascii_hexdigit);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_hexdigit = ascii_hexdigit();
-///     let ascii_hexdigit = ascii_hexdigit.repeat_times::<2>();
+///     let ascii_hexdigit = ascii_hexdigit.count::<2>();
 ///     let mut ctx = CharsCtx::new("9fg0");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_hexdigit)?, Span::new(0, 2));
@@ -311,7 +311,7 @@ setup_unit_ty2!(AsciiLowercase, "AsciiLowercase", is_ascii_lowercase);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_lowercase = ascii_lowercase();
-///     let ascii_lowercase = ascii_lowercase.repeat_times::<2>();
+///     let ascii_lowercase = ascii_lowercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("efAE");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_lowercase)?, Span::new(0, 2));
@@ -336,7 +336,7 @@ setup_unit_ty2!(AsciiPunctuation, "AsciiPunctuation", is_ascii_punctuation);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_punctuation = ascii_punctuation();
-///     let ascii_punctuation = ascii_punctuation.repeat_times::<2>();
+///     let ascii_punctuation = ascii_punctuation.count::<2>();
 ///     let mut ctx = CharsCtx::new("%%\nE");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_punctuation)?, Span::new(0, 2));
@@ -361,7 +361,7 @@ setup_unit_ty2!(AsciiUppercase, "AsciiUppercase", is_ascii_uppercase);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let ascii_uppercase = ascii_uppercase();
-///     let ascii_uppercase = ascii_uppercase.repeat_times::<2>();
+///     let ascii_uppercase = ascii_uppercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("EFef");
 ///
 ///     assert_eq!(ctx.try_mat(&ascii_uppercase)?, Span::new(0, 2));
@@ -386,8 +386,8 @@ setup_unit_ty2!(AsciiWhiteSpace, "AsciiWhiteSpace", is_ascii_whitespace);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let space = ascii_whitespace();
-///     let space1 = space.repeat_times::<1>();
-///     let space3 = space.repeat_times::<3>();
+///     let space1 = space.count::<1>();
+///     let space3 = space.count::<3>();
 ///     let mut ctx = CharsCtx::new("    w\u{A0}abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&space1)?, Span::new(0, 1));
@@ -413,7 +413,7 @@ setup_unit_ty!(Control, "Control", is_control);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let control = control();
-///     let control = control.repeat_times::<2>();
+///     let control = control.count::<2>();
 ///     let mut ctx = CharsCtx::new("ef");
 ///
 ///     assert_eq!(ctx.try_mat(&control)?, Span::new(0, 4));
@@ -460,7 +460,7 @@ impl Neu<char> for Digit {
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let digit = digit(10);
-///     let digit = digit.repeat_times::<2>();
+///     let digit = digit.count::<2>();
 ///     let mut ctx = CharsCtx::new("54aa");
 ///
 ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 2));
@@ -485,7 +485,7 @@ setup_unit_ty!(Lowercase, "Lowercase", is_lowercase);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let lowercase = lowercase();
-///     let lowercase = lowercase.repeat_times::<2>();
+///     let lowercase = lowercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("aδΔA");
 ///
 ///     assert_eq!(ctx.try_mat(&lowercase)?, Span::new(0, 3));
@@ -510,7 +510,7 @@ setup_unit_ty!(Numeric, "Numeric", is_numeric);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let numeric = numeric();
-///     let numeric = numeric.repeat_times::<2>();
+///     let numeric = numeric.count::<2>();
 ///     let mut ctx = CharsCtx::new("①¾Kو");
 ///
 ///     assert_eq!(ctx.try_mat(&numeric)?, Span::new(0, 5));
@@ -535,7 +535,7 @@ setup_unit_ty!(Uppercase, "Uppercase", is_uppercase);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let uppercase = uppercase();
-///     let uppercase = uppercase.repeat_times::<2>();
+///     let uppercase = uppercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("ΔAaΔ");
 ///
 ///     assert_eq!(ctx.try_mat(&uppercase)?, Span::new(0, 3));
@@ -560,8 +560,8 @@ setup_unit_ty!(WhiteSpace, "WhiteSpace", is_whitespace);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let space = whitespace();
-///     let space1 = space.repeat_times::<1>();
-///     let space3 = space.repeat_times::<3>();
+///     let space1 = space.count::<1>();
+///     let space3 = space.count::<3>();
 ///     let mut ctx = CharsCtx::new("   \u{A0}abcd");
 ///
 ///     assert_eq!(ctx.try_mat(&space1)?, Span::new(0, 1));
@@ -609,7 +609,7 @@ impl Neu<char> for Wild {
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let wild = wild();
-///     let wild = wild.repeat_times::<2>();
+///     let wild = wild.count::<2>();
 ///     let mut ctx = CharsCtx::new("aa\r\n");
 ///
 ///     assert_eq!(ctx.try_mat(&wild)?, Span::new(0, 2));
@@ -682,7 +682,7 @@ impl Neu<u8> for Word<u8> {
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let word = word();
-///     let word = word.repeat_one_more();
+///     let word = word.many1();
 ///     let mut ctx = CharsCtx::new("TheLolipop_1\r\n");
 ///
 ///     assert_eq!(ctx.try_mat(&word)?, Span::new(0, 12));

@@ -3,6 +3,7 @@ mod assert;
 mod builder;
 mod consume;
 mod empty;
+mod fail;
 mod literal;
 mod rec;
 mod wrap;
@@ -29,6 +30,8 @@ pub use self::consume::Consume;
 pub use self::consume::ConsumeAll;
 pub use self::empty::empty;
 pub use self::empty::EmptyRegex;
+pub use self::fail::fail;
+pub use self::fail::FailRegex;
 pub use self::literal::lit_slice;
 pub use self::literal::string;
 pub use self::literal::LitSlice;
@@ -57,13 +60,13 @@ use crate::ctx::Context;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::Condition;
+use crate::neu::EmptyCond;
+use crate::neu::Many0;
+use crate::neu::Many1;
 use crate::neu::Neu;
 use crate::neu::NeuIntoRegexOps;
-use crate::neu::NeureOne;
-use crate::neu::NeureOneMore;
-use crate::neu::NeureZeroMore;
-use crate::neu::NeureZeroOne;
-use crate::neu::NullCond;
+use crate::neu::Once;
+use crate::neu::Opt;
 use crate::regex::wrap::BoxedRegex;
 
 pub trait Regex<C> {
@@ -304,12 +307,12 @@ impl<'b, C> Regex<C> for Rc<dyn Regex<C> + Send + 'b> {
 ///     Ok(())
 /// # }
 /// ```
-pub fn one<'a, C, U>(unit: U) -> NeureOne<C, U, C::Item, NullCond>
+pub fn one<'a, C, U>(unit: U) -> Once<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.repeat_one()
+    unit.once()
 }
 
 ///
@@ -336,12 +339,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn zero_one<'a, C, U>(unit: U) -> NeureZeroOne<C, U, C::Item, NullCond>
+pub fn zero_one<'a, C, U>(unit: U) -> Opt<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.repeat_zero_one()
+    unit.opt()
 }
 
 ///
@@ -366,12 +369,12 @@ where
 /// # }
 /// ```
 ///
-pub fn zero_more<'a, C, U>(unit: U) -> NeureZeroMore<C, U, C::Item, NullCond>
+pub fn zero_more<'a, C, U>(unit: U) -> Many0<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.repeat_zero_more()
+    unit.many0()
 }
 
 ///
@@ -395,12 +398,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn one_more<'a, C, N>(re: N) -> NeureOneMore<C, N, C::Item, NullCond>
+pub fn one_more<'a, C, N>(re: N) -> Many1<C, N, C::Item, EmptyCond>
 where
     N: Neu<C::Item>,
     C: Context<'a>,
 {
-    re.repeat_one_more()
+    re.many1()
 }
 
 ///
@@ -424,12 +427,12 @@ where
 ///
 pub fn count<'a, const M: usize, const N: usize, C, U>(
     unit: U,
-) -> crate::neu::NeureRepeat<M, N, C, U, NullCond>
+) -> crate::neu::Between<M, N, C, U, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.repeat::<M, N>()
+    unit.between::<M, N>()
 }
 
 ///
@@ -464,13 +467,13 @@ where
 pub fn count_if<'a, const M: usize, const N: usize, C, U, F>(
     unit: U,
     test: F,
-) -> crate::neu::NeureRepeat<M, N, C, U, F>
+) -> crate::neu::Between<M, N, C, U, F>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     F: crate::neu::NeuCond<'a, C>,
 {
-    unit.repeat::<M, N>().set_cond(test)
+    unit.between::<M, N>().set_cond(test)
 }
 
 /// Matches the **first successful expression** from a dynamic sequence of alternatives.
@@ -481,13 +484,13 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let ty = neu::ascii_alphabetic().repeat_one_more();
-///     let id = neu::ascii_alphabetic().repeat_one_more();
+///     let ty = neu::ascii_alphabetic().many1();
+///     let id = neu::ascii_alphabetic().many1();
 ///     let var = ty.sep_once("", id);
 ///     let ptr = ty.sep_once("*", id);
 ///     let r#ref = ty.sep_once("&", id);
 ///     let vec = regex::vector([var, ptr, r#ref]);
-///     let sp = neu::whitespace().repeat_full();
+///     let sp = neu::whitespace().many0();
 ///
 ///     assert_eq!(CharsCtx::new("int a").skip_before(sp).ctor(&vec)?, ("int", "a"));
 ///     assert_eq!(CharsCtx::new("int *a").skip_before(sp).ctor(&vec)?, ("int", "a"));
@@ -514,13 +517,13 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 ///         Ref,
 ///     }
 ///
-///     let ty = neu::ascii_alphabetic().repeat_one_more();
-///     let id = neu::ascii_alphabetic().repeat_one_more();
+///     let ty = neu::ascii_alphabetic().many1();
+///     let id = neu::ascii_alphabetic().many1();
 ///     let var = ty.sep_once("", id);
 ///     let ptr = ty.sep_once("*", id);
 ///     let r#ref = ty.sep_once("&", id);
 ///     let vec = regex::pair_vector([(var, C::Var), (ptr, C::Ptr), (r#ref, C::Ref)]);
-///     let sp = neu::whitespace().repeat_full();
+///     let sp = neu::whitespace().many0();
 ///
 ///     assert_eq!(
 ///         CharsCtx::new("int a").skip_before(sp).ctor(&vec)?,

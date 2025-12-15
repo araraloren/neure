@@ -16,7 +16,7 @@ use crate::MayDebug;
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let large_than = |c: &char| *c > '7';
-///     let digit = neu::digit(10).and(large_than).repeat::<1, 3>();
+///     let digit = neu::digit(10).and(large_than).between::<1, 3>();
 ///     let mut ctx = CharsCtx::new("899");
 ///
 ///     assert_eq!(ctx.try_mat(&digit)?, Span::new(0, 3));
@@ -147,7 +147,7 @@ where
 ///     const END: u8 = b'z' + 1;
 ///
 ///     let char = neu::and(|a: &u8| a > &BEG, |a: &u8| a < &END);
-///     let str = char.repeat_range(6..);
+///     let str = char.times(6..);
 ///     let mut ctx = BytesCtx::new(br#"abcedfgABCEE"#);
 ///
 ///     assert_eq!(ctx.try_mat(&str)?, Span::new(0, 7));

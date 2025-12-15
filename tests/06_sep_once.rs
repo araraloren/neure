@@ -7,7 +7,7 @@ fn sep_once() {
 
 fn sep_once_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let words = ':'.not().repeat_one_more();
+    let words = ':'.not().many1();
     let title = words.sep_once(":", words);
 
     assert_eq!(

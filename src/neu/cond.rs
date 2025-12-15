@@ -33,7 +33,7 @@ where
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let str = neu::not(b'"')
-///         .repeat_one_more()
+///         .many1()
 ///         // avoid match escape sequence
 ///         .set_cond(|ctx: &BytesCtx, (item_offset, _item): &(usize, u8)| {
 ///             Ok(!ctx.orig_at(ctx.offset() + item_offset)?.starts_with(b"\\\""))
@@ -62,9 +62,9 @@ where
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct NullCond;
+pub struct EmptyCond;
 
-impl<'a, C> NeuCond<'a, C> for NullCond
+impl<'a, C> NeuCond<'a, C> for EmptyCond
 where
     C: Context<'a>,
 {
@@ -138,7 +138,7 @@ where
 /// #     color_eyre::install()?;
 ///     let escape = b'\\'.then(b'"');
 ///     let str = neu::not(b'"')
-///         .repeat_one_more()
+///         .many1()
 ///         // avoid match escape sequence
 ///         .set_cond(neu::regex_cond(regex::not(escape)))
 ///         // match the escape sequence in another regex

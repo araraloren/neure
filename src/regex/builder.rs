@@ -17,7 +17,7 @@ use crate::regex::Wrap;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 ///     let year = regex::string("rust")
-///         .into_regex_builder(|_, s| Ok(neu::ascii_alphanumeric().repeat_range(s.len()..=s.len())));
+///         .into_regex_builder(|_, s| Ok(neu::ascii_alphanumeric().times(s.len()..=s.len())));
 ///     let year = year.try_map(map::from_str::<u64>());
 ///     let mut ctx = CharsCtx::new("rust2028");
 ///
@@ -26,7 +26,7 @@ use crate::regex::Wrap;
 ///     let what = regex::string("rust").into_regex_builder(|ctx: &mut CharsCtx, s| {
 ///         // reset to begin of previous regex
 ///         ctx.set_offset(s.beg());
-///         Ok(regex::consume(s.len()).then(neu::ascii_alphanumeric().repeat_one_more()))
+///         Ok(regex::consume(s.len()).then(neu::ascii_alphanumeric().many1()))
 ///     });
 ///     let mut ctx = CharsCtx::new("rust10086");
 ///

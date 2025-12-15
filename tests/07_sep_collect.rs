@@ -7,7 +7,7 @@ fn sep_collect() {
 
 fn sep_collect_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let host = '.'.or(neu::ascii_alphabetic()).repeat_one_more();
+    let host = '.'.or(neu::ascii_alphabetic()).many1();
     let http = "http".sep_once("://", host);
     let https = "https".sep_once("://", host);
     let urls = http.or(https).sep_collect::<_, _, Vec<_>>(",");

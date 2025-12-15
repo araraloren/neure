@@ -68,12 +68,12 @@ use crate::regex::Regex;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let num = u8::is_ascii_digit
-///         .repeat_one()
+///         .once()
 ///         .try_map(map::from_utf8::<String>())
 ///         .try_map(map::from_str::<usize>());
 ///     let num = num.clone().sep_once(b",", num);
 ///     let regex =
-///         num.into_ctor_then_builder(|_, (a, b)| Ok(b'+'.repeat_range(a).then(b'-'.repeat_range(b))));
+///         num.into_ctor_then_builder(|_, (a, b)| Ok(b'+'.times(a).then(b'-'.times(b))));
 ///
 ///     assert_eq!(
 ///         BytesCtx::new(b"3,0+++").ctor(&regex)?,

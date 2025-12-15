@@ -38,8 +38,8 @@ use crate::regex::Regex;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = ctor::branch(
 ///         |ctx: &CharsCtx| Ok(ctx.len() - ctx.offset() >= 3),
-///         neu::ascii_digit().repeat_times::<3>(),
-///         neu::ascii_digit().repeat_full(),
+///         neu::ascii_digit().count::<3>(),
+///         neu::ascii_digit().many0(),
 ///     );
 ///
 ///     assert_eq!(CharsCtx::new("21345").try_mat(&regex)?, Span::new(0, 3));

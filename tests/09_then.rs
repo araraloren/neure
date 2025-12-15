@@ -7,8 +7,8 @@ fn then() {
 
 fn then_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let val = neu::ascii_alphabetic().repeat_one_more();
-    let num = neu::ascii_alphanumeric().repeat_one_more();
+    let val = neu::ascii_alphabetic().many1();
+    let num = neu::ascii_alphanumeric().many1();
     let tuple = val.then(num);
 
     assert_eq!(

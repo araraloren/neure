@@ -47,12 +47,8 @@ fn into_impl() -> color_eyre::Result<()> {
     let unit = neu::ascii_alphabetic()
         .or(neu::ascii_alphanumeric())
         .or('_');
-    let ident = unit.repeat_one_more();
-    let ty = neu::ascii_alphabetic()
-        .or('_')
-        .repeat_one()
-        .then(ident)
-        .pat();
+    let ident = unit.many1();
+    let ty = neu::ascii_alphabetic().or('_').once().then(ident).pat();
     let layer0 = ty.try_map(|ty| Ok(Ty::Layer0(ty)));
     let layer1 = ctor::Wrap::dyn_rc(ty.then(ty.enclose("<", ">")))
         // Add into_dyn_* reduce the trait solve time
@@ -66,7 +62,7 @@ fn into_impl() -> color_eyre::Result<()> {
         .try_map(|(name, ty_name)| Ok(Field::public(name, ty_name)));
     let private = field.try_map(|(name, ty_name)| Ok(Field::private(name, ty_name)));
     let parser = public.or(private).sep(",");
-    let space = neu::whitespace().repeat_full();
+    let space = neu::whitespace().many0();
     let fields = CharsCtx::new("a: i64, b: Option<String>, pub c: bool")
         .skip_before(space)
         .ctor(&parser)?;

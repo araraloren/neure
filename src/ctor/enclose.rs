@@ -39,7 +39,7 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let digit = neu::digit(10).repeat_full();
+///     let digit = neu::digit(10).many0();
 ///     let parser = digit.enclose("(", ")");
 ///
 ///     assert_eq!(CharsCtx::new("(42686)").try_mat(&parser)?, Span::new(0, 7));
@@ -65,7 +65,7 @@ use crate::regex::Regex;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let str_val = '"'.not().repeat_one_more();
+///     let str_val = '"'.not().many1();
 ///     let str = str_val.enclose("\"", "\"");
 ///
 ///     assert_eq!(CharsCtx::new("\"rust\"").ctor(&str)?, "rust");
@@ -81,7 +81,7 @@ use crate::regex::Regex;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let cond = neu::regex_cond(!('r'.then('#')));
-///     let str_val = '#'.not().repeat_one_more().set_cond(cond);
+///     let str_val = '#'.not().many1().set_cond(cond);
 ///     let str = str_val.enclose("r#", "#");
 ///
 ///     assert_eq!(

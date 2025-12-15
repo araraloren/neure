@@ -15,7 +15,7 @@ use super::Neu;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let aorb = 'a'.or('b').repeat::<1, 2>();
+///     let aorb = 'a'.or('b').between::<1, 2>();
 ///     let mut ctx = CharsCtx::new("abc");
 ///
 ///     assert_eq!(ctx.try_mat(&aorb)?, Span::new(0, 2));
@@ -142,7 +142,7 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let re = u8::is_ascii_hexdigit.or(b'g'.or(b'G')).repeat_times::<4>();
+///     let re = u8::is_ascii_hexdigit.or(b'g'.or(b'G')).count::<4>();
 ///     let re = re.prefix(b"0x");
 ///
 ///     assert_eq!(BytesCtx::new(b"0xcfag").ctor(&re)?, b"cfag");

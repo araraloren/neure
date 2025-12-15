@@ -9,6 +9,7 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::neu::EmptyCond;
 use crate::regex::Regex;
 
 use super::length_of;
@@ -19,7 +20,7 @@ use super::NeuCond;
 ///
 /// Matches zero or one context-sensitive element with guaranteed success.
 ///
-/// `NeureZeroOne` provides optional matching with full context validation, always succeeding in one of two ways:
+/// `Opt` provides optional matching with full context validation, always succeeding in one of two ways:
 /// - **One element**: When the first element satisfies both pattern and context conditions
 /// - **Zero elements**: When no valid element exists at current position (returns empty span)
 ///
@@ -53,7 +54,7 @@ use super::NeuCond;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_zero_one();
+///     let hex = hex.opt();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 1));
@@ -61,7 +62,7 @@ use super::NeuCond;
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct NeureZeroOne<C, U, T, I>
+pub struct Opt<C, U, T, I = EmptyCond>
 where
     U: Neu<T>,
 {
@@ -70,7 +71,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> std::ops::Not for NeureZeroOne<C, U, T, I>
+impl<C, U, T, I> std::ops::Not for Opt<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -81,20 +82,20 @@ where
     }
 }
 
-impl<C, U, T, I> Debug for NeureZeroOne<C, U, T, I>
+impl<C, U, T, I> Debug for Opt<C, U, T, I>
 where
     I: Debug,
     U: Neu<T> + Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("NeureZeroOne")
+        f.debug_struct("Opt")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .finish()
     }
 }
 
-impl<C, U, T, I> Clone for NeureZeroOne<C, U, T, I>
+impl<C, U, T, I> Clone for Opt<C, U, T, I>
 where
     I: Clone,
     U: Neu<T> + Clone,
@@ -108,7 +109,7 @@ where
     }
 }
 
-impl<C, U, T, I> NeureZeroOne<C, U, T, I>
+impl<C, U, T, I> Opt<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -134,22 +135,22 @@ where
     }
 }
 
-impl<'a, C, U, I> Condition<'a, C> for NeureZeroOne<C, U, C::Item, I>
+impl<'a, C, U, I> Condition<'a, C> for Opt<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     C: Context<'a>,
 {
-    type Out<F> = NeureZeroOne<C, U, C::Item, F>;
+    type Out<F> = Opt<C, U, C::Item, F>;
 
     fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureZeroOne::new(self.unit, cond)
+        Opt::new(self.unit, cond)
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureZeroOne<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Opt<C, U, C::Item, I>
 where
     C: Match<'a> + 'a,
     U: Neu<C::Item>,
@@ -166,7 +167,7 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for NeureZeroOne<C, U, C::Item, I>
+impl<'a, U, C, I> Regex<C> for Opt<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
@@ -177,7 +178,7 @@ where
         let mut ctx = CtxGuard::new(ctx);
         let mut ret = Ok(Span::new(ctx.beg(), 0));
 
-        crate::debug_regex_beg!("NeureZeroOne", ctx.beg());
+        crate::debug_regex_beg!("Opt", ctx.beg());
         if let Ok(mut iter) = ctx.peek() {
             if let Some((offset, item)) = iter.next() {
                 if self.unit.is_match(&item) && self.cond.check(ctx.ctx(), &(offset, item))? {
@@ -187,14 +188,14 @@ where
                 }
             }
         }
-        crate::debug_regex_reval!("NeureZeroOne", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Opt", ctx.process_ret(ret))
     }
 }
 
 ///
 /// Matches zero or more context-sensitive elements with guaranteed success.
 ///
-/// `NeureZeroMore` provides greedy repetition with full context validation, always succeeding in one of two ways:
+/// `Many0` provides greedy repetition with full context validation, always succeeding in one of two ways:
 /// - **Sequence match**: Longest possible sequence where every element satisfies both pattern and context conditions
 /// - **Empty match**: Zero-length span when no valid elements exist at current position
 ///
@@ -230,7 +231,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let hex = 'a'..'g';
-///     let hex = hex.repeat_zero_more();
+///     let hex = hex.many0();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
 ///     assert_eq!(ctx.try_mat(&hex)?, Span::new(0, 6));
@@ -238,7 +239,7 @@ where
 /// # }
 /// ```
 #[derive(Copy)]
-pub struct NeureZeroMore<C, U, T, I>
+pub struct Many0<C, U, T, I = EmptyCond>
 where
     U: Neu<T>,
 {
@@ -247,7 +248,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> std::ops::Not for NeureZeroMore<C, U, T, I>
+impl<C, U, T, I> std::ops::Not for Many0<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -258,20 +259,20 @@ where
     }
 }
 
-impl<C, U, T, I> Debug for NeureZeroMore<C, U, T, I>
+impl<C, U, T, I> Debug for Many0<C, U, T, I>
 where
     I: Debug,
     U: Neu<T> + Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("NeureZeroMore")
+        f.debug_struct("Many0")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .finish()
     }
 }
 
-impl<C, U, T, I> Clone for NeureZeroMore<C, U, T, I>
+impl<C, U, T, I> Clone for Many0<C, U, T, I>
 where
     I: Clone,
     U: Neu<T> + Clone,
@@ -285,7 +286,7 @@ where
     }
 }
 
-impl<C, U, T, I> NeureZeroMore<C, U, T, I>
+impl<C, U, T, I> Many0<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -311,22 +312,22 @@ where
     }
 }
 
-impl<'a, C, U, I> Condition<'a, C> for NeureZeroMore<C, U, C::Item, I>
+impl<'a, C, U, I> Condition<'a, C> for Many0<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     C: Context<'a>,
 {
-    type Out<F> = NeureZeroMore<C, U, C::Item, F>;
+    type Out<F> = Many0<C, U, C::Item, F>;
 
     fn set_cond<F>(self, cond: F) -> Self::Out<F>
     where
         F: NeuCond<'a, C>,
     {
-        NeureZeroMore::new(self.unit, cond)
+        Many0::new(self.unit, cond)
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for NeureZeroMore<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Many0<C, U, C::Item, I>
 where
     C: Match<'a> + 'a,
     U: Neu<C::Item>,
@@ -343,7 +344,7 @@ where
     }
 }
 
-impl<'a, U, C, I> Regex<C> for NeureZeroMore<C, U, C::Item, I>
+impl<'a, U, C, I> Regex<C> for Many0<C, U, C::Item, I>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
@@ -356,7 +357,7 @@ where
         let mut end = None;
         let mut ret = Ok(Span::new(ctx.beg(), 0));
 
-        crate::debug_regex_beg!("NeureZeroMore", ctx.beg());
+        crate::debug_regex_beg!("Many0", ctx.beg());
         if let Ok(mut iter) = ctx.peek() {
             for pair in iter.by_ref() {
                 if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
@@ -373,6 +374,6 @@ where
                 ret = Ok(ctx.inc(len));
             }
         }
-        crate::debug_regex_reval!("NeureZeroMore", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Many0", ctx.process_ret(ret))
     }
 }
