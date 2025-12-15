@@ -12,17 +12,18 @@ use crate::regex::Regex;
 use super::impl_not_for_regex;
 
 ///
-/// A zero-width regex combinator that always fail without consuming any input.
+/// A zero-width regex combinator that always fails without consuming any input.
 ///
-/// [`EmptyRegex`] is a fundamental building block that matches the empty string at any position
-/// in the input stream. It always fails and consumes zero elements, making it
-/// ideal for building optional patterns, zero-width assertions, and serving as a neutral element
-/// in parser composition.
+/// [`FailRegex`] acts as an atomic failure primitive in the regex combinator system—like a gate
+/// that never opens. It immediately rejects any input stream while preserving the parser position,
+/// ensuring no characters are consumed during its execution. This zero-width failure combinator
+/// compiles down to a single error-returning instruction under compiler optimizations,
+/// yet plays a pivotal role in parser logic composition.
 ///
 /// # Regex
 ///
 /// - **Always fail** at any position in the input stream
-/// - **Zero-width match**: Returns `Err(Error::Null)`
+/// - **Zero-width match**: Returns Err([`Error::Fail`])
 /// - **No consumption**: Parser position remains unchanged after match
 /// - **No failure cases**: Never returns an error (not even at input end)
 ///
