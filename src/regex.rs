@@ -294,8 +294,8 @@ impl<'b, C> Regex<C> for Rc<dyn Regex<C> + Send + 'b> {
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let sign = regex::one('+');
-///     let num = regex::one_more('0'..='9');
+///     let sign = regex::once('+');
+///     let num = regex::many1('0'..='9');
 ///     let mut ctx = CharsCtx::new("+2077");
 ///
 ///     assert_eq!(ctx.try_mat(&sign)?, Span::new(0, 1));
@@ -307,7 +307,7 @@ impl<'b, C> Regex<C> for Rc<dyn Regex<C> + Send + 'b> {
 ///     Ok(())
 /// # }
 /// ```
-pub fn one<'a, C, U>(unit: U) -> Once<C, U, C::Item, EmptyCond>
+pub fn once<'a, C, U>(unit: U) -> Once<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
@@ -325,8 +325,8 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let sign = regex::zero_one('+');
-///     let num = regex::one_more('0'..='9');
+///     let sign = regex::opt('+');
+///     let num = regex::many1('0'..='9');
 ///     let mut ctx = CharsCtx::new("+2077");
 ///
 ///     assert_eq!(ctx.try_mat(&sign)?, Span::new(0, 1));
@@ -339,7 +339,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn zero_one<'a, C, U>(unit: U) -> Opt<C, U, C::Item, EmptyCond>
+pub fn opt<'a, C, U>(unit: U) -> Opt<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
@@ -357,7 +357,7 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let num = regex::zero_more('0'..='9');
+///     let num = regex::many0('0'..='9');
 ///     let mut ctx = CharsCtx::new("2048mb");
 ///
 ///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
@@ -369,7 +369,7 @@ where
 /// # }
 /// ```
 ///
-pub fn zero_more<'a, C, U>(unit: U) -> Many0<C, U, C::Item, EmptyCond>
+pub fn many0<'a, C, U>(unit: U) -> Many0<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
@@ -387,7 +387,7 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let num = regex::one_more('0'..='9');
+///     let num = regex::many1('0'..='9');
 ///     let mut ctx = CharsCtx::new("2048mb");
 ///
 ///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
@@ -398,7 +398,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn one_more<'a, C, N>(re: N) -> Many1<C, N, C::Item, EmptyCond>
+pub fn many1<'a, C, N>(re: N) -> Many1<C, N, C::Item, EmptyCond>
 where
     N: Neu<C::Item>,
     C: Context<'a>,
@@ -577,7 +577,7 @@ pub fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
 /// #   Ok(())
 /// # }
 /// ```
-pub fn slice<const N: usize, T>(val: &[T; N]) -> Slice<'_, N, T> {
+pub fn slice<T>(val: &[T]) -> Slice<'_, T> {
     Slice::new(val)
 }
 
@@ -636,7 +636,7 @@ pub fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> 
 /// #   Ok(())
 /// # }
 /// ```
-pub fn pair_slice<const N: usize, K, V>(val: &[(K, V); N]) -> PairSlice<'_, N, K, V> {
+pub fn pair_slice<K, V>(val: &[(K, V)]) -> PairSlice<'_, K, V> {
     PairSlice::new(val)
 }
 

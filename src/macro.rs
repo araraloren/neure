@@ -96,13 +96,13 @@
 #[macro_export]
 macro_rules! regex {
     (@q * $($res:tt)*) => {
-        $crate::regex::zero_more($($res)*)
+        $crate::regex::many0($($res)*)
     };
     (@q ? $($res:tt)*) => {
-        $crate::regex::zero_one($($res)*)
+        $crate::regex::opt($($res)*)
     };
     (@q + $($res:tt)*) => {
-        $crate::regex::one_more($($res)*)
+        $crate::regex::many1($($res)*)
     };
     (@q {$st:literal} $($res:tt)*) => {
         $crate::regex::count::<$st, $st, _, _>($($res)*)
@@ -114,7 +114,7 @@ macro_rules! regex {
         $crate::regex::count::<$st, $ed, _, _>($($res)*)
     };
     (@q $($res:tt)*) => {
-        $crate::regex::one($($res)*)
+        $crate::regex::once($($res)*)
     };
 
     (@r ^ $($res:tt)*) => { // \S

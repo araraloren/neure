@@ -89,9 +89,9 @@ use super::Ctor;
 /// - **Avoid Overlap**: Minimize overlapping patterns to reduce attempts
 /// - **Precompute**: Create `Slice` instances at startup, not in hot paths
 #[derive(Debug, Clone, Copy)]
-pub struct Slice<'a, const N: usize, T>(&'a [T; N]);
+pub struct Slice<'a, T>(&'a [T]);
 
-impl<const N: usize, T> std::ops::Not for Slice<'_, N, T> {
+impl<T> std::ops::Not for Slice<'_, T> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
@@ -99,21 +99,21 @@ impl<const N: usize, T> std::ops::Not for Slice<'_, N, T> {
     }
 }
 
-impl<'a, const N: usize, T> Slice<'a, N, T> {
-    pub fn new(val: &'a [T; N]) -> Self {
+impl<'a, T> Slice<'a, T> {
+    pub fn new(val: &'a [T]) -> Self {
         Self(val)
     }
 }
 
-impl<const N: usize, T> Deref for Slice<'_, N, T> {
-    type Target = [T; N];
+impl<T> Deref for Slice<'_, T> {
+    type Target = [T];
 
     fn deref(&self) -> &Self::Target {
         self.0
     }
 }
 
-impl<'a, const N: usize, C, T, M, O, H> Ctor<'a, C, M, O, H> for Slice<'_, N, T>
+impl<'a, C, T, M, O, H> Ctor<'a, C, M, O, H> for Slice<'_, T>
 where
     T: Ctor<'a, C, M, O, H>,
     C: Match<'a>,
@@ -138,7 +138,7 @@ where
     }
 }
 
-impl<'a, const N: usize, C, T> Regex<C> for Slice<'_, N, T>
+impl<'a, C, T> Regex<C> for Slice<'_, T>
 where
     T: Regex<C>,
     C: Match<'a>,
@@ -245,9 +245,9 @@ where
 /// # }
 /// ```
 #[derive(Debug, Clone, Copy)]
-pub struct PairSlice<'a, const N: usize, K, V>(&'a [(K, V); N]);
+pub struct PairSlice<'a, K, V>(&'a [(K, V)]);
 
-impl<const N: usize, K, V> std::ops::Not for PairSlice<'_, N, K, V> {
+impl<K, V> std::ops::Not for PairSlice<'_, K, V> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
@@ -255,21 +255,21 @@ impl<const N: usize, K, V> std::ops::Not for PairSlice<'_, N, K, V> {
     }
 }
 
-impl<'a, const N: usize, K, V> PairSlice<'a, N, K, V> {
-    pub fn new(val: &'a [(K, V); N]) -> Self {
+impl<'a, K, V> PairSlice<'a, K, V> {
+    pub fn new(val: &'a [(K, V)]) -> Self {
         Self(val)
     }
 }
 
-impl<const N: usize, K, V> Deref for PairSlice<'_, N, K, V> {
-    type Target = [(K, V); N];
+impl<K, V> Deref for PairSlice<'_, K, V> {
+    type Target = [(K, V)];
 
     fn deref(&self) -> &Self::Target {
         self.0
     }
 }
 
-impl<'a, const N: usize, C, K, M, O, V, H> Ctor<'a, C, M, (O, V), H> for PairSlice<'_, N, K, V>
+impl<'a, C, K, M, O, V, H> Ctor<'a, C, M, (O, V), H> for PairSlice<'_, K, V>
 where
     V: Clone,
     K: Ctor<'a, C, M, O, H>,
@@ -295,7 +295,7 @@ where
     }
 }
 
-impl<'a, const N: usize, C, K, V> Regex<C> for PairSlice<'_, N, K, V>
+impl<'a, C, K, V> Regex<C> for PairSlice<'_, K, V>
 where
     K: Regex<C>,
     C: Match<'a>,
