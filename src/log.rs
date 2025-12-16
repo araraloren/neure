@@ -1,24 +1,24 @@
 #[cfg(not(feature = "log"))]
 mod macro_for_log {
+    #[doc(hidden)]
+    #[macro_export]
     macro_rules! neure_trace {
         ($($arg:tt)*) => {{}};
     }
 
+    #[doc(hidden)]
+    #[macro_export]
     macro_rules! neure_debug {
         ($($arg:tt)*) => {{}};
     }
 
     macro_rules! trace_retval {
-        ($name:literal, $in:ident, $ret:expr) => {{
-            $crate::trace_retval!($name, "Neu", $in, $ret)
-        }};
+        ($name:literal, $in:ident, $ret:expr) => {{ $crate::trace_retval!($name, "Neu", $in, $ret) }};
         ($name:literal, $trait:literal, $in:ident, $ret:expr) => {{
             let (_, _, _, ret) = ($name, $trait, $in, $ret);
             ret
         }};
-        ($name:literal, $inner:ident, $in:ident, $ret:expr) => {{
-            $crate::trace_retval!($name, "Neu", $inner, $in, $ret)
-        }};
+        ($name:literal, $inner:ident, $in:ident, $ret:expr) => {{ $crate::trace_retval!($name, "Neu", $inner, $in, $ret) }};
         ($name:literal, $trait:literal, $inner:ident, $in:ident, $ret:expr) => {{
             let (_, _, _, _, ret) = ($name, $trait, $inner, $in, $ret);
             ret
@@ -95,17 +95,13 @@ mod macro_for_log {
 #[cfg(feature = "log")]
 mod macro_for_log {
     macro_rules! trace_retval {
-        ($name:literal, $in:ident, $ret:expr) => {{
-            $crate::trace_retval!($name, "Neu", $in, $ret)
-        }};
+        ($name:literal, $in:ident, $ret:expr) => {{ $crate::trace_retval!($name, "Neu", $in, $ret) }};
         ($name:literal, $trait:literal, $in:ident, $ret:expr) => {{
             let ret = $ret;
             $crate::neure_trace!("{}({}) in = {:?} -> {:?}", $name, $trait, $in, ret);
             ret
         }};
-        ($name:literal, $inner:ident, $in:ident, $ret:expr) => {{
-            $crate::trace_retval!($name, "Neu", $inner, $in, $ret)
-        }};
+        ($name:literal, $inner:ident, $in:ident, $ret:expr) => {{ $crate::trace_retval!($name, "Neu", $inner, $in, $ret) }};
         ($name:literal, $trait:literal, $inner:ident, $in:ident, $ret:expr) => {{
             let ret = $ret;
             $crate::neure_trace!(
@@ -121,27 +117,17 @@ mod macro_for_log {
     }
 
     macro_rules! debug_regex_beg {
-        ($name:literal, $beg:expr) => {{
-            $crate::neure_debug!("{}(Regex) beg = {}", $name, $beg)
-        }};
-        ($name:literal, $val:expr, $beg:expr) => {{
-            $crate::neure_debug!("{}(Regex) dat({:?}) beg = {}", $name, $val, $beg)
-        }};
+        ($name:literal, $beg:expr) => {{ $crate::neure_debug!("{}(Regex) beg = {}", $name, $beg) }};
+        ($name:literal, $val:expr, $beg:expr) => {{ $crate::neure_debug!("{}(Regex) dat({:?}) beg = {}", $name, $val, $beg) }};
     }
 
     macro_rules! debug_ctor_beg {
-        ($name:literal, $beg:expr) => {{
-            $crate::neure_debug!("{}(Ctor) beg = {}", $name, $beg)
-        }};
-        ($name:literal, $val:expr, $beg:expr) => {{
-            $crate::neure_debug!("{}(Ctor) dat({:?}) beg = {}", $name, $val, $beg)
-        }};
+        ($name:literal, $beg:expr) => {{ $crate::neure_debug!("{}(Ctor) beg = {}", $name, $beg) }};
+        ($name:literal, $val:expr, $beg:expr) => {{ $crate::neure_debug!("{}(Ctor) dat({:?}) beg = {}", $name, $val, $beg) }};
     }
 
     macro_rules! debug_regex_stage {
-        ($name:literal, $stage:literal) => {{
-            $crate::neure_debug!("{}(Regex) stage {}", $name, $stage)
-        }};
+        ($name:literal, $stage:literal) => {{ $crate::neure_debug!("{}(Regex) stage {}", $name, $stage) }};
         ($name:literal, $stage:literal, $ret:expr) => {{
             $crate::neure_debug!("{}(Regex) stage {}", $name, $stage);
             $ret
@@ -149,9 +135,7 @@ mod macro_for_log {
     }
 
     macro_rules! debug_ctor_stage {
-        ($name:literal, $stage:literal) => {{
-            $crate::neure_debug!("{}(Ctor) stage {}", $name, $stage)
-        }};
+        ($name:literal, $stage:literal) => {{ $crate::neure_debug!("{}(Ctor) stage {}", $name, $stage) }};
         ($name:literal, $stage:literal, $ret:expr) => {{
             $crate::neure_debug!("{}(Ctor) stage {}", $name, $stage);
             $ret
