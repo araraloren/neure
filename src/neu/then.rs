@@ -11,10 +11,10 @@ use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 
-use super::length_of;
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
+use super::length_of;
 
 ///
 /// Construct a regex that matches unit `L` and then unit `R`.
@@ -185,16 +185,15 @@ where
         let mut iter = ctx.peek()?;
 
         crate::debug_regex_beg!("NeureThen", ctx.beg());
-        if let (Some(fst), Some(snd)) = (iter.next(), iter.next()) {
-            if self.left.is_match(&fst.1)
-                && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
-                && self.right.is_match(&snd.1)
-                && self.cond.check(ctx.ctx(), &(snd.0, snd.1))?
-            {
-                let len = length_of(fst.0, ctx.ctx(), iter.next().map(|v| v.0));
+        if let (Some(fst), Some(snd)) = (iter.next(), iter.next())
+            && self.left.is_match(&fst.1)
+            && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
+            && self.right.is_match(&snd.1)
+            && self.cond.check(ctx.ctx(), &(snd.0, snd.1))?
+        {
+            let len = length_of(fst.0, ctx.ctx(), iter.next().map(|v| v.0));
 
-                ret = Ok(ctx.inc(len));
-            }
+            ret = Ok(ctx.inc(len));
         }
         crate::debug_regex_reval!("NeureThen", ctx.process_ret(ret))
     }

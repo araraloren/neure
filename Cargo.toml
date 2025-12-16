@@ -4,7 +4,7 @@ version = "0.7.0"
 authors = [
     "araraloren <blackcatoverwall@gmail.com>",
 ]
-edition = "2021"
+edition = "2024"
 license = "MPL-2.0"
 description = "A fast little combinational parsing library"
 repository = "https://github.com/araraloren/neure/"

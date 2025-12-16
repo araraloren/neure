@@ -4,14 +4,14 @@ mod policy;
 mod regex;
 mod span;
 
-use crate::ctor::extract;
+use crate::MayDebug;
 use crate::ctor::Ctor;
 use crate::ctor::Extract;
 use crate::ctor::Handler;
+use crate::ctor::extract;
 use crate::err::Error;
 use crate::map::MapSingle;
 use crate::regex::Regex;
-use crate::MayDebug;
 
 pub use self::guard::CtxGuard;
 pub use self::policy::PolicyCtx;
@@ -110,6 +110,8 @@ pub trait Assert<'a>
 where
     Self: Sized,
 {
+    /// Silent assertion that swallows all errors and returns `false` on failure
+    /// without altering context position.
     fn assert<Pat>(&mut self, pat: &Pat) -> bool
     where
         Pat: Regex<Self> + ?Sized,
@@ -117,6 +119,7 @@ where
         self.try_assert(pat).unwrap_or_default()
     }
 
+    /// Precise assertion preserving error details without altering context position.
     fn try_assert<Pat>(&mut self, pat: &Pat) -> Result<bool, Error>
     where
         Pat: Regex<Self> + ?Sized;
@@ -138,7 +141,7 @@ where
     }
 }
 
-pub trait ContextHelper<'a>
+pub trait MatchExt<'a>
 where
     Self: Context<'a> + Sized,
 {
@@ -206,7 +209,7 @@ where
     }
 }
 
-impl<'a, C> ContextHelper<'a> for C
+impl<'a, C> MatchExt<'a> for C
 where
     C: Sized + Match<'a>,
 {
@@ -220,3 +223,48 @@ where
         handler.invoke(self, &ret).map_err(Into::into)
     }
 }
+
+pub trait MatchMulti<'a>: Sized + Match<'a> {
+    fn find_all<P>(&mut self, pat: P) -> impl Iterator<Item = Span>
+    where
+        P: Regex<Self>,
+    {
+        self.find_all_with(pat, |ctx, _| {
+            ctx.inc(1);
+        })
+    }
+
+    fn match_seq<P>(&mut self, pat: P) -> impl Iterator<Item = Span>
+    where
+        P: Regex<Self>,
+    {
+        self.find_all_with(pat, |ctx, _| {
+            ctx.set_offset(ctx.len());
+        })
+    }
+
+    fn find_all_with<P, F>(&mut self, pat: P, mut err_handler: F) -> impl Iterator<Item = Span>
+    where
+        P: Regex<Self>,
+        F: FnMut(&mut Self, Error),
+    {
+        std::iter::from_fn(move || {
+            let mut next = None;
+
+            while self.offset() < self.len() {
+                match self.try_mat(&pat) {
+                    Ok(span) => {
+                        next = Some(span);
+                        break;
+                    }
+                    Err(e) => {
+                        err_handler(self, e);
+                    }
+                }
+            }
+            next
+        })
+    }
+}
+
+impl<'a, T> MatchMulti<'a> for T where Self: Sized + Match<'a> {}

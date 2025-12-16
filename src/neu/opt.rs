@@ -12,10 +12,10 @@ use crate::err::Error;
 use crate::neu::EmptyCond;
 use crate::regex::Regex;
 
-use super::length_of;
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
+use super::length_of;
 
 ///
 /// Matches zero or one context-sensitive element with guaranteed success.
@@ -179,14 +179,14 @@ where
         let mut ret = Ok(Span::new(ctx.beg(), 0));
 
         crate::debug_regex_beg!("Opt", ctx.beg());
-        if let Ok(mut iter) = ctx.peek() {
-            if let Some((offset, item)) = iter.next() {
-                if self.unit.is_match(&item) && self.cond.check(ctx.ctx(), &(offset, item))? {
-                    let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
+        if let Ok(mut iter) = ctx.peek()
+            && let Some((offset, item)) = iter.next()
+            && self.unit.is_match(&item)
+            && self.cond.check(ctx.ctx(), &(offset, item))?
+        {
+            let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
 
-                    ret = Ok(ctx.inc(len));
-                }
-            }
+            ret = Ok(ctx.inc(len));
         }
         crate::debug_regex_reval!("Opt", ctx.process_ret(ret))
     }
