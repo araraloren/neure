@@ -12,8 +12,8 @@ use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Makes a pattern optional, returning `None` (for [`Ctor`]) or an empty span (for [`Regex`]) when the pattern fails.
@@ -133,11 +133,11 @@ impl<C, P> OptionPat<C, P> {
     }
 }
 
-impl<'a, C, M, O, P, H> Ctor<'a, C, M, Option<O>, H> for OptionPat<C, P>
+impl<'a, C, O, P, H> Ctor<'a, C, Option<O>, H> for OptionPat<C, P>
 where
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Option<O>, Error> {

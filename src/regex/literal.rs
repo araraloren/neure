@@ -53,7 +53,7 @@ impl<'a, T> LitSlice<'a, T> {
     }
 }
 
-impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for LitSlice<'_, T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, H> for LitSlice<'_, T>
 where
     T: PartialOrd + 'a,
     C: Match<'a, Orig<'a> = &'a [T]>,
@@ -150,7 +150,7 @@ impl<'a> LitString<'a> {
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, O, H> for LitString<'_>
+impl<'a, C, O, H> Ctor<'a, C, O, H> for LitString<'_>
 where
     C: Match<'a, Orig<'a> = &'a str>,
     H: Handler<C, Out = O>,

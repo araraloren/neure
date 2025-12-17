@@ -12,8 +12,8 @@ use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::neu::CRange;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 use super::Map;
 use crate::debug_ctor_beg;
@@ -186,13 +186,13 @@ impl<C, L, S, R> SepOnce<C, L, S, R> {
     }
 }
 
-impl<'a, C, L, S, R, M, O1, O2, H> Ctor<'a, C, M, (O1, O2), H> for SepOnce<C, L, S, R>
+impl<'a, C, L, S, R, O1, O2, H> Ctor<'a, C, (O1, O2), H> for SepOnce<C, L, S, R>
 where
-    L: Ctor<'a, C, M, O1, H>,
-    R: Ctor<'a, C, M, O2, H>,
+    L: Ctor<'a, C, O1, H>,
+    R: Ctor<'a, C, O2, H>,
     S: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
@@ -429,12 +429,12 @@ impl<C, P, S> Separate<C, P, S> {
     }
 }
 
-impl<'a, C, S, P, M, O, H> Ctor<'a, C, M, Vec<O>, H> for Separate<C, P, S>
+impl<'a, C, S, P, O, H> Ctor<'a, C, Vec<O>, H> for Separate<C, P, S>
 where
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     S: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Vec<O>, Error> {
@@ -699,13 +699,13 @@ impl<C, P, S, O, V> SepCollect<C, P, S, O, V> {
     }
 }
 
-impl<'a, C, S, P, M, O, V, H> Ctor<'a, C, M, V, H> for SepCollect<C, P, S, O, V>
+impl<'a, C, S, P, O, V, H> Ctor<'a, C, V, H> for SepCollect<C, P, S, O, V>
 where
     V: FromIterator<O>,
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     S: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {

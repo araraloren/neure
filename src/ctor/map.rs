@@ -8,8 +8,8 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::map::MapSingle;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Transforms the output type of a pattern through a mapping function.
@@ -199,12 +199,12 @@ impl<C, P, F, O> Map<C, P, F, O> {
     }
 }
 
-impl<'a, C, M, O, V, P, F, H> Ctor<'a, C, M, V, H> for Map<C, P, F, O>
+impl<'a, C, O, V, P, F, H> Ctor<'a, C, V, H> for Map<C, P, F, O>
 where
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     F: MapSingle<O, V>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {

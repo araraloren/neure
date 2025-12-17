@@ -19,7 +19,7 @@ pub struct JsonParser;
 
 impl JsonParser {
     pub fn parse(pat: &[u8]) -> Result<JsonZero<'_>, Error> {
-        let parser = regex::rec_parser_with(|ctor| {
+        let parser = regex::rec_parser(|ctor| {
             let ws = u8::is_ascii_whitespace.many0();
             let sign = neu!((b'+', b'-')).opt();
             let digit = range(b'0'..=b'9').many1();

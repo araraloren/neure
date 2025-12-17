@@ -8,8 +8,8 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Collect repeated matches of a pattern into a collection.
@@ -142,12 +142,12 @@ impl<C, P, O, V> Collect<C, P, O, V> {
     }
 }
 
-impl<'a, C, P, M, O, V, H> Ctor<'a, C, M, V, H> for Collect<C, P, O, V>
+impl<'a, C, P, O, V, H> Ctor<'a, C, V, H> for Collect<C, P, O, V>
 where
     V: FromIterator<O>,
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {

@@ -4,22 +4,16 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use crate::ctor::Ctor;
-use crate::ctor::Extract;
 use crate::ctor::Handler;
 use crate::ctor::Wrap;
 use crate::ctx::Context;
 use crate::ctx::Match;
 
-pub type RecursiveCtorWith<'a, 'b, C, M, O, H> =
-    Rc<RefCell<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C>>>>;
+pub type RecursiveCtor<'a, 'b, C, O, H> =
+    Rc<RefCell<Option<Wrap<Box<dyn Ctor<'a, C, O, H> + 'b>, C>>>>;
 
-pub type RecursiveCtorWithSync<'a, 'b, C, M, O, H> =
-    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, C>>>>;
-
-pub type RecursiveCtor<'a, 'b, C, M, O> = RecursiveCtorWith<'a, 'b, C, M, O, Extract<M>>;
-
-pub type RecursiveCtorSync<'a, 'b, C, M, O> =
-    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, M, O, Extract<M>> + Send + Sync + 'b>, C>>>>;
+pub type RecursiveCtorSync<'a, 'b, C, O, H> =
+    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>, C>>>>;
 
 ///
 /// # Example
@@ -72,15 +66,15 @@ pub type RecursiveCtorSync<'a, 'b, C, M, O> =
 ///     Ok(())
 /// # }
 /// ```
-pub fn rec_parser_with<'a, 'b, C, M, O, H, I>(
-    mut handler: impl FnMut(RecursiveCtorWith<'a, 'b, C, M, O, H>) -> I,
-) -> RecursiveCtorWith<'a, 'b, C, M, O, H>
+pub fn rec_parser<'a, 'b, C, O, H, I>(
+    mut handler: impl FnMut(RecursiveCtor<'a, 'b, C, O, H>) -> I,
+) -> RecursiveCtor<'a, 'b, C, O, H>
 where
     C: Match<'a>,
-    H: Handler<C, Out = M>,
-    I: Ctor<'a, C, M, O, H> + 'b,
+    H: Handler<C>,
+    I: Ctor<'a, C, O, H> + 'b,
 {
-    let r_ctor: RecursiveCtorWith<'a, 'b, C, M, O, H> = Rc::new(RefCell::new(None));
+    let r_ctor: RecursiveCtor<'a, 'b, C, O, H> = Rc::new(RefCell::new(None));
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
@@ -117,31 +111,15 @@ where
 /// # }
 /// ```
 ///
-pub fn rec_parser<'a, 'b, C, M, O, I>(
-    mut handler: impl FnMut(RecursiveCtor<'a, 'b, C, M, O>) -> I,
-) -> RecursiveCtor<'a, 'b, C, M, O>
+pub fn rec_parser_sync<'a, 'b, C, O, I, H>(
+    mut handler: impl FnMut(RecursiveCtorSync<'a, 'b, C, O, H>) -> I,
+) -> RecursiveCtorSync<'a, 'b, C, O, H>
 where
     C: Match<'a>,
-    Extract<M>: Handler<C, Out = M>,
-    I: Ctor<'a, C, M, O, Extract<M>> + 'b,
+    H: Handler<C>,
+    I: Ctor<'a, C, O, H> + Send + Sync + 'b,
 {
-    let r_ctor: RecursiveCtor<'a, 'b, C, M, O> = Rc::new(RefCell::new(None));
-    let r_ctor_clone = r_ctor.clone();
-    let ctor = handler(r_ctor_clone);
-
-    *r_ctor.borrow_mut() = Some(Wrap::dyn_box(ctor));
-    r_ctor
-}
-
-pub fn rec_parser_with_sync<'a, 'b, C, M, O, I, H>(
-    mut handler: impl FnMut(RecursiveCtorWithSync<'a, 'b, C, M, O, H>) -> I,
-) -> RecursiveCtorWithSync<'a, 'b, C, M, O, H>
-where
-    C: Match<'a>,
-    H: Handler<C, Out = M>,
-    I: Ctor<'a, C, M, O, H> + Send + Sync + 'b,
-{
-    let r_ctor: RecursiveCtorWithSync<'a, 'b, C, M, O, H> = Arc::new(Mutex::new(None));
+    let r_ctor: RecursiveCtorSync<'a, 'b, C, O, H> = Arc::new(Mutex::new(None));
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
@@ -149,85 +127,55 @@ where
     r_ctor
 }
 
-///
-/// Same as [`rec_parser`], but need [`Send`] or [`Sync`] for some type.
-///
-pub fn rec_parser_sync<'a, 'b, C, M, O, I>(
-    mut handler: impl FnMut(RecursiveCtorSync<'a, 'b, C, M, O>) -> I,
-) -> RecursiveCtorSync<'a, 'b, C, M, O>
+pub trait RecursiveParser<'c, C>
 where
-    C: Match<'a>,
-    Extract<M>: Handler<C, Out = M> + Send + Sync,
-    I: Ctor<'a, C, M, O, Extract<M>> + Send + Sync + 'b,
+    C: Match<'c>,
 {
-    let r_ctor: RecursiveCtorSync<'a, 'b, C, M, O> = Arc::new(Mutex::new(None));
-    let r_ctor_clone = r_ctor.clone();
-    let ctor = handler(r_ctor_clone);
+    type Ctor<'a, 'b, Ctx, O, H>;
 
-    *r_ctor.lock().unwrap() = Some(Wrap::dyn_box_sync(ctor));
-    r_ctor
-}
-
-pub trait RecursiveParser<'c, Ctx>
-where
-    Ctx: Match<'c>,
-{
-    type H: Handler<Ctx>;
-
-    type Ctor<'a, 'b, C, M, O, H>;
-
-    fn build<'b, O, I, F>(
-        func: F,
-    ) -> Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
+    fn build<'b, O, I, H, F>(func: F) -> Self::Ctor<'c, 'b, C, O, H>
     where
-        F: FnMut(Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + 'b;
+        H: Handler<C>,
+        I: Ctor<'c, C, O, H> + 'b,
+        F: FnMut(Self::Ctor<'c, 'b, C, O, H>) -> I;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RecParser;
 
-impl<'c, Ctx> RecursiveParser<'c, Ctx> for RecParser
+impl<'c, C> RecursiveParser<'c, C> for RecParser
 where
-    Ctx: Context<'c> + Match<'c>,
-    Extract<Ctx::Orig<'c>>: Handler<Ctx>,
+    C: Context<'c> + Match<'c>,
 {
-    type H = Extract<Ctx::Orig<'c>>;
+    type Ctor<'a, 'b, Ctx, O, H> = RecursiveCtor<'a, 'b, Ctx, O, H>;
 
-    type Ctor<'a, 'b, C, M, O, H> = RecursiveCtorWith<'a, 'b, C, M, O, H>;
-
-    fn build<'b, O, I, F>(
-        func: F,
-    ) -> Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
+    fn build<'b, O, I, H, F>(func: F) -> Self::Ctor<'c, 'b, C, O, H>
     where
-        F: FnMut(Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + 'b,
+        H: Handler<C>,
+        I: Ctor<'c, C, O, H> + 'b,
+        F: FnMut(Self::Ctor<'c, 'b, C, O, H>) -> I,
     {
-        rec_parser_with(func)
+        rec_parser(func)
     }
 }
 
-pub trait RecursiveParserSync<'c, Ctx>
+pub trait RecursiveParserSync<'c, C>
 where
-    Ctx: Context<'c>,
+    C: Context<'c>,
 {
-    type H: Handler<Ctx>;
+    type Ctor<'a, 'b, Ctx, O, H>;
 
-    type Ctor<'a, 'b, C, M, O, H>;
-
-    fn build_with<'b, O, I, F>(
-        func: F,
-    ) -> Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
+    fn build_with<'b, O, I, H, F>(func: F) -> Self::Ctor<'c, 'b, C, O, H>
     where
-        F: FnMut(Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + Sync + 'b;
+        H: Handler<C>,
+        I: Ctor<'c, C, O, H> + Send + Sync + 'b,
+        F: FnMut(Self::Ctor<'c, 'b, C, O, H>) -> I;
 
-    fn build<O, I, F>(
-        func: F,
-    ) -> Self::Ctor<'c, 'static, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
+    fn build<O, I, H, F>(func: F) -> Self::Ctor<'c, 'static, C, O, H>
     where
-        F: FnMut(Self::Ctor<'c, 'static, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + Sync + 'static,
+        H: Handler<C>,
+        I: Ctor<'c, C, O, H> + Send + Sync + 'static,
+        F: FnMut(Self::Ctor<'c, 'static, C, O, H>) -> I,
     {
         Self::build_with(func)
     }
@@ -239,19 +187,15 @@ pub struct RecParserSync;
 impl<'c, Ctx> RecursiveParserSync<'c, Ctx> for RecParserSync
 where
     Ctx: Context<'c> + Match<'c>,
-    Extract<Ctx::Orig<'c>>: Handler<Ctx>,
 {
-    type H = Extract<Ctx::Orig<'c>>;
+    type Ctor<'a, 'b, C, O, H> = RecursiveCtorSync<'a, 'b, C, O, H>;
 
-    type Ctor<'a, 'b, C, M, O, H> = RecursiveCtorWithSync<'a, 'b, C, M, O, H>;
-
-    fn build_with<'b, O, I, F>(
-        func: F,
-    ) -> Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>
+    fn build_with<'b, O, I, H, F>(func: F) -> Self::Ctor<'c, 'b, Ctx, O, H>
     where
-        F: FnMut(Self::Ctor<'c, 'b, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H>) -> I,
-        I: Ctor<'c, Ctx, <Self::H as Handler<Ctx>>::Out, O, Self::H> + Send + Sync + 'b,
+        H: Handler<Ctx>,
+        I: Ctor<'c, Ctx, O, H> + Send + Sync + 'b,
+        F: FnMut(Self::Ctor<'c, 'b, Ctx, O, H>) -> I,
     {
-        rec_parser_with_sync(func)
+        rec_parser_sync(func)
     }
 }

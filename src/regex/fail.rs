@@ -64,7 +64,7 @@ where
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, O, H> for FailRegex
+impl<'a, C, O, H> Ctor<'a, C, O, H> for FailRegex
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,

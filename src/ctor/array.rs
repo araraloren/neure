@@ -102,11 +102,11 @@ impl<const N: usize, T> DerefMut for Array<N, T> {
     }
 }
 
-impl<'a, const N: usize, C, T, M, O, H> Ctor<'a, C, M, O, H> for Array<N, T>
+impl<'a, const N: usize, C, T, O, H> Ctor<'a, C, O, H> for Array<N, T>
 where
     C: Match<'a>,
-    T: Ctor<'a, C, M, O, H>,
-    H: Handler<C, Out = M>,
+    T: Ctor<'a, C, O, H>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -215,12 +215,12 @@ impl<const N: usize, K, V> DerefMut for PairArray<N, K, V> {
     }
 }
 
-impl<'a, const N: usize, C, K, M, O, V, H> Ctor<'a, C, M, (O, V), H> for PairArray<N, K, V>
+impl<'a, const N: usize, C, K, O, V, H> Ctor<'a, C, (O, V), H> for PairArray<N, K, V>
 where
     V: Clone,
-    K: Ctor<'a, C, M, O, H>,
+    K: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {

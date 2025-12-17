@@ -154,7 +154,7 @@ where
     }
 }
 
-impl<'a, L, R, C, O, I, H> Ctor<'a, C, O, O, H> for NeureThen<C, L, R, C::Item, I>
+impl<'a, L, R, C, O, I, H> Ctor<'a, C, O, H> for NeureThen<C, L, R, C::Item, I>
 where
     L: Neu<C::Item>,
     R: Neu<C::Item>,

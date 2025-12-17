@@ -54,7 +54,7 @@ impl AnchorStart {
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, O, H> for AnchorStart
+impl<'a, C, O, H> Ctor<'a, C, O, H> for AnchorStart
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,
@@ -157,7 +157,7 @@ impl AnchorEnd {
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, O, H> for AnchorEnd
+impl<'a, C, O, H> Ctor<'a, C, O, H> for AnchorEnd
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,

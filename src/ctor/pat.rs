@@ -114,7 +114,7 @@ impl<C, P> Pattern<C, P> {
     }
 }
 
-impl<'a, C, O, P, H> Ctor<'a, C, O, O, H> for Pattern<C, P>
+impl<'a, C, O, P, H> Ctor<'a, C, O, H> for Pattern<C, P>
 where
     P: Regex<C>,
     C: Match<'a>,

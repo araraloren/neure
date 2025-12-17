@@ -1,6 +1,6 @@
 use std::hint::black_box;
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Json {
@@ -57,7 +57,7 @@ mod neure_json {
 
     impl JsonParser {
         pub fn parse(pat: &[u8]) -> Result<Json, Error> {
-            let parser = regex::rec_parser_with(|ctor| {
+            let parser = regex::rec_parser(|ctor| {
                 let ws = u8::is_ascii_whitespace.many0();
                 let sign = b'+'.or(b'-').opt();
                 let digit = neu::range(b'0'..=b'9').many1();
@@ -127,7 +127,7 @@ mod neure_json_zero {
 
     impl JsonParser {
         pub fn parse(pat: &[u8]) -> Result<JsonZero<'_>, Error> {
-            let parser = regex::rec_parser_with(|ctor| {
+            let parser = regex::rec_parser(|ctor| {
                 let ws = u8::is_ascii_whitespace.many0();
                 let sign = regex!((b'+', b'-'){0,1});
                 let digit = neu::range(b'0'..=b'9').many1();

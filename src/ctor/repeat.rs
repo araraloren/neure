@@ -10,8 +10,8 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::CRange;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Repeats a pattern a specified number of times, collecting results or spans based on context.
@@ -190,11 +190,11 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, M, O, H> Ctor<'a, C, M, Vec<O>, H> for Repeat<C, P>
+impl<'a, C, P, O, H> Ctor<'a, C, Vec<O>, H> for Repeat<C, P>
 where
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<Vec<O>, Error> {

@@ -187,13 +187,13 @@ impl<C, P, F, E> Branch<C, P, F, E> {
     }
 }
 
-impl<'a, C, P, F, E, M, O, H> Ctor<'a, C, M, O, H> for Branch<C, P, F, E>
+impl<'a, C, P, F, E,  O, H> Ctor<'a, C, O, H> for Branch<C, P, F, E>
 where
-    P: Ctor<'a, C, M, O, H>,
-    E: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
+    E: Ctor<'a, C, O, H>,
     C: Match<'a>,
     F: Fn(&C) -> Result<bool, Error>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

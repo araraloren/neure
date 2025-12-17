@@ -107,7 +107,7 @@ where
     }
 }
 
-impl<'a, C, O, T, H> Ctor<'a, C, O, O, H> for BoxedRegex<T>
+impl<'a, C, O, T, H> Ctor<'a, C, O, H> for BoxedRegex<T>
 where
     T: Regex<C>,
     C: Match<'a>,
@@ -455,7 +455,7 @@ where
     }
 }
 
-impl<'a, C, O, H, I> Ctor<'a, C, O, O, H> for Wrap<I, C>
+impl<'a, C, O, H, I> Ctor<'a, C, O, H> for Wrap<I, C>
 where
     I: Regex<C>,
     C: Match<'a>,

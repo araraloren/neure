@@ -140,7 +140,7 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Once<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Once<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -316,7 +316,7 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Many1<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Many1<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,

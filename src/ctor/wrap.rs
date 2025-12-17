@@ -4,8 +4,8 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Adapter that restricts a type to constructor-only contexts while satisfying compiler trait requirements.
@@ -96,9 +96,9 @@ impl<I, C> Regex<C> for BoxedCtor<I> {
     }
 }
 
-impl<'a, C, M, O, I, H> Ctor<'a, C, M, O, H> for BoxedCtor<I>
+impl<'a, C, O, I, H> Ctor<'a, C, O, H> for BoxedCtor<I>
 where
-    I: Ctor<'a, C, M, O, H>,
+    I: Ctor<'a, C, O, H>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -299,8 +299,8 @@ impl<C, T> Wrap<std::cell::RefCell<T>, C> {
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
-    pub fn dyn_arc(ctor: impl Ctor<'a, C, M, O, H> + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>, C> {
+    pub fn dyn_arc(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
         Self::new(std::sync::Arc::new(ctor))
     }
 }
@@ -308,8 +308,8 @@ impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + 'b>, C> 
 ///
 /// Return a type that wrap `dyn Ctor + Send` with [`std::sync::Arc`].
 ///
-impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C> {
-    pub fn dyn_arc_send(ctor: impl Ctor<'a, C, M, O, H> + Send + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + 'b>, C> {
+    pub fn dyn_arc_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
         Self::new(std::sync::Arc::new(ctor))
     }
 }
@@ -317,8 +317,8 @@ impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + '
 ///
 /// Return a type that wrap `dyn Ctor + Send + Sync` with [`std::sync::Arc`].
 ///
-impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, C> {
-    pub fn dyn_arc_sync(ctor: impl Ctor<'a, C, M, O, H> + Send + Sync + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>, C> {
+    pub fn dyn_arc_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
         Self::new(std::sync::Arc::new(ctor))
     }
 }
@@ -344,8 +344,8 @@ impl<'a, 'b, C, M, O, H> Wrap<std::sync::Arc<dyn Ctor<'a, C, M, O, H> + Send + S
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
-    pub fn dyn_box(ctor: impl Ctor<'a, C, M, O, H> + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<Box<dyn Ctor<'a, C, O, H> + 'b>, C> {
+    pub fn dyn_box(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
         Self::new(Box::new(ctor))
     }
 }
@@ -380,8 +380,8 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C> {
-    pub fn dyn_box_send(ctor: impl Ctor<'a, C, M, O, H> + Send + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<Box<dyn Ctor<'a, C, O, H> + Send + 'b>, C> {
+    pub fn dyn_box_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
         Self::new(Box::new(ctor))
     }
 }
@@ -389,8 +389,8 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + 'b>, C> {
 ///
 /// Return a type that wrap `dyn Ctor + Send + Sync` with [`Box`].
 ///
-impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, C> {
-    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, M, O, H> + Send + Sync + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>, C> {
+    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
         Self::new(Box::new(ctor))
     }
 }
@@ -425,8 +425,8 @@ impl<'a, 'b, C, M, O, H> Wrap<Box<dyn Ctor<'a, C, M, O, H> + Send + Sync + 'b>, 
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, M, O, H> Wrap<std::rc::Rc<dyn Ctor<'a, C, M, O, H> + 'b>, C> {
-    pub fn dyn_rc(ctor: impl Ctor<'a, C, M, O, H> + 'b) -> Self {
+impl<'a, 'b, C, O, H> Wrap<std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>, C> {
+    pub fn dyn_rc(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
         Self::new(std::rc::Rc::new(ctor))
     }
 }
@@ -438,9 +438,9 @@ impl<C, I> Regex<C> for Wrap<I, C> {
     }
 }
 
-impl<'a, C, M, O, H, I> Ctor<'a, C, M, O, H> for Wrap<I, C>
+impl<'a, C, O, H, I> Ctor<'a, C, O, H> for Wrap<I, C>
 where
-    I: Ctor<'a, C, M, O, H>,
+    I: Ctor<'a, C, O, H>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

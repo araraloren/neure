@@ -11,14 +11,14 @@ use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::EmptyCond;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
-use super::length_of;
 use super::CRange;
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
+use super::length_of;
 
 ///
 /// Matches a sequence of elements with compile-time bounded repetition and context validation.
@@ -193,8 +193,7 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<'a, C, O, O, H>
-    for Between<M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<'a, C, O, H> for Between<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -393,7 +392,7 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, O, H> for Times<C, U, I>
+impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,

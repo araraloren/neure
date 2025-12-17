@@ -64,7 +64,7 @@ where
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, O, H> for EmptyRegex
+impl<'a, C, O, H> Ctor<'a, C, O, H> for EmptyRegex
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,

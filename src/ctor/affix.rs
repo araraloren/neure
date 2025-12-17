@@ -14,8 +14,8 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Matches a pattern followed by a mandatory suffix, returning only the main pattern's value during construction.
@@ -163,12 +163,12 @@ impl<C, P, T> Suffix<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O, H> Ctor<'a, C, M, O, H> for Suffix<C, P, T>
+impl<'a, C, P, T, O, H> Ctor<'a, C, O, H> for Suffix<C, P, T>
 where
     T: Regex<C>,
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -352,12 +352,12 @@ impl<C, P, T> Prefix<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, M, O, H> Ctor<'a, C, M, O, H> for Prefix<C, P, T>
+impl<'a, C, P, T, O, H> Ctor<'a, C, O, H> for Prefix<C, P, T>
 where
     T: Regex<C>,
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

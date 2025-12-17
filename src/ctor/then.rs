@@ -18,8 +18,8 @@ use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Sequentially composes two expressions, requiring **both** to match in order.
@@ -187,12 +187,12 @@ impl<C, L, R> Then<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O1, O2, H> Ctor<'a, C, M, (O1, O2), H> for Then<C, L, R>
+impl<'a, C, L, R, O1, O2, H> Ctor<'a, C, (O1, O2), H> for Then<C, L, R>
 where
-    L: Ctor<'a, C, M, O1, H>,
-    R: Ctor<'a, C, M, O2, H>,
+    L: Ctor<'a, C, O1, H>,
+    R: Ctor<'a, C, O2, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
@@ -398,13 +398,13 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
     }
 }
 
-impl<'a, C, L, I, R, M, O1, O2, H> Ctor<'a, C, M, (O1, Option<O2>), H> for IfThen<C, L, I, R>
+impl<'a, C, L, I, R, O1, O2, H> Ctor<'a, C, (O1, Option<O2>), H> for IfThen<C, L, I, R>
 where
-    L: Ctor<'a, C, M, O1, H>,
-    R: Ctor<'a, C, M, O2, H>,
+    L: Ctor<'a, C, O1, H>,
+    R: Ctor<'a, C, O2, H>,
     I: Regex<C>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {

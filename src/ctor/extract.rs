@@ -1,27 +1,9 @@
 use std::marker::PhantomData;
 
+use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Span;
 use crate::err::Error;
-
-pub trait Handler<C> {
-    type Out;
-    type Error: Into<Error>;
-
-    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error>;
-}
-
-impl<Func, Out, C> Handler<C> for Func
-where
-    Func: FnMut(&C, &Span) -> Result<Out, Error>,
-{
-    type Out = Out;
-    type Error = Error;
-
-    fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error> {
-        (self)(ctx, span)
-    }
-}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Extract<T> {

@@ -14,8 +14,8 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Selects the longest matching pattern between two alternatives.
@@ -166,12 +166,12 @@ impl<C, L, R> LongestTokenMatch<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, M, O, H> Ctor<'a, C, M, O, H> for LongestTokenMatch<C, L, R>
+impl<'a, C, L, R, O, H> Ctor<'a, C, O, H> for LongestTokenMatch<C, L, R>
 where
-    L: Ctor<'a, C, M, O, H>,
-    R: Ctor<'a, C, M, O, H>,
+    L: Ctor<'a, C, O, H>,
+    R: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

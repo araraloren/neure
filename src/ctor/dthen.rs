@@ -13,8 +13,8 @@ use crate::err::Error;
 use crate::map::Select0;
 use crate::map::Select1;
 use crate::map::SelectEq;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Dynamically constructs a second pattern based on the result of the first match.
@@ -185,13 +185,13 @@ where
     }
 }
 
-impl<'a, C, P, F, T, M, O1, O2, H> Ctor<'a, C, M, (O1, O2), H> for DynamicCtorThenBuilder<C, P, F>
+impl<'a, C, P, F, T, O1, O2, H> Ctor<'a, C, (O1, O2), H> for DynamicCtorThenBuilder<C, P, F>
 where
     C: Match<'a>,
-    P: Ctor<'a, C, M, O1, H>,
-    T: Ctor<'a, C, M, O2, H>,
+    P: Ctor<'a, C, O1, H>,
+    T: Ctor<'a, C, O2, H>,
     F: Fn(&mut C, &O1) -> Result<T, Error>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {

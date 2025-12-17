@@ -183,13 +183,13 @@ impl<C, P, L, R> Enclose<C, P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P, M, O, H> Ctor<'a, C, M, O, H> for Enclose<C, P, L, R>
+impl<'a, C, L, R, P,  O, H> Ctor<'a, C, O, H> for Enclose<C, P, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    P: Ctor<'a, C, M, O, H>,
+    P: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {

@@ -10,8 +10,8 @@ use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 use super::Ctor;
 
@@ -105,11 +105,11 @@ impl<T> DerefMut for Vector<T> {
     }
 }
 
-impl<'a, C, T, M, O, H> Ctor<'a, C, M, O, H> for Vector<T>
+impl<'a, C, T, O, H> Ctor<'a, C, O, H> for Vector<T>
 where
-    T: Ctor<'a, C, M, O, H>,
+    T: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -259,12 +259,12 @@ impl<K, V> DerefMut for PairVector<K, V> {
     }
 }
 
-impl<'a, C, K, M, O, V, H> Ctor<'a, C, M, (O, V), H> for PairVector<K, V>
+impl<'a, C, K, O, V, H> Ctor<'a, C, (O, V), H> for PairVector<K, V>
 where
     V: Clone,
-    K: Ctor<'a, C, M, O, H>,
+    K: Ctor<'a, C, O, H>,
     C: Match<'a>,
-    H: Handler<C, Out = M>,
+    H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {

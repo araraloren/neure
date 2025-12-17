@@ -145,34 +145,33 @@ pub trait MatchExt<'a>
 where
     Self: Context<'a> + Sized,
 {
-    fn ctor_handler<H, P, M, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
+    fn ctor_handler<H, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, M, O, H>,
-        H: Handler<Self, Out = M>,
+        P: Ctor<'a, Self, O, H>,
+        H: Handler<Self>,
     {
         pat.construct(self, &mut handler)
     }
 
-    fn ctor_with<H, P, M, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
+    fn ctor_with<H, P, O, R>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, M, O, H>,
-        H: FnMut(&Self, &Span) -> Result<M, Error>,
+        P: Ctor<'a, Self, O, H>,
+        H: FnMut(&Self, &Span) -> Result<R, Error>,
     {
         self.ctor_handler(pat, handler)
     }
 
     fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, Span, O, Extract<Span>>,
-        Extract<Span>: Handler<Self, Out = Span>,
+        P: Ctor<'a, Self, O, Extract<Span>>,
     {
         self.ctor_handler(pat, extract())
     }
 
     fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, Self::Orig<'a>, O, Extract<Self::Orig<'a>>>,
-        Extract<Self::Orig<'a>>: Handler<Self, Out = Self::Orig<'a>>,
+        P: Ctor<'a, Self, O, Extract<Self::Orig<'a>>>,
+        Extract<Self::Orig<'a>>: Handler<Self>,
     {
         self.ctor_handler(pat, extract())
     }
