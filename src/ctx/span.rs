@@ -18,12 +18,11 @@ impl Span {
         self.beg
     }
 
-    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.len
     }
 
-    pub fn is_zero(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.len == 0
     }
 

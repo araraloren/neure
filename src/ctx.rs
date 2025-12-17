@@ -228,8 +228,12 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
     where
         P: Regex<Self>,
     {
-        self.find_all_with(pat, |ctx, _| {
-            ctx.inc(1);
+        self.find_all_with(pat, |ctx, val| match val {
+            Ok(val) if !val.is_empty() => Some(val),
+            _ => {
+                ctx.inc(1);
+                None
+            }
         })
     }
 
@@ -239,26 +243,24 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
     {
         self.find_all_with(pat, |ctx, _| {
             ctx.set_offset(ctx.len());
+            None
         })
     }
 
-    fn find_all_with<P, F>(&mut self, pat: P, mut err_handler: F) -> impl Iterator<Item = Span>
+    fn find_all_with<P, F>(&mut self, pat: P, mut handler: F) -> impl Iterator<Item = Span>
     where
         P: Regex<Self>,
-        F: FnMut(&mut Self, Error),
+        F: FnMut(&mut Self, Result<Span, Error>) -> Option<Span>,
     {
         std::iter::from_fn(move || {
             let mut next = None;
 
             while self.offset() < self.len() {
-                match self.try_mat(&pat) {
-                    Ok(span) => {
-                        next = Some(span);
-                        break;
-                    }
-                    Err(e) => {
-                        err_handler(self, e);
-                    }
+                let ret = self.try_mat(&pat);
+
+                if let Some(span) = handler(self, ret) {
+                    next = Some(span);
+                    break;
                 }
             }
             next
