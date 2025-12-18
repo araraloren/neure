@@ -43,9 +43,9 @@ criterion::criterion_main!(benches);
 mod color_nom {
     use super::*;
     use nom::{
+        IResult, Parser,
         bytes::complete::{tag, take_while_m_n},
         combinator::map_res,
-        IResult, Parser,
     };
 
     fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
@@ -53,7 +53,7 @@ mod color_nom {
     }
 
     fn is_hex_digit(c: char) -> bool {
-        c.is_ascii_digit()
+        ('0'..':').contains(&c) || ('A'..'G').contains(&c)
     }
 
     fn hex_primary(input: &str) -> IResult<&str, u8> {
@@ -84,19 +84,19 @@ mod color_nom {
 mod color_neure {
     use super::*;
 
-    fn parser(str: &str) -> Result<Color, Box<dyn std::error::Error>> {
-        let pound = regex!('#');
-        let hex = regex!((('0' .. ':'), ('A' .. 'G')){2}); // better performance than ..=
+    fn is_hex_digit(c: &char) -> bool {
+        ('0'..':').contains(c) || ('A'..'G').contains(c)
+    }
+
+    fn parser(str: &str) -> Result<Color, neure::err::Error> {
+        let hex = is_hex_digit.count::<2>(); // better performance than ..=
         let hex = hex.try_map(map::from_str_radix::<u8>(16));
-        let mut ctx = RegexCtx::new(str);
+        let parser = hex
+            .then(hex.then(hex))
+            .map(|(red, (green, blue))| Color { red, green, blue });
+        let parser = parser.prefix("#");
 
-        ctx.try_mat(&pound)?;
-
-        Ok(Color {
-            red: ctx.ctor(&hex)?,
-            green: ctx.ctor(&hex)?,
-            blue: ctx.ctor(&hex)?,
-        })
+        RegexCtx::new(str).ctor(&parser)
     }
 
     pub fn parse(str: &str) {

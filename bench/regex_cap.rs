@@ -71,11 +71,11 @@ mod email_neure {
         let letter = neu::range('a'..='z');
         let number = neu::digit(10);
         let name = regex!((letter, number, '_', '.', '+', '-')+);
-        let domain = neu!((letter, number, '.', '-')).at_most::<256>().set_cond(
-            move |ctx: &CharsCtx, &(length, ch): &(usize, char)| {
-                Ok(!(ch == '.' && ctx.orig_at(ctx.offset() + length + 1)?.find('.').is_none()))
-            },
-        );
+        let cond = ".".then('.'.not().many0()).then(regex::end());
+        let cond = neu::regex_cond(regex::not(cond));
+        let domain = neu!((letter, number, '.', '-'))
+            .at_most::<256>()
+            .set_cond(cond);
         let post = neu!((letter, '.')).between::<2, 6>();
         let email = name
             .sep_once("@", domain.sep_once(".", post))

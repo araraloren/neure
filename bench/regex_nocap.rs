@@ -56,18 +56,21 @@ mod email_neure {
         let mut ctx = RegexCtx::new(str);
         let alpha = neu::range('a'..='z');
         let num = neu::digit(10);
-        let name = neu!((alpha, num, '_', '.', '+', '-')).many1();
-        let domain = alpha.or(num).or('.').or('-').at_most::<256>().set_cond(
-            |ctx: &CharsCtx, item: &(usize, char)| {
-                Ok(!(item.1 == '.' && ctx.orig_at(ctx.offset() + item.0 + 1)?.find('.').is_none()))
-            },
-        );
+        let name = regex!((alpha, num, '_', '.', '+', '-')+);
+        let cond = ".".then('.'.not().many0()).then(regex::end());
+        let cond = neu::regex_cond(regex::not(cond));
+        let domain = alpha
+            .or(num)
+            .or('.')
+            .or('-')
+            .at_most::<256>()
+            .set_cond(cond);
         let email = regex::start()
             .then(name)
-            .then("@")
-            .then(domain)
-            .then(".")
-            .then(neu!((alpha, '.')).between::<2, 6>())
+            .sep_once(
+                "@",
+                domain.sep_once(".", neu!((alpha, '.')).between::<2, 6>()),
+            )
             .then(regex::end());
 
         ctx.try_mat(&email)?;
