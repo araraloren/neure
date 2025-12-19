@@ -8,8 +8,8 @@ use crate::ctx::Span;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Consumes a fixed number of elements without content validation.
@@ -75,11 +75,12 @@ where
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
         let mut ctx = CtxGuard::new(ctx);
+        let length = self.0;
 
-        debug_regex_beg!("Consume", ctx.beg());
+        debug_regex_beg!("Consume", length, ctx.beg());
 
-        let ret = if ctx.remaining_len() >= self.0 {
-            Ok(ctx.inc(self.0))
+        let ret = if ctx.remaining_len() >= length {
+            Ok(ctx.inc(length))
         } else {
             Err(Error::Consume)
         };

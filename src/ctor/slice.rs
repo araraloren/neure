@@ -193,8 +193,8 @@ where
 ///         Other,
 ///     }
 ///
-///     let num = regex::Wrap::dyn_box(neu::digit(10).many1());
-///     let str = regex::Wrap::dyn_box(neu::word().many1());
+///     let num = regex::Adapter::dyn_box(neu::digit(10).many1());
+///     let str = regex::Adapter::dyn_box(neu::word().many1());
 ///     let other = regex::consume_all().into_dyn_regex();
 ///
 ///     let pairs = [(num, Kind::Num), (str, Kind::Str), (other, Kind::Other)];

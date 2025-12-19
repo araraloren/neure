@@ -1,12 +1,13 @@
+mod adapter;
 mod anchor;
 mod assert;
 mod builder;
 mod consume;
 mod empty;
 mod fail;
+mod into;
 mod literal;
 mod rec;
-mod wrap;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -14,6 +15,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+pub use self::adapter::Adapter;
+pub use self::adapter::RefAdapter;
 pub use self::anchor::AnchorEnd;
 pub use self::anchor::AnchorStart;
 pub use self::anchor::end;
@@ -32,6 +35,7 @@ pub use self::empty::EmptyRegex;
 pub use self::empty::empty;
 pub use self::fail::FailRegex;
 pub use self::fail::fail;
+pub use self::into::RegexIntoHelper;
 pub use self::literal::LitSlice;
 pub use self::literal::LitString;
 pub use self::literal::lit_slice;
@@ -44,9 +48,9 @@ pub use self::rec::RecursiveParser;
 pub use self::rec::RecursiveParserSync;
 pub use self::rec::rec_parser;
 pub use self::rec::rec_parser_sync;
-pub use self::wrap::Wrap;
 
 use crate::ctor::Array;
+use crate::ctor::Ctor;
 use crate::ctor::PairArray;
 use crate::ctor::PairSlice;
 use crate::ctor::PairVector;
@@ -63,7 +67,6 @@ use crate::neu::Neu;
 use crate::neu::NeuIntoRegexOps;
 use crate::neu::Once;
 use crate::neu::Opt;
-use crate::regex::wrap::BoxedRegex;
 
 pub trait Regex<C> {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error>;
@@ -93,49 +96,33 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for &str
-where
-    C: Context<'a, Orig<'a> = &'a str>,
-{
-    #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let pattern = crate::regex::string(self);
-        pattern.try_parse(ctx)
-    }
+macro_rules! impl_orig_regex {
+    ($self:ident, $regex:expr, $type:ty, $orig:ty) => {
+        impl<'a, C> Regex<C> for $type
+        where
+            C: Context<'a, Orig<'a> = &'a $orig>,
+        {
+            #[inline(always)]
+            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                let $self = self;
+
+                Regex::try_parse($regex, ctx)
+            }
+        }
+    };
 }
 
-impl<'a, C> Regex<C> for String
-where
-    C: Context<'a, Orig<'a> = &'a str>,
-{
-    #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let pattern = crate::regex::string(self.as_str());
-        pattern.try_parse(ctx)
-    }
-}
+impl_orig_regex!(self_, &string(self_), &str, str);
 
-impl<'a, C> Regex<C> for &String
-where
-    C: Context<'a, Orig<'a> = &'a str>,
-{
-    #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let pattern = crate::regex::string(self.as_str());
-        pattern.try_parse(ctx)
-    }
-}
+impl_orig_regex!(self_, &string(self_), String, str);
 
-impl<'a, C> Regex<C> for &[u8]
-where
-    C: Context<'a, Orig<'a> = &'a [u8]>,
-{
-    #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let pattern = crate::regex::lit_slice(self);
-        pattern.try_parse(ctx)
-    }
-}
+impl_orig_regex!(self_, &string(self_), &String, str);
+
+impl_orig_regex!(self_, &lit_slice(self_), &[u8], [u8]);
+
+impl_orig_regex!(self_, &lit_slice(self_.as_slice()), Vec<u8>, [u8]);
+
+impl_orig_regex!(self_, &lit_slice(self_.as_slice()), &Vec<u8>, [u8]);
 
 impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
@@ -159,41 +146,31 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for Vec<u8>
-where
-    C: Context<'a, Orig<'a> = &'a [u8]>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        Regex::try_parse(&self.as_slice(), ctx)
-    }
+macro_rules! impl_forward_regex {
+    ($self:ident, $regex:expr, $type:ty) => {
+        impl<P, C> Regex<C> for $type
+        where
+            P: Regex<C>,
+        {
+            #[inline(always)]
+            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                let $self = self;
+
+                Regex::try_parse($regex, ctx)
+            }
+        }
+    };
 }
 
-impl<'a, C> Regex<C> for &Vec<u8>
-where
-    C: Context<'a, Orig<'a> = &'a [u8]>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        Regex::try_parse(&self.as_slice(), ctx)
-    }
-}
+impl_forward_regex!(self_, self_.as_ref().ok_or(Error::Option)?, Option<P>);
 
-impl<P, C> Regex<C> for Option<P>
-where
-    P: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().ok_or(Error::Option)?.try_parse(ctx)
-    }
-}
+impl_forward_regex!(self_, &*self_.borrow(), RefCell<P>);
 
-impl<P, C> Regex<C> for RefCell<P>
-where
-    P: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        (*self.borrow()).try_parse(ctx)
-    }
-}
+impl_forward_regex!(self_, &*self_.lock().map_err(|_| Error::Mutex)?, Mutex<P>);
+
+impl_forward_regex!(self_, self_.as_ref(), Arc<P>);
+
+impl_forward_regex!(self_, self_.as_ref(), Rc<P>);
 
 impl<P, C> Regex<C> for Cell<P>
 where
@@ -204,81 +181,57 @@ where
     }
 }
 
-impl<P, C> Regex<C> for Mutex<P>
-where
-    P: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let ret = self.lock().map_err(|_| Error::Mutex)?;
-        (*ret).try_parse(ctx)
-    }
+macro_rules! impl_dyn_regex {
+    ($type:ty) => {
+        impl<'b, C> Regex<C> for $type {
+            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                self.as_ref().try_parse(ctx)
+            }
+        }
+    };
 }
 
-impl<P, C> Regex<C> for Arc<P>
-where
-    P: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
+macro_rules! impl_dyn_ctor {
+    ($ctor:ty) => {
+        impl<'a, 'b, C, O, H> Regex<C> for $ctor {
+            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                self.as_ref().try_parse(ctx)
+            }
+        }
+    };
 }
 
-impl<P, C> Regex<C> for Rc<P>
-where
-    P: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_regex!(Box<dyn Regex<C> + 'b>);
 
-impl<'b, C> Regex<C> for Box<dyn Regex<C> + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_regex!(Box<dyn Regex<C> + Send + 'b>);
 
-impl<'b, C> Regex<C> for Box<dyn Regex<C> + Send + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_regex!(Box<dyn Regex<C> + Send + Sync + 'b>);
 
-impl<'b, C> Regex<C> for Box<dyn Regex<C> + Send + Sync + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
 
-impl<'b, C> Regex<C> for Arc<dyn Regex<C> + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
 
-impl<'b, C> Regex<C> for Arc<dyn Regex<C> + Send + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
 
-impl<'b, C> Regex<C> for Arc<dyn Regex<C> + Send + Sync + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_regex!(Arc<dyn Regex<C> + 'b>);
 
-impl<'b, C> Regex<C> for Rc<dyn Regex<C> + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_regex!(Arc<dyn Regex<C> + Send + 'b>);
 
-impl<'b, C> Regex<C> for Rc<dyn Regex<C> + Send + 'b> {
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.as_ref().try_parse(ctx)
-    }
-}
+impl_dyn_regex!(Arc<dyn Regex<C> + Send + Sync + 'b>);
+
+impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
+
+impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+
+impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+
+impl_dyn_regex!(Rc<dyn Regex<C> + 'b>);
+
+impl_dyn_regex!(Rc<dyn Regex<C> + Send + 'b>);
+
+impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
+
+impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
 
 ///
 /// Match one item.
@@ -536,7 +489,7 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 /// #   Ok(())
 /// # }
 /// ```
-pub fn pair_vector<K, V: Clone>(val: impl IntoIterator<Item = (K, V)>) -> PairVector<K, V> {
+pub fn pair_vector<T, V: Clone>(val: impl IntoIterator<Item = (T, V)>) -> PairVector<T, V> {
     PairVector::new(val.into_iter().collect())
 }
 
@@ -636,94 +589,19 @@ pub fn pair_slice<K, V>(val: &[(K, V)]) -> PairSlice<'_, K, V> {
     PairSlice::new(val)
 }
 
-pub trait RegexIntoOp<C>
+pub trait AsCtor<C>
 where
-    Self: Sized + Regex<C>,
+    Self: Regex<C>,
 {
-    fn into_ctor(self) -> Wrap<Self, C>;
-
-    fn into_box_regex(self) -> Wrap<BoxedRegex<Self>, C>;
-
-    fn into_rc_regex(self) -> Wrap<Rc<Self>, C>;
-
-    fn into_arc_regex(self) -> Wrap<Arc<Self>, C>;
-
-    fn into_cell_regex(self) -> Wrap<Cell<Self>, C>;
-
-    fn into_refcell_regex(self) -> Wrap<RefCell<Self>, C>;
-
-    fn into_mutex_regex(self) -> Wrap<Mutex<Self>, C>;
-
-    fn into_dyn_regex<'a, 'b>(self) -> Wrap<Box<dyn Regex<C> + 'b>, C>
-    where
-        C: Context<'a>,
-        Self: 'b;
-
-    fn into_dyn_arc_regex<'a, 'b>(self) -> Wrap<std::sync::Arc<dyn Regex<C> + 'b>, C>
-    where
-        C: Context<'a>,
-        Self: 'b;
-
-    fn into_dyn_rc_regex<'a, 'b>(self) -> Wrap<std::rc::Rc<dyn Regex<C> + 'b>, C>
-    where
-        C: Context<'a>,
-        Self: 'b;
+    fn as_ctor(&self) -> RefAdapter<'_, C, Self>;
 }
 
-impl<C, T> RegexIntoOp<C> for T
+impl<T: ?Sized, C> AsCtor<C> for T
 where
-    T: Regex<C>,
+    Self: Regex<C>,
 {
-    fn into_ctor(self) -> Wrap<Self, C> {
-        Wrap::new(self)
-    }
-
-    fn into_box_regex(self) -> Wrap<BoxedRegex<Self>, C> {
-        Wrap::r#box(self)
-    }
-
-    fn into_rc_regex(self) -> Wrap<Rc<Self>, C> {
-        Wrap::rc(self)
-    }
-
-    fn into_arc_regex(self) -> Wrap<Arc<Self>, C> {
-        Wrap::arc(self)
-    }
-
-    fn into_cell_regex(self) -> Wrap<Cell<Self>, C> {
-        Wrap::cell(self)
-    }
-
-    fn into_refcell_regex(self) -> Wrap<RefCell<Self>, C> {
-        Wrap::refcell(self)
-    }
-
-    fn into_mutex_regex(self) -> Wrap<Mutex<Self>, C> {
-        Wrap::mutex(self)
-    }
-
-    fn into_dyn_regex<'a, 'b>(self) -> Wrap<Box<dyn Regex<C> + 'b>, C>
-    where
-        C: Context<'a>,
-        Self: 'b,
-    {
-        Wrap::dyn_box(self)
-    }
-
-    fn into_dyn_arc_regex<'a, 'b>(self) -> Wrap<std::sync::Arc<dyn Regex<C> + 'b>, C>
-    where
-        C: Context<'a>,
-        Self: 'b,
-    {
-        Wrap::dyn_arc(self)
-    }
-
-    fn into_dyn_rc_regex<'a, 'b>(self) -> Wrap<std::rc::Rc<dyn Regex<C> + 'b>, C>
-    where
-        C: Context<'a>,
-        Self: 'b,
-    {
-        Wrap::dyn_rc(self)
+    fn as_ctor(&self) -> RefAdapter<'_, C, Self> {
+        RefAdapter::new(self)
     }
 }
 

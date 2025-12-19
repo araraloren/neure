@@ -130,6 +130,10 @@ where
 
         crate::trace_retval!("Or", other, ret)
     }
+
+    fn min_length(&self) -> usize {
+        self.left.min_length().min(self.right.min_length())
+    }
 }
 
 ///

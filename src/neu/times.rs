@@ -226,25 +226,27 @@ where
         let range = M..N;
 
         crate::debug_regex_beg!("Between", &range, ctx.beg());
-        while cnt < N {
-            if let Some(pair) = iter.next() {
-                if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
-                    cnt += 1;
-                    if beg.is_none() {
-                        beg = Some(pair.0);
+        if ctx.remaining_len() >= M * self.unit.min_length() {
+            while cnt < N {
+                if let Some(pair) = iter.next() {
+                    if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
+                        cnt += 1;
+                        if beg.is_none() {
+                            beg = Some(pair.0);
+                        }
+                        continue;
+                    } else {
+                        end = Some(pair);
                     }
-                    continue;
-                } else {
-                    end = Some(pair);
                 }
+                break;
             }
-            break;
-        }
-        if cnt >= M {
-            let end = end.or_else(|| iter.next()).map(|v| v.0);
-            let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
+            if cnt >= M {
+                let end = end.or_else(|| iter.next()).map(|v| v.0);
+                let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
 
-            ret = Ok(ctx.inc(len));
+                ret = Ok(ctx.inc(len));
+            }
         }
         crate::debug_regex_reval!("Between", cnt, ctx.process_ret(ret))
     }
@@ -433,26 +435,34 @@ where
             std::ops::Bound::Unbounded => None,
         });
 
-        crate::debug_regex_beg!("Times", self.range, ctx.beg());
-        while cond(cnt) {
-            if let Some(pair) = iter.next() {
-                if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
-                    cnt += 1;
-                    if beg.is_none() {
-                        beg = Some(pair.0);
-                    }
-                    continue;
-                } else {
-                    end = Some(pair);
-                }
-            }
-            break;
-        }
-        if self.range.contains(&cnt) {
-            let end = end.or_else(|| iter.next()).map(|v| v.0);
-            let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
+        let min_length = || match self.range.start_bound() {
+            std::ops::Bound::Included(max) => max * self.unit.min_length(),
+            std::ops::Bound::Excluded(max) => max.saturating_sub(1) * self.unit.min_length(),
+            std::ops::Bound::Unbounded => 0,
+        };
 
-            ret = Ok(ctx.inc(len));
+        crate::debug_regex_beg!("Times", self.range, ctx.beg());
+        if ctx.remaining_len() >= min_length() {
+            while cond(cnt) {
+                if let Some(pair) = iter.next() {
+                    if self.unit.is_match(&pair.1) && self.cond.check(ctx.ctx(), &pair)? {
+                        cnt += 1;
+                        if beg.is_none() {
+                            beg = Some(pair.0);
+                        }
+                        continue;
+                    } else {
+                        end = Some(pair);
+                    }
+                }
+                break;
+            }
+            if self.range.contains(&cnt) {
+                let end = end.or_else(|| iter.next()).map(|v| v.0);
+                let len = beg.map(|v| length_of(v, ctx.ctx(), end)).unwrap_or(0);
+
+                ret = Ok(ctx.inc(len));
+            }
         }
         crate::debug_regex_reval!("Times", cnt, ctx.process_ret(ret))
     }

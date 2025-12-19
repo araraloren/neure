@@ -3,17 +3,17 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+use crate::ctor::Adapter;
 use crate::ctor::Ctor;
 use crate::ctor::Handler;
-use crate::ctor::Wrap;
 use crate::ctx::Context;
 use crate::ctx::Match;
 
 pub type RecursiveCtor<'a, 'b, C, O, H> =
-    Rc<RefCell<Option<Wrap<Box<dyn Ctor<'a, C, O, H> + 'b>, C>>>>;
+    Rc<RefCell<Option<Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>>>>>;
 
 pub type RecursiveCtorSync<'a, 'b, C, O, H> =
-    Arc<Mutex<Option<Wrap<Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>, C>>>>;
+    Arc<Mutex<Option<Adapter<C, Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>>>>>;
 
 ///
 /// # Example
@@ -78,7 +78,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.borrow_mut() = Some(Wrap::dyn_box(ctor));
+    *r_ctor.borrow_mut() = Some(Adapter::dyn_box(ctor));
     r_ctor
 }
 
@@ -123,7 +123,7 @@ where
     let r_ctor_clone = r_ctor.clone();
     let ctor = handler(r_ctor_clone);
 
-    *r_ctor.lock().unwrap() = Some(Wrap::dyn_box_sync(ctor));
+    *r_ctor.lock().unwrap() = Some(Adapter::dyn_box_sync(ctor));
     r_ctor
 }
 

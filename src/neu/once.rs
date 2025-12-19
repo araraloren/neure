@@ -177,7 +177,6 @@ where
 
             ret = Ok(ctx.inc(len));
         }
-
         crate::debug_regex_reval!("Once", ctx.process_ret(ret))
     }
 }
@@ -362,7 +361,6 @@ where
 
             ret = Ok(ctx.inc(len))
         }
-
         crate::debug_regex_reval!("Many1", ctx.process_ret(ret))
     }
 }

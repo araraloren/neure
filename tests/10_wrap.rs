@@ -50,10 +50,14 @@ fn into_impl() -> color_eyre::Result<()> {
     let ident = unit.many1();
     let ty = neu::ascii_alphabetic().or('_').once().then(ident).pat();
     let layer0 = ty.try_map(|ty| Ok(Ty::Layer0(ty)));
-    let layer1 = ctor::Wrap::dyn_rc(ty.then(ty.enclose("<", ">")))
+    let layer1 = ty
+        .then(ty.enclose("<", ">"))
+        .into_dyn_rc()
         // Add into_dyn_* reduce the trait solve time
         .try_map(|(w, ty)| Ok(Ty::Layer1(w, ty)));
-    let layer2 = ctor::Wrap::dyn_rc(ty.then(ty.then(ty.enclose("<", ">")).enclose("<", ">"))) // Add into_dyn_* reduce the trait solve time
+    let layer2 = ty
+        .then(ty.then(ty.enclose("<", ">")).enclose("<", ">"))
+        .into_dyn_rc() // Add into_dyn_* reduce the trait solve time
         .try_map(|(w1, (w2, ty))| Ok(Ty::Layer2(w1, w2, ty)));
     let field = ident.sep_once(":", layer2.or(layer1.or(layer0)));
     let public = field

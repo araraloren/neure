@@ -183,9 +183,11 @@ where
         let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::NeureThen);
         let mut iter = ctx.peek()?;
+        let length = self.left.min_length() + self.right.min_length();
 
-        crate::debug_regex_beg!("NeureThen", ctx.beg());
-        if let (Some(fst), Some(snd)) = (iter.next(), iter.next())
+        crate::debug_regex_beg!("NeureThen", length, ctx.beg());
+        if ctx.remaining_len() >= length
+            && let (Some(fst), Some(snd)) = (iter.next(), iter.next())
             && self.left.is_match(&fst.1)
             && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
             && self.right.is_match(&snd.1)

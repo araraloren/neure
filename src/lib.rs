@@ -28,8 +28,8 @@ pub use charize::charize;
 
 pub mod prelude {
     pub use crate::ctor;
-    pub use crate::ctor::ConstructIntoOp;
-    pub use crate::ctor::ConstructOp;
+    pub use crate::ctor::CtorIntoHelper;
+    pub use crate::ctor::CtorOps;
     pub use crate::ctx::Assert;
     pub use crate::ctx::BytesCtx;
     pub use crate::ctx::CharsCtx;
@@ -48,7 +48,7 @@ pub mod prelude {
     pub use crate::neu::NeuOp;
     pub use crate::regex;
     pub use crate::regex::Regex;
-    pub use crate::regex::RegexIntoOp;
+    pub use crate::regex::RegexIntoHelper;
     pub use crate::span::SimpleStorer;
 }
 

@@ -12,9 +12,9 @@ mod then;
 mod times;
 mod units;
 
+use crate::MayDebug;
 use crate::ctx::Context;
 use crate::trace_retval;
-use crate::MayDebug;
 
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -24,59 +24,38 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-pub use self::bool::always;
-pub use self::bool::never;
 pub use self::bool::Always;
 pub use self::bool::Never;
-pub use self::cond::regex_cond;
+pub use self::bool::always;
+pub use self::bool::never;
 pub use self::cond::Condition;
 pub use self::cond::EmptyCond;
 pub use self::cond::NeuCond;
 pub use self::cond::RegexCond;
-pub use self::equal::equal;
+pub use self::cond::regex_cond;
 pub use self::equal::Equal;
+pub use self::equal::equal;
 pub use self::once::Many1;
 pub use self::once::Once;
-pub use self::op_and::and;
 pub use self::op_and::And;
-pub use self::op_not::not;
+pub use self::op_and::and;
 pub use self::op_not::Not;
-pub use self::op_or::or;
+pub use self::op_not::not;
 pub use self::op_or::Or;
+pub use self::op_or::or;
 pub use self::opt::Many0;
 pub use self::opt::Opt;
+pub use self::prefix::Prefix;
+pub use self::prefix::PrefixSync;
 pub use self::prefix::prefix;
 pub use self::prefix::prefix_cnt;
 pub use self::prefix::prefix_sync;
 pub use self::prefix::prefix_sync_cnt;
-pub use self::prefix::Prefix;
-pub use self::prefix::PrefixSync;
-pub use self::range::range;
 pub use self::range::CRange;
+pub use self::range::range;
 pub use self::then::NeureThen;
 pub use self::times::Between;
 pub use self::times::Times;
-pub use self::units::alphabetic;
-pub use self::units::alphanumeric;
-pub use self::units::ascii;
-pub use self::units::ascii_alphabetic;
-pub use self::units::ascii_alphanumeric;
-pub use self::units::ascii_control;
-pub use self::units::ascii_digit;
-pub use self::units::ascii_graphic;
-pub use self::units::ascii_hexdigit;
-pub use self::units::ascii_lowercase;
-pub use self::units::ascii_punctuation;
-pub use self::units::ascii_uppercase;
-pub use self::units::ascii_whitespace;
-pub use self::units::control;
-pub use self::units::digit;
-pub use self::units::lowercase;
-pub use self::units::numeric;
-pub use self::units::uppercase;
-pub use self::units::whitespace;
-pub use self::units::wild;
-pub use self::units::word;
 pub use self::units::Alphabetic;
 pub use self::units::Alphanumeric;
 pub use self::units::Ascii;
@@ -98,9 +77,34 @@ pub use self::units::Uppercase;
 pub use self::units::WhiteSpace;
 pub use self::units::Wild;
 pub use self::units::Word;
+pub use self::units::alphabetic;
+pub use self::units::alphanumeric;
+pub use self::units::ascii;
+pub use self::units::ascii_alphabetic;
+pub use self::units::ascii_alphanumeric;
+pub use self::units::ascii_control;
+pub use self::units::ascii_digit;
+pub use self::units::ascii_graphic;
+pub use self::units::ascii_hexdigit;
+pub use self::units::ascii_lowercase;
+pub use self::units::ascii_punctuation;
+pub use self::units::ascii_uppercase;
+pub use self::units::ascii_whitespace;
+pub use self::units::control;
+pub use self::units::digit;
+pub use self::units::lowercase;
+pub use self::units::numeric;
+pub use self::units::uppercase;
+pub use self::units::whitespace;
+pub use self::units::wild;
+pub use self::units::word;
 
-pub trait Neu<T: ?Sized> {
+pub trait Neu<T> {
     fn is_match(&self, other: &T) -> bool;
+
+    fn min_length(&self) -> usize {
+        1
+    }
 }
 
 impl<T, F> Neu<T> for F
@@ -125,6 +129,10 @@ where
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("char", self, other, self == other)
     }
+
+    fn min_length(&self) -> usize {
+        self.len_utf8()
+    }
 }
 
 impl<T> Neu<T> for u8
@@ -142,6 +150,10 @@ impl<T> Neu<T> for Box<dyn Neu<T>> {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
     }
+
+    fn min_length(&self) -> usize {
+        self.as_ref().min_length()
+    }
 }
 
 impl<U, T> Neu<T> for RefCell<U>
@@ -150,6 +162,10 @@ where
 {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(&*self.borrow(), other)
+    }
+
+    fn min_length(&self) -> usize {
+        self.borrow().min_length()
     }
 }
 
@@ -160,6 +176,10 @@ where
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(&self.get(), other)
     }
+
+    fn min_length(&self) -> usize {
+        self.get().min_length()
+    }
 }
 
 impl<U, T> Neu<T> for Mutex<U>
@@ -169,9 +189,15 @@ where
     fn is_match(&self, other: &T) -> bool {
         let ret = self
             .lock()
-            .expect("Oops ?! Can not unwrap mutex for regex ...");
+            .expect("Oops ?! Can not unwrap mutex for Neu ...");
 
         Neu::is_match(&*ret, other)
+    }
+
+    fn min_length(&self) -> usize {
+        self.lock()
+            .expect("Oops ?! Can not unwrap mutex for Neu ...")
+            .min_length()
     }
 }
 
@@ -182,11 +208,19 @@ where
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
     }
+
+    fn min_length(&self) -> usize {
+        self.as_ref().min_length()
+    }
 }
 
 impl<T> Neu<T> for Arc<dyn Neu<T>> {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
+    }
+
+    fn min_length(&self) -> usize {
+        self.as_ref().min_length()
     }
 }
 
@@ -197,11 +231,19 @@ where
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
     }
+
+    fn min_length(&self) -> usize {
+        self.as_ref().min_length()
+    }
 }
 
 impl<T> Neu<T> for Rc<dyn Neu<T>> {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
+    }
+
+    fn min_length(&self) -> usize {
+        self.as_ref().min_length()
     }
 }
 
@@ -301,7 +343,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, T: 'a + ?Sized + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
+impl<'a, T: 'a + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound<&'a T>) {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("bound(&T)", self, other, self.contains(other))
@@ -452,7 +494,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: ?Sized + PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
+impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_full", self, other, self.contains(&other))

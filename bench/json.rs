@@ -63,7 +63,7 @@ mod neure_json {
                 let digit = neu::range(b'0'..=b'9').many1();
                 let dec = b".".then(digit).pat();
                 let num = sign.then(digit).then(dec.or(regex::empty()));
-                let num = ctor::Wrap::dyn_box(
+                let num = ctor::Adapter::dyn_box(
                     num.pat()
                         .try_map(to_str)
                         .try_map(map::from_str::<f64>())
@@ -80,7 +80,7 @@ mod neure_json {
                     .or(escape)
                     .repeat(0..)
                     .pat();
-                let str = ctor::Wrap::dyn_box(
+                let str = ctor::Adapter::dyn_box(
                     str_val
                         .try_map(to_str)
                         .try_map(map::from_str::<String>())
@@ -93,7 +93,7 @@ mod neure_json {
                 let empty = regex::lit_slice(b"empty").try_map(|_| Ok(Json::Null));
 
                 let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
-                let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
+                let ele = ctor::Adapter::rc(ele.suffix(ws).prefix(ws));
 
                 let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+)
                     .try_map(to_str)
@@ -102,7 +102,7 @@ mod neure_json {
                 let key = key.suffix(ws).prefix(ws);
                 let obj = key.sep_once(b":", ele.clone());
                 let obj = obj.sep(b",").enclose(b"{", b"}").map(Json::Object);
-                let obj = ctor::Wrap::dyn_box(obj);
+                let obj = ctor::Adapter::dyn_box(obj);
 
                 let array = ele.sep(b",").enclose(b"[", b"]");
                 let array = array.try_map(|v| Ok(Json::Array(v)));
@@ -133,7 +133,7 @@ mod neure_json_zero {
                 let digit = neu::range(b'0'..=b'9').many1();
                 let dec = b".".then(digit).pat();
                 let num = sign.then(digit).then(dec.or(regex::empty()));
-                let num = ctor::Wrap::dyn_box(num.pat()).try_map(&Self::to_digit);
+                let num = ctor::Adapter::dyn_box(num.pat()).try_map(&Self::to_digit);
 
                 let escape = neu!((b'\r', b'\t', b'\n', b'\\', b'\"'));
                 let escape = b'\\'.then(escape);
@@ -145,7 +145,7 @@ mod neure_json_zero {
                     .or(escape)
                     .repeat(0..)
                     .pat();
-                let str = ctor::Wrap::dyn_box(str_val.enclose(b"\"", b"\""));
+                let str = ctor::Adapter::dyn_box(str_val.enclose(b"\"", b"\""));
                 let str = str.try_map(|v| Ok(JsonZero::Str(v)));
 
                 let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
@@ -153,16 +153,16 @@ mod neure_json_zero {
                 let empty = regex::lit_slice(b"empty").try_map(|_| Ok(JsonZero::Null));
 
                 let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
-                let ele = ctor::Wrap::rc(ele.suffix(ws).prefix(ws));
+                let ele = ctor::Adapter::rc(ele.suffix(ws).prefix(ws));
 
                 let key = regex!((u8::is_ascii_alphabetic.or(u8::is_ascii_digit), b'_')+);
                 let key = key.enclose(b"\"", b"\"");
                 let key = key.suffix(ws).prefix(ws);
                 let obj = key.sep_once(b":", ele.clone());
-                let obj = ctor::Wrap::dyn_box(obj.sep(b",").enclose(b"{", b"}"))
+                let obj = ctor::Adapter::dyn_box(obj.sep(b",").enclose(b"{", b"}"))
                     .try_map(|v| Ok(JsonZero::Object(v)));
 
-                let array = ctor::Wrap::dyn_box(ele.sep(b",").enclose(b"[", b"]"));
+                let array = ctor::Adapter::dyn_box(ele.sep(b",").enclose(b"[", b"]"));
                 let array = array.try_map(|v| Ok(JsonZero::Array(v)));
 
                 obj.or(array)

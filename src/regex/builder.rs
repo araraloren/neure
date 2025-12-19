@@ -2,8 +2,8 @@ use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
+use crate::regex::Adapter;
 use crate::regex::Regex;
-use crate::regex::Wrap;
 
 ///
 /// [`into_regex_builder`] can dynamically construct a new regex based on the [`Span`]
@@ -34,7 +34,7 @@ use crate::regex::Wrap;
 ///     Ok(())
 /// # }
 /// ```
-pub fn into_regex_builder<'a, C, P, T, F>(pat: P, func: F) -> Wrap<impl Regex<C>, C>
+pub fn into_regex_builder<'a, C, P, T, F>(pat: P, func: F) -> Adapter<C, impl Regex<C>>
 where
     P: Regex<C>,
     T: Regex<C>,
@@ -57,7 +57,7 @@ where
         crate::debug_regex_reval!("into_regex_builder", ret)
     };
 
-    Wrap::new(regex)
+    Adapter::new(regex)
 }
 
 pub trait DynamicRegexBuilderHelper<'a, C>
@@ -65,7 +65,7 @@ where
     Self: Sized,
     C: Match<'a>,
 {
-    fn into_regex_builder<F, R>(self, func: F) -> Wrap<impl Regex<C>, C>
+    fn into_regex_builder<F, R>(self, func: F) -> Adapter<C, impl Regex<C>>
     where
         R: Regex<C>,
         F: Fn(&mut C, &Span) -> Result<R, Error>;
@@ -76,7 +76,7 @@ where
     Self: Regex<C> + Sized,
     C: Match<'a>,
 {
-    fn into_regex_builder<F, R>(self, func: F) -> Wrap<impl Regex<C>, C>
+    fn into_regex_builder<F, R>(self, func: F) -> Adapter<C, impl Regex<C>>
     where
         R: Regex<C>,
         F: Fn(&mut C, &Span) -> Result<R, Error>,

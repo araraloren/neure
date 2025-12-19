@@ -235,34 +235,34 @@ where
 /// - `V` must implement [`Clone`] for Ctor mode (to return owned values)
 /// - All expressions must produce values of the same type in [`Ctor`] mode
 #[derive(Debug, Clone)]
-pub struct PairVector<K, V>(Vec<(K, V)>);
+pub struct PairVector<T, V>(Vec<(T, V)>);
 
-impl_not_for_regex!(PairVector<K, V>);
+impl_not_for_regex!(PairVector<T, V>);
 
-impl<K, V> PairVector<K, V> {
-    pub fn new(val: Vec<(K, V)>) -> Self {
+impl<T, V> PairVector<T, V> {
+    pub fn new(val: Vec<(T, V)>) -> Self {
         Self(val)
     }
 }
 
-impl<K, V> Deref for PairVector<K, V> {
-    type Target = Vec<(K, V)>;
+impl<T, V> Deref for PairVector<T, V> {
+    type Target = Vec<(T, V)>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<K, V> DerefMut for PairVector<K, V> {
+impl<T, V> DerefMut for PairVector<T, V> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a, C, K, O, V, H> Ctor<'a, C, (O, V), H> for PairVector<K, V>
+impl<'a, C, T, O, V, H> Ctor<'a, C, (O, V), H> for PairVector<T, V>
 where
     V: Clone,
-    K: Ctor<'a, C, O, H>,
+    T: Ctor<'a, C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
@@ -286,9 +286,9 @@ where
     }
 }
 
-impl<'a, C, K, V> Regex<C> for PairVector<K, V>
+impl<'a, C, T, V> Regex<C> for PairVector<T, V>
 where
-    K: Regex<C>,
+    T: Regex<C>,
     C: Match<'a>,
 {
     #[inline(always)]
