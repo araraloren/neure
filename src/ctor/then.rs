@@ -442,22 +442,29 @@ where
 
         debug_ctor_beg!("IfThen", ctx.beg());
 
-        let r_l = debug_ctor_stage!("IfThen", "l", self.left.construct(ctx.ctx(), func));
-        let r_l = ctx.process_ret(r_l)?;
-        let r_i = debug_ctor_stage!("IfThen", "test", ctx.try_mat(&self.test));
-        let ret = if r_i.is_ok() {
-            let r_r = debug_ctor_stage!("IfThen", "r", self.right.construct(ctx.ctx(), func));
-            let r_r = ctx.process_ret(r_r)?;
+        let l = debug_ctor_stage!("IfThen", "l", self.left.construct(ctx.ctx(), func));
+        let l = ctx.process_ret(l)?;
+
+        // reset offset if test failed
+        let test = {
+            let mut if_ctx = CtxGuard::new(ctx.ctx());
+
+            debug_ctor_stage!("IfThen", "test", if_ctx.try_mat(&self.test)).is_ok()
+        };
+
+        let pair = if test {
+            let r = debug_ctor_stage!("IfThen", "r", self.right.construct(ctx.ctx(), func));
+            let r = ctx.process_ret(r)?;
 
             // if matched, return (01, Some(O2))
-            (r_l, Some(r_r))
+            (l, Some(r))
         } else {
             // not matched, return None
-            (r_l, None)
+            (l, None)
         };
 
         debug_ctor_reval!("IfThen", ctx.beg(), ctx.end(), true);
-        Ok(ret)
+        Ok(pair)
     }
 }
 
@@ -476,7 +483,14 @@ where
 
         let mut ret = debug_regex_stage!("IfThen", "l", ctx.try_mat(&self.left)?);
 
-        if let Ok(span) = debug_regex_stage!("IfThen", "test", ctx.try_mat(&self.test)) {
+        // reset offset if test failed
+        let span = {
+            let mut if_ctx = CtxGuard::new(ctx.ctx());
+
+            debug_regex_stage!("IfThen", "test", if_ctx.try_mat(&self.test))
+        };
+
+        if let Ok(span) = span {
             ret.add_assign(span);
             ret.add_assign(debug_regex_stage!("IfThen", "r", ctx.try_mat(&self.right)?));
         }

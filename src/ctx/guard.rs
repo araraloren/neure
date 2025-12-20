@@ -91,8 +91,8 @@ where
     C: Match<'a>,
 {
     pub fn try_mat<P: Regex<C> + ?Sized>(&mut self, pattern: &P) -> Result<Span, Error> {
-        self.ctx.try_mat(pattern).inspect(|_| {
-            self.reset = false;
+        self.ctx.try_mat(pattern).inspect_err(|_| {
+            self.reset = true;
         })
     }
 }
