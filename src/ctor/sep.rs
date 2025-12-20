@@ -83,7 +83,7 @@ use crate::debug_regex_reval;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct SepOnce<C, L, S, R> {
     left: L,
     sep: S,
@@ -105,6 +105,22 @@ where
             .field("sep", &self.sep)
             .field("right", &self.right)
             .finish()
+    }
+}
+
+impl<C, L, S, R> Default for SepOnce<C, L, S, R>
+where
+    L: Default,
+    S: Default,
+    R: Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            sep: Default::default(),
+            right: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -303,7 +319,7 @@ where
 /// - Set `capacity` close to expected element count
 /// - Use tight `min` bounds to fail early on invalid inputs
 /// - Prefer `skip(true)` for more common formats (avoids extra separator checks)
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Separate<C, P, S> {
     pat: P,
     sep: S,
@@ -328,6 +344,23 @@ where
             .field("capacity", &self.capacity)
             .field("min", &self.min)
             .finish()
+    }
+}
+
+impl<C, P, S> Default for Separate<C, P, S>
+where
+    P: Default,
+    S: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            sep: Default::default(),
+            skip: Default::default(),
+            capacity: Default::default(),
+            min: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -591,7 +624,7 @@ where
 ///
 /// `SepCollect` will always succeed if the minimum size is 0, be careful to use it with other `.sep` faimly APIs.
 /// The default size is 1.
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct SepCollect<C, P, S, O, V> {
     pat: P,
     sep: S,
@@ -614,6 +647,22 @@ where
             .field("skip", &self.skip)
             .field("min", &self.min)
             .finish()
+    }
+}
+
+impl<C, P, S, O, V> Default for SepCollect<C, P, S, O, V>
+where
+    P: Default,
+    S: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            sep: Default::default(),
+            skip: Default::default(),
+            min: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

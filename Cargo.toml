@@ -51,6 +51,12 @@ name = "json"
 path = "./bench/json.rs"
 harness = false
 
+
+[[bench]]
+name = "find"
+path = "./bench/find.rs"
+harness = false
+
 [package.metadata.docs.rs]
 all-features = true
 cargo-args = [

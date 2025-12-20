@@ -47,6 +47,7 @@ pub mod prelude {
     pub use crate::neu::NeuIntoRegexOps;
     pub use crate::neu::NeuOp;
     pub use crate::regex;
+    pub use crate::regex::AsCtor;
     pub use crate::regex::Regex;
     pub use crate::regex::RegexIntoHelper;
     pub use crate::span::SimpleStorer;

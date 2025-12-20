@@ -99,6 +99,20 @@ where
     }
 }
 
+impl<C, P> Default for Repeat<C, P>
+where
+    P: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            range: Default::default(),
+            capacity: Default::default(),
+            marker: Default::default(),
+        }
+    }
+}
+
 impl<C, P> Clone for Repeat<C, P>
 where
     P: Clone,

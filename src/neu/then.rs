@@ -81,6 +81,22 @@ where
     }
 }
 
+impl<C, L, R, T, I> Default for NeureThen<C, L, R, T, I>
+where
+    I: Default,
+    L: Neu<T> + Default,
+    R: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            right: Default::default(),
+            cond: Default::default(),
+            marker: Default::default(),
+        }
+    }
+}
+
 impl<C, L, R, T, I> Clone for NeureThen<C, L, R, T, I>
 where
     I: Clone,

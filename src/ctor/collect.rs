@@ -71,7 +71,7 @@ use crate::regex::impl_not_for_regex;
 /// This combinator is greedy - it will continue matching until the pattern fails.
 /// It does not backtrack between matches. If minimum requirements aren't met,
 /// the context position is reset to the starting point.
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Collect<C, P, O, V> {
     pat: P,
     min: usize,
@@ -89,6 +89,19 @@ where
             .field("pat", &self.pat)
             .field("min", &self.min)
             .finish()
+    }
+}
+
+impl<C, P, O, V> Default for Collect<C, P, O, V>
+where
+    P: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            min: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

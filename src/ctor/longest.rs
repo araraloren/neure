@@ -94,7 +94,7 @@ use crate::regex::impl_not_for_regex;
 /// Both patterns are always fully attempted, so the performance cost is the sum of both
 /// pattern evaluations. For optimal performance, place the more frequently occurring pattern
 /// or the faster-to-evaluate pattern first (as the `left` parameter).
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct LongestTokenMatch<C, L, R> {
     left: L,
     right: R,
@@ -113,6 +113,20 @@ where
             .field("left", &self.left)
             .field("right", &self.right)
             .finish()
+    }
+}
+
+impl<C, L, R> Default for LongestTokenMatch<C, L, R>
+where
+    L: Default,
+    R: Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            right: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

@@ -61,7 +61,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct EmptyCond;
 
 impl<'a, C> NeuCond<'a, C> for EmptyCond

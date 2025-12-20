@@ -28,7 +28,7 @@ use super::Neu;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Not<U, T>
 where
     U: Neu<T>,
@@ -43,6 +43,18 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Not").field("unit", &self.unit).finish()
+    }
+}
+
+impl<U, T> Default for Not<U, T>
+where
+    U: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            unit: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -93,6 +105,10 @@ where
         let ret = !self.unit.is_match(other);
 
         crate::trace_retval!("Not", other, ret)
+    }
+
+    fn min_length(&self) -> usize {
+        self.unit.min_length()
     }
 }
 

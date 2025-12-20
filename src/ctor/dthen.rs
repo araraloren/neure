@@ -91,7 +91,7 @@ use crate::regex::impl_not_for_regex;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct DynamicCtorThenBuilder<C, P, F> {
     pat: P,
     func: F,
@@ -110,6 +110,20 @@ where
             .field("pat", &self.pat)
             .field("func", &self.func)
             .finish()
+    }
+}
+
+impl<C, P, F> Default for DynamicCtorThenBuilder<C, P, F>
+where
+    P: Default,
+    F: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            func: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

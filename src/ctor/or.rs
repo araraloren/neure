@@ -111,7 +111,7 @@ use crate::regex::impl_not_for_regex;
 /// - Place more frequently occurring patterns first
 /// - Place cheaper-to-evaluate patterns first
 /// - Avoid expensive patterns on the right side when possible
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Or<C, L, R> {
     left: L,
     right: R,
@@ -130,6 +130,20 @@ where
             .field("left", &self.left)
             .field("right", &self.right)
             .finish()
+    }
+}
+
+impl<C, L, R> Default for Or<C, L, R>
+where
+    L: Default,
+    R: Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            right: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

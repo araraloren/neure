@@ -103,7 +103,7 @@ use crate::regex::impl_not_for_regex;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Then<C, L, R> {
     left: L,
     right: R,
@@ -122,6 +122,20 @@ where
             .field("left", &self.left)
             .field("right", &self.right)
             .finish()
+    }
+}
+
+impl<C, L, R> Default for Then<C, L, R>
+where
+    L: Default,
+    R: Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            right: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -295,7 +309,7 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct IfThen<C, L, I, R> {
     left: L,
     test: I,
@@ -317,6 +331,22 @@ where
             .field("test", &self.test)
             .field("right", &self.right)
             .finish()
+    }
+}
+
+impl<C, L, I, R> Default for IfThen<C, L, I, R>
+where
+    L: Default,
+    R: Default,
+    I: Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            test: Default::default(),
+            right: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

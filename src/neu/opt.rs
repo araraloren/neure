@@ -95,6 +95,20 @@ where
     }
 }
 
+impl<C, U, T, I> Default for Opt<C, U, T, I>
+where
+    I: Default,
+    U: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            unit: Default::default(),
+            cond: Default::default(),
+            marker: Default::default(),
+        }
+    }
+}
+
 impl<C, U, T, I> Clone for Opt<C, U, T, I>
 where
     I: Clone,
@@ -269,6 +283,20 @@ where
             .field("unit", &self.unit)
             .field("cond", &self.cond)
             .finish()
+    }
+}
+
+impl<C, U, T, I> Default for Many0<C, U, T, I>
+where
+    I: Default,
+    U: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            unit: Default::default(),
+            cond: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

@@ -20,7 +20,7 @@ use crate::regex::impl_not_for_regex;
 /// # Ctor
 ///
 /// Delegates all operations to the inner value (fully functional).
-#[derive(Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy)]
 pub struct Adapter<C, I> {
     inner: I,
     marker: PhantomData<C>,
@@ -33,6 +33,15 @@ impl<I: Debug, C> Debug for Adapter<C, I> {
         f.debug_struct("Adapter")
             .field("inner", &self.inner)
             .finish()
+    }
+}
+
+impl<I: Default, C> Default for Adapter<C, I> {
+    fn default() -> Self {
+        Self {
+            inner: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -440,6 +449,15 @@ where
         Self {
             inner: self.inner.clone(),
             marker: self.marker,
+        }
+    }
+}
+
+impl<I: Default, C> Default for BoxAdapter<C, I> {
+    fn default() -> Self {
+        Self {
+            inner: Default::default(),
+            marker: Default::default(),
         }
     }
 }

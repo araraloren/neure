@@ -1,4 +1,5 @@
 use std::cell::Cell;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::AtomicUsize;
@@ -8,7 +9,6 @@ use super::Neu;
 
 use crate::MayDebug;
 
-#[derive(Debug, Default)]
 pub struct Prefix<U, P, T>
 where
     U: Neu<T>,
@@ -19,6 +19,37 @@ where
     count: Cell<usize>,
     value: Cell<bool>,
     marker: PhantomData<T>,
+}
+
+impl<U, P, T> Debug for Prefix<U, P, T>
+where
+    U: Neu<T> + Debug,
+    P: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Prefix")
+            .field("prefix", &self.prefix)
+            .field("unit", &self.unit)
+            .field("count", &self.count)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl<U, P, T> Default for Prefix<U, P, T>
+where
+    U: Neu<T> + Default,
+    P: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            prefix: Default::default(),
+            unit: Default::default(),
+            count: Default::default(),
+            value: Default::default(),
+            marker: Default::default(),
+        }
+    }
 }
 
 impl<U, P, T> Clone for Prefix<U, P, T>
@@ -106,6 +137,10 @@ where
         }
 
         value
+    }
+
+    fn min_length(&self) -> usize {
+        0
     }
 }
 
@@ -228,7 +263,6 @@ where
     Prefix::new(prefix, n, unit)
 }
 
-#[derive(Debug, Default)]
 pub struct PrefixSync<U, P, T>
 where
     U: Neu<T>,
@@ -239,6 +273,37 @@ where
     count: AtomicUsize,
     value: AtomicBool,
     marker: PhantomData<T>,
+}
+
+impl<U, P, T> Debug for PrefixSync<U, P, T>
+where
+    U: Neu<T> + Debug,
+    P: Neu<T> + Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrefixSync")
+            .field("prefix", &self.prefix)
+            .field("unit", &self.unit)
+            .field("count", &self.count)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl<U, P, T> Default for PrefixSync<U, P, T>
+where
+    U: Neu<T> + Default,
+    P: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            prefix: Default::default(),
+            unit: Default::default(),
+            count: Default::default(),
+            value: Default::default(),
+            marker: Default::default(),
+        }
+    }
 }
 
 impl<U, P, T> Clone for PrefixSync<U, P, T>
@@ -326,6 +391,10 @@ where
         }
 
         value
+    }
+
+    fn min_length(&self) -> usize {
+        0
     }
 }
 

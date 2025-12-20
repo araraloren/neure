@@ -14,6 +14,15 @@ pub struct CRange<T> {
     end: Bound<T>,
 }
 
+impl<T> Default for CRange<T> {
+    fn default() -> Self {
+        Self {
+            start: Bound::Unbounded,
+            end: Bound::Unbounded,
+        }
+    }
+}
+
 impl<T: PartialOrd + MayDebug> std::ops::Not for CRange<T> {
     type Output = crate::neu::Not<Self, T>;
 

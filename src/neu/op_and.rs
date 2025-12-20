@@ -29,7 +29,7 @@ use crate::MayDebug;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct And<L, R, T>
 where
     L: Neu<T>,
@@ -62,6 +62,20 @@ where
             .field("left", &self.left)
             .field("right", &self.right)
             .finish()
+    }
+}
+
+impl<L, R, T> Default for And<L, R, T>
+where
+    L: Neu<T> + Default,
+    R: Neu<T> + Default,
+{
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            right: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

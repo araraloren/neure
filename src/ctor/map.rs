@@ -116,7 +116,7 @@ use crate::regex::impl_not_for_regex;
 /// for failed matches. For optimal performance, ensure your mapping function is lightweight
 /// or consider moving heavy transformations outside the parsing phase.
 ///
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Map<C, P, F, O> {
     pat: P,
     mapper: F,
@@ -135,6 +135,20 @@ where
             .field("pat", &self.pat)
             .field("mapper", &self.mapper)
             .finish()
+    }
+}
+
+impl<C, P, F, O> Default for Map<C, P, F, O>
+where
+    P: Default,
+    F: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            mapper: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

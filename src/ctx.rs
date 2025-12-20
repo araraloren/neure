@@ -224,6 +224,37 @@ where
 }
 
 pub trait MatchMulti<'a>: Sized + Match<'a> {
+    fn find<P>(&mut self, pat: P) -> Option<Span>
+    where
+        P: Regex<Self>,
+    {
+        self.find_with(pat, |ctx, val| match val {
+            Ok(val) if !val.is_empty() => Some(val),
+            _ => {
+                ctx.inc(1);
+                None
+            }
+        })
+    }
+
+    fn find_with<P, F>(&mut self, pat: P, mut handler: F) -> Option<Span>
+    where
+        P: Regex<Self>,
+        F: FnMut(&mut Self, Result<Span, Error>) -> Option<Span>,
+    {
+        let mut next = None;
+
+        while self.offset() < self.len() {
+            let ret = self.try_mat(&pat);
+
+            if let Some(span) = handler(self, ret) {
+                next = Some(span);
+                break;
+            }
+        }
+        next
+    }
+
     fn find_all<P>(&mut self, pat: P) -> impl Iterator<Item = Span>
     where
         P: Regex<Self>,

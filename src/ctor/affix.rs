@@ -113,6 +113,20 @@ where
     }
 }
 
+impl<C, P, T> Default for Suffix<C, P, T>
+where
+    P: Default,
+    T: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            suffix: Default::default(),
+            marker: Default::default(),
+        }
+    }
+}
+
 impl<C, P, T> Clone for Suffix<C, P, T>
 where
     P: Clone,
@@ -299,6 +313,20 @@ where
             .field("pat", &self.pat)
             .field("prefix", &self.prefix)
             .finish()
+    }
+}
+
+impl<C, P, T> Default for Prefix<C, P, T>
+where
+    P: Default,
+    T: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            prefix: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

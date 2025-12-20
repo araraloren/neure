@@ -82,7 +82,7 @@ use crate::regex::impl_not_for_regex;
 /// The optional pattern adds minimal overhead. When the inner pattern fails, the context guard
 /// efficiently restores the position without additional allocations. The zero-cost abstraction
 /// principles of Rust ensure this combinator has performance comparable to manual optional handling.
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct OptionPat<C, P> {
     pat: P,
     marker: PhantomData<C>,
@@ -96,6 +96,18 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("OptionPat").field("pat", &self.pat).finish()
+    }
+}
+
+impl<C, P> Default for OptionPat<C, P>
+where
+    P: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

@@ -14,8 +14,8 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 //
 /// Wraps a pattern between opening and closing delimiters, forming a boundary-enclosed structure.
@@ -92,7 +92,7 @@ use crate::regex::Regex;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Enclose<C, P, L, R> {
     pat: P,
     open: L,
@@ -114,6 +114,22 @@ where
             .field("open", &self.open)
             .field("close", &self.close)
             .finish()
+    }
+}
+
+impl<C, P, L, R> Default for Enclose<C, P, L, R>
+where
+    P: Default,
+    L: Default,
+    R: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            open: Default::default(),
+            close: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -183,7 +199,7 @@ impl<C, P, L, R> Enclose<C, P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P,  O, H> Ctor<'a, C, O, H> for Enclose<C, P, L, R>
+impl<'a, C, L, R, P, O, H> Ctor<'a, C, O, H> for Enclose<C, P, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,

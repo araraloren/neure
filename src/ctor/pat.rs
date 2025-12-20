@@ -7,8 +7,8 @@ use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Adapts a [`Regex`]-only pattern to be usable in [`Ctor`] contexts by providing span-to-value conversion.
@@ -63,7 +63,7 @@ use crate::regex::Regex;
 /// - Use simple handlers for high-frequency patterns
 /// - Avoid expensive string allocations in handlers when possible
 /// - Consider caching handler logic for repeated pattern usage
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Pattern<C, P> {
     pat: P,
     marker: PhantomData<C>,
@@ -77,6 +77,18 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Pattern").field("pat", &self.pat).finish()
+    }
+}
+
+impl<C, P> Default for Pattern<C, P>
+where
+    P: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 

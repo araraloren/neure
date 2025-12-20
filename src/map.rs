@@ -19,7 +19,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Mapper<F> {
     func: F,
 }
@@ -43,7 +43,7 @@ pub fn mapper<F>(func: F) -> Mapper<F> {
     Mapper::new(func)
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Select0;
 
 impl Select0 {
@@ -62,7 +62,7 @@ pub fn select0() -> Select0 {
     Select0::new()
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Select1;
 
 impl Select1 {
@@ -81,7 +81,7 @@ pub fn select1() -> Select1 {
     Select1::new()
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct SelectEq;
 
 impl SelectEq {
@@ -107,7 +107,7 @@ pub fn select_eq() -> SelectEq {
     SelectEq::new()
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromStr<T>(PhantomData<T>);
 
 impl<T> Clone for FromStr<T> {
@@ -144,7 +144,7 @@ pub fn from_str<T>() -> FromStr<T> {
     FromStr::new()
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct MapInto<T>(PhantomData<T>);
 
 impl<T> Clone for MapInto<T> {
@@ -178,7 +178,7 @@ pub fn into<T>() -> MapInto<T> {
     MapInto::new()
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct MapTryInto<T>(PhantomData<T>);
 
 impl<T> Clone for MapTryInto<T> {
@@ -241,7 +241,7 @@ impl_from_str_radix!(u32);
 impl_from_str_radix!(u64);
 impl_from_str_radix!(usize);
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromStrRadix<T> {
     radix: u32,
     marker: PhantomData<T>,
@@ -297,7 +297,7 @@ pub fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
     FromStrRadix::new(radix)
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromUtf8<T>(PhantomData<T>);
 
 impl<T> FromUtf8<T> {
@@ -335,7 +335,7 @@ pub fn from_utf8<T>() -> FromUtf8<T> {
     FromUtf8::default()
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromUtf8Lossy<T>(PhantomData<T>);
 
 impl<T> FromUtf8Lossy<T> {
@@ -367,7 +367,7 @@ pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
     FromUtf8Lossy::default()
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromLeBytes<T>(PhantomData<T>);
 
 impl<T> FromLeBytes<T> {
@@ -392,7 +392,7 @@ impl<T> Default for FromLeBytes<T> {
     }
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromBeBytes<T>(PhantomData<T>);
 
 impl<T> FromBeBytes<T> {
@@ -417,7 +417,7 @@ impl<T> Default for FromBeBytes<T> {
     }
 }
 
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy)]
 pub struct FromNeBytes<T>(PhantomData<T>);
 
 impl<T> FromNeBytes<T> {

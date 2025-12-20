@@ -14,8 +14,8 @@ use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::debug_regex_stage;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Conditional branching combinator that selects between two patterns based on a test function.
@@ -96,7 +96,7 @@ use crate::regex::Regex;
 /// The test function is evaluated exactly once per branch attempt. Both patterns are only
 /// compiled and stored, not executed, until needed. This makes branch selection very efficient,
 /// especially when the test function is simple.
-#[derive(Default, Copy)]
+#[derive(Copy)]
 pub struct Branch<C, P, F, E> {
     pat: P,
     test: F,
@@ -118,6 +118,22 @@ where
             .field("test", &self.test)
             .field("other", &self.other)
             .finish()
+    }
+}
+
+impl<C, P, F, E> Default for Branch<C, P, F, E>
+where
+    P: Default,
+    F: Default,
+    E: Default,
+{
+    fn default() -> Self {
+        Self {
+            pat: Default::default(),
+            test: Default::default(),
+            other: Default::default(),
+            marker: Default::default(),
+        }
     }
 }
 
@@ -187,7 +203,7 @@ impl<C, P, F, E> Branch<C, P, F, E> {
     }
 }
 
-impl<'a, C, P, F, E,  O, H> Ctor<'a, C, O, H> for Branch<C, P, F, E>
+impl<'a, C, P, F, E, O, H> Ctor<'a, C, O, H> for Branch<C, P, F, E>
 where
     P: Ctor<'a, C, O, H>,
     E: Ctor<'a, C, O, H>,

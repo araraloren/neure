@@ -30,7 +30,7 @@ macro_rules! setup_unit_ty {
 
 macro_rules! setup_unit_ty2 {
     ($name:ident, $debug:literal, $func:ident) => {
-        #[derive(Debug, Clone, Default, Copy)]
+        #[derive(Copy)]
         pub struct $name<T>(std::marker::PhantomData<T>);
 
         impl<T> std::ops::Not for $name<T>
@@ -41,6 +41,24 @@ macro_rules! setup_unit_ty2 {
 
             fn not(self) -> Self::Output {
                 crate::neu::not(self)
+            }
+        }
+
+        impl<T> std::fmt::Debug for $name<T> {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.debug_struct($debug).finish()
+            }
+        }
+
+        impl<T> Default for $name<T> {
+            fn default() -> Self {
+                Self(Default::default())
+            }
+        }
+
+        impl<T> Clone for $name<T> {
+            fn clone(&self) -> Self {
+                Self(self.0)
             }
         }
 
