@@ -4,17 +4,17 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::neu::EmptyCond;
+use crate::neu::calc_length;
 use crate::regex::Regex;
 
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
-use super::length_of;
 
 ///
 /// Matches a single context-sensitive element using combined pattern and condition checks.
@@ -163,10 +163,9 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(self);
+        let ret = ctx.try_mat(self);
 
-        func.invoke(g.ctx(), &ret?).map_err(Into::into)
+        func.invoke(ctx, &ret?).map_err(Into::into)
     }
 }
 
@@ -178,20 +177,20 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::Once);
         let mut iter = ctx.peek()?;
+        let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("Once", ctx.beg());
+        crate::debug_regex_beg!("Once", ctx.offset());
         if let Some((offset, item)) = iter.next()
             && self.unit.is_match(&item)
-            && self.cond.check(ctx.ctx(), &(offset, item))?
+            && self.cond.check(ctx, &(offset, item))?
         {
-            let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
+            let len = calc_length(Some(offset), iter.next().map(|v| v.0), remaining_len);
 
-            ret = Ok(ctx.inc(len));
+            ret = Ok(new_span_inc(ctx, len));
         }
-        crate::debug_regex_reval!("Once", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Once", ret)
     }
 }
 
@@ -352,10 +351,9 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(self);
+        let ret = ctx.try_mat(self);
 
-        func.invoke(g.ctx(), &ret?).map_err(Into::into)
+        func.invoke(ctx, &ret?).map_err(Into::into)
     }
 }
 
@@ -367,15 +365,15 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let mut beg = None;
         let mut end = None;
         let mut ret = Err(Error::Many1);
         let mut iter = ctx.peek()?;
+        let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("Many1", ctx.beg());
+        crate::debug_regex_beg!("Many1", ctx.offset());
         for pair in iter.by_ref() {
-            if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
+            if !self.unit.is_match(&pair.1) || !self.cond.check(ctx, &pair)? {
                 end = Some(pair);
                 break;
             }
@@ -385,10 +383,10 @@ where
         }
 
         if let Some(start) = beg {
-            let len = length_of(start, ctx.ctx(), end.map(|v| v.0));
+            let len = calc_length(Some(start), end.map(|v| v.0), remaining_len);
 
-            ret = Ok(ctx.inc(len))
+            ret = Ok(new_span_inc(ctx, len));
         }
-        crate::debug_regex_reval!("Many1", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Many1", ret)
     }
 }

@@ -1,7 +1,6 @@
 use std::ops::Deref;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::debug_ctor_beg;
@@ -121,19 +120,19 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::Slice);
 
-        debug_ctor_beg!("Slice", g.beg());
+        debug_ctor_beg!("Slice", offset);
         for regex in self.0.iter() {
-            if let Ok(res) = regex.construct(g.ctx(), func) {
+            if let Ok(res) = regex.construct(ctx, func).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
                 ret = Ok(res);
                 break;
-            } else {
-                g.reset();
             }
         }
-        debug_ctor_reval!("Slice", g.beg(), g.end(), ret.is_ok());
+        debug_ctor_reval!("Slice", offset, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -145,16 +144,16 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::Slice);
 
-        debug_regex_beg!("Slice", g.beg());
+        debug_regex_beg!("Slice", offset);
         for regex in self.0.iter() {
-            if let Ok(res) = g.try_mat(regex) {
+            if let Ok(res) = ctx.try_mat(regex).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
                 ret = Ok(res);
                 break;
-            } else {
-                g.reset();
             }
         }
         debug_regex_reval!("Slice", ret)
@@ -278,19 +277,19 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::PairSlice);
 
-        debug_ctor_beg!("PairSlice", g.beg());
+        debug_ctor_beg!("PairSlice", offset);
         for (regex, value) in self.0.iter() {
-            if let Ok(res) = regex.construct(g.ctx(), func) {
+            if let Ok(res) = regex.construct(ctx, func).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
                 ret = Ok((res, value.clone()));
                 break;
-            } else {
-                g.reset();
             }
         }
-        debug_ctor_reval!("PairSlice", g.beg(), g.end(), ret.is_ok());
+        debug_ctor_reval!("PairSlice", offset, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -302,15 +301,15 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::PairSlice);
 
-        debug_regex_beg!("PairSlice", g.beg());
+        debug_regex_beg!("PairSlice", offset);
         for (regex, _) in self.0.iter() {
-            if let Ok(res) = g.try_mat(regex) {
+            if let Ok(res) = ctx.try_mat(regex).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
                 ret = Ok(res);
-            } else {
-                g.reset();
             }
         }
         debug_regex_reval!("PairSlice", ret)

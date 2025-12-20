@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::debug_ctor_beg;
@@ -153,13 +152,18 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<Option<O>, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_ctor_beg!("OptionPat", g.beg());
-        let ret = self.pat.construct(g.ctx(), func);
-        let ret = g.process_ret(ret).ok();
+        debug_ctor_beg!("OptionPat", offset);
+        let ret = self
+            .pat
+            .construct(ctx, func)
+            .inspect_err(|_| {
+                ctx.set_offset(offset);
+            })
+            .ok();
 
-        debug_ctor_reval!("OptionPat", g.beg(), g.end(), ret.is_some());
+        debug_ctor_reval!("OptionPat", offset, ctx.offset(), ret.is_some());
         Ok(ret)
     }
 }
@@ -171,11 +175,17 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        debug_regex_beg!("OptionPat", ctx.offset());
+        let offset = ctx.offset();
 
-        let ret = ctx.try_mat(&self.pat);
-        let ret = ret.unwrap_or(Span::new(ctx.offset(), 0));
+        debug_regex_beg!("OptionPat", offset);
 
-        debug_regex_reval!("OptionPat", Ok(ret))
+        let ret = ctx
+            .try_mat(&self.pat)
+            .inspect_err(|_| {
+                ctx.set_offset(offset);
+            })
+            .or_else(|_| Ok(Span::new(offset, 0)));
+
+        debug_regex_reval!("OptionPat", ret)
     }
 }

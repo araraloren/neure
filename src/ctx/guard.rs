@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::regex::Regex;
 
@@ -43,9 +44,9 @@ where
         self.ctx.offset()
     }
 
-    pub(crate) fn remaining_len(&self) -> usize {
-        self.ctx.len() - self.beg()
-    }
+    // pub(crate) fn remaining_len(&self) -> usize {
+    //     self.ctx.len() - self.beg()
+    // }
 
     pub fn len(&self) -> usize {
         self.ctx.len()
@@ -61,10 +62,7 @@ where
 
     // Return `Span { beg: self.beg(), len }` and incrment the offset of `C`
     pub fn inc(&mut self, len: usize) -> Span {
-        let span = Span::new(self.beg(), len);
-
-        self.ctx.inc(len);
-        span
+        new_span_inc(self.ctx, len)
     }
 
     pub fn peek(&self) -> Result<<C as Context<'b>>::Iter<'b>, Error> {

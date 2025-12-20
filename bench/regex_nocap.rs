@@ -4,7 +4,7 @@ use ::regex::Regex;
 use criterion::Criterion;
 use neure::prelude::*;
 
-fn bench_color(c: &mut Criterion) {
+fn bench_email(c: &mut Criterion) {
     let test_cases = [
         "plainaddress",
         "#@%^%#$@#$@#.com",
@@ -44,7 +44,7 @@ fn bench_color(c: &mut Criterion) {
 criterion::criterion_group!(
     name = benches;
     config = Criterion::default().configure_from_args();
-    targets = bench_color
+    targets = bench_email
 );
 
 criterion::criterion_main!(benches);

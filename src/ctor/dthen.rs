@@ -209,28 +209,28 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        crate::debug_ctor_beg!("DynamicCtorThenBuilder", g.beg());
+        crate::debug_ctor_beg!("DynamicCtorThenBuilder", ctx.beg());
 
         let l = {
             debug_ctor_stage!(
                 "DynamicCtorThenBuilder",
                 "left",
-                self.pat.construct(g.ctx(), func)
+                self.pat.construct(ctx.ctx(), func)
             )
         };
-        let l = g.process_ret(l)?;
+        let l = ctx.process_ret(l)?;
         let r = {
             debug_ctor_stage!(
                 "DynamicCtorThenBuilder",
                 "right",
-                (self.func)(g.ctx(), &l)?.construct(g.ctx(), func)
+                (self.func)(ctx.ctx(), &l)?.construct(ctx.ctx(), func)
             )
         };
-        let r = g.process_ret(r)?;
+        let r = ctx.process_ret(r)?;
 
-        crate::debug_ctor_reval!("DynamicCtorThenBuilder", g.beg(), g.end(), true);
+        crate::debug_ctor_reval!("DynamicCtorThenBuilder", ctx.beg(), ctx.end(), true);
         Ok((l, r))
     }
 }

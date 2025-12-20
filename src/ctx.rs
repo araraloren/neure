@@ -133,10 +133,10 @@ where
     where
         Pat: Regex<Self> + ?Sized,
     {
-        let mut ctx = CtxGuard::new(self);
-        let ret = ctx.try_mat(pat);
+        let offset = self.offset();
+        let ret = self.try_mat(pat);
 
-        ctx.reset();
+        self.set_offset(offset);
         Ok(ret.is_ok())
     }
 }
@@ -300,3 +300,11 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
 }
 
 impl<'a, T> MatchMulti<'a> for T where Self: Sized + Match<'a> {}
+
+// make new span [offset, offset + len) and increment offset
+pub(crate) fn new_span_inc<'a>(ctx: &mut impl Context<'a>, len: usize) -> Span {
+    let span = Span::new(ctx.offset(), len);
+
+    ctx.inc(len);
+    span
+}

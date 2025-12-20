@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -164,12 +163,12 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut cnt = 0;
         let val = {
-            crate::debug_ctor_beg!("Collect", g.beg());
+            crate::debug_ctor_beg!("Collect", offset);
             V::from_iter(std::iter::from_fn(|| {
-                self.pat.construct(g.ctx(), func).ok().inspect(|_| {
+                self.pat.construct(ctx, func).ok().inspect(|_| {
                     cnt += 1;
                 })
             }))
@@ -178,10 +177,13 @@ where
             Ok(val)
         } else {
             Err(Error::Collect)
-        };
+        }
+        .inspect_err(|_| {
+            ctx.set_offset(offset);
+        });
 
-        crate::debug_ctor_reval!("Collect", g.beg(), g.end(), ret.is_ok());
-        g.process_ret(ret)
+        crate::debug_ctor_reval!("Collect", offset, ctx.offset(), ret.is_ok());
+        ret
     }
 }
 
@@ -192,13 +194,13 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut cnt = 0;
-        let mut span = Span::new(g.beg(), 0);
+        let mut span = Span::new(offset, 0);
 
         // don't use g.try_mat, it will set reset when failed
-        crate::debug_regex_beg!("Collect", g.beg());
-        while let Ok(ret) = g.ctx().try_mat(&self.pat) {
+        crate::debug_regex_beg!("Collect", offset);
+        while let Ok(ret) = ctx.try_mat(&self.pat) {
             cnt += 1;
             span.add_assign(ret);
         }
@@ -206,8 +208,11 @@ where
             Ok(span)
         } else {
             Err(Error::Collect)
-        };
+        }
+        .inspect_err(|_| {
+            ctx.set_offset(offset);
+        });
 
-        crate::debug_regex_reval!("Collect", g.process_ret(ret))
+        crate::debug_regex_reval!("Collect", ret)
     }
 }

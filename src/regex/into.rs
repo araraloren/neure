@@ -27,17 +27,17 @@ where
 
     fn into_mutex_regex(self) -> Adapter<C, Mutex<Self>>;
 
-    fn into_dyn_regex<'a, 'b>(self) -> Box<dyn Regex<C> + 'b>
+    fn into_dyn_regex<'a, 'b>(self) -> Adapter<C, Box<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b;
 
-    fn into_dyn_arc_regex<'a, 'b>(self) -> std::sync::Arc<dyn Regex<C> + 'b>
+    fn into_dyn_arc_regex<'a, 'b>(self) -> Adapter<C, std::sync::Arc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b;
 
-    fn into_dyn_rc_regex<'a, 'b>(self) -> std::rc::Rc<dyn Regex<C> + 'b>
+    fn into_dyn_rc_regex<'a, 'b>(self) -> Adapter<C, std::rc::Rc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b;
@@ -75,27 +75,27 @@ where
         Adapter::mutex(self)
     }
 
-    fn into_dyn_regex<'a, 'b>(self) -> Box<dyn Regex<C> + 'b>
+    fn into_dyn_regex<'a, 'b>(self) -> Adapter<C, Box<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b,
     {
-        Box::new(self)
+        Adapter::dyn_box(self)
     }
 
-    fn into_dyn_arc_regex<'a, 'b>(self) -> std::sync::Arc<dyn Regex<C> + 'b>
+    fn into_dyn_arc_regex<'a, 'b>(self) -> Adapter<C, std::sync::Arc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b,
     {
-        std::sync::Arc::new(self)
+        Adapter::dyn_arc(self)
     }
 
-    fn into_dyn_rc_regex<'a, 'b>(self) -> std::rc::Rc<dyn Regex<C> + 'b>
+    fn into_dyn_rc_regex<'a, 'b>(self) -> Adapter<C, std::rc::Rc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b,
     {
-        std::rc::Rc::new(self)
+        Adapter::dyn_rc(self)
     }
 }

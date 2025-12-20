@@ -186,17 +186,17 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("Suffix", g.beg());
+        debug_ctor_beg!("Suffix", ctx.beg());
 
-        let ret = debug_ctor_stage!("Suffix", "pat", self.pat.construct(g.ctx(), func));
+        let ret = debug_ctor_stage!("Suffix", "pat", self.pat.construct(ctx.ctx(), func));
 
         if ret.is_ok() {
-            let _ = debug_ctor_stage!("Suffix", "suffix", g.try_mat(&self.suffix)?);
+            let _ = debug_ctor_stage!("Suffix", "suffix", ctx.try_mat(&self.suffix)?);
         }
-        debug_ctor_reval!("Suffix", g.beg(), g.end(), ret.is_ok());
-        g.process_ret(ret)
+        debug_ctor_reval!("Suffix", ctx.beg(), ctx.end(), ret.is_ok());
+        ctx.process_ret(ret)
     }
 }
 
@@ -208,15 +208,15 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("Suffix", g.beg());
-        let mut ret = debug_regex_stage!("Suffix", "pat", g.try_mat(&self.pat)?);
+        debug_regex_beg!("Suffix", ctx.beg());
+        let mut ret = debug_regex_stage!("Suffix", "pat", ctx.try_mat(&self.pat)?);
 
         ret.add_assign(debug_regex_stage!(
             "Suffix",
             "suffix",
-            g.try_mat(&self.suffix)?
+            ctx.try_mat(&self.suffix)?
         ));
         debug_regex_reval!("Suffix", Ok(ret))
     }
@@ -389,15 +389,15 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("Prefix", g.beg());
+        debug_ctor_beg!("Prefix", ctx.beg());
 
-        let _ = debug_ctor_stage!("Prefix", "head", g.try_mat(&self.prefix)?);
-        let r = debug_ctor_stage!("Prefix", "prefix", self.pat.construct(g.ctx(), func));
+        let _ = debug_ctor_stage!("Prefix", "head", ctx.try_mat(&self.prefix)?);
+        let r = debug_ctor_stage!("Prefix", "prefix", self.pat.construct(ctx.ctx(), func));
 
-        debug_ctor_reval!("Prefix", g.beg(), g.end(), r.is_ok());
-        g.process_ret(r)
+        debug_ctor_reval!("Prefix", ctx.beg(), ctx.end(), r.is_ok());
+        ctx.process_ret(r)
     }
 }
 
@@ -409,16 +409,16 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("Prefix", g.beg());
+        debug_regex_beg!("Prefix", ctx.beg());
 
-        let mut ret = debug_regex_stage!("Prefix", "head", g.try_mat(&self.prefix)?);
+        let mut ret = debug_regex_stage!("Prefix", "head", ctx.try_mat(&self.prefix)?);
 
         ret.add_assign(debug_regex_stage!(
             "Prefix",
             "prefix",
-            g.try_mat(&self.pat)?
+            ctx.try_mat(&self.pat)?
         ));
         debug_regex_reval!("Prefix", Ok(ret))
     }

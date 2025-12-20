@@ -695,10 +695,12 @@ where
     }
 }
 
+// beg: None => match nothing
+// end: None => match all
 #[inline(always)]
-pub(crate) fn length_of<'a, C: Context<'a>>(offset: usize, ctx: &C, next: Option<usize>) -> usize {
-    let next_offset = next.unwrap_or(ctx.len() - ctx.offset());
-    next_offset - offset
+pub(crate) fn calc_length(beg: Option<usize>, end: Option<usize>, remaining_len: usize) -> usize {
+    beg.map(|v| end.unwrap_or(remaining_len) - v)
+        .unwrap_or_default()
 }
 
 pub trait NeuIntoRegexOps<'a, C>

@@ -25,15 +25,15 @@ where
 
     fn into_mutex(self) -> Adapter<C, Mutex<Self>>;
 
-    fn into_dyn<'a, 'b, O, H>(self) -> Box<dyn Ctor<'a, C, O, H> + 'b>
+    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b;
 
-    fn into_dyn_arc<'a, 'b, O, H>(self) -> std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>
+    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b;
 
-    fn into_dyn_rc<'a, 'b, O, H>(self) -> std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>
+    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b;
 }
@@ -137,24 +137,24 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_dyn<'a, 'b, O, H>(self) -> Box<dyn Ctor<'a, C, O, H> + 'b>
+    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b,
     {
-        Box::new(self)
+        Adapter::dyn_box(self)
     }
 
-    fn into_dyn_arc<'a, 'b, O, H>(self) -> std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>
+    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b,
     {
-        std::sync::Arc::new(self)
+        Adapter::dyn_arc(self)
     }
 
-    fn into_dyn_rc<'a, 'b, O, H>(self) -> std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>
+    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b,
     {
-        std::rc::Rc::new(self)
+        Adapter::dyn_rc(self)
     }
 }

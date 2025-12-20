@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::debug_ctor_beg;
@@ -189,27 +188,38 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_ctor_beg!("LongestTokenMatch", g.beg());
+        debug_ctor_beg!("LongestTokenMatch", offset);
 
-        let r_l = debug_ctor_stage!("LongestTokenMatch", "l", self.left.construct(g.ctx(), func));
-        let offset_l = g.end();
-        let r_r = debug_ctor_stage!(
-            "LongestTokenMatch",
-            "r",
-            self.right.construct(g.reset().ctx(), func)
-        );
-        let offset_r = g.end();
-        let (offset, ret) = if offset_l >= offset_r {
-            (offset_l, r_l)
-        } else {
-            (offset_r, r_r)
+        let l = debug_ctor_stage!("LongestTokenMatch", "l", self.left.construct(ctx, func));
+        let off_l = ctx.offset();
+
+        // reset offset
+        ctx.set_offset(offset);
+
+        let r = debug_ctor_stage!("LongestTokenMatch", "r", self.right.construct(ctx, func));
+        let off_r = ctx.offset();
+
+        // pick longer one
+        let ret = match (l, r) {
+            (Ok(l), Ok(r)) => Ok(if off_l >= off_r {
+                (off_l, l)
+            } else {
+                (off_r, r)
+            }),
+            (Ok(l), Err(_)) => Ok((off_l, l)),
+            (Err(_), Ok(r)) => Ok((off_r, r)),
+            (Err(_), Err(r)) => Err(r),
         };
 
-        g.ctx().set_offset(offset);
-        debug_ctor_reval!("LongestTokenMatch", g.beg(), g.end(), ret.is_ok());
-        g.process_ret(ret)
+        // set offset
+        ctx.set_offset(ret.as_ref().map(|v| v.0).unwrap_or(offset));
+
+        let ret = ret.map(|v| v.1);
+
+        debug_ctor_reval!("LongestTokenMatch", offset, ctx.offset(), ret.is_ok());
+        ret
     }
 }
 
@@ -221,21 +231,26 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_regex_beg!("LongestTokenMatch", g.beg());
+        debug_regex_beg!("LongestTokenMatch", offset);
 
-        let r_l = debug_regex_stage!("LongestTokenMatch", "l", g.try_mat(&self.left));
-        let offset_l = g.end();
-        let r_r = debug_regex_stage!("LongestTokenMatch", "r", g.reset().try_mat(&self.right));
-        let offset_r = g.end();
-        let (offset, ret) = if offset_l >= offset_r {
-            (offset_l, r_l)
-        } else {
-            (offset_r, r_r)
+        let l = debug_regex_stage!("LongestTokenMatch", "l", ctx.try_mat(&self.left));
+
+        // reset offset
+        ctx.set_offset(offset);
+
+        let r = debug_regex_stage!("LongestTokenMatch", "r", ctx.try_mat(&self.right));
+
+        // pick longer one
+        let ret = match (l, r) {
+            (Ok(l), Ok(r)) => Ok(if l.len() >= r.len() { l } else { r }),
+            (Ok(l), Err(_)) => Ok(l),
+            (Err(_), Ok(r)) => Ok(r),
+            (Err(_), Err(r)) => Err(r),
         };
 
-        g.ctx().set_offset(offset);
-        debug_regex_reval!("LongestTokenMatch", g.process_ret(ret))
+        ctx.set_offset(offset + ret.map(|v| v.len()).unwrap_or_default());
+        debug_regex_reval!("LongestTokenMatch", ret)
     }
 }

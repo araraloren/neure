@@ -4,7 +4,7 @@ use criterion::{Criterion, criterion_group, criterion_main};
 
 static JSON: &str = include_str!("../examples/samples/sample.json");
 
-fn bench_json(c: &mut Criterion) {
+fn bench_find(c: &mut Criterion) {
     c.bench_function("str find", {
         move |b| b.iter(|| str_find::find_str(black_box(JSON)))
     });
@@ -17,7 +17,7 @@ fn bench_json(c: &mut Criterion) {
 criterion_group!(
     name = benches;
     config = Criterion::default().configure_from_args();
-    targets = bench_json
+    targets = bench_find
 );
 
 criterion_main!(benches);

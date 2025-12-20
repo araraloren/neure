@@ -2,9 +2,9 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
@@ -74,13 +74,11 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let length = self.0;
 
-        debug_regex_beg!("Consume", length, ctx.beg());
-
-        let ret = if ctx.remaining_len() >= length {
-            Ok(ctx.inc(length))
+        debug_regex_beg!("Consume", length, ctx.offset());
+        let ret = if ctx.len() - ctx.offset() >= length {
+            Ok(new_span_inc(ctx, length))
         } else {
             Err(Error::Consume)
         };
@@ -173,12 +171,10 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
+        debug_regex_beg!("ConsumeAll", ctx.offset());
 
-        debug_regex_beg!("ConsumeAll", ctx.beg());
-
-        let len = ctx.len().saturating_sub(ctx.beg());
-        let ret = Ok(ctx.inc(len));
+        let len = ctx.len().saturating_sub(ctx.offset());
+        let ret = Ok(new_span_inc(ctx, len));
 
         debug_regex_reval!("ConsumeAll", ret)
     }

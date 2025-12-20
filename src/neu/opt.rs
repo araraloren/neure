@@ -5,17 +5,17 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::neu::EmptyCond;
+use crate::neu::calc_length;
 use crate::regex::Regex;
 
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
-use super::length_of;
 
 ///
 /// Matches zero or one context-sensitive element with guaranteed success.
@@ -174,10 +174,9 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(self);
+        let ret = ctx.try_mat(self);
 
-        func.invoke(g.ctx(), &ret?).map_err(Into::into)
+        func.invoke(ctx, &ret?).map_err(Into::into)
     }
 }
 
@@ -189,20 +188,20 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
-        let mut ret = Ok(Span::new(ctx.beg(), 0));
+        let mut ret = Ok(Span::new(ctx.offset(), 0));
+        let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("Opt", ctx.beg());
+        crate::debug_regex_beg!("Opt", ctx.offset());
         if let Ok(mut iter) = ctx.peek()
             && let Some((offset, item)) = iter.next()
             && self.unit.is_match(&item)
-            && self.cond.check(ctx.ctx(), &(offset, item))?
+            && self.cond.check(ctx, &(offset, item))?
         {
-            let len = length_of(offset, ctx.ctx(), iter.next().map(|v| v.0));
+            let len = calc_length(Some(offset), iter.next().map(|v| v.0), remaining_len);
 
-            ret = Ok(ctx.inc(len));
+            ret = Ok(new_span_inc(ctx, len));
         }
-        crate::debug_regex_reval!("Opt", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Opt", ret)
     }
 }
 
@@ -365,10 +364,9 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(self);
+        let ret = ctx.try_mat(self);
 
-        func.invoke(g.ctx(), &ret?).map_err(Into::into)
+        func.invoke(ctx, &ret?).map_err(Into::into)
     }
 }
 
@@ -380,15 +378,15 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let mut beg = None;
         let mut end = None;
-        let mut ret = Ok(Span::new(ctx.beg(), 0));
+        let mut ret = Ok(Span::new(ctx.offset(), 0));
+        let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("Many0", ctx.beg());
+        crate::debug_regex_beg!("Many0", ctx.offset());
         if let Ok(mut iter) = ctx.peek() {
             for pair in iter.by_ref() {
-                if !self.unit.is_match(&pair.1) || !self.cond.check(ctx.ctx(), &pair)? {
+                if !self.unit.is_match(&pair.1) || !self.cond.check(ctx, &pair)? {
                     end = Some(pair);
                     break;
                 }
@@ -397,11 +395,11 @@ where
                 }
             }
             if let Some(start) = beg {
-                let len = length_of(start, ctx.ctx(), end.map(|v| v.0));
+                let len = calc_length(Some(start), end.map(|v| v.0), remaining_len);
 
-                ret = Ok(ctx.inc(len));
+                ret = Ok(new_span_inc(ctx, len));
             }
         }
-        crate::debug_regex_reval!("Many0", ctx.process_ret(ret))
+        crate::debug_regex_reval!("Many0", ret)
     }
 }

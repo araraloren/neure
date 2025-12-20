@@ -42,19 +42,19 @@ where
     F: Fn(&mut C, &Span) -> Result<T, Error>,
 {
     let regex = move |ctx: &mut C| {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        crate::debug_regex_beg!("into_regex_builder", g.beg());
+        crate::debug_regex_beg!("into_regex_builder", ctx.beg());
 
         // match first regex
-        let ret = g.try_mat(&pat)?;
-
+        let span = ctx.try_mat(&pat)?;
         // build new regex base on result, let the user control ctx
         // continue match from end of previous span
-        let pat = (func)(g.ctx(), &ret)?;
-        let ret = g.try_mat(&pat);
+        let new_pat = (func)(ctx.ctx(), &span)?;
+        // match again
+        let ret = ctx.try_mat(&new_pat);
 
-        crate::debug_regex_reval!("into_regex_builder", ret)
+        Ok(crate::debug_regex_reval!("into_regex_builder", ret)?)
     };
 
     Adapter::new(regex)

@@ -2,7 +2,6 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
@@ -110,21 +109,19 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::Array);
 
-        crate::debug_ctor_beg!("Array", g.beg());
+        crate::debug_ctor_beg!("Array", offset);
         for regex in self.0.iter() {
-            let res = regex.construct(g.ctx(), func);
-
-            if res.is_ok() {
-                ret = Ok(res?);
+            if let Ok(val) = regex.construct(ctx, func).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
+                ret = Ok(val);
                 break;
-            } else {
-                g.reset();
             }
         }
-        crate::debug_ctor_reval!("Array", g.beg(), g.end(), ret.is_ok());
+        crate::debug_ctor_reval!("Array", offset, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -136,21 +133,16 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::Array);
 
-        crate::debug_regex_beg!("Array", g.beg());
+        crate::debug_regex_beg!("Array", offset);
         for regex in self.0.iter() {
-            let span = g.try_mat(regex);
-
-            match span {
-                Ok(span) => {
-                    ret = Ok(span);
-                    break;
-                }
-                Err(_) => {
-                    g.reset();
-                }
+            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
+                ret = Ok(span);
+                break;
             }
         }
         crate::debug_regex_reval!("Array", ret)
@@ -224,21 +216,19 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::PairArray);
 
-        crate::debug_ctor_beg!("PairArray", g.beg());
+        crate::debug_ctor_beg!("PairArray", offset);
         for (regex, value) in self.0.iter() {
-            let res = regex.construct(g.ctx(), func);
-
-            if res.is_ok() {
-                ret = Ok((res?, value.clone()));
+            if let Ok(out) = regex.construct(ctx, func).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
+                ret = Ok((out, value.clone()));
                 break;
-            } else {
-                g.reset();
             }
         }
-        crate::debug_ctor_reval!("PairArray", g.beg(), g.end(), ret.is_ok());
+        crate::debug_ctor_reval!("PairArray", offset, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -250,21 +240,16 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
         let mut ret = Err(Error::PairArray);
 
-        crate::debug_regex_beg!("PairArray", g.beg());
+        crate::debug_regex_beg!("PairArray", offset);
         for (regex, _) in self.0.iter() {
-            let span = g.try_mat(regex);
-
-            match span {
-                Ok(span) => {
-                    ret = Ok(span);
-                    break;
-                }
-                Err(_) => {
-                    g.reset();
-                }
+            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
+                ctx.set_offset(offset);
+            }) {
+                ret = Ok(span);
+                break;
             }
         }
         crate::debug_regex_reval!("PairArray", ret)

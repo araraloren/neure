@@ -1,12 +1,11 @@
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Conditional zero-width assertion combinator that validates pattern match outcomes.
@@ -91,18 +90,18 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        crate::debug_regex_beg!("Assert", ctx.beg());
+        crate::debug_regex_beg!("Assert", offset);
         let ret = if ctx.try_mat(&self.pat).is_ok() == self.value {
-            Ok(Span::new(ctx.beg(), 0))
+            Ok(Span::new(offset, 0))
         } else if self.value {
             Err(Error::AssertTrue)
         } else {
             Err(Error::AssertFalse)
         };
 
-        ctx.reset(); // force reset the offset
+        ctx.set_offset(offset); // force reset the offset
         crate::debug_regex_reval!("Assert", ret)
     }
 }

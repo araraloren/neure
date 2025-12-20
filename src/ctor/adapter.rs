@@ -410,7 +410,7 @@ impl<'a, 'b, C, O, H> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>> {
 }
 
 impl<'a, 'b, C, O, H> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
-    pub fn dyn_rc(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
+    pub fn dyn_rc_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
         Self::new(std::rc::Rc::new(ctor))
     }
 }

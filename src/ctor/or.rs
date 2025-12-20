@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::debug_ctor_beg;
@@ -206,15 +205,20 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_ctor_beg!("Or", g.beg());
+        debug_ctor_beg!("Or", offset);
+        let ret = debug_ctor_stage!("Or", "l", self.left.construct(ctx, func))
+            .or_else(|_| {
+                ctx.set_offset(offset);
+                debug_ctor_stage!("Or", "r", self.right.construct(ctx, func))
+            })
+            .inspect_err(|_| {
+                ctx.set_offset(offset);
+            });
 
-        let ret = debug_ctor_stage!("Or", "l", self.left.construct(g.ctx(), func))
-            .or_else(|_| debug_ctor_stage!("Or", "r", self.right.construct(g.reset().ctx(), func)));
-
-        debug_ctor_reval!("Or", g.beg(), g.end(), ret.is_ok());
-        g.process_ret(ret)
+        debug_ctor_reval!("Or", offset, ctx.offset(), ret.is_ok());
+        ret
     }
 }
 
@@ -226,12 +230,17 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_regex_beg!("Or", g.beg());
-
-        let ret = debug_regex_stage!("Or", "l", g.try_mat(&self.left))
-            .or_else(|_| debug_regex_stage!("Or", "r", g.reset().try_mat(&self.right)));
+        debug_regex_beg!("Or", offset);
+        let ret = debug_regex_stage!("Or", "l", ctx.try_mat(&self.left))
+            .or_else(|_| {
+                ctx.set_offset(offset);
+                debug_regex_stage!("Or", "r", ctx.try_mat(&self.right))
+            })
+            .inspect_err(|_| {
+                ctx.set_offset(offset);
+            });
 
         debug_regex_reval!("Or", ret)
     }

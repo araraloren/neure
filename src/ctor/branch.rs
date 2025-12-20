@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::debug_ctor_beg;
@@ -213,23 +212,22 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_ctor_beg!("Branch", g.beg());
+        debug_ctor_beg!("Branch", offset);
 
-        let ret = debug_ctor_stage!("Branch", "test", (self.test)(g.ctx())?);
+        let ret = debug_ctor_stage!("Branch", "test", (self.test)(ctx)?);
         let ret = if ret {
-            debug_ctor_stage!("Branch", "true", self.pat.construct(g.ctx(), func))
+            debug_ctor_stage!("Branch", "true", self.pat.construct(ctx, func))
         } else {
-            debug_ctor_stage!(
-                "Branch",
-                "false",
-                self.other.construct(g.reset().ctx(), func)
-            )
-        };
+            debug_ctor_stage!("Branch", "false", self.other.construct(ctx, func))
+        }
+        .inspect_err(|_| {
+            ctx.set_offset(offset);
+        });
 
-        debug_ctor_reval!("Branch", g.beg(), g.end(), ret.is_ok());
-        g.process_ret(ret)
+        debug_ctor_reval!("Branch", offset, ctx.offset(), ret.is_ok());
+        ret
     }
 }
 
@@ -242,16 +240,19 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let offset = ctx.offset();
 
-        debug_regex_beg!("Branch", g.beg());
+        debug_regex_beg!("Branch", offset);
 
-        let ret = debug_regex_stage!("Branch", "test", (self.test)(g.ctx())?);
+        let ret = debug_regex_stage!("Branch", "test", (self.test)(ctx)?);
         let ret = if ret {
-            debug_regex_stage!("Branch", "true", g.try_mat(&self.pat))
+            debug_regex_stage!("Branch", "true", ctx.try_mat(&self.pat))
         } else {
-            debug_regex_stage!("Branch", "false", g.try_mat(&self.other))
-        };
+            debug_regex_stage!("Branch", "false", ctx.try_mat(&self.other))
+        }
+        .inspect_err(|_| {
+            ctx.set_offset(offset);
+        });
 
         debug_regex_reval!("Branch", ret)
     }

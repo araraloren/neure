@@ -5,16 +5,16 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::err::Error;
+use crate::neu::calc_length;
 use crate::regex::Regex;
 
 use super::Condition;
 use super::Neu;
 use super::NeuCond;
-use super::length_of;
 
 ///
 /// Construct a regex that matches unit `L` and then unit `R`.
@@ -180,10 +180,9 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
-        let ret = g.try_mat(self);
+        let ret = ctx.try_mat(self);
 
-        func.invoke(g.ctx(), &ret?).map_err(Into::into)
+        func.invoke(ctx, &ret?).map_err(Into::into)
     }
 }
 
@@ -196,23 +195,23 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::NeureThen);
         let mut iter = ctx.peek()?;
-        let length = self.left.min_length() + self.right.min_length();
+        let remaining_len = ctx.len() - ctx.offset();
+        let min_length = self.left.min_length() + self.right.min_length();
 
-        crate::debug_regex_beg!("NeureThen", length, ctx.beg());
-        if ctx.remaining_len() >= length
+        crate::debug_regex_beg!("NeureThen", min_length, ctx.offset());
+        if remaining_len >= min_length
             && let (Some(fst), Some(snd)) = (iter.next(), iter.next())
             && self.left.is_match(&fst.1)
-            && self.cond.check(ctx.ctx(), &(fst.0, fst.1))?
+            && self.cond.check(ctx, &(fst.0, fst.1))?
             && self.right.is_match(&snd.1)
-            && self.cond.check(ctx.ctx(), &(snd.0, snd.1))?
+            && self.cond.check(ctx, &(snd.0, snd.1))?
         {
-            let len = length_of(fst.0, ctx.ctx(), iter.next().map(|v| v.0));
+            let len = calc_length(Some(fst.0), iter.next().map(|v| v.0), remaining_len);
 
-            ret = Ok(ctx.inc(len));
+            ret = Ok(new_span_inc(ctx, len));
         }
-        crate::debug_regex_reval!("NeureThen", ctx.process_ret(ret))
+        crate::debug_regex_reval!("NeureThen", ret)
     }
 }

@@ -46,10 +46,6 @@ impl<T: MayDebug> Neu<T> for Always<T> {
     fn is_match(&self, _other: &T) -> bool {
         crate::trace_retval!("Always", _other, true)
     }
-
-    fn min_length(&self) -> usize {
-        0
-    }
 }
 
 /// Always return true.
@@ -109,10 +105,6 @@ impl<T: MayDebug> Neu<T> for Never<T> {
     #[inline(always)]
     fn is_match(&self, _other: &T) -> bool {
         crate::trace_retval!("Never", _other, false)
-    }
-
-    fn min_length(&self) -> usize {
-        0
     }
 }
 

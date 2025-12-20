@@ -209,16 +209,16 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("Enclose", g.beg());
+        debug_ctor_beg!("Enclose", ctx.beg());
 
-        let _ = debug_ctor_stage!("Enclose", "open", g.try_mat(&self.open)?);
-        let r = debug_ctor_stage!("Enclose", "pat", self.pat.construct(g.ctx(), func));
-        let r = g.process_ret(r)?;
-        let _ = debug_ctor_stage!("Enclose", "close", g.try_mat(&self.close)?);
+        let _ = debug_ctor_stage!("Enclose", "open", ctx.try_mat(&self.open)?);
+        let r = debug_ctor_stage!("Enclose", "pat", self.pat.construct(ctx.ctx(), func));
+        let r = ctx.process_ret(r)?;
+        let _ = debug_ctor_stage!("Enclose", "close", ctx.try_mat(&self.close)?);
 
-        debug_ctor_reval!("Enclose", g.beg(), g.end(), true);
+        debug_ctor_reval!("Enclose", ctx.beg(), ctx.end(), true);
         Ok(r)
     }
 }
@@ -232,17 +232,21 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("Enclose", g.beg());
+        debug_regex_beg!("Enclose", ctx.beg());
 
-        let mut ret = debug_regex_stage!("Enclose", "open", g.try_mat(&self.open)?);
+        let mut ret = debug_regex_stage!("Enclose", "open", ctx.try_mat(&self.open)?);
 
-        ret.add_assign(debug_regex_stage!("Enclose", "pat", g.try_mat(&self.pat)?));
+        ret.add_assign(debug_regex_stage!(
+            "Enclose",
+            "pat",
+            ctx.try_mat(&self.pat)?
+        ));
         ret.add_assign(debug_regex_stage!(
             "Enclose",
             "close",
-            g.try_mat(&self.close)?
+            ctx.try_mat(&self.close)?
         ));
         debug_regex_reval!("Enclose", Ok(ret))
     }

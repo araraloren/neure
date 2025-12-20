@@ -210,18 +210,18 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, O2), Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("Then", g.beg());
+        debug_ctor_beg!("Then", ctx.beg());
 
         let ret =
-            debug_ctor_stage!("Then", "l", self.left.construct(g.ctx(), func)).and_then(|ret1| {
-                debug_ctor_stage!("Then", "r", self.right.construct(g.ctx(), func))
+            debug_ctor_stage!("Then", "l", self.left.construct(ctx.ctx(), func)).and_then(|ret1| {
+                debug_ctor_stage!("Then", "r", self.right.construct(ctx.ctx(), func))
                     .map(|ret2| (ret1, ret2))
             });
-        let ret = g.process_ret(ret);
+        let ret = ctx.process_ret(ret);
 
-        debug_ctor_reval!("Then", g.beg(), g.end(), ret.is_ok());
+        debug_ctor_reval!("Then", ctx.beg(), ctx.end(), ret.is_ok());
         ret
     }
 }
@@ -234,13 +234,13 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("Then", g.beg());
+        debug_regex_beg!("Then", ctx.beg());
 
-        let mut ret = debug_regex_stage!("Then", "l", g.try_mat(&self.left)?);
+        let mut ret = debug_regex_stage!("Then", "l", ctx.try_mat(&self.left)?);
 
-        ret.add_assign(debug_regex_stage!("Then", "r", g.try_mat(&self.right)?));
+        ret.add_assign(debug_regex_stage!("Then", "r", ctx.try_mat(&self.right)?));
         debug_regex_reval!("Then", Ok(ret))
     }
 }
@@ -438,16 +438,16 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O1, Option<O2>), Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_ctor_beg!("IfThen", g.beg());
+        debug_ctor_beg!("IfThen", ctx.beg());
 
-        let r_l = debug_ctor_stage!("IfThen", "l", self.left.construct(g.ctx(), func));
-        let r_l = g.process_ret(r_l)?;
-        let r_i = debug_ctor_stage!("IfThen", "test", g.try_mat(&self.test));
+        let r_l = debug_ctor_stage!("IfThen", "l", self.left.construct(ctx.ctx(), func));
+        let r_l = ctx.process_ret(r_l)?;
+        let r_i = debug_ctor_stage!("IfThen", "test", ctx.try_mat(&self.test));
         let ret = if r_i.is_ok() {
-            let r_r = debug_ctor_stage!("IfThen", "r", self.right.construct(g.ctx(), func));
-            let r_r = g.process_ret(r_r)?;
+            let r_r = debug_ctor_stage!("IfThen", "r", self.right.construct(ctx.ctx(), func));
+            let r_r = ctx.process_ret(r_r)?;
 
             // if matched, return (01, Some(O2))
             (r_l, Some(r_r))
@@ -456,7 +456,7 @@ where
             (r_l, None)
         };
 
-        debug_ctor_reval!("IfThen", g.beg(), g.end(), true);
+        debug_ctor_reval!("IfThen", ctx.beg(), ctx.end(), true);
         Ok(ret)
     }
 }
@@ -470,15 +470,15 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let mut g = CtxGuard::new(ctx);
+        let mut ctx = CtxGuard::new(ctx);
 
-        debug_regex_beg!("IfThen", g.beg());
+        debug_regex_beg!("IfThen", ctx.beg());
 
-        let mut ret = debug_regex_stage!("IfThen", "l", g.try_mat(&self.left)?);
+        let mut ret = debug_regex_stage!("IfThen", "l", ctx.try_mat(&self.left)?);
 
-        if let Ok(span) = debug_regex_stage!("IfThen", "test", g.try_mat(&self.test)) {
+        if let Ok(span) = debug_regex_stage!("IfThen", "test", ctx.try_mat(&self.test)) {
             ret.add_assign(span);
-            ret.add_assign(debug_regex_stage!("IfThen", "r", g.try_mat(&self.right)?));
+            ret.add_assign(debug_regex_stage!("IfThen", "r", ctx.try_mat(&self.right)?));
         }
         debug_regex_reval!("IfThen", Ok(ret))
     }

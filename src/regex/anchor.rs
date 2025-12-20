@@ -2,14 +2,14 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
-use crate::regex::impl_not_for_regex;
 use crate::regex::Regex;
+use crate::regex::impl_not_for_regex;
 
 ///
 /// Matches the absolute start of input (position zero).
@@ -73,12 +73,10 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
+        debug_regex_beg!("AnchorStart", ctx.offset());
 
-        debug_regex_beg!("AnchorStart", ctx.beg());
-
-        let ret = if ctx.beg() == 0 {
-            Ok(ctx.inc(0))
+        let ret = if ctx.offset() == 0 {
+            Ok(new_span_inc(ctx, 0))
         } else {
             Err(Error::AnchorStart)
         };
@@ -176,12 +174,10 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
+        debug_regex_beg!("AnchorEnd", ctx.offset());
 
-        debug_regex_beg!("AnchorEnd", ctx.beg());
-
-        let ret = if ctx.beg() == ctx.len() {
-            Ok(ctx.inc(0))
+        let ret = if ctx.offset() == ctx.len() {
+            Ok(new_span_inc(ctx, 0))
         } else {
             Err(Error::AnchorEnd)
         };

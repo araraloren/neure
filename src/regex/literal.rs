@@ -2,9 +2,9 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::ctx::CtxGuard;
 use crate::ctx::Match;
 use crate::ctx::Span;
+use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
@@ -74,13 +74,13 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::LitSlice);
         let slice_len = self.val.len();
+        let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("LitSlice", ctx.beg());
-        if ctx.remaining_len() >= slice_len && ctx.ctx().orig()?.starts_with(self.val) {
-            ret = Ok(ctx.inc(slice_len));
+        crate::debug_regex_beg!("LitSlice", ctx.offset());
+        if remaining_len >= slice_len && ctx.orig()?.starts_with(self.val) {
+            ret = Ok(new_span_inc(ctx, slice_len));
         }
         crate::debug_regex_reval!("LitSlice", ret)
     }
@@ -169,13 +169,13 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ctx = CtxGuard::new(ctx);
         let mut ret = Err(Error::LitString);
         let literal_len = self.val.len();
+        let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("LitString", ctx.beg());
-        if ctx.remaining_len() >= literal_len && ctx.ctx().orig()?.starts_with(self.val) {
-            ret = Ok(ctx.inc(literal_len));
+        crate::debug_regex_beg!("LitString", ctx.offset());
+        if remaining_len >= literal_len && ctx.orig()?.starts_with(self.val) {
+            ret = Ok(new_span_inc(ctx, literal_len));
         }
         crate::debug_regex_reval!("LitString", self.val, ret)
     }
