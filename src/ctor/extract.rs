@@ -77,3 +77,13 @@ impl<'a, C: Context<'a>> Handler<C> for Extract<Span> {
         Ok(*span)
     }
 }
+
+impl<'a, C: Context<'a>> Handler<C> for Extract<()> {
+    type Out = ();
+
+    type Error = Error;
+
+    fn invoke(&mut self, _: &C, _: &Span) -> Result<Self::Out, Self::Error> {
+        Ok(())
+    }
+}

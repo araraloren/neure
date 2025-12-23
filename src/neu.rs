@@ -703,6 +703,9 @@ pub(crate) fn calc_length(beg: Option<usize>, end: Option<usize>, remaining_len:
         .unwrap_or_default()
 }
 
+// https://github.com/rust-lang/rust-analyzer/issues/21315
+const COUNT_MAX: usize = usize::MAX;
+
 pub trait NeuIntoRegexOps<'a, C>
 where
     C: Context<'a>,
@@ -718,8 +721,8 @@ where
         self.between::<M, M>()
     }
 
-    fn at_least<const M: usize>(self) -> Between<M, { usize::MAX }, C, Self> {
-        self.between::<M, _>()
+    fn at_least<const M: usize>(self) -> Between<M, COUNT_MAX, C, Self> {
+        self.between::<M, COUNT_MAX>()
     }
 
     fn at_most<const N: usize>(self) -> Between<0, N, C, Self> {

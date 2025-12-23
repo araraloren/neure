@@ -10,7 +10,7 @@ use crate::regex::impl_not_for_regex;
 ///
 /// Adapter that restricts a type to constructor-only contexts while satisfying compiler trait requirements.
 ///
-/// [`Wrap`] solves a specific compiler limitation when working with generic combinators that require both [`Regex`]
+/// [`Adapter`] solves a specific compiler limitation when working with generic combinators that require both [`Regex`]
 /// and [`Ctor`] trait implementations, but your type only meaningfully implements [`Ctor`].
 ///
 /// # Regex

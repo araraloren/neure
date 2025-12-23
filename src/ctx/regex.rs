@@ -180,10 +180,6 @@ impl<'a> RegexCtx<'a, str> {
     /// # use neure::prelude::*;
     /// #
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    ///     tracing_subscriber::fmt::fmt()
-    ///         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-    ///         .init();
-    ///
     ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     ///     pub struct Dat<'a> {
     ///         span: Span,

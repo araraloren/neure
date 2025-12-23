@@ -224,22 +224,62 @@ where
 }
 
 pub trait MatchMulti<'a>: Sized + Match<'a> {
-    fn find<P>(&mut self, pat: P) -> Option<Span>
+    ///
+    /// Searches for the first occurrence of a pattern in the input.
+    ///
+    /// This method scans the input starting from the current position and returns the first match
+    /// of the given pattern. If a match is found, it returns `Some(value)` where `value` is the
+    /// extracted result of the match. If no match is found, it returns `None`.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let text = r#"Dec. 19   What do people love about Rust?
+    /// Dec. 16     Project goals update — November 2025
+    /// Dec. 11     Announcing Rust 1.92.0
+    /// Dec. 8      Making it easier to sponsor Rust contributors
+    /// "#;
+    ///     let month = "Dec";
+    ///     let day = neu::digit(10).between::<1, 2>();
+    ///     let date = month.sep_once(". ", day);
+    ///
+    ///     let orig = CharsCtx::new(text).find::<&str>(date);
+    ///
+    ///     assert_eq!(orig, Some("Dec. 19"));
+    ///
+    /// #    Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Behavior Notes
+    ///
+    /// - The search starts at the current offset of the context
+    /// - When a match is found, the context's position is advanced to the end of the match
+    /// - Empty matches are ignored and searching continues
+    /// - If matching fails with an error, the context advances by 1 character and continues searching
+    /// - Returns `None` if the end of input is reached without finding a match
+    fn find<O>(&mut self, pat: impl Regex<Self>) -> Option<O>
     where
-        P: Regex<Self>,
+        Extract<O>: Handler<Self, Out = O>,
     {
-        self.find_with(pat, |ctx, val| match val {
+        let func = |ctx: &mut Self, val: Result<Span, Error>| match val {
             Ok(val) if !val.is_empty() => Some(val),
             _ => {
                 ctx.inc(1);
                 None
             }
-        })
+        };
+
+        self.find_with(pat, func, extract())
     }
 
-    fn find_with<P, F>(&mut self, pat: P, mut handler: F) -> Option<Span>
+    fn find_with<O, F, H>(&mut self, pat: impl Regex<Self>, mut func: F, mut map: H) -> Option<O>
     where
-        P: Regex<Self>,
+        H: Handler<Self, Out = O>,
         F: FnMut(&mut Self, Result<Span, Error>) -> Option<Span>,
     {
         let mut next = None;
@@ -247,40 +287,135 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
         while self.offset() < self.len() {
             let ret = self.try_mat(&pat);
 
-            if let Some(span) = handler(self, ret) {
-                next = Some(span);
-                break;
+            // let processer process the result
+            // may modify Self
+            if let Some(span) = func(self, ret) {
+                // map the span to another type
+                if let Ok(out) = map.invoke(self, &span) {
+                    next = Some(out);
+                    break;
+                }
             }
         }
         next
     }
 
-    fn find_all<P>(&mut self, pat: P) -> impl Iterator<Item = Span>
+    /// Finds all non-overlapping occurrences of a pattern in the input.
+    ///
+    /// This method returns an iterator that yields all matches of the given pattern in the input,
+    /// starting from the current position. Unlike [`find`](MatchMulti::find), which stops after the
+    /// first match, this method continues searching through the entire input until no more matches
+    /// can be found.
+    ///
+    /// Each match advances the context's position to the end of the matched text, ensuring matches
+    /// don't overlap. Empty matches are skipped, and errors during matching cause the search to
+    /// advance by one character before continuing.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let text = r#"Stable: 1.92.0
+    /// Beta: 1.93.0 (22 January, 2026, 33 days left)
+    /// Nightly: 1.94.0 (5 March, 2026, 75 days left)
+    /// "#;
+    ///     let num = neu::digit(10).at_least::<1>();
+    ///     let ver = num.sep_once(".", num).sep_once(".", num).pat();
+    ///     let vers = ["1.92.0", "1.93.0", "1.94.0"];
+    ///
+    ///     for (i, orig) in CharsCtx::new(text).find_all::<&str>(ver).enumerate() {
+    ///         assert_eq!(vers[i], orig);
+    ///     }
+    ///
+    /// #    Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Behavior Notes
+    ///
+    /// - The search starts at the current offset of the context
+    /// - After each successful match, the context's position is advanced to the end of that match
+    /// - Empty matches are ignored and searching continues from the next position
+    /// - If matching fails with an error, the context advances by 1 character and continues searching
+    /// - The iterator yields `None` when the end of input is reached
+    /// - The context is fully consumed after the iterator is exhausted
+    fn find_all<O>(&mut self, pat: impl Regex<Self>) -> impl Iterator<Item = O>
     where
-        P: Regex<Self>,
+        Extract<O>: Handler<Self, Out = O>,
     {
-        self.find_all_with(pat, |ctx, val| match val {
+        let func = |ctx: &mut Self, val: Result<Span, Error>| match val {
             Ok(val) if !val.is_empty() => Some(val),
             _ => {
                 ctx.inc(1);
                 None
             }
-        })
+        };
+
+        self.find_all_with(pat, func, extract())
     }
 
-    fn match_seq<P>(&mut self, pat: P) -> impl Iterator<Item = Span>
+    /// Matches a sequence of consecutive patterns without gaps.
+    ///
+    /// This method returns an iterator that yields consecutive matches of the given pattern,
+    /// starting from the current position. Unlike [`find_all`](MatchMulti::find_all), which
+    /// continues searching the entire input even after failed matches, this method **stops
+    /// immediately when a match fails**, ensuring only contiguous successful matches are returned.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let text = r#"Dec. 19   What do people love about Rust?
+    /// Dec. 16     Project goals update — November 2025
+    /// Dec. 11     Announcing Rust 1.92.0
+    /// Dec. 8      Making it easier to sponsor Rust contributors
+    /// Dec. 5      crates.io: Malicious crates finch-rust and sha-rust
+    /// "#;
+    ///     let month = "Dec";
+    ///     let day = neu::digit(10).between::<1, 2>();
+    ///     let date = month.sep_once(". ", day);
+    ///     let title = neu::wild().at_least::<1>();
+    ///     let parser = date.sep_once("".skip_ws(), title);
+    ///     let parser = parser.suffix("\n");
+    ///
+    ///     let mut ctx = CharsCtx::new(text);
+    ///
+    ///     let lines = ctx.match_seq::<&str>(parser);
+    ///
+    ///     for line in lines {
+    ///         assert!(line.starts_with("Dec"));
+    ///         assert!(line.ends_with("\n"));
+    ///     }
+    ///
+    /// #   Ok(())
+    /// # }
+    /// ```
+    fn match_seq<O>(&mut self, pat: impl Regex<Self>) -> impl Iterator<Item = O>
     where
-        P: Regex<Self>,
+        Extract<O>: Handler<Self, Out = O>,
     {
-        self.find_all_with(pat, |ctx, _| {
-            ctx.set_offset(ctx.len());
-            None
-        })
+        let func = |ctx: &mut Self, val: Result<Span, Error>| match val {
+            Ok(val) if !val.is_empty() => Some(val),
+            _ => {
+                ctx.set_offset(ctx.len());
+                None
+            }
+        };
+
+        self.find_all_with(pat, func, extract())
     }
 
-    fn find_all_with<P, F>(&mut self, pat: P, mut handler: F) -> impl Iterator<Item = Span>
+    fn find_all_with<O, F, H>(
+        &mut self,
+        pat: impl Regex<Self>,
+        mut func: F,
+        mut map: H,
+    ) -> impl Iterator<Item = O>
     where
-        P: Regex<Self>,
+        H: Handler<Self, Out = O>,
         F: FnMut(&mut Self, Result<Span, Error>) -> Option<Span>,
     {
         std::iter::from_fn(move || {
@@ -289,9 +424,14 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
             while self.offset() < self.len() {
                 let ret = self.try_mat(&pat);
 
-                if let Some(span) = handler(self, ret) {
-                    next = Some(span);
-                    break;
+                // let processer process the result
+                // may modify Self
+                if let Some(span) = func(self, ret) {
+                    // map the span to another type
+                    if let Ok(out) = map.invoke(self, &span) {
+                        next = Some(out);
+                        break;
+                    }
                 }
             }
             next

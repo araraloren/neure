@@ -12,7 +12,7 @@ use crate::regex::impl_not_for_regex;
 ///
 /// Transparent adapter that elevates Regex combinators to Ctor-enabled combinators.
 ///
-/// [`Wrap<I, C>`] serves as a zero-cost abstraction layer that allows any [`Regex`] combinator to
+/// [`Adapter`] serves as a zero-cost abstraction layer that allows any [`Regex`] combinator to
 /// participate in constructor-based parsing chains. It preserves the exact matching behavior of
 /// the inner combinator while enabling value construction through handler functions. This adapter
 /// is essential when composing parsers that mix pure matching combinators with value-producing

@@ -36,7 +36,7 @@ mod neure_find {
     pub fn find_str(haystack: &str) {
         assert!(
             CharsCtx::new(haystack)
-                .find(neu::alphanumeric().once())
+                .find::<Span>(neu::alphanumeric().once())
                 .is_some()
         );
     }
