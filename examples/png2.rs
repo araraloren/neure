@@ -1,6 +1,6 @@
-use neure::map::{from_be_bytes, FromBeBytes};
+use neure::map::{FromBeBytes, from_be_bytes};
 use neure::prelude::*;
-use neure::{err::Error, map::MapSingle};
+use neure::{err::Error, map::FallibleMap};
 use std::mem::size_of;
 use std::process::exit;
 use std::{cell::RefCell, marker::PhantomData};
@@ -35,34 +35,34 @@ impl<T> PngParser<T> {
 
     pub fn parse(self, ctx: &mut BytesCtx) -> Result<T, Error>
     where
-        Self: for<'a> MapSingle<&'a [u8], T>,
+        Self: for<'a> FallibleMap<&'a [u8], T>,
     {
-        ctx.ctor(&regex::consume(self.size()).try_map(self))
+        ctx.ctor(&regex::consume(self.out_size()).try_map(self))
     }
 }
 
-impl<'a, T> MapSingle<&'a [u8], T> for PngParser<T>
+impl<'a, T> FallibleMap<&'a [u8], T> for PngParser<T>
 where
-    FromBeBytes<T>: MapSingle<&'a [u8], T>,
+    FromBeBytes<T>: FallibleMap<&'a [u8], T>,
 {
-    fn size(&self) -> usize {
+    fn out_size(&self) -> usize {
         self.size
     }
 
     // map all data from big endian
-    fn map_to(&self, val: &'a [u8]) -> Result<T, Error> {
-        from_be_bytes::<T>().map_to(val)
+    fn try_map(&self, val: &'a [u8]) -> Result<T, Error> {
+        from_be_bytes::<T>().try_map(val)
     }
 }
 
 pub struct Data(Vec<u8>);
 
-impl<'a> MapSingle<&'a [u8], Data> for PngParser<Data> {
-    fn size(&self) -> usize {
+impl<'a> FallibleMap<&'a [u8], Data> for PngParser<Data> {
+    fn out_size(&self) -> usize {
         self.size
     }
 
-    fn map_to(&self, val: &'a [u8]) -> Result<Data, Error> {
+    fn try_map(&self, val: &'a [u8]) -> Result<Data, Error> {
         Ok(Data(val.to_vec()))
     }
 }
@@ -77,12 +77,14 @@ pub struct Trunk {
     data: Vec<u8>,
 }
 
-impl<'a> MapSingle<&'a [u8], Trunk> for PngParser<Trunk> {
-    fn size(&self) -> usize {
-        self.size + PngParser::<u8>::default().size() * 4 + PngParser::<u32>::default().size()
+impl<'a> FallibleMap<&'a [u8], Trunk> for PngParser<Trunk> {
+    fn out_size(&self) -> usize {
+        self.size
+            + PngParser::<u8>::default().out_size() * 4
+            + PngParser::<u32>::default().out_size()
     }
 
-    fn map_to(&self, val: &'a [u8]) -> Result<Trunk, Error> {
+    fn try_map(&self, val: &'a [u8]) -> Result<Trunk, Error> {
         let u8_parser = PngParser::new();
         let inner_ctx = &mut BytesCtx::new(val);
         let ancillary = u8_parser.parse(inner_ctx)?;

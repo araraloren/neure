@@ -31,6 +31,10 @@ pub enum Error {
 
     SelectEq,
 
+    SelectNeq,
+
+    Bounded,
+
     SepCollect,
 
     Collect,
@@ -93,6 +97,8 @@ impl Display for Error {
             Error::FromStr => write!(f, "FromStr: call `std::str::parse` failed"),
             Error::TryInto => write!(f, "TryInto: call `TryInto::try_into` failed"),
             Error::SelectEq => write!(f, "SelectEq: elements in the tuple are not equal"),
+            Error::SelectNeq => write!(f, "SelectNeq: elements in the tuple are equal"),
+            Error::Bounded => write!(f, "Bounded: value out of bound"),
             Error::SepCollect => write!(
                 f,
                 "SepCollect: number of matched patterns does not meet the requirement"

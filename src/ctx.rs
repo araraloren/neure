@@ -10,7 +10,7 @@ use crate::ctor::Extract;
 use crate::ctor::Handler;
 use crate::ctor::extract;
 use crate::err::Error;
-use crate::map::MapSingle;
+use crate::map::FallibleMap;
 use crate::regex::Regex;
 
 pub use self::guard::CtxGuard;
@@ -54,7 +54,9 @@ pub trait Context<'a> {
         self.orig_at(self.offset())
     }
 
-    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error>;
+    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
+        self.orig_sub(offset, self.len() - offset)
+    }
 
     fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error>;
 
@@ -192,17 +194,17 @@ where
     fn map_span<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
     where
         P: Regex<Self>,
-        M: MapSingle<Span, O>,
+        M: FallibleMap<Span, O>,
     {
-        mapper.map_to(self.map_handler(pat, extract::<Span>())?)
+        mapper.try_map(self.map_handler(pat, extract::<Span>())?)
     }
 
     fn map<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
     where
         P: Regex<Self>,
-        M: MapSingle<Self::Orig<'a>, O>,
+        M: FallibleMap<Self::Orig<'a>, O>,
     {
-        mapper.map_to(self.map_handler(pat, |ctx: &Self, span: &Span| {
+        mapper.try_map(self.map_handler(pat, |ctx: &Self, span: &Span| {
             ctx.orig_sub(span.beg, span.len)
         })?)
     }

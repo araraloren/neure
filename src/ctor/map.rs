@@ -7,7 +7,7 @@ use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::map::MapSingle;
+use crate::map::FallibleMap;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
 
@@ -75,7 +75,7 @@ use crate::regex::impl_not_for_regex;
 ///
 /// # Mapping Function
 ///
-/// The mapping function must implement the [`MapSingle`] trait, which provides the
+/// The mapping function must implement the [`FallibleMap`] trait, which provides the
 /// `map_to` method for converting from input type `O` to output type `V`. Common implementations
 /// include:
 /// - Simple closures: `|x| x.to_uppercase()`
@@ -203,7 +203,7 @@ impl<C, P, F, O> Map<C, P, F, O> {
 
     pub fn map_to<H, V>(self, mapper: H) -> Map<C, P, H, O>
     where
-        H: MapSingle<O, V>,
+        H: FallibleMap<O, V>,
     {
         Map {
             pat: self.pat,
@@ -216,13 +216,13 @@ impl<C, P, F, O> Map<C, P, F, O> {
 impl<'a, C, O, V, P, F, H> Ctor<'a, C, V, H> for Map<C, P, F, O>
 where
     P: Ctor<'a, C, O, H>,
-    F: MapSingle<O, V>,
+    F: FallibleMap<O, V>,
     C: Match<'a>,
     H: Handler<C>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<V, Error> {
-        self.mapper.map_to(self.pat.construct(ctx, func)?)
+        self.mapper.try_map(self.pat.construct(ctx, func)?)
     }
 }
 

@@ -58,7 +58,7 @@ use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::ctx::Span;
 use crate::err::Error;
-use crate::map::Mapper;
+use crate::map::FuncMapper;
 use crate::map::mapper;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::CRange;
@@ -239,7 +239,7 @@ where
 {
     fn try_map<F, O>(self, f: F) -> Map<C, Self, F, O>;
 
-    fn map<F, O>(self, f: F) -> Map<C, Self, Mapper<F>, O> {
+    fn map<F, O>(self, f: F) -> Map<C, Self, FuncMapper<F>, O> {
         self.try_map(mapper(f))
     }
 

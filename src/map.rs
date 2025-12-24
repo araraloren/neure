@@ -2,45 +2,47 @@ use std::{borrow::Cow, marker::PhantomData, mem::size_of, num::ParseIntError};
 
 use crate::err::Error;
 
-pub trait MapSingle<I, O> {
-    fn size(&self) -> usize {
+pub trait FallibleMap<I, O> {
+    fn out_size(&self) -> usize {
         size_of::<O>()
     }
 
-    fn map_to(&self, val: I) -> Result<O, Error>;
+    /// Attempts to map a value from type `I` to type `O`.
+    fn try_map(&self, val: I) -> Result<O, Error>;
 }
 
-impl<I, O, F> MapSingle<I, O> for F
+impl<I, O, F> FallibleMap<I, O> for F
 where
     F: Fn(I) -> Result<O, Error>,
 {
-    fn map_to(&self, val: I) -> Result<O, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         (self)(val)
     }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct Mapper<F> {
+pub struct FuncMapper<F> {
     func: F,
 }
 
-impl<F> Mapper<F> {
+impl<F> FuncMapper<F> {
     pub fn new(func: F) -> Self {
         Self { func }
     }
 }
 
-impl<F, I, O> MapSingle<I, O> for Mapper<F>
+impl<F, I, O> FallibleMap<I, O> for FuncMapper<F>
 where
     F: Fn(I) -> O,
 {
-    fn map_to(&self, val: I) -> Result<O, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         Ok((self.func)(val))
     }
 }
 
-pub fn mapper<F>(func: F) -> Mapper<F> {
-    Mapper::new(func)
+/// Adapts infallible functions to the [`FallibleMap`] trait system.
+pub fn mapper<F>(func: F) -> FuncMapper<F> {
+    FuncMapper::new(func)
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -52,12 +54,13 @@ impl Select0 {
     }
 }
 
-impl<I1, I2> MapSingle<(I1, I2), I1> for Select0 {
-    fn map_to(&self, val: (I1, I2)) -> Result<I1, Error> {
+impl<I1, I2> FallibleMap<(I1, I2), I1> for Select0 {
+    fn try_map(&self, val: (I1, I2)) -> Result<I1, Error> {
         Ok(val.0)
     }
 }
 
+/// Selects the first element (index 0) from a tuple.
 pub fn select0() -> Select0 {
     Select0::new()
 }
@@ -71,12 +74,13 @@ impl Select1 {
     }
 }
 
-impl<I1, I2> MapSingle<(I1, I2), I2> for Select1 {
-    fn map_to(&self, val: (I1, I2)) -> Result<I2, Error> {
+impl<I1, I2> FallibleMap<(I1, I2), I2> for Select1 {
+    fn try_map(&self, val: (I1, I2)) -> Result<I2, Error> {
         Ok(val.1)
     }
 }
 
+/// Selects the second element (index 1) from a tuple.
 pub fn select1() -> Select1 {
     Select1::new()
 }
@@ -90,11 +94,11 @@ impl SelectEq {
     }
 }
 
-impl<I1, I2> MapSingle<(I1, I2), (I1, I2)> for SelectEq
+impl<I1, I2> FallibleMap<(I1, I2), (I1, I2)> for SelectEq
 where
     I1: PartialEq<I2>,
 {
-    fn map_to(&self, val: (I1, I2)) -> Result<(I1, I2), Error> {
+    fn try_map(&self, val: (I1, I2)) -> Result<(I1, I2), Error> {
         if val.0 == val.1 {
             Ok(val)
         } else {
@@ -103,8 +107,36 @@ where
     }
 }
 
+/// Validates that both elements of a tuple are equal.
 pub fn select_eq() -> SelectEq {
     SelectEq::new()
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SelectNeq;
+
+impl SelectNeq {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl<I1, I2> FallibleMap<(I1, I2), (I1, I2)> for SelectNeq
+where
+    I1: PartialEq<I2>,
+{
+    fn try_map(&self, val: (I1, I2)) -> Result<(I1, I2), Error> {
+        if val.0 != val.1 {
+            Ok(val)
+        } else {
+            Err(Error::SelectNeq)
+        }
+    }
+}
+
+/// Validates that both elements of a tuple are not equal.
+pub fn select_neq() -> SelectNeq {
+    SelectNeq::new()
 }
 
 #[derive(Debug, Copy)]
@@ -128,88 +160,95 @@ impl<T> FromStr<T> {
     }
 }
 
-impl<I, O> MapSingle<I, O> for FromStr<O>
+impl<I, O> FallibleMap<I, O> for FromStr<O>
 where
     O: std::str::FromStr,
     I: AsRef<str>,
 {
-    fn map_to(&self, val: I) -> Result<O, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         let val: &str = val.as_ref();
 
         val.parse::<O>().map_err(|_| Error::FromStr)
     }
 }
 
+/// Converts strings to typed values using [`FromStr`](std::str::FromStr).
+///
+/// [`FromStr`] is a zero-cost adapter that safely parses strings into strongly-typed
+/// values. It wraps the standard library's [`FromStr`](std::str::FromStr) trait implementation to provide
+/// a consistent interface for transformation pipelines and parser combinators.
 pub fn from_str<T>() -> FromStr<T> {
     FromStr::new()
 }
 
 #[derive(Debug, Copy)]
-pub struct MapInto<T>(PhantomData<T>);
+pub struct IntoMapper<T>(PhantomData<T>);
 
-impl<T> Clone for MapInto<T> {
+impl<T> Clone for IntoMapper<T> {
     fn clone(&self) -> Self {
         Self(self.0)
     }
 }
 
-impl<T> MapInto<T> {
+impl<T> IntoMapper<T> {
     pub fn new() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<T> Default for MapInto<T> {
+impl<T> Default for IntoMapper<T> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<I, O> MapSingle<I, O> for MapInto<O>
+impl<I, O> FallibleMap<I, O> for IntoMapper<O>
 where
     O: From<I>,
 {
-    fn map_to(&self, val: I) -> Result<O, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         Ok(val.into())
     }
 }
 
-pub fn into<T>() -> MapInto<T> {
-    MapInto::new()
+/// A zero-cost adapter that converts type using the [`into`](std::convert::Into::into) method.
+pub fn into<T>() -> IntoMapper<T> {
+    IntoMapper::new()
 }
 
 #[derive(Debug, Copy)]
-pub struct MapTryInto<T>(PhantomData<T>);
+pub struct TryIntoMapper<T>(PhantomData<T>);
 
-impl<T> Clone for MapTryInto<T> {
+impl<T> Clone for TryIntoMapper<T> {
     fn clone(&self) -> Self {
         Self(self.0)
     }
 }
 
-impl<T> MapTryInto<T> {
+impl<T> TryIntoMapper<T> {
     pub fn new() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<T> Default for MapTryInto<T> {
+impl<T> Default for TryIntoMapper<T> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<I, O> MapSingle<I, O> for MapTryInto<O>
+impl<I, O> FallibleMap<I, O> for TryIntoMapper<O>
 where
     O: TryFrom<I>,
 {
-    fn map_to(&self, val: I) -> Result<O, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         val.try_into().map_err(|_| Error::TryInto)
     }
 }
 
-pub fn try_into<T>() -> MapTryInto<T> {
-    MapTryInto::new()
+/// A zero-cost adapter that converts type using the [`try_into`](std::convert::TryInto::try_into) method.
+pub fn try_into<T>() -> TryIntoMapper<T> {
+    TryIntoMapper::new()
 }
 
 pub trait TryFromStrRadix
@@ -281,17 +320,21 @@ where
     }
 }
 
-impl<I, O> MapSingle<I, O> for FromStrRadix<O>
+impl<I, O> FallibleMap<I, O> for FromStrRadix<O>
 where
     O: TryFromStrRadix,
     I: AsRef<str>,
 {
     #[inline(always)]
-    fn map_to(&self, val: I) -> Result<O, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         O::from_str_radix(val.as_ref(), self.radix()).map_err(|_| Error::FromStr)
     }
 }
 
+/// A trait that abstracts over integer types' `from_str_radix` functionality.
+///
+/// This trait is implemented for all standard integer types and provides a consistent
+/// interface for parsing integers from strings with a specified radix (base).
 #[inline(always)]
 pub fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
     FromStrRadix::new(radix)
@@ -318,18 +361,19 @@ impl<T> Default for FromUtf8<T> {
     }
 }
 
-impl<'a> MapSingle<&'a [u8], &'a str> for FromUtf8<&'a str> {
-    fn map_to(&self, val: &'a [u8]) -> Result<&'a str, Error> {
+impl<'a> FallibleMap<&'a [u8], &'a str> for FromUtf8<&'a str> {
+    fn try_map(&self, val: &'a [u8]) -> Result<&'a str, Error> {
         std::str::from_utf8(val).map_err(|_| Error::Utf8Error)
     }
 }
 
-impl<'a> MapSingle<&'a [u8], String> for FromUtf8<String> {
-    fn map_to(&self, val: &'a [u8]) -> Result<String, Error> {
+impl<'a> FallibleMap<&'a [u8], String> for FromUtf8<String> {
+    fn try_map(&self, val: &'a [u8]) -> Result<String, Error> {
         String::from_utf8(val.to_vec()).map_err(|_| Error::Utf8Error)
     }
 }
 
+/// A mapper that converts byte slices to UTF-8 [`String`].
 #[inline(always)]
 pub fn from_utf8<T>() -> FromUtf8<T> {
     FromUtf8::default()
@@ -356,12 +400,13 @@ impl<T> Default for FromUtf8Lossy<T> {
     }
 }
 
-impl<'a> MapSingle<&'a [u8], Cow<'a, str>> for FromUtf8Lossy<Cow<'a, str>> {
-    fn map_to(&self, val: &'a [u8]) -> Result<Cow<'a, str>, Error> {
+impl<'a> FallibleMap<&'a [u8], Cow<'a, str>> for FromUtf8Lossy<Cow<'a, str>> {
+    fn try_map(&self, val: &'a [u8]) -> Result<Cow<'a, str>, Error> {
         Ok(String::from_utf8_lossy(val))
     }
 }
 
+/// A mapper that converts byte slices to UTF-8 [`String`] with lossy conversion.
 #[inline(always)]
 pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
     FromUtf8Lossy::default()
@@ -444,8 +489,8 @@ impl<T> Default for FromNeBytes<T> {
 
 macro_rules! impl_from_bytes {
     (le $ty:ty, $size:literal) => {
-        impl<'a> MapSingle<&'a [u8], $ty> for FromLeBytes<$ty> {
-            fn map_to(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
+        impl<'a> FallibleMap<&'a [u8], $ty> for FromLeBytes<$ty> {
+            fn try_map(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
                 debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
@@ -459,8 +504,8 @@ macro_rules! impl_from_bytes {
         }
     };
     (be $ty:ty, $size:literal) => {
-        impl<'a> MapSingle<&'a [u8], $ty> for FromBeBytes<$ty> {
-            fn map_to(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
+        impl<'a> FallibleMap<&'a [u8], $ty> for FromBeBytes<$ty> {
+            fn try_map(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
                 debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
@@ -474,8 +519,8 @@ macro_rules! impl_from_bytes {
         }
     };
     (ne $ty:ty, $size:literal) => {
-        impl<'a> MapSingle<&'a [u8], $ty> for FromNeBytes<$ty> {
-            fn map_to(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
+        impl<'a> FallibleMap<&'a [u8], $ty> for FromNeBytes<$ty> {
+            fn try_map(&self, val: &'a [u8]) -> Result<$ty, $crate::err::Error> {
                 debug_assert_eq!($size, self.size());
                 let bytes = val
                     .chunks_exact($size)
@@ -583,4 +628,137 @@ pub fn from_be_bytes<T>() -> FromBeBytes<T> {
 #[inline(always)]
 pub fn from_ne_bytes<T>() -> FromNeBytes<T> {
     FromNeBytes::default()
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Bounded<T> {
+    min: T,
+    max: T,
+}
+
+impl<T> Bounded<T> {
+    pub fn new(min: T, max: T) -> Self {
+        Self { min, max }
+    }
+}
+
+impl<T> FallibleMap<T, T> for Bounded<T>
+where
+    T: PartialOrd,
+{
+    fn try_map(&self, val: T) -> Result<T, Error> {
+        if self.min <= val && val < self.max {
+            Ok(val)
+        } else {
+            Err(Error::SelectEq)
+        }
+    }
+}
+
+/// A mapper that validates values against a specified range.
+///
+/// This struct checks if a value falls within the range `[min, max)` -
+/// inclusive of the minimum value and exclusive of the maximum value.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let mut ctx = CharsCtx::new("1,3,5,7,9");
+///
+///     let parser = neu::digit(10)
+///         .many1()
+///         .try_map(map::from_str::<i32>())
+///         .try_map(map::bounded(1, 8))
+///         .sep(",");
+///
+///     assert_eq!(ctx.ctor(&parser)?, vec![1, 3, 5, 7]);
+///
+/// #   Ok(())
+/// # }
+/// ```
+#[inline(always)]
+pub fn bounded<T: PartialOrd>(min: T, max: T) -> Bounded<T> {
+    Bounded::new(min, max)
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct WithDefault<T, F, M> {
+    func: F,
+    mapper: M,
+    marker: PhantomData<T>,
+}
+
+impl<T, F, M> WithDefault<T, F, M>
+where
+    F: Fn() -> T,
+{
+    pub fn new(func: F, mapper: M) -> Self {
+        Self {
+            func,
+            mapper,
+            marker: PhantomData,
+        }
+    }
+}
+
+impl<T, F, M> FallibleMap<T, T> for WithDefault<T, F, M>
+where
+    F: Fn() -> T,
+    M: FallibleMap<T, T>,
+{
+    fn try_map(&self, val: T) -> Result<T, Error> {
+        if let Ok(val) = self.mapper.try_map(val) {
+            Ok(val)
+        } else {
+            Ok((self.func)())
+        }
+    }
+}
+
+pub trait WithDefaultHelper<T>: Sized {
+    fn with_default<F>(self, func: F) -> WithDefault<T, F, Self>
+    where
+        F: Fn() -> T;
+}
+
+impl<T, K: Sized> WithDefaultHelper<T> for K {
+    fn with_default<F>(self, func: F) -> WithDefault<T, F, Self>
+    where
+        F: Fn() -> T,
+    {
+        with_default(func, self)
+    }
+}
+
+/// A mapper that provides a fallback default value when the primary mapping fails.
+///
+/// This struct wraps another mapper and a default value provider function. When mapping,
+/// it first attempts to use the inner mapper. If that fails, it invokes the default
+/// function to produce a fallback value.
+///
+/// # Example
+/// ```
+/// # use neure::{map::WithDefaultHelper, prelude::*};
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let mut ctx = CharsCtx::new("1,3,5,7,9");
+///
+///     let parser = regex!(['0' - '9']+)
+///         .try_map(map::from_str::<i32>())
+///         .try_map(map::bounded(1, 5).with_default(|| 0))
+///         .sep(",");
+///
+///     assert_eq!(ctx.ctor(&parser)?, vec![1, 3, 0, 0, 0]);
+///
+/// #   Ok(())
+/// # }
+/// ```
+#[inline(always)]
+pub fn with_default<T, F, M>(func: F, mapper: M) -> WithDefault<T, F, M>
+where
+    F: Fn() -> T,
+{
+    WithDefault::new(func, mapper)
 }

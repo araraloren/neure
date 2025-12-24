@@ -327,10 +327,6 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
         self
     }
 
-    fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
-        self.dat.get(offset..).ok_or(Error::OutOfBound)
-    }
-
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error> {
         Ok(BytesIndices::new(self.orig_at(offset)?))
     }
