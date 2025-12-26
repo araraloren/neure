@@ -708,6 +708,10 @@ where
     F: Fn() -> T,
     M: FallibleMap<T, T>,
 {
+    fn out_size(&self) -> usize {
+        self.mapper.out_size()
+    }
+
     fn try_map(&self, val: T) -> Result<T, Error> {
         if let Ok(val) = self.mapper.try_map(val) {
             Ok(val)
@@ -761,4 +765,60 @@ where
     F: Fn() -> T,
 {
     WithDefault::new(func, mapper)
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct FixedSize(pub usize);
+
+impl FixedSize {
+    pub fn new(size: usize) -> Self {
+        Self(size)
+    }
+}
+
+impl<T> FallibleMap<T, T> for FixedSize {
+    fn out_size(&self) -> usize {
+        self.0
+    }
+
+    fn try_map(&self, val: T) -> Result<T, Error> {
+        Ok(val)
+    }
+}
+
+/// A wrapper that specifies a fixed output size for parsers.
+///
+/// This struct is used when you need to explicitly define the size of data
+/// to consume from a byte stream, particularly for parsers that cannot
+/// determine their size automatically.
+///
+/// The mapper itself is an identity function - it simply returns the input
+/// unchanged while providing the specified size information to the parser system.
+///
+/// # Example
+/// ```
+/// # use neure::{
+/// #     map::{FallibleMap, fixed_size, from_be_bytes},
+/// #     prelude::*,
+/// # };
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     fn parse<'a, P, O>(parser: P, bc: &mut BytesCtx<'a>) -> Result<O, neure::err::Error>
+///     where
+///         P: FallibleMap<&'a [u8], O>,
+///     {
+///         bc.ctor(&regex::consume(parser.out_size()).try_map(parser))
+///     }
+///
+///     let bc = &mut BytesCtx::new(b"\x0bhelloworld!");
+///
+///     let length = parse(from_be_bytes::<u8>(), bc)?;
+///
+///     assert_eq!(parse(fixed_size(length as usize), bc)?, b"helloworld!");
+///
+///     Ok(())
+/// # }
+/// ```
+pub fn fixed_size(size: usize) -> FixedSize {
+    FixedSize::new(size)
 }

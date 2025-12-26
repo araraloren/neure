@@ -1,99 +1,40 @@
-use neure::map::{FromBeBytes, from_be_bytes};
+use neure::map::{fixed_size, from_be_bytes};
 use neure::prelude::*;
 use neure::{err::Error, map::FallibleMap};
-use std::mem::size_of;
+use std::cell::RefCell;
 use std::process::exit;
-use std::{cell::RefCell, marker::PhantomData};
 
-#[derive(Debug, Clone, Copy)]
-pub struct PngParser<T> {
-    size: usize,
-
-    marker: PhantomData<T>,
-}
-
-impl<T> Default for PngParser<T> {
-    fn default() -> Self {
-        Self {
-            size: size_of::<T>(),
-            marker: Default::default(),
-        }
-    }
-}
-
-impl<T> PngParser<T> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn with_capacity(size: usize) -> Self {
-        Self {
-            size,
-            marker: PhantomData,
-        }
-    }
-
-    pub fn parse(self, ctx: &mut BytesCtx) -> Result<T, Error>
-    where
-        Self: for<'a> FallibleMap<&'a [u8], T>,
-    {
-        ctx.ctor(&regex::consume(self.out_size()).try_map(self))
-    }
-}
-
-impl<'a, T> FallibleMap<&'a [u8], T> for PngParser<T>
+pub fn parse<'a, P, O>(parser: P, bc: &mut BytesCtx<'a>) -> Result<O, Error>
 where
-    FromBeBytes<T>: FallibleMap<&'a [u8], T>,
+    P: FallibleMap<&'a [u8], O>,
 {
-    fn out_size(&self) -> usize {
-        self.size
-    }
+    let size = parser.out_size();
 
-    // map all data from big endian
-    fn try_map(&self, val: &'a [u8]) -> Result<T, Error> {
-        from_be_bytes::<T>().try_map(val)
-    }
-}
-
-pub struct Data(Vec<u8>);
-
-impl<'a> FallibleMap<&'a [u8], Data> for PngParser<Data> {
-    fn out_size(&self) -> usize {
-        self.size
-    }
-
-    fn try_map(&self, val: &'a [u8]) -> Result<Data, Error> {
-        Ok(Data(val.to_vec()))
-    }
+    bc.ctor(&regex::consume(size).try_map(parser))
 }
 
 #[derive(Debug)]
-pub struct Trunk {
+pub struct Trunk<'a> {
     ancillary: u8,
     private: u8,
     reserverd: u8,
     safe_copy: u8,
     crc_value: u32,
-    data: Vec<u8>,
+    data: &'a [u8],
 }
 
-impl<'a> FallibleMap<&'a [u8], Trunk> for PngParser<Trunk> {
-    fn out_size(&self) -> usize {
-        self.size
-            + PngParser::<u8>::default().out_size() * 4
-            + PngParser::<u32>::default().out_size()
-    }
+impl<'a> Trunk<'a> {
+    pub fn new(bc: &mut BytesCtx<'a>, length: usize) -> Result<Self, neure::err::Error> {
+        let start = bc.offset();
+        let ancillary = parse(from_be_bytes(), bc)?;
+        let private = parse(from_be_bytes(), bc)?;
+        let reserverd = parse(from_be_bytes(), bc)?;
+        let safe_copy = parse(from_be_bytes(), bc)?;
 
-    fn try_map(&self, val: &'a [u8]) -> Result<Trunk, Error> {
-        let u8_parser = PngParser::new();
-        let inner_ctx = &mut BytesCtx::new(val);
-        let ancillary = u8_parser.parse(inner_ctx)?;
-        let private = u8_parser.parse(inner_ctx)?;
-        let reserverd = u8_parser.parse(inner_ctx)?;
-        let safe_copy = u8_parser.parse(inner_ctx)?;
-        let data: Data = PngParser::with_capacity(self.size).parse(inner_ctx)?;
-        let crc_data = inner_ctx.orig_sub(0, inner_ctx.offset())?;
-        let crc_value: u32 = PngParser::new().parse(inner_ctx)?;
+        let data: &[u8] = parse(fixed_size(length), bc)?;
+
+        let crc_data = bc.orig_sub(start, bc.offset() - start)?;
+        let crc_value: u32 = parse(from_be_bytes(), bc)?;
         let calc_value = calc_crc(crc_data);
 
         if crc_value != calc_value {
@@ -105,12 +46,10 @@ impl<'a> FallibleMap<&'a [u8], Trunk> for PngParser<Trunk> {
             reserverd,
             safe_copy,
             crc_value,
-            data: data.0,
+            data,
         })
     }
-}
 
-impl Trunk {
     pub fn is_ancillary(&self) -> bool {
         self.ancillary.is_ascii_lowercase()
     }
@@ -128,7 +67,7 @@ impl Trunk {
     }
 
     pub fn data(&self) -> &[u8] {
-        &self.data
+        self.data
     }
 
     pub fn crc_value(&self) -> u32 {
@@ -138,6 +77,26 @@ impl Trunk {
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.data.len()
+    }
+}
+
+pub struct Png<'a> {
+    trunks: Vec<Trunk<'a>>,
+}
+
+impl<'a> Png<'a> {
+    pub fn new(bc: &mut BytesCtx<'a>) -> Result<Self, neure::err::Error> {
+        let mut trunks = vec![];
+
+        while let Ok(length) = parse(from_be_bytes::<u32>(), bc) {
+            trunks.push(Trunk::new(bc, length as usize)?);
+        }
+
+        Ok(Self { trunks })
+    }
+
+    fn trunks(&self) -> &[Trunk<'a>] {
+        &self.trunks
     }
 }
 
@@ -157,43 +116,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Not a png file");
             exit(1)
         }
-        let mut trunks = vec![];
+        let png = Png::new(ctx)?;
 
-        for idx in 0.. {
-            if let Ok(length) = PngParser::<u32>::new().parse(ctx) {
-                // pass data length to PngParser
-                let trunk: Trunk = PngParser::with_capacity(length as usize).parse(ctx)?;
-
-                println!(
-                    "In trunk {idx}: {}",
-                    if trunk.is_ancillary() {
-                        "critical"
-                    } else {
-                        "ancillary"
-                    }
-                );
-                println!(
-                    "In trunk {idx}: {}",
-                    if !trunk.is_private() {
-                        "public"
-                    } else {
-                        "private"
-                    }
-                );
-                println!("In trunk {idx}: {}", !trunk.is_reserved());
-                println!(
-                    "In trunk {idx}: {}",
-                    if !trunk.is_safe_copy() {
-                        "unsafe to copy"
-                    } else {
-                        "safe to copy"
-                    }
-                );
-                println!("In trunk {idx}: data length = {}", trunk.len());
-                trunks.push(trunk);
-            } else {
-                break;
-            }
+        for (idx, trunk) in png.trunks().iter().enumerate() {
+            println!(
+                "In trunk {idx}: {}",
+                if trunk.is_ancillary() {
+                    "critical"
+                } else {
+                    "ancillary"
+                }
+            );
+            println!(
+                "In trunk {idx}: {}",
+                if !trunk.is_private() {
+                    "public"
+                } else {
+                    "private"
+                }
+            );
+            println!("In trunk {idx}: {}", !trunk.is_reserved());
+            println!(
+                "In trunk {idx}: {}",
+                if !trunk.is_safe_copy() {
+                    "unsafe to copy"
+                } else {
+                    "safe to copy"
+                }
+            );
+            println!("In trunk {idx}: data length = {}", trunk.len());
         }
     }
     Ok(())

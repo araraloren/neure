@@ -73,8 +73,6 @@ pub enum Error {
 
     FromNeBytes,
 
-    Request,
-
     Uid(usize),
 }
 
@@ -142,7 +140,6 @@ impl Display for Error {
             Error::FromLeBytes => write!(f, "FromLeBytes: need more bytes for given type"),
             Error::FromBeBytes => write!(f, "FromBeBytes: need more bytes for given type"),
             Error::FromNeBytes => write!(f, "FromNeBytes: need more bytes for given type"),
-            Error::Request => write!(f, "request data failed"),
             Error::Uid(id) => write!(f, "Got error(id = {id})"),
         }
     }
