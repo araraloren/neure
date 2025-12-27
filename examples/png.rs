@@ -1,4 +1,4 @@
-use neure::err::Error;
+use neure::map::from_be_bytes;
 use neure::prelude::*;
 use std::{cell::RefCell, process::exit};
 
@@ -11,16 +11,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(file) = std::env::args().nth(1) {
         let head: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10];
         let bytes = std::fs::read(file)?;
-        let as_u32 = |dat: &[u8]| {
-            assert_eq!(dat.len(), 4);
-            Ok(u32::from_be_bytes([dat[0], dat[1], dat[2], dat[3]]))
-        };
-        let as_u8 = |dat: &[u8]| {
-            assert_eq!(dat.len(), 1);
-            char::from_u32(u8::from_be_bytes([dat[0]]) as u32).ok_or(Error::Uid(0))
-        };
-        let uint32 = regex::consume(4).try_map(as_u32);
-        let uint8 = regex::consume(1).try_map(as_u8);
+        let u32_parser = regex::consume(4).try_map(from_be_bytes::<u32>());
+        let uint8 = regex::consume(1)
+            .try_map(from_be_bytes::<u8>())
+            .map(|v| char::from_u32(v as u32).unwrap());
         let mut ctx = RegexCtx::new(bytes.as_slice());
 
         if ctx.ctor(&head).is_ok() {
@@ -30,7 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             exit(1)
         }
         for idx in 0.. {
-            if let Ok(length) = ctx.ctor(&uint32) {
+            if let Ok(length) = ctx.ctor(&u32_parser) {
                 let crc_beg = ctx.offset();
                 let ancillary = ctx.ctor(&uint8)?;
                 let private = ctx.ctor(&uint8)?;
@@ -78,7 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("skip data length = {}", ctx.ctor(&data)?.len());
 
                 let crc_data = ctx.orig_sub(crc_beg, ctx.offset() - crc_beg)?;
-                let crc_value = ctx.ctor(&uint32)?;
+                let crc_value = ctx.ctor(&u32_parser)?;
 
                 println!(
                     "Checking the crc value = {}",

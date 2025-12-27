@@ -38,11 +38,11 @@ impl JsonParser {
                 .repeat(0..)
                 .pat();
             let str = ctor::Adapter::dyn_box(str_val.enclose(b"\"", b"\""));
-            let str = str.try_map(|v| Ok(JsonZero::Str(v)));
+            let str = str.map(JsonZero::Str);
 
-            let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
-            let bool_f = regex::lit_slice(b"false").try_map(|_| Ok(JsonZero::Bool(false)));
-            let empty = regex::lit_slice(b"empty").try_map(|_| Ok(JsonZero::Null));
+            let bool_t = regex::lit_slice(b"true").map(|_| JsonZero::Bool(true));
+            let bool_f = regex::lit_slice(b"false").map(|_| JsonZero::Bool(false));
+            let empty = regex::lit_slice(b"empty").map(|_| JsonZero::Null);
 
             let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
             let ele = ctor::Adapter::rc(ele.suffix(ws).prefix(ws));
@@ -51,11 +51,11 @@ impl JsonParser {
             let key = key.enclose(b"\"", b"\"");
             let key = key.suffix(ws).prefix(ws);
             let obj = key.sep_once(b":", ele.clone());
-            let obj = ctor::Adapter::dyn_box(obj.sep(b",").enclose(b"{", b"}"))
-                .try_map(|v| Ok(JsonZero::Object(v)));
+            let obj =
+                ctor::Adapter::dyn_box(obj.sep(b",").enclose(b"{", b"}")).map(JsonZero::Object);
 
             let array = ele.clone().sep(b",").enclose(b"[", b"]");
-            let array = array.try_map(|v| Ok(JsonZero::Array(v)));
+            let array = array.map(JsonZero::Array);
 
             obj.or(array)
         });
