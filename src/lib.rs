@@ -38,7 +38,6 @@ pub mod prelude {
     pub use crate::ctx::MatchExt;
     pub use crate::ctx::MatchMulti;
     pub use crate::ctx::RegexCtx;
-    pub use crate::ctx::Span;
     pub use crate::map;
     pub use crate::neu;
     pub use crate::neu::Condition;
@@ -51,6 +50,7 @@ pub mod prelude {
     pub use crate::regex::Regex;
     pub use crate::regex::RegexIntoHelper;
     pub use crate::span::SimpleStorer;
+    pub use crate::span::Span;
 }
 
 #[cfg(test)]

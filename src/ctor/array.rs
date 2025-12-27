@@ -3,7 +3,7 @@ use std::ops::DerefMut;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 

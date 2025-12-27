@@ -7,7 +7,7 @@ use crate::ctor::Handler;
 use crate::ctor::Map;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::debug_ctor_stage;
 use crate::err::Error;
 use crate::map::Select0;

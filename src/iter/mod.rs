@@ -1,7 +1,7 @@
 mod byte;
 mod span;
 
-use crate::ctx::Span;
+use crate::span::Span;
 
 pub use self::byte::BytesIndices;
 pub use self::span::IteratorBySpan;

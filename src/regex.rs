@@ -57,7 +57,6 @@ use crate::ctor::PairVector;
 use crate::ctor::Slice;
 use crate::ctor::Vector;
 use crate::ctx::Context;
-use crate::ctx::Span;
 use crate::err::Error;
 use crate::neu::Condition;
 use crate::neu::EmptyCond;
@@ -67,6 +66,7 @@ use crate::neu::Neu;
 use crate::neu::NeuIntoRegexOps;
 use crate::neu::Once;
 use crate::neu::Opt;
+use crate::span::Span;
 
 pub trait Regex<C> {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error>;

@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;

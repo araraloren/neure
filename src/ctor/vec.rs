@@ -3,7 +3,6 @@ use std::ops::DerefMut;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::ctx::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
@@ -11,6 +10,7 @@ use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 use super::Ctor;
 

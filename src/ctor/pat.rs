@@ -5,10 +5,10 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::ctx::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Adapts a [`Regex`]-only pattern to be usable in [`Ctor`] contexts by providing span-to-value conversion.

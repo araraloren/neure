@@ -56,7 +56,6 @@ pub use self::vec::Vector;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::ctx::Span;
 use crate::err::Error;
 use crate::map::FuncMapper;
 use crate::map::mapper;
@@ -66,6 +65,7 @@ use crate::neu::EmptyCond;
 use crate::neu::Many0;
 use crate::regex::AsCtor;
 use crate::regex::Regex;
+use crate::span::Span;
 
 pub trait Ctor<'a, C, O, H>: Regex<C> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>;
@@ -295,7 +295,7 @@ where
     }
 
     ///
-    /// Call [`.try_mat`](crate::ctx::Match#tymethod.try_mat) to match regex `P`.
+    /// Adapts a [`Regex`]-only pattern to be usable in [`Ctor`] contexts by providing span-to-value conversion.
     ///
     /// # Example
     ///
@@ -320,7 +320,8 @@ where
         Pattern::new(self)
     }
 
-    /// Match `P` and return the result wrapped by `Option`, ignoring the error.
+    /// Makes a pattern optional, returning `None` (for [`Ctor`]) or an empty span
+    /// (for [`Regex`]) when the pattern fails.
     ///
     /// # Example
     ///
@@ -344,8 +345,7 @@ where
     }
 
     ///
-    /// First try to match `L`. If it is succeeds, then try to match `P`.
-    /// If it is succeeds, then try to match `R`.
+    /// Wraps a pattern between opening and closing delimiters, forming a boundary-enclosed structure.
     ///
     /// # Example
     ///
@@ -370,7 +370,7 @@ where
     }
 
     ///
-    /// Match regex `P` as many times as possible, with S as the delimiter.
+    /// Matches a pattern repeated with separators, supporting trailing separators and minimum counts.
     ///
     /// # Example
     ///
@@ -394,7 +394,7 @@ where
     }
 
     ///
-    /// Match `L` and `R` separated by `S`.
+    /// Splits input into two parts at a single separator pattern, discarding the separator value.
     ///
     /// # Example
     ///
@@ -428,7 +428,7 @@ where
     }
 
     ///
-    /// Match regex `P` as many times as possible, with S as the delimiter.
+    /// Collects separator-delimited patterns into any [`FromIterator`] collection type.
     ///
     /// # Example
     ///
@@ -465,7 +465,7 @@ where
     }
 
     ///
-    /// First try to match `L`, if it fails, then try to match `R`.
+    /// Provides alternation between two patterns, trying the second only if the first fails.
     ///
     /// # Example
     ///
@@ -499,7 +499,7 @@ where
     }
 
     ///
-    /// Match `L` and `R`, return the longest match result.
+    /// Selects the longest matching pattern between two alternatives.
     ///
     /// # Example
     ///
@@ -526,7 +526,7 @@ where
     }
 
     ///
-    /// First try to match `P`. If it succeeds, then try to match `T`.
+    /// Sequentially composes two expressions, requiring **both** to match in order.
     ///
     /// # Example
     ///
@@ -552,8 +552,7 @@ where
     }
 
     ///
-    /// First try to match `P`. If it succeeds, then try to match `I`.
-    /// If it succeeds, then try to match `T`.
+    /// Conditionally extends a match with an optional suffix **only if** a test expression succeeds.
     ///
     /// # Example
     ///
@@ -593,7 +592,7 @@ where
     }
 
     ///
-    /// Repeatedly match regex `P`, and the number of matches must meet the given range.
+    /// Repeats a pattern a specified number of times, collecting results or spans based on context.
     ///
     /// # Example
     ///
@@ -642,7 +641,7 @@ where
     }
 
     ///
-    /// Construct a branch struct base on the test `I`(Fn(&C) -> Result<bool, Error>).
+    /// Conditional branching combinator that selects between two patterns based on a test function.
     ///
     /// # Example
     ///
@@ -671,7 +670,7 @@ where
     }
 
     ///
-    /// First try to match `P`. If the match succeeds, then try to match `T`.
+    /// Matches a pattern followed by a mandatory suffix, returning only the main pattern's value during construction.
     ///
     /// # Example
     ///
@@ -699,7 +698,8 @@ where
     }
 
     ///
-    /// First try to match `T`. If it succeeds, try to match `P`.
+    /// Matches a mandatory prefix followed by a pattern, returning only the main
+    /// pattern's value during construction.
     ///
     /// # Example
     ///
@@ -735,7 +735,7 @@ where
         Prefix::new(self, pat)
     }
 
-    /// A shortcut for matching trailing ascii spaces.
+    /// A shortcut for matching trailing whitespaces.
     ///
     /// # Example
     ///
@@ -760,6 +760,7 @@ where
         Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 
+    /// A shortcut for matching trailing ascii whitespaces.
     fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item>>
     where
         C: Context<'a, Item = u8>,

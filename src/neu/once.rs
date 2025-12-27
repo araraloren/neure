@@ -5,7 +5,7 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::neu::EmptyCond;

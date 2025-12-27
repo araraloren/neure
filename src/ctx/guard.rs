@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::regex::Regex;

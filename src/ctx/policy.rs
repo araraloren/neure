@@ -3,9 +3,9 @@ use super::PolicyMatch;
 use super::Regex;
 use super::Span;
 
-
 use crate::ctx::Match;
 use crate::err::Error;
+use crate::iter::IndexBySpan;
 use crate::span::SimpleStorer;
 
 #[derive(Debug)]
@@ -163,5 +163,16 @@ where
 
         after.try_parse(self)?;
         Ok(ret)
+    }
+}
+
+impl<I, R> IndexBySpan for PolicyCtx<I, R>
+where
+    I: IndexBySpan,
+{
+    type Output = I::Output;
+
+    fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {
+        IndexBySpan::get_by_span(&self.inner, span)
     }
 }

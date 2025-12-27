@@ -5,7 +5,7 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_ctor_stage;

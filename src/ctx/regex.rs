@@ -9,6 +9,7 @@ use super::Span;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
+use crate::iter::IndexBySpan;
 use crate::neu::NeuIntoRegexOps;
 use crate::span::SimpleStorer;
 
@@ -426,5 +427,21 @@ where
 
         after.try_parse(self)?;
         Ok(ret)
+    }
+}
+
+impl<'a> IndexBySpan for RegexCtx<'a, [u8]> {
+    type Output = [u8];
+
+    fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {
+        span.orig(self).ok()
+    }
+}
+
+impl<'a> IndexBySpan for RegexCtx<'a, str> {
+    type Output = str;
+
+    fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {
+        span.orig(self).ok()
     }
 }

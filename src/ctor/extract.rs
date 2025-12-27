@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::ctx::Span;
+use crate::span::Span;
 use crate::err::Error;
 
 #[derive(Debug, Copy)]

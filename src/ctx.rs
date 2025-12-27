@@ -2,7 +2,6 @@ mod guard;
 mod policy;
 #[allow(clippy::module_inception)]
 mod regex;
-mod span;
 
 use crate::MayDebug;
 use crate::ctor::Ctor;
@@ -12,11 +11,11 @@ use crate::ctor::extract;
 use crate::err::Error;
 use crate::map::FallibleMap;
 use crate::regex::Regex;
+use crate::span::Span;
 
 pub use self::guard::CtxGuard;
 pub use self::policy::PolicyCtx;
 pub use self::regex::RegexCtx;
-pub use self::span::Span;
 
 pub type BytesCtx<'a> = RegexCtx<'a, [u8]>;
 pub type CharsCtx<'a> = RegexCtx<'a, str>;
