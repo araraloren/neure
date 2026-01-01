@@ -4,10 +4,10 @@ use std::marker::PhantomData;
 use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Transparent adapter that elevates Regex combinators to Ctor-enabled combinators.
@@ -85,6 +85,10 @@ impl<I, C> Adapter<C, I> {
         &self.inner
     }
 
+    pub fn inner_mut(&mut self) -> &mut I {
+        &mut self.inner
+    }
+
     pub fn set_inner(&mut self, inner: I) -> &mut Self {
         self.inner = inner;
         self
@@ -105,7 +109,7 @@ impl<I, C> Adapter<C, I> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"who");
-///     let regex = regex::Adapter::r#box(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::r#box(regex);
 ///
 ///     assert_eq!(CharsCtx::new("who are you?").ctor(&regex)?, "who");
 ///
@@ -131,7 +135,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"@");
-///     let regex = regex::Adapter::rc(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::rc(regex);
 ///     let snd = regex.clone();
 ///     let fst = regex;
 ///
@@ -159,7 +163,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"@");
-///     let regex = regex::Adapter::arc(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::arc(regex);
 ///     let snd = regex.clone();
 ///     let fst = regex;
 ///
@@ -187,7 +191,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = move |ctx: &mut CharsCtx| ctx.try_mat(&"@");
-///     let regex = regex::Adapter::cell(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::cell(regex);
 ///     let snd = regex.clone();
 ///     let fst = regex;
 ///
@@ -215,7 +219,7 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = std::cell::RefCell::new("where");
-///     let regex = regex::Adapter::mutex(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::mutex(regex);
 ///
 ///     std::thread::scope(|scope| {
 ///         let handler1 = scope.spawn(|| CharsCtx::new("where are you from?").ctor(&regex));
@@ -246,10 +250,15 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("where"));
-///     let regex = regex::Adapter::refcell(regex); // ERROR if comment this line
+///     let regex = " are you from?".prefix("what");
+///     let regex = regex::Adapter::refcell(regex);
 ///
-///     assert_eq!(CharsCtx::new("where are you from?").ctor(&regex)?, "where");
+///     // replace prefix
+///     regex.inner().borrow_mut().set_prefix("where");
+///     assert_eq!(
+///         CharsCtx::new("where are you from?").ctor(&regex)?,
+///         "where are you from?"
+///     );
 ///
 /// #   Ok(())
 /// # }
@@ -273,9 +282,13 @@ where
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
-///     let regex = regex::Adapter::arc(regex); // ERROR if comment this line
+///     let regex1 = regex::Adapter::dyn_arc(regex);
+///     let regex2 = regex1.clone();
 ///
-///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
+///     assert_eq!(
+///         CharsCtx::new("rust rust 2024?").ctor(&regex1.sep_once(" ", regex2))?,
+///         ("rust", "rust")
+///     );
 ///
 /// #   Ok(())
 /// # }
@@ -306,7 +319,7 @@ impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + 'a>> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
-///     let regex = regex::Adapter::dyn_arc_sync(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::dyn_arc_sync(regex);
 ///     let (send, recv) = channel();
 ///
 ///     std::thread::spawn(move || {
@@ -339,7 +352,7 @@ impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + Sync + 'a>> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
-///     let regex = regex::Adapter::dyn_box(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::dyn_box(regex);
 ///
 ///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
 ///
@@ -372,7 +385,7 @@ impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + 'a>> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
-///     let regex = regex::Adapter::dyn_box_sync(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::dyn_box_sync(regex);
 ///     let (send, recv) = channel();
 ///
 ///     std::thread::spawn(move || {
@@ -405,7 +418,7 @@ impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + Sync + 'a>> {
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
-///     let regex = regex::Adapter::rc(regex); // ERROR if comment this line
+///     let regex = regex::Adapter::rc(regex);
 ///
 ///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
 ///

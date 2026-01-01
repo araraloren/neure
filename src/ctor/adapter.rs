@@ -2,10 +2,10 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::ctor::Ctor;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Adapter that restricts a type to constructor-only contexts while satisfying compiler trait requirements.
@@ -78,6 +78,10 @@ impl<C, I> Adapter<C, I> {
 
     pub fn inner(&self) -> &I {
         &self.inner
+    }
+
+    pub fn inner_mut(&mut self) -> &mut I {
+        &mut self.inner
     }
 
     pub fn set_inner(&mut self, inner: I) -> &mut Self {
@@ -216,11 +220,20 @@ impl<T, C> Adapter<C, std::cell::Cell<T>> {
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 ///     let cnt = char::is_ascii_digit.at_least::<3>();
-///     let prog = cnt.sep_once("/", cnt);
-///     let ctor = ctor::Adapter::cell(prog);
+///     let prog = cnt.sep_once("/".into_refcell_regex(), cnt);
+///     let prog = ctor::Adapter::mutex(prog);
 ///
-///     assert_eq!(CharsCtx::new("999/1000").ctor(&ctor)?, ("999", "1000"));
-///     assert!(CharsCtx::new("99A/100").ctor(&ctor).is_err());
+///     std::thread::scope(|scope| {
+///         scope.spawn(|| {
+///             assert_eq!(
+///                 CharsCtx::new("999/1000").ctor(&prog).unwrap(),
+///                 ("999", "1000")
+///             );
+///         });
+///         scope.spawn(|| {
+///             assert!(CharsCtx::new("99A/100").ctor(&prog).is_err());
+///         });
+///     });
 ///
 ///     Ok(())
 /// # }
@@ -343,7 +356,7 @@ impl<'a, 'b, C, O, H> Adapter<C, Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> 
 ///     let name = char::is_ascii_alphabetic.many1();
 ///     let time = char::is_ascii_digit.count::<10>();
 ///     let parser = name.sep_once("_", time).sep_once(".", "txt")._0();
-///     let ctor = ctor::Adapter::refcell(parser);
+///     let ctor = ctor::Adapter::dyn_arc(parser);
 ///
 ///     assert_eq!(
 ///         CharsCtx::new("video_1135897722.txt").ctor(&ctor)?,
@@ -371,6 +384,31 @@ impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + '
 ///
 /// Return a type that wrap `dyn Ctor + Send + Sync` with [`std::sync::Arc`].
 ///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let cnt = char::is_ascii_digit.at_least::<3>();
+///     let prog = cnt.sep_once(String::from("/"), cnt);
+///     let prog1 = ctor::Adapter::dyn_arc_sync(prog);
+///     let prog2 = prog1.clone();
+///
+///     let h1 = std::thread::spawn(move || {
+///         assert_eq!(
+///             CharsCtx::new("999/1000").ctor(&prog1).unwrap(),
+///             ("999", "1000")
+///         );
+///     });
+///     let h2 = std::thread::spawn(move || {
+///         assert!(CharsCtx::new("99A/100").ctor(&prog2).is_err());
+///     });
+///
+///     let _ = (h1.join(), h2.join());
+///
+/// #   Ok(())
+/// # }
+/// ```
 impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
     pub fn dyn_arc_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
         Self::new(std::sync::Arc::new(ctor))
@@ -388,7 +426,7 @@ impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + S
 ///     let name = '/'.not().many1();
 ///     let path = name.sep("/").opt();
 ///     let path = root.then(path);
-///     let parser = std::rc::Rc::new(path);
+///     let parser = ctor::Adapter::dyn_rc(path);
 ///
 ///     assert_eq!(CharsCtx::new("/").ctor(&parser)?, (Some("/"), None));
 ///     assert_eq!(
