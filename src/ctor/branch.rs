@@ -1,11 +1,10 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_ctor_stage;
@@ -15,6 +14,7 @@ use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Conditional branching combinator that selects between two patterns based on a test function.
@@ -111,7 +111,7 @@ where
     F: Debug,
     E: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Branch")
             .field("pat", &self.pat)
             .field("test", &self.test)

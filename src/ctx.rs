@@ -419,7 +419,7 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
         H: Handler<Self, Out = O>,
         F: FnMut(&mut Self, Result<Span, Error>) -> Option<Span>,
     {
-        std::iter::from_fn(move || {
+        core::iter::from_fn(move || {
             let mut next = None;
 
             while self.offset() < self.len() {

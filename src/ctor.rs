@@ -12,17 +12,17 @@ mod map;
 mod opt;
 mod or;
 mod pat;
+#[cfg(feature = "alloc")]
 mod repeat;
+mod repeat2;
 mod sep;
 mod slice;
 mod then;
+#[cfg(feature = "alloc")]
 mod vec;
 
-use std::cell::Cell;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use core::cell::Cell;
+use core::cell::RefCell;
 
 pub use self::adapter::Adapter;
 pub use self::affix::Prefix;
@@ -43,15 +43,25 @@ pub use self::map::Map;
 pub use self::opt::OptionPat;
 pub use self::or::Or;
 pub use self::pat::Pattern;
-pub use self::repeat::Repeat;
+pub use self::repeat2::Repeat2;
 pub use self::sep::SepCollect;
 pub use self::sep::SepOnce;
-pub use self::sep::Separate;
+pub use self::sep::Separate2;
 pub use self::slice::PairSlice;
 pub use self::slice::Slice;
 pub use self::then::IfThen;
 pub use self::then::Then;
+
+#[cfg(feature = "alloc")]
+pub use self::repeat::Repeat;
+
+#[cfg(feature = "alloc")]
+pub use self::sep::Separate;
+
+#[cfg(feature = "alloc")]
 pub use self::vec::PairVector;
+
+#[cfg(feature = "alloc")]
 pub use self::vec::Vector;
 
 use crate::ctx::Context;
@@ -60,12 +70,14 @@ use crate::err::Error;
 use crate::map::FuncMapper;
 use crate::map::mapper;
 use crate::neu::AsciiWhiteSpace;
-use crate::neu::CRange;
 use crate::neu::EmptyCond;
 use crate::neu::Many0;
 use crate::regex::AsCtor;
 use crate::regex::Regex;
 use crate::span::Span;
+
+#[cfg(feature = "alloc")]
+use crate::neu::CRange;
 
 pub trait Ctor<'a, C, O, H>: Regex<C> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>;
@@ -101,32 +113,6 @@ where
     }
 }
 
-macro_rules! impl_as_ctor {
-    ($self:ident, $regex:expr, $type:ty) => {
-        impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type
-        where
-            C: Match<'a>,
-            H: Handler<C, Out = O>,
-        {
-            fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-                let $self = self;
-
-                Ctor::construct(&$regex.as_ctor(), ctx, handler)
-            }
-        }
-    };
-}
-
-impl_as_ctor!(self_, self_.as_ref(), Box<dyn Regex<C> + 'b>);
-
-impl_as_ctor!(self_, self_.as_ref(), Box<dyn Regex<C> + Send + 'b>);
-
-impl_as_ctor!(self_, self_.as_ref(), Box<dyn Regex<C> + Send + Sync + 'b>);
-
-impl_as_ctor!(self_, self_.as_ref(), Rc<dyn Regex<C> + 'b>);
-
-impl_as_ctor!(self_, self_.as_ref(), Rc<dyn Regex<C> + Send + 'b>);
-
 macro_rules! impl_orig_ctor {
     ($type:ty, $orig:ty) => {
         impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type
@@ -141,17 +127,105 @@ macro_rules! impl_orig_ctor {
     };
 }
 
+macro_rules! impl_forward_ctor {
+    ($self:ident, $regex:expr, $type:ty) => {
+        impl<'a, 'b, C, O, I, H> Ctor<'a, C, O, H> for $type
+        where
+            I: Ctor<'a, C, O, H>,
+        {
+            fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+                let $self = self;
+
+                Ctor::construct($regex, ctx, handler)
+            }
+        }
+    };
+}
+
+#[cfg(feature = "alloc")]
+pub mod inner_ctor_impls {
+
+    use crate::alloc::Arc;
+    use crate::alloc::Box;
+    use crate::alloc::Rc;
+    use crate::alloc::String;
+    use crate::alloc::Vec;
+    use crate::ctor::Ctor;
+    use crate::ctor::Handler;
+    use crate::ctx::Context;
+    use crate::ctx::Match;
+    use crate::err::Error;
+    use crate::regex::AsCtor;
+    use crate::regex::Regex;
+
+    macro_rules! impl_as_ctor {
+        ($self:ident, $regex:expr, $type:ty) => {
+            impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type
+            where
+                C: Match<'a>,
+                H: Handler<C, Out = O>,
+            {
+                fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+                    let $self = self;
+
+                    Ctor::construct(&$regex.as_ctor(), ctx, handler)
+                }
+            }
+        };
+    }
+
+    impl_as_ctor!(self_, self_.as_ref(), Box<dyn Regex<C> + 'b>);
+
+    impl_as_ctor!(self_, self_.as_ref(), Box<dyn Regex<C> + Send + 'b>);
+
+    impl_as_ctor!(self_, self_.as_ref(), Box<dyn Regex<C> + Send + Sync + 'b>);
+
+    impl_as_ctor!(self_, self_.as_ref(), Rc<dyn Regex<C> + 'b>);
+
+    impl_as_ctor!(self_, self_.as_ref(), Rc<dyn Regex<C> + Send + 'b>);
+
+    impl_orig_ctor!(String, str);
+
+    impl_orig_ctor!(&'_ String, str);
+
+    impl_orig_ctor!(Vec<u8>, [u8]);
+
+    impl_orig_ctor!(&'_ Vec<u8>, [u8]);
+
+    impl_forward_ctor!(self_, self_.as_ref(), Arc<I>);
+
+    impl_forward_ctor!(self_, self_.as_ref(), Rc<I>);
+
+    macro_rules! impl_dyn_ctor {
+        ( $type:ty) => {
+            impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type {
+                fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+                    Ctor::construct(self.as_ref(), ctx, handler)
+                }
+            }
+        };
+    }
+
+    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
+
+    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
+
+    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+
+    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
+
+    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+
+    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+
+    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
+
+    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+}
+
 impl_orig_ctor!(&'_ str, str);
 
-impl_orig_ctor!(String, str);
-
-impl_orig_ctor!(&'_ String, str);
-
 impl_orig_ctor!(&'_ [u8], [u8]);
-
-impl_orig_ctor!(Vec<u8>, [u8]);
-
-impl_orig_ctor!(&'_ Vec<u8>, [u8]);
 
 impl<'a, const N: usize, C, O, H> Ctor<'a, C, O, H> for &[u8; N]
 where
@@ -173,30 +247,16 @@ where
     }
 }
 
-macro_rules! impl_forward_ctor {
-    ($self:ident, $regex:expr, $type:ty) => {
-        impl<'a, 'b, C, O, I, H> Ctor<'a, C, O, H> for $type
-        where
-            I: Ctor<'a, C, O, H>,
-        {
-            fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-                let $self = self;
-
-                Ctor::construct($regex, ctx, handler)
-            }
-        }
-    };
-}
-
 impl_forward_ctor!(self_, self_.as_ref().ok_or(Error::Option)?, Option<I>);
 
 impl_forward_ctor!(self_, &*self_.borrow(), RefCell<I>);
 
-impl_forward_ctor!(self_, &*self_.lock().map_err(|_| Error::Mutex)?, Mutex<I>);
-
-impl_forward_ctor!(self_, self_.as_ref(), Arc<I>);
-
-impl_forward_ctor!(self_, self_.as_ref(), Rc<I>);
+#[cfg(feature = "std")]
+impl_forward_ctor!(
+    self_,
+    &*self_.lock().map_err(|_| Error::Mutex)?,
+    crate::std::Mutex<I>
+);
 
 impl<'a, C, O, I, H> Ctor<'a, C, O, H> for Cell<I>
 where
@@ -206,32 +266,6 @@ where
         Ctor::construct(&self.get(), ctx, handler)
     }
 }
-
-macro_rules! impl_dyn_ctor {
-    ( $type:ty) => {
-        impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type {
-            fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-                Ctor::construct(self.as_ref(), ctx, handler)
-            }
-        }
-    };
-}
-
-impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
-
-impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
-
-impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
-
-impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
-
-impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
-
-impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
-
-impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
-
-impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
 
 pub trait CtorOps<'a, C>: Sized
 where
@@ -249,7 +283,10 @@ where
 
     fn enclose<L, R>(self, open: L, close: R) -> Enclose<C, Self, L, R>;
 
+    #[cfg(feature = "alloc")]
     fn sep<S>(self, sep: S) -> Separate<C, Self, S>;
+
+    fn sep2<S, const M: usize, const N: usize>(self, sep: S) -> Separate2<C, Self, S, M, N>;
 
     fn sep_once<S, R>(self, sep: S, right: R) -> SepOnce<C, Self, S, R>;
 
@@ -263,7 +300,10 @@ where
 
     fn if_then<I, T>(self, test: I, then: T) -> IfThen<C, Self, I, T>;
 
+    #[cfg(feature = "alloc")]
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self>;
+
+    fn repeat2<const M: usize, const N: usize>(self) -> Repeat2<C, Self, M, N>;
 
     fn collect<O, T>(self) -> Collect<C, Self, O, T>;
 
@@ -389,8 +429,13 @@ where
     ///     Ok(())
     /// # }
     /// ```
+    #[cfg(feature = "alloc")]
     fn sep<S>(self, sep: S) -> Separate<C, Self, S> {
         Separate::new(self, sep)
+    }
+
+    fn sep2<S, const M: usize, const N: usize>(self, sep: S) -> Separate2<C, Self, S, M, N> {
+        Separate2::new(self, sep)
     }
 
     ///
@@ -610,8 +655,13 @@ where
     ///     Ok(())
     /// # }
     /// ```
+    #[cfg(feature = "alloc")]
     fn repeat(self, range: impl Into<CRange<usize>>) -> Repeat<C, Self> {
         Repeat::new(self, range)
+    }
+
+    fn repeat2<const M: usize, const N: usize>(self) -> Repeat2<C, Self, M, N> {
+        Repeat2::new(self)
     }
 
     ///

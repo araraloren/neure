@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
@@ -105,7 +105,7 @@ where
     P: Debug,
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PadUnit")
             .field("pat", &self.pat)
             .field("suffix", &self.suffix)
@@ -308,7 +308,7 @@ where
     P: Debug,
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PaddedUnit")
             .field("pat", &self.pat)
             .field("prefix", &self.prefix)

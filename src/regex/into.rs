@@ -1,13 +1,17 @@
+#[cfg(feature = "alloc")]
 use crate::ctx::Context;
+
 use crate::regex::Adapter;
 use crate::regex::Regex;
+
+#[cfg(feature = "alloc")]
 use crate::regex::adapter::BoxAdapter;
 
-use std::cell::Cell;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use core::cell::Cell;
+use core::cell::RefCell;
+
+#[cfg(feature = "alloc")]
+use crate::alloc;
 
 pub trait RegexIntoHelper<C>
 where
@@ -15,29 +19,36 @@ where
 {
     fn into_ctor(self) -> Adapter<C, Self>;
 
+    #[cfg(feature = "alloc")]
     fn into_box_regex(self) -> Adapter<C, BoxAdapter<C, Self>>;
 
-    fn into_rc_regex(self) -> Adapter<C, Rc<Self>>;
+    #[cfg(feature = "alloc")]
+    fn into_rc_regex(self) -> Adapter<C, alloc::Rc<Self>>;
 
-    fn into_arc_regex(self) -> Adapter<C, Arc<Self>>;
+    #[cfg(feature = "alloc")]
+    fn into_arc_regex(self) -> Adapter<C, alloc::Arc<Self>>;
 
     fn into_cell_regex(self) -> Adapter<C, Cell<Self>>;
 
     fn into_refcell_regex(self) -> Adapter<C, RefCell<Self>>;
 
-    fn into_mutex_regex(self) -> Adapter<C, Mutex<Self>>;
+    #[cfg(feature = "std")]
+    fn into_mutex_regex(self) -> Adapter<C, crate::std::Mutex<Self>>;
 
-    fn into_dyn_regex<'a, 'b>(self) -> Adapter<C, Box<dyn Regex<C> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_regex<'a, 'b>(self) -> Adapter<C, alloc::Box<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b;
 
-    fn into_dyn_arc_regex<'a, 'b>(self) -> Adapter<C, std::sync::Arc<dyn Regex<C> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_arc_regex<'a, 'b>(self) -> Adapter<C, alloc::Arc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b;
 
-    fn into_dyn_rc_regex<'a, 'b>(self) -> Adapter<C, std::rc::Rc<dyn Regex<C> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_rc_regex<'a, 'b>(self) -> Adapter<C, alloc::Rc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b;
@@ -51,15 +62,18 @@ where
         Adapter::new(self)
     }
 
+    #[cfg(feature = "alloc")]
     fn into_box_regex(self) -> Adapter<C, BoxAdapter<C, Self>> {
         Adapter::r#box(self)
     }
 
-    fn into_rc_regex(self) -> Adapter<C, Rc<Self>> {
+    #[cfg(feature = "alloc")]
+    fn into_rc_regex(self) -> Adapter<C, alloc::Rc<Self>> {
         Adapter::rc(self)
     }
 
-    fn into_arc_regex(self) -> Adapter<C, Arc<Self>> {
+    #[cfg(feature = "alloc")]
+    fn into_arc_regex(self) -> Adapter<C, alloc::Arc<Self>> {
         Adapter::arc(self)
     }
 
@@ -71,11 +85,13 @@ where
         Adapter::refcell(self)
     }
 
-    fn into_mutex_regex(self) -> Adapter<C, Mutex<Self>> {
+    #[cfg(feature = "std")]
+    fn into_mutex_regex(self) -> Adapter<C, crate::std::Mutex<Self>> {
         Adapter::mutex(self)
     }
 
-    fn into_dyn_regex<'a, 'b>(self) -> Adapter<C, Box<dyn Regex<C> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_regex<'a, 'b>(self) -> Adapter<C, alloc::Box<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b,
@@ -83,7 +99,8 @@ where
         Adapter::dyn_box(self)
     }
 
-    fn into_dyn_arc_regex<'a, 'b>(self) -> Adapter<C, std::sync::Arc<dyn Regex<C> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_arc_regex<'a, 'b>(self) -> Adapter<C, alloc::Arc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b,
@@ -91,7 +108,8 @@ where
         Adapter::dyn_arc(self)
     }
 
-    fn into_dyn_rc_regex<'a, 'b>(self) -> Adapter<C, std::rc::Rc<dyn Regex<C> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_rc_regex<'a, 'b>(self) -> Adapter<C, alloc::Rc<dyn Regex<C> + 'b>>
     where
         C: Context<'a>,
         Self: 'b,

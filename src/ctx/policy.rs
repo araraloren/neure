@@ -6,7 +6,6 @@ use super::Span;
 use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::IndexBySpan;
-use crate::span::SimpleStorer;
 
 #[derive(Debug)]
 pub struct PolicyCtx<I, R> {
@@ -69,8 +68,9 @@ impl<I, R> PolicyCtx<I, R> {
         self
     }
 
-    pub fn span_storer(&self, capacity: usize) -> SimpleStorer {
-        SimpleStorer::new(capacity)
+    #[cfg(feature = "alloc")]
+    pub fn span_storer(&self, capacity: usize) -> crate::span::SimpleStorer {
+        crate::span::SimpleStorer::new(capacity)
     }
 }
 

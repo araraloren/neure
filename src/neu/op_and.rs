@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use super::Neu;
 
@@ -40,7 +40,7 @@ where
     marker: PhantomData<T>,
 }
 
-impl<L, R, T: MayDebug> std::ops::Not for And<L, R, T>
+impl<L, R, T: MayDebug> core::ops::Not for And<L, R, T>
 where
     L: Neu<T>,
     R: Neu<T>,
@@ -57,7 +57,7 @@ where
     L: Neu<T> + Debug,
     R: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("And")
             .field("left", &self.left)
             .field("right", &self.right)

@@ -1,9 +1,9 @@
-use std::cell::Cell;
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering::Relaxed;
+use core::cell::Cell;
+use core::fmt::Debug;
+use core::marker::PhantomData;
+use core::sync::atomic::AtomicBool;
+use core::sync::atomic::AtomicUsize;
+use core::sync::atomic::Ordering::Relaxed;
 
 use super::Neu;
 
@@ -26,7 +26,7 @@ where
     U: Neu<T> + Debug,
     P: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Prefix")
             .field("prefix", &self.prefix)
             .field("unit", &self.unit)
@@ -276,7 +276,7 @@ where
     U: Neu<T> + Debug,
     P: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PrefixSync")
             .field("prefix", &self.prefix)
             .field("unit", &self.unit)

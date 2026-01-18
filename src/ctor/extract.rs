@@ -1,9 +1,9 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use crate::ctor::Handler;
 use crate::ctx::Context;
-use crate::span::Span;
 use crate::err::Error;
+use crate::span::Span;
 
 #[derive(Debug, Copy)]
 pub struct Extract<T> {
@@ -58,13 +58,16 @@ impl<'a, C: Context<'a, Orig<'a> = &'a [u8]>> Handler<C> for Extract<&'a [u8]> {
     }
 }
 
-impl<'a, C: Context<'a, Orig<'a> = &'a str>> Handler<C> for Extract<String> {
-    type Out = String;
+#[cfg(feature = "alloc")]
+impl<'a, C: Context<'a, Orig<'a> = &'a str>> Handler<C> for Extract<crate::alloc::String> {
+    type Out = crate::alloc::String;
 
     type Error = Error;
 
     fn invoke(&mut self, ctx: &C, span: &Span) -> Result<Self::Out, Self::Error> {
-        Ok(String::from(ctx.orig_sub(span.beg(), span.len())?))
+        Ok(crate::alloc::String::from(
+            ctx.orig_sub(span.beg(), span.len())?,
+        ))
     }
 }
 

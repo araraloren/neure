@@ -1,11 +1,11 @@
-use std::ops::Deref;
-use std::ops::DerefMut;
+use core::ops::Deref;
+use core::ops::DerefMut;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
+use crate::span::Span;
 
 use super::Ctor;
 
@@ -73,7 +73,7 @@ use super::Ctor;
 #[derive(Debug, Clone, Copy)]
 pub struct Array<const N: usize, T>([T; N]);
 
-impl<const N: usize, T> std::ops::Not for Array<N, T> {
+impl<const N: usize, T> core::ops::Not for Array<N, T> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
@@ -179,7 +179,7 @@ where
 #[derive(Debug, Clone, Copy)]
 pub struct PairArray<const N: usize, K, V>([(K, V); N]);
 
-impl<const N: usize, K, V> std::ops::Not for PairArray<N, K, V> {
+impl<const N: usize, K, V> core::ops::Not for PairArray<N, K, V> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {

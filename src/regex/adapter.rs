@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 use crate::ctor::Handler;
@@ -8,6 +8,9 @@ use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
 use crate::span::Span;
+
+#[cfg(feature = "alloc")]
+use crate::alloc;
 
 ///
 /// Transparent adapter that elevates Regex combinators to Ctor-enabled combinators.
@@ -34,7 +37,7 @@ pub struct Adapter<C, I> {
 impl_not_for_regex!(Adapter<C, I>);
 
 impl<I: Debug, C> Debug for Adapter<C, I> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Adapter")
             .field("inner", &self.inner)
             .finish()
@@ -116,6 +119,7 @@ impl<I, C> Adapter<C, I> {
 /// #   Ok(())
 /// # }
 /// ```
+#[cfg(feature = "alloc")]
 impl<T, C> Adapter<C, BoxAdapter<C, T>>
 where
     T: Regex<C>,
@@ -126,7 +130,7 @@ where
 }
 
 ///
-/// Return a type that wrap `Regex` with [`std::rc::Rc`].
+/// Return a type that wrap `Regex` with [`alloc::Rc`].
 ///
 /// # Example
 ///
@@ -144,17 +148,18 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::rc::Rc<T>>
+#[cfg(feature = "alloc")]
+impl<T, C> Adapter<C, alloc::Rc<T>>
 where
     T: Regex<C>,
 {
     pub fn rc(regex: T) -> Self {
-        Self::new(std::rc::Rc::new(regex))
+        Self::new(alloc::Rc::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `Regex` with [`std::sync::Arc`].
+/// Return a type that wrap `Regex` with [`alloc::Arc`].
 ///
 /// # Example
 ///
@@ -172,17 +177,18 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::sync::Arc<T>>
+#[cfg(feature = "alloc")]
+impl<T, C> Adapter<C, alloc::Arc<T>>
 where
     T: Regex<C>,
 {
     pub fn arc(regex: T) -> Self {
-        Self::new(std::sync::Arc::new(regex))
+        Self::new(alloc::Arc::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `Regex` with [`std::cell::Cell`].
+/// Return a type that wrap `Regex` with [`core::cell::Cell`].
 ///
 /// # Example
 ///
@@ -200,12 +206,12 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::cell::Cell<T>>
+impl<T, C> Adapter<C, core::cell::Cell<T>>
 where
     T: Regex<C>,
 {
     pub fn cell(regex: T) -> Self {
-        Self::new(std::cell::Cell::new(regex))
+        Self::new(core::cell::Cell::new(regex))
     }
 }
 
@@ -218,7 +224,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let regex = std::cell::RefCell::new("where");
+///     let regex = core::cell::RefCell::new("where");
 ///     let regex = regex::Adapter::mutex(regex);
 ///
 ///     std::thread::scope(|scope| {
@@ -232,17 +238,18 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::sync::Mutex<T>>
+#[cfg(feature = "std")]
+impl<T, C> Adapter<C, crate::std::Mutex<T>>
 where
     T: Regex<C>,
 {
     pub fn mutex(regex: T) -> Self {
-        Self::new(std::sync::Mutex::new(regex))
+        Self::new(crate::std::Mutex::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `Regex` with [`std::cell::RefCell`].
+/// Return a type that wrap `Regex` with [`core::cell::RefCell`].
 ///
 /// # Example
 ///
@@ -263,17 +270,17 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::cell::RefCell<T>>
+impl<T, C> Adapter<C, core::cell::RefCell<T>>
 where
     T: Regex<C>,
 {
     pub fn refcell(regex: T) -> Self {
-        Self::new(std::cell::RefCell::new(regex))
+        Self::new(core::cell::RefCell::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Regex` with [`std::sync::Arc`].
+/// Return a type that wrap `dyn Regex` with [`alloc::Arc`].
 ///
 /// # Example
 ///
@@ -281,7 +288,7 @@ where
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&core::cell::RefCell::new("rust"));
 ///     let regex1 = regex::Adapter::dyn_arc(regex);
 ///     let regex2 = regex1.clone();
 ///
@@ -293,23 +300,25 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + 'a>> {
     pub fn dyn_arc(regex: impl Regex<C> + 'a) -> Self {
-        Self::new(std::sync::Arc::new(regex))
+        Self::new(alloc::Arc::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Regex + Send` with [`std::sync::Arc`].
+/// Return a type that wrap `dyn Regex + Send` with [`alloc::Arc`].
 ///
-impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + Send + 'a>> {
     pub fn dyn_arc_send(regex: impl Regex<C> + Send + 'a) -> Self {
-        Self::new(std::sync::Arc::new(regex))
+        Self::new(alloc::Arc::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Regex + Send + Sync` with [`std::sync::Arc`].
+/// Return a type that wrap `dyn Regex + Send + Sync` with [`alloc::Arc`].
 ///
 /// # Example
 /// ```
@@ -336,9 +345,10 @@ impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + 'a>> {
 /// #    Ok(())
 /// # }
 /// ```
-impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + Sync + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + Send + Sync + 'a>> {
     pub fn dyn_arc_sync(regex: impl Regex<C> + Send + Sync + 'a) -> Self {
-        Self::new(std::sync::Arc::new(regex))
+        Self::new(alloc::Arc::new(regex))
     }
 }
 
@@ -351,7 +361,7 @@ impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + Sync + 'a>> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&core::cell::RefCell::new("rust"));
 ///     let regex = regex::Adapter::dyn_box(regex);
 ///
 ///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
@@ -359,18 +369,20 @@ impl<'a, C> Adapter<C, std::sync::Arc<dyn Regex<C> + Send + Sync + 'a>> {
 /// #   Ok(())
 /// # }
 /// ```
-impl<'a, C> Adapter<C, Box<dyn Regex<C> + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + 'a>> {
     pub fn dyn_box(regex: impl Regex<C> + 'a) -> Self {
-        Self::new(Box::new(regex))
+        Self::new(alloc::Box::new(regex))
     }
 }
 
 ///
 /// Return a type that wrap `dyn Regex + Send` with [`Box`].
 ///
-impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + 'a>> {
     pub fn dyn_box_send(regex: impl Regex<C> + Send + 'a) -> Self {
-        Self::new(Box::new(regex))
+        Self::new(alloc::Box::new(regex))
     }
 }
 
@@ -402,14 +414,15 @@ impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + 'a>> {
 /// #    Ok(())
 /// # }
 /// ```
-impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + Sync + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + Sync + 'a>> {
     pub fn dyn_box_sync(regex: impl Regex<C> + Send + Sync + 'a) -> Self {
-        Self::new(Box::new(regex))
+        Self::new(alloc::Box::new(regex))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Regex` with [`std::rc::Rc`].
+/// Return a type that wrap `dyn Regex` with [`alloc::Rc`].
 ///
 /// # Example
 ///
@@ -417,7 +430,7 @@ impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + Sync + 'a>> {
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&std::cell::RefCell::new("rust"));
+///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&core::cell::RefCell::new("rust"));
 ///     let regex = regex::Adapter::rc(regex);
 ///
 ///     assert_eq!(CharsCtx::new("rust 2024?").ctor(&regex)?, "rust");
@@ -425,15 +438,17 @@ impl<'a, C> Adapter<C, Box<dyn Regex<C> + Send + Sync + 'a>> {
 /// #   Ok(())
 /// # }
 /// ```
-impl<'a, C> Adapter<C, std::rc::Rc<dyn Regex<C> + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Rc<dyn Regex<C> + 'a>> {
     pub fn dyn_rc(regex: impl Regex<C> + 'a) -> Self {
-        Self::new(std::rc::Rc::new(regex))
+        Self::new(alloc::Rc::new(regex))
     }
 }
 
-impl<'a, C> Adapter<C, std::rc::Rc<dyn Regex<C> + Send + 'a>> {
+#[cfg(feature = "alloc")]
+impl<'a, C> Adapter<C, alloc::Rc<dyn Regex<C> + Send + 'a>> {
     pub fn dyn_rc_send(regex: impl Regex<C> + Send + 'a) -> Self {
-        Self::new(std::rc::Rc::new(regex))
+        Self::new(alloc::Rc::new(regex))
     }
 }
 
@@ -508,61 +523,77 @@ where
     }
 }
 
-/// [`BoxAdapter`] implement [`Ctor`] for boxed [`Regex`]
-#[derive(Debug)]
-pub struct BoxAdapter<C, T> {
-    inner: Box<T>,
-    marker: PhantomData<C>,
-}
+#[cfg(feature = "alloc")]
+pub mod inner_box_adapter {
 
-impl<C, T> Clone for BoxAdapter<C, T>
-where
-    T: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            marker: self.marker,
+    use crate::alloc::Box;
+    use crate::ctor::Ctor;
+    use crate::ctor::Handler;
+    use crate::ctx::Match;
+    use crate::err::Error;
+    use crate::regex::Regex;
+    use crate::span::Span;
+    use core::marker::PhantomData;
+
+    /// [`BoxAdapter`] implement [`Ctor`] for boxed [`Regex`]
+    #[derive(Debug)]
+    pub struct BoxAdapter<C, T> {
+        inner: Box<T>,
+        marker: PhantomData<C>,
+    }
+
+    impl<C, T> Clone for BoxAdapter<C, T>
+    where
+        T: Clone,
+    {
+        fn clone(&self) -> Self {
+            Self {
+                inner: self.inner.clone(),
+                marker: self.marker,
+            }
+        }
+    }
+
+    impl<T: Default, C> Default for BoxAdapter<C, T> {
+        fn default() -> Self {
+            Self {
+                inner: Default::default(),
+                marker: Default::default(),
+            }
+        }
+    }
+
+    impl<C, T> BoxAdapter<C, T> {
+        pub fn new(inner: T) -> Self {
+            Self {
+                inner: Box::new(inner),
+                marker: PhantomData,
+            }
+        }
+    }
+
+    impl<C, T> Regex<C> for BoxAdapter<C, T>
+    where
+        T: Regex<C>,
+    {
+        fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+            self.inner.try_parse(ctx)
+        }
+    }
+
+    impl<'a, C, O, T, H> Ctor<'a, C, O, H> for BoxAdapter<C, T>
+    where
+        T: Regex<C>,
+        C: Match<'a>,
+        H: Handler<C, Out = O>,
+    {
+        fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+            let ret = ctx.try_mat(self)?;
+
+            handler.invoke(ctx, &ret).map_err(Into::into)
         }
     }
 }
 
-impl<T: Default, C> Default for BoxAdapter<C, T> {
-    fn default() -> Self {
-        Self {
-            inner: Default::default(),
-            marker: Default::default(),
-        }
-    }
-}
-
-impl<C, T> BoxAdapter<C, T> {
-    pub fn new(inner: T) -> Self {
-        Self {
-            inner: Box::new(inner),
-            marker: PhantomData,
-        }
-    }
-}
-
-impl<C, T> Regex<C> for BoxAdapter<C, T>
-where
-    T: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.inner.try_parse(ctx)
-    }
-}
-
-impl<'a, C, O, T, H> Ctor<'a, C, O, H> for BoxAdapter<C, T>
-where
-    T: Regex<C>,
-    C: Match<'a>,
-    H: Handler<C, Out = O>,
-{
-    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat(self)?;
-
-        handler.invoke(ctx, &ret).map_err(Into::into)
-    }
-}
+#[cfg(feature = "alloc")]
+pub use inner_box_adapter::*;

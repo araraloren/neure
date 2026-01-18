@@ -1,12 +1,18 @@
-use neure::prelude::*;
-
 #[test]
 fn into() {
     assert!(into_impl().is_ok());
 }
 
+#[cfg(not(feature = "alloc"))]
+fn into_impl() -> color_eyre::Result<()> {
+    Ok(())
+}
+
+#[cfg(feature = "alloc")]
 fn into_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
+
+    use neure::prelude::*;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub enum Ty<'a> {

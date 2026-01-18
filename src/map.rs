@@ -1,4 +1,4 @@
-use std::{borrow::Cow, marker::PhantomData, mem::size_of, num::ParseIntError};
+use core::{marker::PhantomData, mem::size_of, num::ParseIntError};
 
 use crate::err::Error;
 
@@ -162,7 +162,7 @@ impl<T> FromStr<T> {
 
 impl<I, O> FallibleMap<I, O> for FromStr<O>
 where
-    O: std::str::FromStr,
+    O: core::str::FromStr,
     I: AsRef<str>,
 {
     fn try_map(&self, val: I) -> Result<O, Error> {
@@ -363,13 +363,14 @@ impl<T> Default for FromUtf8<T> {
 
 impl<'a> FallibleMap<&'a [u8], &'a str> for FromUtf8<&'a str> {
     fn try_map(&self, val: &'a [u8]) -> Result<&'a str, Error> {
-        std::str::from_utf8(val).map_err(|_| Error::Utf8Error)
+        core::str::from_utf8(val).map_err(|_| Error::Utf8Error)
     }
 }
 
-impl<'a> FallibleMap<&'a [u8], String> for FromUtf8<String> {
-    fn try_map(&self, val: &'a [u8]) -> Result<String, Error> {
-        String::from_utf8(val.to_vec()).map_err(|_| Error::Utf8Error)
+#[cfg(feature = "alloc")]
+impl<'a> FallibleMap<&'a [u8], crate::alloc::String> for FromUtf8<crate::alloc::String> {
+    fn try_map(&self, val: &'a [u8]) -> Result<crate::alloc::String, Error> {
+        crate::alloc::String::from_utf8(val.to_vec()).map_err(|_| Error::Utf8Error)
     }
 }
 
@@ -400,13 +401,17 @@ impl<T> Default for FromUtf8Lossy<T> {
     }
 }
 
-impl<'a> FallibleMap<&'a [u8], Cow<'a, str>> for FromUtf8Lossy<Cow<'a, str>> {
-    fn try_map(&self, val: &'a [u8]) -> Result<Cow<'a, str>, Error> {
-        Ok(String::from_utf8_lossy(val))
+#[cfg(feature = "alloc")]
+impl<'a> FallibleMap<&'a [u8], crate::alloc::Cow<'a, str>>
+    for FromUtf8Lossy<crate::alloc::Cow<'a, str>>
+{
+    fn try_map(&self, val: &'a [u8]) -> Result<crate::alloc::Cow<'a, str>, Error> {
+        Ok(crate::alloc::String::from_utf8_lossy(val))
     }
 }
 
 /// A mapper that converts byte slices to UTF-8 [`String`] with lossy conversion.
+#[cfg(feature = "alloc")]
 #[inline(always)]
 pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
     FromUtf8Lossy::default()

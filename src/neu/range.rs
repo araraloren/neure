@@ -1,7 +1,7 @@
-use std::fmt::Debug;
-use std::fmt::Display;
-use std::ops::Bound;
-use std::ops::RangeBounds;
+use core::fmt::Debug;
+use core::fmt::Display;
+use core::ops::Bound;
+use core::ops::RangeBounds;
 
 use super::Neu;
 
@@ -23,7 +23,7 @@ impl<T> Default for CRange<T> {
     }
 }
 
-impl<T: PartialOrd + MayDebug> std::ops::Not for CRange<T> {
+impl<T: PartialOrd + MayDebug> core::ops::Not for CRange<T> {
     type Output = crate::neu::Not<Self, T>;
 
     fn not(self) -> Self::Output {
@@ -41,7 +41,7 @@ impl<T: Clone> Clone for CRange<T> {
 }
 
 impl<T: Display> Display for CRange<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match &self.start {
             Bound::Included(start) => {
                 write!(f, "{start} ..")?;
@@ -178,39 +178,39 @@ impl<T> From<(Bound<T>, Bound<T>)> for CRange<T> {
     }
 }
 
-impl<T> From<std::ops::Range<T>> for CRange<T> {
-    fn from(value: std::ops::Range<T>) -> Self {
+impl<T> From<core::ops::Range<T>> for CRange<T> {
+    fn from(value: core::ops::Range<T>) -> Self {
         Self::new(Bound::Included(value.start), Bound::Excluded(value.end))
     }
 }
 
-impl<T> From<std::ops::RangeFrom<T>> for CRange<T> {
-    fn from(value: std::ops::RangeFrom<T>) -> Self {
+impl<T> From<core::ops::RangeFrom<T>> for CRange<T> {
+    fn from(value: core::ops::RangeFrom<T>) -> Self {
         Self::new(Bound::Included(value.start), Bound::Unbounded)
     }
 }
 
-impl<T> From<std::ops::RangeFull> for CRange<T> {
-    fn from(_: std::ops::RangeFull) -> Self {
+impl<T> From<core::ops::RangeFull> for CRange<T> {
+    fn from(_: core::ops::RangeFull) -> Self {
         Self::new(Bound::Unbounded, Bound::Unbounded)
     }
 }
 
-impl<T> From<std::ops::RangeInclusive<T>> for CRange<T> {
-    fn from(value: std::ops::RangeInclusive<T>) -> Self {
+impl<T> From<core::ops::RangeInclusive<T>> for CRange<T> {
+    fn from(value: core::ops::RangeInclusive<T>) -> Self {
         let (start, end) = value.into_inner();
         Self::new(Bound::Included(start), Bound::Included(end))
     }
 }
 
-impl<T> From<std::ops::RangeTo<T>> for CRange<T> {
-    fn from(value: std::ops::RangeTo<T>) -> Self {
+impl<T> From<core::ops::RangeTo<T>> for CRange<T> {
+    fn from(value: core::ops::RangeTo<T>) -> Self {
         Self::new(Bound::Unbounded, Bound::Excluded(value.end))
     }
 }
 
-impl<T> From<std::ops::RangeToInclusive<T>> for CRange<T> {
-    fn from(value: std::ops::RangeToInclusive<T>) -> Self {
+impl<T> From<core::ops::RangeToInclusive<T>> for CRange<T> {
+    fn from(value: core::ops::RangeToInclusive<T>) -> Self {
         Self::new(Bound::Unbounded, Bound::Included(value.end))
     }
 }

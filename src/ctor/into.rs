@@ -1,39 +1,50 @@
-use std::cell::Cell;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use core::cell::Cell;
+use core::cell::RefCell;
 
 use crate::ctor::Adapter;
-use crate::ctor::Ctor;
-use crate::ctor::adapter::BoxAdapter;
 use crate::regex::Regex;
+
+#[cfg(feature = "alloc")]
+use crate::ctor::adapter::BoxAdapter;
+
+#[cfg(feature = "alloc")]
+use crate::ctor::Ctor;
+
+#[cfg(feature = "alloc")]
+use crate::alloc;
 
 pub trait CtorIntoHelper<C>
 where
     Self: Sized,
 {
+    #[cfg(feature = "alloc")]
     fn into_box(self) -> Adapter<C, BoxAdapter<C, Self>>;
 
-    fn into_rc(self) -> Adapter<C, Rc<Self>>;
+    #[cfg(feature = "alloc")]
+    fn into_rc(self) -> Adapter<C, alloc::Rc<Self>>;
 
-    fn into_arc(self) -> Adapter<C, Arc<Self>>;
+    #[cfg(feature = "alloc")]
+    fn into_arc(self) -> Adapter<C, alloc::Arc<Self>>;
 
     fn into_cell(self) -> Adapter<C, Cell<Self>>;
 
     fn into_refcell(self) -> Adapter<C, RefCell<Self>>;
 
-    fn into_mutex(self) -> Adapter<C, Mutex<Self>>;
+    #[cfg(feature = "std")]
+    fn into_mutex(self) -> Adapter<C, crate::std::Mutex<Self>>;
 
-    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b;
 
-    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b;
 
-    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b;
 }
@@ -66,6 +77,7 @@ where
     ///     Ok(())
     /// # }
     /// ```
+    #[cfg(feature = "alloc")]
     fn into_box(self) -> Adapter<C, BoxAdapter<C, Self>> {
         Adapter::r#box(self)
     }
@@ -97,11 +109,13 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_rc(self) -> Adapter<C, Rc<Self>> {
+    #[cfg(feature = "alloc")]
+    fn into_rc(self) -> Adapter<C, alloc::Rc<Self>> {
         Adapter::rc(self)
     }
 
-    fn into_arc(self) -> Adapter<C, Arc<Self>> {
+    #[cfg(feature = "alloc")]
+    fn into_arc(self) -> Adapter<C, alloc::Arc<Self>> {
         Adapter::arc(self)
     }
 
@@ -113,7 +127,8 @@ where
         Adapter::refcell(self)
     }
 
-    fn into_mutex(self) -> Adapter<C, Mutex<Self>> {
+    #[cfg(feature = "std")]
+    fn into_mutex(self) -> Adapter<C, crate::std::Mutex<Self>> {
         Adapter::mutex(self)
     }
 
@@ -137,21 +152,24 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b,
     {
         Adapter::dyn_box(self)
     }
 
-    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b,
     {
         Adapter::dyn_arc(self)
     }
 
-    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
+    #[cfg(feature = "alloc")]
+    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
     where
         Self: Ctor<'a, C, O, H> + 'b,
     {

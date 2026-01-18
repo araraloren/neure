@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
@@ -7,7 +7,6 @@ use crate::ctor::Handler;
 use crate::ctor::Map;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_stage;
 use crate::err::Error;
 use crate::map::Select0;
@@ -15,6 +14,7 @@ use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Dynamically constructs a second pattern based on the result of the first match.
@@ -105,7 +105,7 @@ where
     P: Debug,
     F: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("DynamicCtorBuilder")
             .field("pat", &self.pat)
             .field("func", &self.func)

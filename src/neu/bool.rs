@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use super::Neu;
 
@@ -7,7 +7,7 @@ use crate::MayDebug;
 
 pub struct Always<T>(PhantomData<T>);
 
-impl<T: MayDebug> std::ops::Not for Always<T> {
+impl<T: MayDebug> core::ops::Not for Always<T> {
     type Output = crate::neu::Not<Self, T>;
 
     fn not(self) -> Self::Output {
@@ -16,7 +16,7 @@ impl<T: MayDebug> std::ops::Not for Always<T> {
 }
 
 impl<T> Debug for Always<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("Always").field(&self.0).finish()
     }
 }
@@ -67,7 +67,7 @@ pub const fn always<T: MayDebug>() -> Always<T> {
 
 pub struct Never<T>(PhantomData<T>);
 
-impl<T: MayDebug> std::ops::Not for Never<T> {
+impl<T: MayDebug> core::ops::Not for Never<T> {
     type Output = crate::neu::Not<Self, T>;
 
     fn not(self) -> Self::Output {
@@ -76,7 +76,7 @@ impl<T: MayDebug> std::ops::Not for Never<T> {
 }
 
 impl<T> Debug for Never<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("Never").field(&self.0).finish()
     }
 }

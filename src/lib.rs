@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![no_std]
 pub mod ctor;
 pub mod ctx;
 pub mod err;
@@ -12,11 +13,31 @@ pub(crate) mod log;
 pub(crate) mod r#macro;
 pub(crate) use log::*;
 
-#[cfg(feature = "log")]
-pub trait MayDebug: std::fmt::Debug {}
+#[cfg(feature = "alloc")]
+pub(crate) mod alloc {
+    extern crate alloc;
+
+    pub use alloc::borrow::Cow;
+    pub use alloc::boxed::Box;
+    pub use alloc::rc::Rc;
+    pub use alloc::string::String;
+    pub use alloc::sync::Arc;
+    pub use alloc::vec;
+    pub use alloc::vec::Vec;
+}
+
+#[cfg(feature = "std")]
+pub(crate) mod std {
+    extern crate std;
+
+    pub use std::sync::Mutex;
+}
 
 #[cfg(feature = "log")]
-impl<T> MayDebug for T where T: std::fmt::Debug {}
+pub trait MayDebug: core::fmt::Debug {}
+
+#[cfg(feature = "log")]
+impl<T> MayDebug for T where T: core::fmt::Debug {}
 
 #[cfg(not(feature = "log"))]
 pub trait MayDebug {}
@@ -49,6 +70,7 @@ pub mod prelude {
     pub use crate::regex::AsCtor;
     pub use crate::regex::Regex;
     pub use crate::regex::RegexIntoHelper;
+    #[cfg(feature = "alloc")]
     pub use crate::span::SimpleStorer;
     pub use crate::span::Span;
 }
@@ -66,35 +88,57 @@ mod test {
         assert!(test_chars().is_ok());
         assert!(test_chars_negative().is_ok());
         assert!(test_range().is_ok());
+        #[cfg(feature = "alloc")]
         assert!(test_range_negative().is_ok());
+        #[cfg(feature = "alloc")]
         assert!(test_other().is_ok());
     }
 
     macro_rules! test_t {
-        ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr) => {
-            let space_parser = $parser;
+        ($ctx:ident, $str:literal, $id:literal, $parser:expr) => {
+            let parser = $parser;
 
             $ctx.reset_with($str);
-            $storer.reset();
-            assert!($storer.try_cap($id, &mut $ctx, &space_parser).is_err());
+            assert!($ctx.try_mat(&parser).is_err());
         };
-        ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr, $($span:expr)*) => {
-            let space_parser = $parser;
+        ($ctx:ident, $str:literal, $id:literal, $parser:expr, $span:expr) => {
+            let parser = $parser;
 
             $ctx.reset_with($str);
-            $storer.reset();
-            $storer.try_cap($id, &mut $ctx, &space_parser)?;
-            assert_eq!($storer.spans_iter($id).unwrap().collect::<Vec<_>>(), vec![$($span)*])
+            assert_eq!($span, $ctx.try_mat(&parser)?);
         };
     }
 
-    fn test_other() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(feature = "alloc")]
+    macro_rules! test_st {
+        ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr) => {
+            let parser = $parser;
+
+            $ctx.reset_with($str);
+            $storer.reset();
+            assert!($storer.try_cap($id, &mut $ctx, &parser).is_err());
+        };
+        ($ctx:ident, $storer:ident, $str:literal, $id:literal, $parser:expr, $($span:expr)*) => {
+            let parser = $parser;
+            let spans = [$($span)*];
+
+            $ctx.reset_with($str);
+            $storer.reset();
+            $storer.try_cap($id, &mut $ctx, &parser)?;
+            for (i, span) in $storer.spans_iter($id).unwrap().enumerate() {
+                assert_eq!(span, spans[i]);
+            }
+        };
+    }
+
+    #[cfg(feature = "alloc")]
+    fn test_other() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
-        test_t!(ctx, storer, "abedf", 0, regex!(.), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "abedf", 0, regex!(.?), Span { beg: 0, len: 1 });
-        test_t!(
+        test_st!(ctx, storer, "abedf", 0, regex!(.), Span { beg: 0, len: 1 });
+        test_st!(ctx, storer, "abedf", 0, regex!(.?), Span { beg: 0, len: 1 });
+        test_st!(
             ctx,
             storer,
             "\nabedf",
@@ -102,8 +146,8 @@ mod test {
             regex!(.?),
             Span { beg: 0, len: 0 }
         );
-        test_t!(ctx, storer, "abedf", 0, regex!(.*), Span { beg: 0, len: 5 });
-        test_t!(
+        test_st!(ctx, storer, "abedf", 0, regex!(.*), Span { beg: 0, len: 5 });
+        test_st!(
             ctx,
             storer,
             "\nabedf",
@@ -111,9 +155,9 @@ mod test {
             regex!(.*),
             Span { beg: 0, len: 0 }
         );
-        test_t!(ctx, storer, "abedf", 0, regex!(.+), Span { beg: 0, len: 5 });
-        test_t!(ctx, storer, "\nabedf", 0, regex!(.+));
-        test_t!(
+        test_st!(ctx, storer, "abedf", 0, regex!(.+), Span { beg: 0, len: 5 });
+        test_st!(ctx, storer, "\nabedf", 0, regex!(.+));
+        test_st!(
             ctx,
             storer,
             "abedf",
@@ -121,8 +165,8 @@ mod test {
             regex!(.{2}),
             Span { beg: 0, len: 2 }
         );
-        test_t!(ctx, storer, "ab\nedf", 0, regex!(.{3}));
-        test_t!(
+        test_st!(ctx, storer, "ab\nedf", 0, regex!(.{3}));
+        test_st!(
             ctx,
             storer,
             "abedf",
@@ -130,7 +174,7 @@ mod test {
             regex!(.{2,}),
             Span { beg: 0, len: 5 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "abedf",
@@ -138,8 +182,8 @@ mod test {
             regex!(.{4,6}),
             Span { beg: 0, len: 5 }
         );
-        test_t!(ctx, storer, "abe\ndf", 0, regex!(.{4,6}));
-        test_t!(
+        test_st!(ctx, storer, "abe\ndf", 0, regex!(.{4,6}));
+        test_st!(
             ctx,
             storer,
             "c\nabedf",
@@ -151,11 +195,12 @@ mod test {
         Ok(())
     }
 
-    fn test_range_negative() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(feature = "alloc")]
+    fn test_range_negative() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
         let mut storer = SimpleStorer::new(1);
 
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "Raefc",
@@ -163,7 +208,7 @@ mod test {
             regex!([^a - z]),
             Span { beg: 0, len: 1 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "你aefc",
@@ -171,7 +216,7 @@ mod test {
             regex!([^a - z A - Z]),
             Span { beg: 0, len: 3 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "aefc",
@@ -179,7 +224,7 @@ mod test {
             regex!([^a - z]?),
             Span { beg: 0, len: 0 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -187,7 +232,7 @@ mod test {
             regex!([^a - z]?),
             Span { beg: 0, len: 1 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "&AEUF",
@@ -195,7 +240,7 @@ mod test {
             regex!([^a - z A - Z]),
             Span { beg: 0, len: 1 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -203,7 +248,7 @@ mod test {
             regex!([^a-z]*),
             Span { beg: 0, len: 4 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "aefc",
@@ -211,7 +256,7 @@ mod test {
             regex!([^a-z]*),
             Span { beg: 0, len: 0 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "@#$%",
@@ -219,7 +264,7 @@ mod test {
             regex!([^a - z A - Z]*),
             Span { beg: 0, len: 4 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -227,8 +272,8 @@ mod test {
             regex!([^a-z]+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]+));
-        test_t!(
+        test_st!(ctx, storer, "aefc", 0, regex!([^a-z]+));
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -236,8 +281,8 @@ mod test {
             regex!([^a-z]{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]{3}));
-        test_t!(
+        test_st!(ctx, storer, "aefc", 0, regex!([^a-z]{3}));
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -245,8 +290,8 @@ mod test {
             regex!([^a-z]{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]{3,6}));
-        test_t!(
+        test_st!(ctx, storer, "aefc", 0, regex!([^a-z]{3,6}));
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -254,9 +299,9 @@ mod test {
             regex!([^a-z]{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^a-z]{3,}));
+        test_st!(ctx, storer, "aefc", 0, regex!([^a-z]{3,}));
 
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "@#$%",
@@ -264,7 +309,7 @@ mod test {
             regex!([^'a' - 'z' 'A' - 'Z']*),
             Span { beg: 0, len: 4 }
         );
-        test_t!(
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -272,8 +317,8 @@ mod test {
             regex!([^'a'-'z']+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']+));
-        test_t!(
+        test_st!(ctx, storer, "aefc", 0, regex!([^'a'-'z']+));
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -281,8 +326,8 @@ mod test {
             regex!([^'a'-'z']{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3}));
-        test_t!(
+        test_st!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3}));
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -290,8 +335,8 @@ mod test {
             regex!([^'a'-'z']{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3,6}));
-        test_t!(
+        test_st!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3,6}));
+        test_st!(
             ctx,
             storer,
             "AEUF",
@@ -299,126 +344,51 @@ mod test {
             regex!([^'a'-'z']{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3,}));
+        test_st!(ctx, storer, "aefc", 0, regex!([^'a'-'z']{3,}));
         Ok(())
     }
 
-    fn test_range() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_range() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
 
+        test_t!(ctx, "aefc", 0, regex!([a - z]), Span { beg: 0, len: 1 });
         test_t!(
             ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a - z]),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "aefc",
             0,
             regex!([a - z A - Z]),
             Span { beg: 0, len: 1 }
         );
+        test_t!(ctx, "aefc", 0, regex!([a - z]?), Span { beg: 0, len: 1 });
+        test_t!(ctx, "AEUF", 0, regex!([a - z]?), Span { beg: 0, len: 0 });
         test_t!(
             ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a - z]?),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "AEUF",
-            0,
-            regex!([a - z]?),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "AEUF",
             0,
             regex!([a - z A - Z]),
             Span { beg: 0, len: 1 }
         );
+        test_t!(ctx, "aefc", 0, regex!([a-z]*), Span { beg: 0, len: 4 });
+        test_t!(ctx, "AEUF", 0, regex!([a-z]*), Span { beg: 0, len: 0 });
         test_t!(
             ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a-z]*),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "AEUF",
-            0,
-            regex!([a-z]*),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "AEUF",
             0,
             regex!([a - z A - Z]*),
             Span { beg: 0, len: 4 }
         );
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a-z]+),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]+));
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a-z]{3}),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]{3}));
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a-z]{3,6}),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]{3,6}));
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([a-z]{3,}),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(ctx, storer, "AEUF", 0, regex!([a-z]{3,}));
+        test_t!(ctx, "aefc", 0, regex!([a-z]+), Span { beg: 0, len: 4 });
+        test_t!(ctx, "AEUF", 0, regex!([a-z]+));
+        test_t!(ctx, "aefc", 0, regex!([a-z]{3}), Span { beg: 0, len: 3 });
+        test_t!(ctx, "AEUF", 0, regex!([a-z]{3}));
+        test_t!(ctx, "aefc", 0, regex!([a-z]{3,6}), Span { beg: 0, len: 4 });
+        test_t!(ctx, "AEUF", 0, regex!([a-z]{3,6}));
+        test_t!(ctx, "aefc", 0, regex!([a-z]{3,}), Span { beg: 0, len: 4 });
+        test_t!(ctx, "AEUF", 0, regex!([a-z]{3,}));
 
+        test_t!(ctx, "aefc", 0, regex!(['a' - 'z']), Span { beg: 0, len: 1 });
         test_t!(
             ctx,
-            storer,
-            "aefc",
-            0,
-            regex!(['a' - 'z']),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "aefc",
             0,
             regex!(['a' - 'z']?),
@@ -426,40 +396,17 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "AEUF",
             0,
             regex!(['a' - 'z']?),
             Span { beg: 0, len: 0 }
         );
+        test_t!(ctx, "aefc", 0, regex!(['a'-'z']*), Span { beg: 0, len: 4 });
+        test_t!(ctx, "AEUF", 0, regex!(['a'-'z']*), Span { beg: 0, len: 0 });
+        test_t!(ctx, "aefc", 0, regex!(['a'-'z']+), Span { beg: 0, len: 4 });
+        test_t!(ctx, "AEUF", 0, regex!(['a'-'z']+));
         test_t!(
             ctx,
-            storer,
-            "aefc",
-            0,
-            regex!(['a'-'z']*),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "AEUF",
-            0,
-            regex!(['a'-'z']*),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!(['a'-'z']+),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']+));
-        test_t!(
-            ctx,
-            storer,
             "AEUF",
             0,
             regex!(['a'-'z''A'-'Z']+),
@@ -467,58 +414,39 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "aefc",
             0,
             regex!(['a'-'z']{3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']{3}));
+        test_t!(ctx, "AEUF", 0, regex!(['a'-'z']{3}));
         test_t!(
             ctx,
-            storer,
             "aefc",
             0,
             regex!(['a'-'z']{3,6}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']{3,6}));
+        test_t!(ctx, "AEUF", 0, regex!(['a'-'z']{3,6}));
         test_t!(
             ctx,
-            storer,
             "aefc",
             0,
             regex!(['a'-'z']{3,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "AEUF", 0, regex!(['a'-'z']{3,}));
+        test_t!(ctx, "AEUF", 0, regex!(['a'-'z']{3,}));
 
         Ok(())
     }
 
-    fn test_chars_negative() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_chars_negative() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
 
+        test_t!(ctx, "aefc", 0, regex!([^b c d]), Span { beg: 0, len: 1 });
+        test_t!(ctx, "aefc", 0, regex!([^b c d]?), Span { beg: 0, len: 1 });
         test_t!(
             ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([^b c d]),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([^b c d]?),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "aefc",
             0,
             regex!([^'b' 'c' 'd']),
@@ -526,64 +454,26 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "aefc",
             0,
             regex!([^'b' 'c' 'd']?),
             Span { beg: 0, len: 1 }
         );
+        test_t!(ctx, "daefc", 0, regex!([^b c d]?), Span { beg: 0, len: 0 });
+        test_t!(ctx, "aefc", 0, regex!([^b c d]*), Span { beg: 0, len: 3 });
+        test_t!(ctx, "daefc", 0, regex!([^b c d]*), Span { beg: 0, len: 0 });
+        test_t!(ctx, "aefc", 0, regex!([^b c d]+), Span { beg: 0, len: 3 });
         test_t!(
             ctx,
-            storer,
-            "daefc",
-            0,
-            regex!([^b c d]?),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([^b c d]*),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "daefc",
-            0,
-            regex!([^b c d]*),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "aefc",
-            0,
-            regex!([^b c d]+),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "aefcddd",
             0,
             regex!([^b c d]+),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, "baefcddd", 0, regex!([^b c d]+));
+        test_t!(ctx, "baefcddd", 0, regex!([^b c d]+));
+        test_t!(ctx, "aefh", 0, regex!([^b c d]{4}), Span { beg: 0, len: 4 });
         test_t!(
             ctx,
-            storer,
-            "aefh",
-            0,
-            regex!([^b c d]{4}),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "aefhcc",
             0,
             regex!([^b c d]{4,}),
@@ -591,88 +481,29 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "aefhccd",
             0,
             regex!([^b c d]{4,7}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "aecfhccd", 0, regex!([^b c d]{4,7}));
+        test_t!(ctx, "aecfhccd", 0, regex!([^b c d]{4,7}));
         Ok(())
     }
 
-    fn test_chars() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_chars() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
 
+        test_t!(ctx, "dabcd", 0, regex!([b c d]), Span { beg: 0, len: 1 });
+        test_t!(ctx, "dabcd", 0, regex!([b c d]?), Span { beg: 0, len: 1 });
+        test_t!(ctx, "edabcd", 0, regex!([b c d]?), Span { beg: 0, len: 0 });
+        test_t!(ctx, "dbcd", 0, regex!([b c d]*), Span { beg: 0, len: 4 });
+        test_t!(ctx, "aeuyf", 0, regex!([b c d]*), Span { beg: 0, len: 0 });
+        test_t!(ctx, "dabcd", 0, regex!([b c d]+), Span { beg: 0, len: 1 });
+        test_t!(ctx, "dbcdfff", 0, regex!([b c d]+), Span { beg: 0, len: 4 });
+        test_t!(ctx, "abcd", 0, regex!([b c d]+));
+        test_t!(ctx, "dbcd", 0, regex!([b c d]{4}), Span { beg: 0, len: 4 });
         test_t!(
             ctx,
-            storer,
-            "dabcd",
-            0,
-            regex!([b c d]),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "dabcd",
-            0,
-            regex!([b c d]?),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "edabcd",
-            0,
-            regex!([b c d]?),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "dbcd",
-            0,
-            regex!([b c d]*),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "aeuyf",
-            0,
-            regex!([b c d]*),
-            Span { beg: 0, len: 0 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "dabcd",
-            0,
-            regex!([b c d]+),
-            Span { beg: 0, len: 1 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "dbcdfff",
-            0,
-            regex!([b c d]+),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(ctx, storer, "abcd", 0, regex!([b c d]+));
-        test_t!(
-            ctx,
-            storer,
-            "dbcd",
-            0,
-            regex!([b c d]{4}),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "dbcdccc",
             0,
             regex!([b c d]{4,}),
@@ -680,7 +511,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dbcdbb",
             0,
             regex!([b c d]{4,7}),
@@ -689,7 +519,6 @@ mod test {
 
         test_t!(
             ctx,
-            storer,
             "dabcd",
             0,
             regex!(['b' 'c' 'd']),
@@ -697,7 +526,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dabcd",
             0,
             regex!(['b' 'c' 'd']?),
@@ -705,7 +533,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "edabcd",
             0,
             regex!(['b' 'c' 'd']?),
@@ -713,7 +540,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dbcd",
             0,
             regex!(['b' 'c' 'd']*),
@@ -721,7 +547,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "aeuyf",
             0,
             regex!(['b' 'c' 'd']*),
@@ -729,7 +554,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dabcd",
             0,
             regex!(['b' 'c' 'd']+),
@@ -737,16 +561,14 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dbcdfff",
             0,
             regex!(['b' 'c' 'd']+),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "abcd", 0, regex!(['b' 'c' 'd']+));
+        test_t!(ctx, "abcd", 0, regex!(['b' 'c' 'd']+));
         test_t!(
             ctx,
-            storer,
             "dbcd",
             0,
             regex!(['b' 'c' 'd']{4}),
@@ -754,7 +576,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dbcdccc",
             0,
             regex!(['b' 'c' 'd']{4,}),
@@ -762,7 +583,6 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "dbcdbb",
             0,
             regex!(['b' 'c' 'd']{4,7}),
@@ -771,171 +591,68 @@ mod test {
         Ok(())
     }
 
-    fn test_char() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_char() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
 
-        test_t!(ctx, storer, "a", 0, regex!(a), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "a", 0, regex!('a'), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "a", 0, regex!(a?), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "a", 0, regex!('a'?), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "你", 0, regex!(你), Span { beg: 0, len: 3 });
+        test_t!(ctx, "a", 0, regex!(a), Span { beg: 0, len: 1 });
+        test_t!(ctx, "a", 0, regex!('a'), Span { beg: 0, len: 1 });
+        test_t!(ctx, "a", 0, regex!(a?), Span { beg: 0, len: 1 });
+        test_t!(ctx, "a", 0, regex!('a'?), Span { beg: 0, len: 1 });
+        test_t!(ctx, "你", 0, regex!(你), Span { beg: 0, len: 3 });
+        test_t!(ctx, "你you", 0, regex!('你'), Span { beg: 0, len: 3 });
+        test_t!(ctx, "@", 0, regex!('@'), Span { beg: 0, len: 1 });
+        test_t!(ctx, "der", 0, regex!(a?), Span { beg: 0, len: 0 });
+        test_t!(ctx, "", 0, regex!('a'?), Span { beg: 0, len: 0 });
+        test_t!(ctx, "a", 0, regex!(a*), Span { beg: 0, len: 1 });
+        test_t!(ctx, "aaaaaee", 0, regex!('a'*), Span { beg: 0, len: 5 });
+        test_t!(ctx, "cde", 0, regex!(a*), Span { beg: 0, len: 0 });
+        test_t!(ctx, "aaaaee", 0, regex!('a'+), Span { beg: 0, len: 4 });
+        test_t!(ctx, "你你你", 0, regex!(你+), Span { beg: 0, len: 9 });
+        test_t!(ctx, "我你你你", 0, regex!(你+));
+        test_t!(ctx, "aaaaee", 0, regex!('a'{2}), Span { beg: 0, len: 2 });
+        test_t!(ctx, "你你你", 0, regex!(你{2}), Span { beg: 0, len: 6 });
+        test_t!(ctx, "你", 0, regex!(你{2}));
+        test_t!(ctx, "aaaaee", 0, regex!('a'{2,}), Span { beg: 0, len: 4 });
+        test_t!(ctx, "你你你", 0, regex!(你{2,}), Span { beg: 0, len: 9 });
+        test_t!(ctx, "你", 0, regex!(你{2,}));
+        test_t!(ctx, "aaaaee", 0, regex!('a'{2,3}), Span { beg: 0, len: 3 });
         test_t!(
             ctx,
-            storer,
-            "你you",
-            0,
-            regex!('你'),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(ctx, storer, "@", 0, regex!('@'), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "der", 0, regex!(a?), Span { beg: 0, len: 0 });
-        test_t!(ctx, storer, "", 0, regex!('a'?), Span { beg: 0, len: 0 });
-        test_t!(ctx, storer, "a", 0, regex!(a*), Span { beg: 0, len: 1 });
-        test_t!(
-            ctx,
-            storer,
-            "aaaaaee",
-            0,
-            regex!('a'*),
-            Span { beg: 0, len: 5 }
-        );
-        test_t!(ctx, storer, "cde", 0, regex!(a*), Span { beg: 0, len: 0 });
-        test_t!(
-            ctx,
-            storer,
-            "aaaaee",
-            0,
-            regex!('a'+),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "你你你",
-            0,
-            regex!(你+),
-            Span { beg: 0, len: 9 }
-        );
-        test_t!(ctx, storer, "我你你你", 0, regex!(你+));
-        test_t!(
-            ctx,
-            storer,
-            "aaaaee",
-            0,
-            regex!('a'{2}),
-            Span { beg: 0, len: 2 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "你你你",
-            0,
-            regex!(你{2}),
-            Span { beg: 0, len: 6 }
-        );
-        test_t!(ctx, storer, "你", 0, regex!(你{2}));
-        test_t!(
-            ctx,
-            storer,
-            "aaaaee",
-            0,
-            regex!('a'{2,}),
-            Span { beg: 0, len: 4 }
-        );
-        test_t!(
-            ctx,
-            storer,
-            "你你你",
-            0,
-            regex!(你{2,}),
-            Span { beg: 0, len: 9 }
-        );
-        test_t!(ctx, storer, "你", 0, regex!(你{2,}));
-        test_t!(
-            ctx,
-            storer,
-            "aaaaee",
-            0,
-            regex!('a'{2,3}),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "你你你你你啊",
             0,
             regex!(你{2,4}),
             Span { beg: 0, len: 12 }
         );
-        test_t!(ctx, storer, "你啊", 0, regex!(你{2,4}));
+        test_t!(ctx, "你啊", 0, regex!(你{2,4}));
 
         Ok(())
     }
 
-    fn test_space() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_space() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
 
-        test_t!(ctx, storer, "\tcd", 0, regex!(), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "\tdwq", 0, regex!(?), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "dwq", 0, regex!(?), Span { beg: 0, len: 0 });
+        test_t!(ctx, "\tcd", 0, regex!(), Span { beg: 0, len: 1 });
+        test_t!(ctx, "\tdwq", 0, regex!(?), Span { beg: 0, len: 1 });
+        test_t!(ctx, "dwq", 0, regex!(?), Span { beg: 0, len: 0 });
+        test_t!(ctx, "\t\n\rdda", 0, regex!(*), Span { beg: 0, len: 3 });
+        test_t!(ctx, "dda", 0, regex!(*), Span { beg: 0, len: 0 });
+        test_t!(ctx, "\t\n\rdda", 0, regex!(+), Span { beg: 0, len: 3 });
+        test_t!(ctx, "\tdda", 0, regex!(+), Span { beg: 0, len: 1 });
+        test_t!(ctx, "dda", 0, regex!(+));
+        test_t!(ctx, " \u{A0}dda", 0, regex!({ 2 }), Span { beg: 0, len: 3 });
+        test_t!(ctx, "\u{A0}dda", 0, regex!({ 2 }));
+        test_t!(ctx, "\t\rdda", 0, regex!({2,}), Span { beg: 0, len: 2 });
         test_t!(
             ctx,
-            storer,
-            "\t\n\rdda",
-            0,
-            regex!(*),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(ctx, storer, "dda", 0, regex!(*), Span { beg: 0, len: 0 });
-        test_t!(
-            ctx,
-            storer,
-            "\t\n\rdda",
-            0,
-            regex!(+),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(ctx, storer, "\tdda", 0, regex!(+), Span { beg: 0, len: 1 });
-        test_t!(ctx, storer, "dda", 0, regex!(+));
-        test_t!(
-            ctx,
-            storer,
-            " \u{A0}dda",
-            0,
-            regex!({ 2 }),
-            Span { beg: 0, len: 3 }
-        );
-        test_t!(ctx, storer, "\u{A0}dda", 0, regex!({ 2 }));
-        test_t!(
-            ctx,
-            storer,
-            "\t\rdda",
-            0,
-            regex!({2,}),
-            Span { beg: 0, len: 2 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "\t\r\u{A0}dda",
             0,
             regex!({2,}),
             Span { beg: 0, len: 4 }
         );
-        test_t!(ctx, storer, "dda", 0, regex!());
+        test_t!(ctx, "dda", 0, regex!());
+        test_t!(ctx, "\t\ndda", 0, regex!({2,3}), Span { beg: 0, len: 2 });
         test_t!(
             ctx,
-            storer,
-            "\t\ndda",
-            0,
-            regex!({2,3}),
-            Span { beg: 0, len: 2 }
-        );
-        test_t!(
-            ctx,
-            storer,
             "\t\r\u{A0}dda",
             0,
             regex!({2,3}),
@@ -943,13 +660,12 @@ mod test {
         );
         test_t!(
             ctx,
-            storer,
             "\t\r \u{A0}dda",
             0,
             regex!({2,3}),
             Span { beg: 0, len: 3 }
         );
-        test_t!(ctx, storer, " dda", 0, regex!({2,3}));
+        test_t!(ctx, " dda", 0, regex!({2,3}));
 
         Ok(())
     }

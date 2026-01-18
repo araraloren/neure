@@ -16,13 +16,13 @@ use crate::MayDebug;
 use crate::ctx::Context;
 use crate::trace_retval;
 
-use std::cell::Cell;
-use std::cell::RefCell;
-use std::ops::Bound;
-use std::ops::RangeBounds;
-use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use core::cell::Cell;
+use core::cell::RefCell;
+use core::ops::Bound;
+use core::ops::RangeBounds;
+
+#[cfg(feature = "alloc")]
+use crate::alloc;
 
 pub use self::bool::Always;
 pub use self::bool::Never;
@@ -146,7 +146,8 @@ where
     }
 }
 
-impl<T> Neu<T> for Box<dyn Neu<T>> {
+#[cfg(feature = "alloc")]
+impl<T> Neu<T> for crate::alloc::Box<dyn Neu<T>> {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
     }
@@ -182,7 +183,8 @@ where
     }
 }
 
-impl<U, T> Neu<T> for Mutex<U>
+#[cfg(feature = "std")]
+impl<U, T> Neu<T> for crate::std::Mutex<U>
 where
     U: Neu<T> + Copy,
 {
@@ -201,7 +203,8 @@ where
     }
 }
 
-impl<U, T> Neu<T> for Arc<U>
+#[cfg(feature = "alloc")]
+impl<U, T> Neu<T> for alloc::Arc<U>
 where
     U: Neu<T>,
 {
@@ -214,7 +217,8 @@ where
     }
 }
 
-impl<T> Neu<T> for Arc<dyn Neu<T>> {
+#[cfg(feature = "alloc")]
+impl<T> Neu<T> for alloc::Arc<dyn Neu<T>> {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
     }
@@ -224,7 +228,8 @@ impl<T> Neu<T> for Arc<dyn Neu<T>> {
     }
 }
 
-impl<U, T> Neu<T> for Rc<U>
+#[cfg(feature = "alloc")]
+impl<U, T> Neu<T> for alloc::Rc<U>
 where
     U: Neu<T>,
 {
@@ -237,7 +242,8 @@ where
     }
 }
 
-impl<T> Neu<T> for Rc<dyn Neu<T>> {
+#[cfg(feature = "alloc")]
+impl<T> Neu<T> for alloc::Rc<dyn Neu<T>> {
     fn is_match(&self, other: &T) -> bool {
         Neu::is_match(self.as_ref(), other)
     }
@@ -316,7 +322,8 @@ impl<T: PartialEq + MayDebug> Neu<T> for &'_ [T] {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
+#[cfg(feature = "alloc")]
+impl<T: PartialEq + MayDebug> Neu<T> for crate::alloc::Vec<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("vector", self, other, self.contains(other))
@@ -329,7 +336,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Vec<T> {
 /// # Example
 ///
 /// ```
-/// # use std::ops::Bound;
+/// # use core::ops::Bound;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
@@ -355,7 +362,7 @@ impl<'a, T: 'a + PartialOrd + MayDebug> Neu<T> for (Bound<&'a T>, Bound<&'a T>) 
 ///
 /// # Example
 /// ```
-/// # use std::ops::Bound;
+/// # use core::ops::Bound;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> color_eyre::Result<()> {
@@ -394,7 +401,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for (Bound<T>, Bound<T>) {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::Range<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range(&T)", self, other, self.contains(&other))
@@ -419,7 +426,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<&T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::Range<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range(T)", self, other, self.contains(other))
@@ -444,7 +451,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::Range<T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeFrom<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_from(&T)", self, other, self.contains(&other))
@@ -469,7 +476,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<&T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeFrom<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_from(T)", self, other, self.contains(other))
@@ -494,7 +501,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFrom<T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeFull {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_full", self, other, self.contains(&other))
@@ -519,7 +526,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeFull {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeInclusive<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_inclusive(&T)", self, other, self.contains(&other))
@@ -544,7 +551,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<&T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeInclusive<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_inclusive(T)", self, other, self.contains(other))
@@ -569,7 +576,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeInclusive<T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeTo<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_to(&T)", self, other, self.contains(&other))
@@ -594,7 +601,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<&T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeTo<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_to(T)", self, other, self.contains(other))
@@ -619,7 +626,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeTo<T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeToInclusive<&T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_to_inclusive(&T)", self, other, self.contains(&other))
@@ -644,7 +651,7 @@ impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<&T> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T: PartialOrd + MayDebug> Neu<T> for std::ops::RangeToInclusive<T> {
+impl<T: PartialOrd + MayDebug> Neu<T> for core::ops::RangeToInclusive<T> {
     #[inline(always)]
     fn is_match(&self, other: &T) -> bool {
         trace_retval!("range_to_inclusive(T)", self, other, self.contains(other))

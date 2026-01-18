@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
@@ -117,7 +117,7 @@ where
     L: Debug,
     R: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Then")
             .field("left", &self.left)
             .field("right", &self.right)
@@ -325,7 +325,7 @@ where
     R: Debug,
     I: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("IfThen")
             .field("left", &self.left)
             .field("test", &self.test)

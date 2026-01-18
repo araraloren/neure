@@ -1,6 +1,6 @@
 [package]
 name = "neure"
-version = "0.7.1"
+version = "0.8.0"
 authors = [
     "araraloren <blackcatoverwall@gmail.com>",
 ]
@@ -9,7 +9,7 @@ license = "MPL-2.0"
 description = "A fast little combinational parsing library"
 repository = "https://github.com/araraloren/neure/"
 keywords = ["regex", "parser"]
-categories = ["parsing"]
+categories = ["parsing", "no-std"]
 
 [profile.release]
 lto = true
@@ -29,7 +29,10 @@ charize = "0.0.3"
 tracing = { version = "0.1", optional = true }
 
 [features]
+default = ["std"]
 log = ["tracing"]
+std = ["tracing/std", "alloc"]
+alloc = []
 
 [[bench]]
 name = "nom_cap"
@@ -50,12 +53,17 @@ harness = false
 name = "json"
 path = "./bench/json.rs"
 harness = false
-
+required-features = ["alloc"]
 
 [[bench]]
 name = "find"
 path = "./bench/find.rs"
 harness = false
+
+[[example]]
+name = "json"
+path = "./examples/json.rs"
+required-features = ["alloc"]
 
 [package.metadata.docs.rs]
 all-features = true

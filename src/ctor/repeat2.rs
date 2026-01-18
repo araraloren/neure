@@ -1,15 +1,12 @@
 use core::fmt::Debug;
 use core::marker::PhantomData;
-use core::ops::RangeBounds;
 
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::err::Error;
-use crate::neu::CRange;
 use crate::regex::Regex;
-use crate::regex::impl_not_for_regex;
 use crate::span::Span;
 
 ///
@@ -19,6 +16,9 @@ use crate::span::Span;
 /// value construction ([`Ctor`]) and span matching ([`Regex`]). It optimizes performance through
 /// pre-allocation and early termination, while providing precise range validation and context
 /// safety. Designed for parsing lists, sequences, and repeated structures with explicit bounds.
+/// Unlike its dynamic counterpart [`Repeat`](crate::ctor::Repeat), it uses compile-time
+/// fixed bounds (`M` and `N`) and stores
+/// results in a stack-allocated array([Option<O>; N]) rather than a heap-allocated vector.
 ///
 /// # Regex
 ///
@@ -48,7 +48,7 @@ use crate::span::Span;
 ///
 /// # Ctor
 ///
-/// 1. Collects constructed values from each successful pattern match into a [`Vec`]
+/// 1. Collects constructed values from each successful pattern match into a **fixed-size array** (`[Option<O>; N]`), where `N` is the maximum capacity specified at compile time
 /// 2. Continues matching until pattern failure or maximum count reached
 /// 3. Validates that the total match count falls within the specified range
 /// 4. Returns the collected values only if the count constraint is satisfied
@@ -64,10 +64,10 @@ use crate::span::Span;
 /// #
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let char = neu::always().once();
-///     let num = char.skip_ws().repeat(1..);
+///     let num = char.skip_ws().repeat2::<1, 6>();
 ///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);
 ///
-///     assert_eq!(ctx.ctor(&num)?, ["你", "好", "，", "世", "界", "？"]);
+///     assert_eq!(ctx.ctor(&num)?, [Some("你"), Some("好"), Some("，"), Some("世"), Some("界"), Some("？")]);
 /// #   Ok(())
 /// # }
 /// ```
@@ -76,88 +76,62 @@ use crate::span::Span;
 /// - Set capacity close to expected match count
 /// - Use tight ranges to limit unnecessary matching attempts
 #[derive(Copy)]
-pub struct Repeat<C, P> {
+pub struct Repeat2<C, P, const M: usize, const N: usize> {
     pat: P,
-    range: CRange<usize>,
-    capacity: usize,
     marker: PhantomData<C>,
 }
 
-impl_not_for_regex!(Repeat<C, P>);
+impl<C, P, const M: usize, const N: usize> core::ops::Not for Repeat2<C, P, M, N> {
+    type Output = crate::regex::Assert<Self>;
 
-impl<C, P> Debug for Repeat<C, P>
+    fn not(self) -> Self::Output {
+        crate::regex::not(self)
+    }
+}
+
+impl<C, P, const M: usize, const N: usize> Debug for Repeat2<C, P, M, N>
 where
     P: Debug,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("Repeat")
-            .field("pat", &self.pat)
-            .field("range", &self.range)
-            .field("capacity", &self.capacity)
-            .finish()
+        f.debug_struct("Repeat2").field("pat", &self.pat).finish()
     }
 }
 
-impl<C, P> Default for Repeat<C, P>
+impl<C, P, const M: usize, const N: usize> Default for Repeat2<C, P, M, N>
 where
     P: Default,
 {
     fn default() -> Self {
         Self {
             pat: Default::default(),
-            range: Default::default(),
-            capacity: Default::default(),
             marker: Default::default(),
         }
     }
 }
 
-impl<C, P> Clone for Repeat<C, P>
+impl<C, P, const M: usize, const N: usize> Clone for Repeat2<C, P, M, N>
 where
     P: Clone,
 {
     fn clone(&self) -> Self {
         Self {
             pat: self.pat.clone(),
-            range: self.range,
-            capacity: self.capacity,
             marker: self.marker,
         }
     }
 }
 
-impl<C, P> Repeat<C, P> {
-    pub fn new(pat: P, range: impl Into<CRange<usize>>) -> Self {
-        let range = range.into();
-        let capacity = Self::guess_capacity(&range, 0);
-
+impl<C, P, const M: usize, const N: usize> Repeat2<C, P, M, N> {
+    pub fn new(pat: P) -> Self {
         Self {
             pat,
-            range,
-            capacity,
             marker: PhantomData,
         }
     }
 
-    pub fn guess_capacity(range: &CRange<usize>, val: usize) -> usize {
-        let start = match range.start_bound() {
-            core::ops::Bound::Included(v) => *v,
-            core::ops::Bound::Excluded(v) => *v,
-            core::ops::Bound::Unbounded => val,
-        };
-        start.max(val)
-    }
-
     pub fn pat(&self) -> &P {
         &self.pat
-    }
-
-    pub fn range(&self) -> &CRange<usize> {
-        &self.range
-    }
-
-    pub fn capacity(&self) -> usize {
-        self.capacity
     }
 
     pub fn pat_mut(&mut self) -> &mut P {
@@ -169,76 +143,50 @@ impl<C, P> Repeat<C, P> {
         self
     }
 
-    pub fn set_range(&mut self, range: impl Into<CRange<usize>>) -> &mut Self {
-        self.range = range.into();
-        self
-    }
-
-    pub fn set_capacity(&mut self, cap: usize) -> &mut Self {
-        self.capacity = cap;
-        self
-    }
-
     pub fn with_pat(mut self, pat: P) -> Self {
         self.pat = pat;
         self
     }
-
-    pub fn with_range(mut self, range: impl Into<CRange<usize>>) -> Self {
-        self.range = range.into();
-        self
-    }
-
-    pub fn with_capacity(mut self, cap: usize) -> Self {
-        self.capacity = cap;
-        self
-    }
-
-    fn is_contain(&self, count: usize) -> bool {
-        match core::ops::RangeBounds::end_bound(&self.range) {
-            core::ops::Bound::Included(max) => count < *max,
-            core::ops::Bound::Excluded(max) => count < max.saturating_sub(1),
-            core::ops::Bound::Unbounded => true,
-        }
-    }
 }
 
-impl<'a, C, P, O, H> Ctor<'a, C, crate::alloc::Vec<O>, H> for Repeat<C, P>
+impl<'a, C, P, const M: usize, const N: usize, O, H> Ctor<'a, C, [Option<O>; N], H>
+    for Repeat2<C, P, M, N>
 where
     P: Ctor<'a, C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
     #[inline(always)]
-    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<crate::alloc::Vec<O>, Error> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<[Option<O>; N], Error> {
         let offset = ctx.offset();
         let mut cnt = 0;
-        let mut vals = crate::alloc::Vec::with_capacity(self.capacity);
+        let mut vals = [const { None }; N];
+        let range = M..=N;
 
-        crate::debug_ctor_beg!("Repeat", self.range, offset);
-        while self.is_contain(cnt) {
+        crate::debug_ctor_beg!("Repeat2", &range, offset);
+        while cnt <= N {
             if let Ok(val) = self.pat.construct(ctx, handler) {
-                vals.push(val);
+                vals[cnt] = Some(val);
                 cnt += 1;
             } else {
                 break;
             }
         }
-        let ret = if core::ops::RangeBounds::contains(&self.range, &cnt) {
+        let ret = if range.contains(&cnt) {
             Ok(vals)
         } else {
-            Err(Error::Repeat)
+            Err(Error::Repeat2)
         }
         .inspect_err(|_| {
             ctx.set_offset(offset);
         });
 
-        crate::debug_ctor_reval!("Repeat", offset, ctx.offset(), ret.is_ok());
+        crate::debug_ctor_reval!("Repeat2", offset, ctx.offset(), ret.is_ok());
         ret
     }
 }
 
-impl<'a, C, P> Regex<C> for Repeat<C, P>
+impl<'a, C, P, const M: usize, const N: usize> Regex<C> for Repeat2<C, P, M, N>
 where
     P: Regex<C>,
     C: Match<'a>,
@@ -248,9 +196,10 @@ where
         let offset = ctx.offset();
         let mut cnt = 0;
         let mut total = Span::new(offset, 0);
+        let range = M..=N;
 
-        crate::debug_regex_beg!("Repeat", self.range, offset);
-        while self.is_contain(cnt) {
+        crate::debug_regex_beg!("Repeat2", &range, offset);
+        while cnt <= N {
             if let Ok(p_span) = ctx.try_mat(&self.pat) {
                 total.add_assign(p_span);
                 cnt += 1;
@@ -258,15 +207,15 @@ where
                 break;
             }
         }
-        let ret = if core::ops::RangeBounds::contains(&self.range, &cnt) {
+        let ret = if range.contains(&cnt) {
             Ok(total)
         } else {
-            Err(Error::Repeat)
+            Err(Error::Repeat2)
         }
         .inspect_err(|_| {
             ctx.set_offset(offset);
         });
 
-        crate::debug_regex_reval!("Repeat", ret)
+        crate::debug_regex_reval!("Repeat2", ret)
     }
 }

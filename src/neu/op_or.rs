@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::MayDebug;
 
@@ -39,7 +39,7 @@ where
     marker: PhantomData<T>,
 }
 
-impl<L, R, T: MayDebug> std::ops::Not for Or<L, R, T>
+impl<L, R, T: MayDebug> core::ops::Not for Or<L, R, T>
 where
     L: Neu<T>,
     R: Neu<T>,
@@ -56,7 +56,7 @@ where
     L: Neu<T> + Debug,
     R: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Or")
             .field("left", &self.left)
             .field("right", &self.right)

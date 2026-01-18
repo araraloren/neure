@@ -1,14 +1,14 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Collect repeated matches of a pattern into a collection.
@@ -83,7 +83,7 @@ impl<C, P, O, V> Debug for Collect<C, P, O, V>
 where
     P: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Collect")
             .field("pat", &self.pat)
             .field("min", &self.min)
@@ -167,7 +167,7 @@ where
         let mut cnt = 0;
         let val = {
             crate::debug_ctor_beg!("Collect", offset);
-            V::from_iter(std::iter::from_fn(|| {
+            V::from_iter(core::iter::from_fn(|| {
                 self.pat.construct(ctx, func).ok().inspect(|_| {
                     cnt += 1;
                 })

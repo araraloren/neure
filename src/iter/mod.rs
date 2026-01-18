@@ -45,7 +45,8 @@ impl IndexBySpan for &'_ [u8] {
     }
 }
 
-impl IndexBySpan for Vec<u8> {
+#[cfg(feature = "alloc")]
+impl IndexBySpan for crate::alloc::Vec<u8> {
     type Output = [u8];
 
     fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {
@@ -53,7 +54,8 @@ impl IndexBySpan for Vec<u8> {
     }
 }
 
-impl IndexBySpan for &'_ Vec<u8> {
+#[cfg(feature = "alloc")]
+impl IndexBySpan for &'_ crate::alloc::Vec<u8> {
     type Output = [u8];
 
     fn get_by_span(&self, span: &Span) -> Option<&Self::Output> {

@@ -8,11 +8,11 @@ pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
 
     value: &'a T,
 
-    spans: &'b Vec<Span>,
+    spans: &'b [Span],
 }
 
 impl<'a, 'b, T: ?Sized> IteratorBySpan<'a, 'b, T> {
-    pub fn new(str: &'a T, spans: &'b Vec<Span>) -> Self {
+    pub fn new(str: &'a T, spans: &'b [Span]) -> Self {
         Self {
             value: str,
             spans,
@@ -47,11 +47,11 @@ impl<T: ?Sized + IndexBySpan> ExactSizeIterator for IteratorBySpan<'_, '_, T> {}
 pub struct SpanIterator<'a> {
     offset: usize,
 
-    spans: &'a Vec<Span>,
+    spans: &'a [Span],
 }
 
 impl<'a> SpanIterator<'a> {
-    pub fn new(spans: &'a Vec<Span>) -> Self {
+    pub fn new(spans: &'a [Span]) -> Self {
         Self { offset: 0, spans }
     }
 }

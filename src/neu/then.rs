@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
@@ -54,7 +54,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, L, R, T, I> std::ops::Not for NeureThen<C, L, R, T, I>
+impl<C, L, R, T, I> core::ops::Not for NeureThen<C, L, R, T, I>
 where
     L: Neu<T>,
     R: Neu<T>,
@@ -72,7 +72,7 @@ where
     L: Neu<T> + Debug,
     R: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("NeureThen")
             .field("left", &self.left)
             .field("right", &self.right)

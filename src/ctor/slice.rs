@@ -1,14 +1,14 @@
-use std::ops::Deref;
+use core::ops::Deref;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::Regex;
+use crate::span::Span;
 
 use super::Ctor;
 
@@ -90,7 +90,7 @@ use super::Ctor;
 #[derive(Debug, Clone, Copy)]
 pub struct Slice<'a, T>(&'a [T]);
 
-impl<T> std::ops::Not for Slice<'_, T> {
+impl<T> core::ops::Not for Slice<'_, T> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
@@ -246,7 +246,7 @@ where
 #[derive(Debug, Clone, Copy)]
 pub struct PairSlice<'a, K, V>(&'a [(K, V)]);
 
-impl<K, V> std::ops::Not for PairSlice<'_, K, V> {
+impl<K, V> core::ops::Not for PairSlice<'_, K, V> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {

@@ -1,7 +1,7 @@
+use core::cell::RefCell;
 use neure::map::{fixed_size, from_be_bytes};
 use neure::prelude::*;
 use neure::{err::Error, map::FallibleMap};
-use std::cell::RefCell;
 use std::process::exit;
 
 pub fn parse<'a, P, O>(parser: P, bc: &mut BytesCtx<'a>) -> Result<O, Error>

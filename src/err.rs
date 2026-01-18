@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use core::fmt::Display;
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy)]
@@ -41,7 +41,11 @@ pub enum Error {
 
     Separate,
 
+    Separate2,
+
     Repeat,
+
+    Repeat2,
 
     Times,
 
@@ -76,10 +80,10 @@ pub enum Error {
     Uid(usize),
 }
 
-impl std::error::Error for Error {}
+impl core::error::Error for Error {}
 
 impl Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Error::Fail => write!(f, "Fail: always failed"),
             Error::AssertFalse => write!(f, "AssertFalse: internal pattern match succeeded"),
@@ -109,9 +113,17 @@ impl Display for Error {
                 f,
                 "Separate: number of matched patterns does not meet the requirement"
             ),
+            Error::Separate2 => write!(
+                f,
+                "Separate2: number of matched patterns does not meet the requirement"
+            ),
             Error::Repeat => write!(
                 f,
                 "Repeat: number of matched patterns does not meet the requirement"
+            ),
+            Error::Repeat2 => write!(
+                f,
+                "Repeat2: number of matched patterns does not meet the requirement"
             ),
             Error::Times => write!(
                 f,

@@ -6,6 +6,35 @@ fn policy() {
     assert!(policy_impl().is_ok());
 }
 
+#[cfg(not(feature = "alloc"))]
+fn policy_impl() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+    let dat = read_to_string(file!())?;
+    let ident = char::is_ascii_alphabetic
+        .or('_')
+        .once()
+        .then(char::is_ascii_alphanumeric.or('_').many0())
+        .pat();
+    let path = ident.sep2::<_, 1, 5>("::").with_skip(true);
+    let use_parser = path.then("*".opt()).prefix("use").suffix(";");
+
+    // ignore white space using re_policy
+    let mut ctx = CharsCtx::new(&dat).skip_before(neu::whitespace().many0());
+
+    let uses = ctx.ctor(&use_parser.collect::<_, Vec<_>>())?;
+
+    assert_eq!(uses.len(), 2);
+    assert_eq!(uses[0].0[0..2], [Some("neure"), Some("prelude")],);
+    assert_eq!(
+        uses[1].0[0..3],
+        [Some("std"), Some("fs"), Some("read_to_string")]
+    );
+    assert_eq!(uses[0].1, Some("*"));
+    assert_eq!(uses[1].1, None);
+    Ok(())
+}
+
+#[cfg(feature = "alloc")]
 fn policy_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
     let dat = read_to_string(file!())?;

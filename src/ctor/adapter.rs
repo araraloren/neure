@@ -1,11 +1,14 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
 use crate::span::Span;
+
+#[cfg(feature = "alloc")]
+use crate::alloc;
 
 ///
 /// Adapter that restricts a type to constructor-only contexts while satisfying compiler trait requirements.
@@ -29,7 +32,7 @@ pub struct Adapter<C, I> {
 impl_not_for_regex!(Adapter<C, I>);
 
 impl<I: Debug, C> Debug for Adapter<C, I> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Adapter")
             .field("inner", &self.inner)
             .finish()
@@ -118,6 +121,7 @@ impl<C, I> Adapter<C, I> {
 ///     Ok(())
 /// # }
 /// ```
+#[cfg(feature = "alloc")]
 impl<T, C> Adapter<C, BoxAdapter<C, T>> {
     pub fn r#box(ctor: T) -> Self {
         Self::new(BoxAdapter::new(ctor))
@@ -125,7 +129,7 @@ impl<T, C> Adapter<C, BoxAdapter<C, T>> {
 }
 
 ///
-/// Return a type that wrap `Ctor` with [`Rc`](std::rc::Rc).
+/// Return a type that wrap `Ctor` with [`Rc`](alloc::Rc).
 ///
 /// # Example
 ///
@@ -151,14 +155,15 @@ impl<T, C> Adapter<C, BoxAdapter<C, T>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::rc::Rc<T>> {
+#[cfg(feature = "alloc")]
+impl<T, C> Adapter<C, alloc::Rc<T>> {
     pub fn rc(ctor: T) -> Self {
-        Self::new(std::rc::Rc::new(ctor))
+        Self::new(alloc::Rc::new(ctor))
     }
 }
 
 ///
-/// Return a type that wrap `Ctor` with [`Arc`](std::sync::Arc).
+/// Return a type that wrap `Ctor` with [`Arc`](alloc::Arc).
 ///
 /// # Example
 ///
@@ -176,14 +181,15 @@ impl<T, C> Adapter<C, std::rc::Rc<T>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::sync::Arc<T>> {
+#[cfg(feature = "alloc")]
+impl<T, C> Adapter<C, alloc::Arc<T>> {
     pub fn arc(ctor: T) -> Self {
-        Self::new(std::sync::Arc::new(ctor))
+        Self::new(alloc::Arc::new(ctor))
     }
 }
 
 ///
-/// Return a type that wrap `Ctor` with [`Cell`](std::cell::Cell).
+/// Return a type that wrap `Ctor` with [`Cell`](core::cell::Cell).
 ///
 /// # Example
 ///
@@ -203,9 +209,9 @@ impl<T, C> Adapter<C, std::sync::Arc<T>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::cell::Cell<T>> {
+impl<T, C> Adapter<C, core::cell::Cell<T>> {
     pub fn cell(ctor: T) -> Self {
-        Self::new(std::cell::Cell::new(ctor))
+        Self::new(core::cell::Cell::new(ctor))
     }
 }
 
@@ -238,14 +244,15 @@ impl<T, C> Adapter<C, std::cell::Cell<T>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<T, C> Adapter<C, std::sync::Mutex<T>> {
+#[cfg(feature = "std")]
+impl<T, C> Adapter<C, crate::std::Mutex<T>> {
     pub fn mutex(ctor: T) -> Self {
-        Self::new(std::sync::Mutex::new(ctor))
+        Self::new(crate::std::Mutex::new(ctor))
     }
 }
 
 ///
-/// Return a type that wrap `Ctor` with [`RefCell`](std::cell::RefCell).
+/// Return a type that wrap `Ctor` with [`RefCell`](core::cell::RefCell).
 ///
 /// # Example
 ///
@@ -265,9 +272,9 @@ impl<T, C> Adapter<C, std::sync::Mutex<T>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<C, T> Adapter<C, std::cell::RefCell<T>> {
+impl<C, T> Adapter<C, core::cell::RefCell<T>> {
     pub fn refcell(ctor: T) -> Self {
-        Self::new(std::cell::RefCell::new(ctor))
+        Self::new(core::cell::RefCell::new(ctor))
     }
 }
 
@@ -292,9 +299,10 @@ impl<C, T> Adapter<C, std::cell::RefCell<T>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, O, H> Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>> {
     pub fn dyn_box(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
-        Self::new(Box::new(ctor))
+        Self::new(alloc::Box::new(ctor))
     }
 }
 
@@ -328,23 +336,25 @@ impl<'a, 'b, C, O, H> Adapter<C, Box<dyn Ctor<'a, C, O, H> + 'b>> {
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, O, H> Adapter<C, Box<dyn Ctor<'a, C, O, H> + Send + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + 'b>> {
     pub fn dyn_box_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
-        Self::new(Box::new(ctor))
+        Self::new(alloc::Box::new(ctor))
     }
 }
 
 ///
 /// Return a type that wrap `dyn Ctor + Send + Sync` with [`Box`].
 ///
-impl<'a, 'b, C, O, H> Adapter<C, Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
     pub fn dyn_box_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
-        Self::new(Box::new(ctor))
+        Self::new(alloc::Box::new(ctor))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Ctor` with [`Arc`](std::sync::Arc).
+/// Return a type that wrap `dyn Ctor` with [`Arc`](alloc::Arc).
 ///
 /// # Example
 ///
@@ -366,23 +376,25 @@ impl<'a, 'b, C, O, H> Adapter<C, Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> 
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>> {
     pub fn dyn_arc(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
-        Self::new(std::sync::Arc::new(ctor))
+        Self::new(alloc::Arc::new(ctor))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Ctor + Send` with [`std::sync::Arc`].
+/// Return a type that wrap `dyn Ctor + Send` with [`alloc::Arc`].
 ///
-impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
     pub fn dyn_arc_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
-        Self::new(std::sync::Arc::new(ctor))
+        Self::new(alloc::Arc::new(ctor))
     }
 }
 
 ///
-/// Return a type that wrap `dyn Ctor + Send + Sync` with [`std::sync::Arc`].
+/// Return a type that wrap `dyn Ctor + Send + Sync` with [`alloc::Arc`].
 ///
 /// # Example
 /// ```
@@ -409,9 +421,10 @@ impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + '
 /// #   Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
     pub fn dyn_arc_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
-        Self::new(std::sync::Arc::new(ctor))
+        Self::new(alloc::Arc::new(ctor))
     }
 }
 
@@ -441,15 +454,17 @@ impl<'a, 'b, C, O, H> Adapter<C, std::sync::Arc<dyn Ctor<'a, C, O, H> + Send + S
 ///     Ok(())
 /// # }
 /// ```
-impl<'a, 'b, C, O, H> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + 'b>> {
     pub fn dyn_rc(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
-        Self::new(std::rc::Rc::new(ctor))
+        Self::new(alloc::Rc::new(ctor))
     }
 }
 
-impl<'a, 'b, C, O, H> Adapter<C, std::rc::Rc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
+#[cfg(feature = "alloc")]
+impl<'a, 'b, C, O, H> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
     pub fn dyn_rc_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
-        Self::new(std::rc::Rc::new(ctor))
+        Self::new(alloc::Rc::new(ctor))
     }
 }
 
@@ -473,57 +488,69 @@ where
     }
 }
 
-#[derive(Debug)]
-pub struct BoxAdapter<C, I> {
-    inner: Box<I>,
-    marker: PhantomData<C>,
-}
+#[cfg(feature = "alloc")]
+pub mod inner_box_adapter {
 
-impl<C, I> Clone for BoxAdapter<C, I>
-where
-    I: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            marker: self.marker,
+    use crate::ctor::Ctor;
+    use crate::err::Error;
+    use crate::regex::Regex;
+    use crate::span::Span;
+
+    #[derive(Debug)]
+    pub struct BoxAdapter<C, I> {
+        inner: crate::alloc::Box<I>,
+        marker: core::marker::PhantomData<C>,
+    }
+
+    impl<C, I> Clone for BoxAdapter<C, I>
+    where
+        I: Clone,
+    {
+        fn clone(&self) -> Self {
+            Self {
+                inner: self.inner.clone(),
+                marker: self.marker,
+            }
+        }
+    }
+
+    impl<I: Default, C> Default for BoxAdapter<C, I> {
+        fn default() -> Self {
+            Self {
+                inner: Default::default(),
+                marker: Default::default(),
+            }
+        }
+    }
+
+    impl<C, I> BoxAdapter<C, I> {
+        pub fn new(inner: I) -> Self {
+            Self {
+                inner: crate::alloc::Box::new(inner),
+                marker: core::marker::PhantomData,
+            }
+        }
+    }
+
+    impl<C, I> Regex<C> for BoxAdapter<C, I>
+    where
+        I: Regex<C>,
+    {
+        fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+            self.inner.try_parse(ctx)
+        }
+    }
+
+    impl<'a, C, O, I, H> Ctor<'a, C, O, H> for BoxAdapter<C, I>
+    where
+        I: Ctor<'a, C, O, H>,
+    {
+        #[inline(always)]
+        fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+            Ctor::construct(self.inner.as_ref(), ctx, handler)
         }
     }
 }
 
-impl<I: Default, C> Default for BoxAdapter<C, I> {
-    fn default() -> Self {
-        Self {
-            inner: Default::default(),
-            marker: Default::default(),
-        }
-    }
-}
-
-impl<C, I> BoxAdapter<C, I> {
-    pub fn new(inner: I) -> Self {
-        Self {
-            inner: Box::new(inner),
-            marker: PhantomData,
-        }
-    }
-}
-
-impl<C, I> Regex<C> for BoxAdapter<C, I>
-where
-    I: Regex<C>,
-{
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        self.inner.try_parse(ctx)
-    }
-}
-
-impl<'a, C, O, I, H> Ctor<'a, C, O, H> for BoxAdapter<C, I>
-where
-    I: Ctor<'a, C, O, H>,
-{
-    #[inline(always)]
-    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
-        Ctor::construct(self.inner.as_ref(), ctx, handler)
-    }
-}
+#[cfg(feature = "alloc")]
+pub use inner_box_adapter::*;

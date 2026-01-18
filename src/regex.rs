@@ -7,13 +7,11 @@ mod empty;
 mod fail;
 mod into;
 mod literal;
+#[cfg(feature = "alloc")]
 mod rec;
 
-use std::cell::Cell;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::Mutex;
+use core::cell::Cell;
+use core::cell::RefCell;
 
 pub use self::adapter::Adapter;
 pub use self::adapter::RefAdapter;
@@ -40,22 +38,14 @@ pub use self::literal::LitSlice;
 pub use self::literal::LitString;
 pub use self::literal::lit_slice;
 pub use self::literal::string;
-pub use self::rec::RecParser;
-pub use self::rec::RecParserSync;
-pub use self::rec::RecursiveCtor;
-pub use self::rec::RecursiveCtorSync;
-pub use self::rec::RecursiveParser;
-pub use self::rec::RecursiveParserSync;
-pub use self::rec::rec_parser;
-pub use self::rec::rec_parser_sync;
+
+#[cfg(feature = "alloc")]
+pub use self::rec::*;
 
 use crate::ctor::Array;
-use crate::ctor::Ctor;
 use crate::ctor::PairArray;
 use crate::ctor::PairSlice;
-use crate::ctor::PairVector;
 use crate::ctor::Slice;
-use crate::ctor::Vector;
 use crate::ctx::Context;
 use crate::err::Error;
 use crate::neu::Condition;
@@ -112,17 +102,106 @@ macro_rules! impl_orig_regex {
     };
 }
 
+macro_rules! impl_forward_regex {
+    ($self:ident, $regex:expr, $type:ty) => {
+        impl<P, C> Regex<C> for $type
+        where
+            P: Regex<C>,
+        {
+            #[inline(always)]
+            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                let $self = self;
+
+                Regex::try_parse($regex, ctx)
+            }
+        }
+    };
+}
+
+#[cfg(feature = "alloc")]
+pub mod inner_regex_impls {
+
+    use crate::alloc::Arc;
+    use crate::alloc::Box;
+    use crate::alloc::Rc;
+    use crate::alloc::String;
+    use crate::alloc::Vec;
+    use crate::ctor::Ctor;
+    use crate::ctx::Context;
+    use crate::err::Error;
+    use crate::regex::Regex;
+    use crate::regex::lit_slice;
+    use crate::regex::string;
+    use crate::span::Span;
+
+    impl_orig_regex!(self_, &string(self_), String, str);
+
+    impl_orig_regex!(self_, &string(self_), &String, str);
+
+    impl_orig_regex!(self_, &lit_slice(self_.as_slice()), Vec<u8>, [u8]);
+
+    impl_orig_regex!(self_, &lit_slice(self_.as_slice()), &Vec<u8>, [u8]);
+
+    impl_forward_regex!(self_, self_.as_ref(), Arc<P>);
+
+    impl_forward_regex!(self_, self_.as_ref(), Rc<P>);
+
+    macro_rules! impl_dyn_regex {
+        ($type:ty) => {
+            impl<'b, C> Regex<C> for $type {
+                fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                    self.as_ref().try_parse(ctx)
+                }
+            }
+        };
+    }
+
+    macro_rules! impl_dyn_ctor {
+        ($ctor:ty) => {
+            impl<'a, 'b, C, O, H> Regex<C> for $ctor {
+                fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+                    self.as_ref().try_parse(ctx)
+                }
+            }
+        };
+    }
+
+    impl_dyn_regex!(Box<dyn Regex<C> + 'b>);
+
+    impl_dyn_regex!(Box<dyn Regex<C> + Send + 'b>);
+
+    impl_dyn_regex!(Box<dyn Regex<C> + Send + Sync + 'b>);
+
+    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
+
+    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
+
+    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+
+    impl_dyn_regex!(Arc<dyn Regex<C> + 'b>);
+
+    impl_dyn_regex!(Arc<dyn Regex<C> + Send + 'b>);
+
+    impl_dyn_regex!(Arc<dyn Regex<C> + Send + Sync + 'b>);
+
+    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
+
+    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+
+    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+
+    impl_dyn_regex!(Rc<dyn Regex<C> + 'b>);
+
+    impl_dyn_regex!(Rc<dyn Regex<C> + Send + 'b>);
+
+    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
+
+    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+}
+
 impl_orig_regex!(self_, &string(self_), &str, str);
 
-impl_orig_regex!(self_, &string(self_), String, str);
-
-impl_orig_regex!(self_, &string(self_), &String, str);
-
 impl_orig_regex!(self_, &lit_slice(self_), &[u8], [u8]);
-
-impl_orig_regex!(self_, &lit_slice(self_.as_slice()), Vec<u8>, [u8]);
-
-impl_orig_regex!(self_, &lit_slice(self_.as_slice()), &Vec<u8>, [u8]);
 
 impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
@@ -146,31 +225,16 @@ where
     }
 }
 
-macro_rules! impl_forward_regex {
-    ($self:ident, $regex:expr, $type:ty) => {
-        impl<P, C> Regex<C> for $type
-        where
-            P: Regex<C>,
-        {
-            #[inline(always)]
-            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-                let $self = self;
-
-                Regex::try_parse($regex, ctx)
-            }
-        }
-    };
-}
-
 impl_forward_regex!(self_, self_.as_ref().ok_or(Error::Option)?, Option<P>);
 
 impl_forward_regex!(self_, &*self_.borrow(), RefCell<P>);
 
-impl_forward_regex!(self_, &*self_.lock().map_err(|_| Error::Mutex)?, Mutex<P>);
-
-impl_forward_regex!(self_, self_.as_ref(), Arc<P>);
-
-impl_forward_regex!(self_, self_.as_ref(), Rc<P>);
+#[cfg(feature = "std")]
+impl_forward_regex!(
+    self_,
+    &*self_.lock().map_err(|_| Error::Mutex)?,
+    crate::std::Mutex<P>
+);
 
 impl<P, C> Regex<C> for Cell<P>
 where
@@ -180,58 +244,6 @@ where
         self.get().try_parse(ctx)
     }
 }
-
-macro_rules! impl_dyn_regex {
-    ($type:ty) => {
-        impl<'b, C> Regex<C> for $type {
-            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-                self.as_ref().try_parse(ctx)
-            }
-        }
-    };
-}
-
-macro_rules! impl_dyn_ctor {
-    ($ctor:ty) => {
-        impl<'a, 'b, C, O, H> Regex<C> for $ctor {
-            fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-                self.as_ref().try_parse(ctx)
-            }
-        }
-    };
-}
-
-impl_dyn_regex!(Box<dyn Regex<C> + 'b>);
-
-impl_dyn_regex!(Box<dyn Regex<C> + Send + 'b>);
-
-impl_dyn_regex!(Box<dyn Regex<C> + Send + Sync + 'b>);
-
-impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
-
-impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
-
-impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
-
-impl_dyn_regex!(Arc<dyn Regex<C> + 'b>);
-
-impl_dyn_regex!(Arc<dyn Regex<C> + Send + 'b>);
-
-impl_dyn_regex!(Arc<dyn Regex<C> + Send + Sync + 'b>);
-
-impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
-
-impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
-
-impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
-
-impl_dyn_regex!(Rc<dyn Regex<C> + 'b>);
-
-impl_dyn_regex!(Rc<dyn Regex<C> + Send + 'b>);
-
-impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
-
-impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
 
 ///
 /// Match one item.
@@ -447,8 +459,9 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
-    Vector::new(val.into_iter().collect())
+#[cfg(feature = "alloc")]
+pub fn vector<T>(val: impl IntoIterator<Item = T>) -> crate::ctor::Vector<T> {
+    crate::ctor::Vector::new(val.into_iter().collect())
 }
 
 /// Matches the first successful expression from a dynamic sequence while carrying associated data.
@@ -489,8 +502,11 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> Vector<T> {
 /// #   Ok(())
 /// # }
 /// ```
-pub fn pair_vector<T, V: Clone>(val: impl IntoIterator<Item = (T, V)>) -> PairVector<T, V> {
-    PairVector::new(val.into_iter().collect())
+#[cfg(feature = "alloc")]
+pub fn pair_vector<T, V: Clone>(
+    val: impl IntoIterator<Item = (T, V)>,
+) -> crate::ctor::PairVector<T, V> {
+    crate::ctor::PairVector::new(val.into_iter().collect())
 }
 
 /// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`].
@@ -607,21 +623,21 @@ where
 
 macro_rules! impl_not_for_regex {
     (@$ty:ident [ ]  [ ]) => {
-        impl std::ops::Not for $ty {
+        impl core::ops::Not for $ty {
             type Output = $crate::regex::Assert<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     (@$ty:ident [ ]  [ $($p:ident),+ ]) => {
-        impl<$($p),+> std::ops::Not for $ty<$($p),+> {
+        impl<$($p),+> core::ops::Not for $ty<$($p),+> {
             type Output = $crate::regex::Assert<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }
         }
     };
     (@$ty:ident [ $($l:lifetime),+ ]  [ $($p:ident),* ]) => {
-        impl<$($l),+ , $($p),*> std::ops::Not for $ty<$($l),+ , $($p),*> {
+        impl<$($l),+ , $($p),*> core::ops::Not for $ty<$($l),+ , $($p),*> {
             type Output = $crate::regex::Assert<Self>;
 
             fn not(self) -> Self::Output { $crate::regex::not(self) }

@@ -1,5 +1,5 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::marker::PhantomData;
 
 use crate::ctor::Ctor;
 
@@ -71,7 +71,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> std::ops::Not for Opt<C, U, T, I>
+impl<C, U, T, I> core::ops::Not for Opt<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -87,7 +87,7 @@ where
     I: Debug,
     U: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Opt")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
@@ -261,7 +261,7 @@ where
     marker: PhantomData<(C, T)>,
 }
 
-impl<C, U, T, I> std::ops::Not for Many0<C, U, T, I>
+impl<C, U, T, I> core::ops::Not for Many0<C, U, T, I>
 where
     U: Neu<T>,
 {
@@ -277,7 +277,7 @@ where
     I: Debug,
     U: Neu<T> + Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Many0")
             .field("unit", &self.unit)
             .field("cond", &self.cond)

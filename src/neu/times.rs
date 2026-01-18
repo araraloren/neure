@@ -1,6 +1,6 @@
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::ops::RangeBounds;
+use core::fmt::Debug;
+use core::marker::PhantomData;
+use core::ops::RangeBounds;
 
 use crate::ctor::Ctor;
 
@@ -119,7 +119,7 @@ pub struct Between<const M: usize, const N: usize, C, U, I = EmptyCond> {
     marker: PhantomData<C>,
 }
 
-impl<const M: usize, const N: usize, C, U, I> std::ops::Not for Between<M, N, C, U, I> {
+impl<const M: usize, const N: usize, C, U, I> core::ops::Not for Between<M, N, C, U, I> {
     type Output = crate::regex::Assert<Self>;
 
     fn not(self) -> Self::Output {
@@ -132,7 +132,7 @@ where
     I: Debug,
     U: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Between")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
@@ -316,7 +316,7 @@ where
     U: Debug,
     I: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Times")
             .field("unit", &self.unit)
             .field("cond", &self.cond)
@@ -428,15 +428,15 @@ where
         }
 
         let cond = bound_checker(match self.range.end_bound() {
-            std::ops::Bound::Included(max) => Some(*max),
-            std::ops::Bound::Excluded(max) => Some(max.saturating_sub(1)),
-            std::ops::Bound::Unbounded => None,
+            core::ops::Bound::Included(max) => Some(*max),
+            core::ops::Bound::Excluded(max) => Some(max.saturating_sub(1)),
+            core::ops::Bound::Unbounded => None,
         });
 
         let min_length = || match self.range.start_bound() {
-            std::ops::Bound::Included(max) => max * self.unit.min_length(),
-            std::ops::Bound::Excluded(max) => max.saturating_sub(1) * self.unit.min_length(),
-            std::ops::Bound::Unbounded => 0,
+            core::ops::Bound::Included(max) => max * self.unit.min_length(),
+            core::ops::Bound::Excluded(max) => max.saturating_sub(1) * self.unit.min_length(),
+            core::ops::Bound::Unbounded => 0,
         };
 
         crate::debug_regex_beg!("Times", self.range, ctx.offset());

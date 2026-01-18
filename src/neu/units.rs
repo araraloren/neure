@@ -5,7 +5,7 @@ macro_rules! setup_unit_ty {
         #[derive(Debug, Clone, Default, Copy)]
         pub struct $name;
 
-        impl std::ops::Not for $name {
+        impl core::ops::Not for $name {
             type Output = crate::neu::Not<Self, char>;
 
             fn not(self) -> Self::Output {
@@ -31,9 +31,9 @@ macro_rules! setup_unit_ty {
 macro_rules! setup_unit_ty2 {
     ($name:ident, $debug:literal, $func:ident) => {
         #[derive(Copy)]
-        pub struct $name<T>(std::marker::PhantomData<T>);
+        pub struct $name<T>(core::marker::PhantomData<T>);
 
-        impl<T> std::ops::Not for $name<T>
+        impl<T> core::ops::Not for $name<T>
         where
             Self: Neu<T>,
         {
@@ -44,8 +44,8 @@ macro_rules! setup_unit_ty2 {
             }
         }
 
-        impl<T> std::fmt::Debug for $name<T> {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        impl<T> core::fmt::Debug for $name<T> {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.debug_struct($debug).finish()
             }
         }
@@ -64,7 +64,7 @@ macro_rules! setup_unit_ty2 {
 
         impl<T> $name<T> {
             pub const fn new() -> Self {
-                Self(std::marker::PhantomData)
+                Self(core::marker::PhantomData)
             }
         }
 
@@ -446,7 +446,7 @@ pub const fn control() -> Control {
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Digit(u32);
 
-impl std::ops::Not for Digit {
+impl core::ops::Not for Digit {
     type Output = crate::neu::Not<Self, char>;
 
     fn not(self) -> Self::Output {
@@ -595,7 +595,7 @@ pub const fn whitespace() -> WhiteSpace {
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Wild;
 
-impl std::ops::Not for Wild {
+impl core::ops::Not for Wild {
     type Output = crate::neu::Not<Self, char>;
 
     fn not(self) -> Self::Output {
@@ -640,9 +640,9 @@ pub const fn wild() -> Wild {
 }
 
 #[derive(Debug, Clone, Default, Copy)]
-pub struct Word<T>(std::marker::PhantomData<T>);
+pub struct Word<T>(core::marker::PhantomData<T>);
 
-impl<T> std::ops::Not for Word<T>
+impl<T> core::ops::Not for Word<T>
 where
     Self: Neu<T>,
 {
@@ -655,7 +655,7 @@ where
 
 impl<T> Word<T> {
     pub const fn new() -> Self {
-        Self(std::marker::PhantomData)
+        Self(core::marker::PhantomData)
     }
 
     pub fn contain_ch(other: &char) -> bool {
