@@ -7,13 +7,13 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::neu::EmptyCond;
 use crate::neu::calc_length;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 use super::CRange;
 use super::Condition;
@@ -58,7 +58,7 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.between::<1, 6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -73,7 +73,7 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.many0();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -88,7 +88,7 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.at_most::<6>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -103,7 +103,7 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.at_least::<2>();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -292,7 +292,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.times(1..7);
 ///     let mut ctx = CharsCtx::new("aabbccgg");

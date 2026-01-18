@@ -28,7 +28,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = b"+".collect::<Span, Vec<Span>>();
 ///
 ///     assert!(BytesCtx::new(b"---A").try_mat(&regex).is_err());
@@ -54,7 +54,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = b"+".collect::<_, Vec<_>>();
 ///
 ///     assert!(BytesCtx::new(b"---A").ctor(&regex).is_err());

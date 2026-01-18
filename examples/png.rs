@@ -2,7 +2,7 @@ use neure::map::from_be_bytes;
 use neure::prelude::*;
 use std::{cell::RefCell, process::exit};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn core::error::Error>> {
     tracing_subscriber::fmt::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();

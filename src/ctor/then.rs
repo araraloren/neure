@@ -53,7 +53,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let str = neu::ascii_alphabetic().many1();
 ///     let str = str.enclose("\"", "\"");
 ///     let int = neu::digit(10).many1();
@@ -89,7 +89,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let year = neu::digit(10).many1();
 ///     let desc = neu::word().many1();
 ///     let desc = desc.sep(neu::whitespace().many0()).prefix(" ");
@@ -269,7 +269,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let name = neu::word().many1();
 ///     let paras = name.sep(", ").enclose("<", ">");
 ///     let test = regex::assert("<", true);
@@ -296,7 +296,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let val = neu::ascii_alphabetic().many1();
 ///     let tuple = val.if_then(",".skip_ws(), val).enclose("(", ")");
 ///

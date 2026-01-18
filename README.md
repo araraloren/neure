@@ -19,7 +19,7 @@ For more, reference [`examples`](https://docs.rs/crate/neure/latest/source/examp
 ```rust
 use neure::prelude::*;
 
-pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub fn main() -> Result<(), Box<dyn core::error::Error>> {
     let year = regex!(['0' - '9']+); // match digit from 0 to 9 more than once
     let year = year.try_map(map::from_str::<i32>()); // map it to i32
     let name = neu::ascii_alphabetic().many1(); // match ascii alphabetic

@@ -31,7 +31,7 @@ use crate::regex::impl_not_for_regex;
 /// # use neure::err::Error;
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let str = neu::ascii_alphabetic().count::<3>();
 ///     let num = neu::digit(10)
 ///         .count::<3>()
@@ -59,7 +59,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let str = regex!((neu::ascii_alphabetic()){3}).map(String::from);
 ///     let num = neu::digit(10)
 ///         .count::<3>()
@@ -89,7 +89,7 @@ use crate::regex::impl_not_for_regex;
 /// # use neure::err::Error;
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let num = neu::digit(10).count::<3>();
 ///     let id =
 ///         CharsCtx::new("777").map(&num, |v: &str| v.parse::<i32>().map_err(|_| Error::Uid(0)))?;

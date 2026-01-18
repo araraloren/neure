@@ -172,10 +172,10 @@ where
     }
 }
 
-/// Converts strings to typed values using [`FromStr`](std::str::FromStr).
+/// Converts strings to typed values using [`FromStr`](core::str::FromStr).
 ///
 /// [`FromStr`] is a zero-cost adapter that safely parses strings into strongly-typed
-/// values. It wraps the standard library's [`FromStr`](std::str::FromStr) trait implementation to provide
+/// values. It wraps the standard library's [`FromStr`](core::str::FromStr) trait implementation to provide
 /// a consistent interface for transformation pipelines and parser combinators.
 pub fn from_str<T>() -> FromStr<T> {
     FromStr::new()
@@ -211,7 +211,7 @@ where
     }
 }
 
-/// A zero-cost adapter that converts type using the [`into`](std::convert::Into::into) method.
+/// A zero-cost adapter that converts type using the [`into`](core::convert::Into::into) method.
 pub fn into<T>() -> IntoMapper<T> {
     IntoMapper::new()
 }
@@ -246,7 +246,7 @@ where
     }
 }
 
-/// A zero-cost adapter that converts type using the [`try_into`](std::convert::TryInto::try_into) method.
+/// A zero-cost adapter that converts type using the [`try_into`](core::convert::TryInto::try_into) method.
 pub fn try_into<T>() -> TryIntoMapper<T> {
     TryIntoMapper::new()
 }
@@ -374,7 +374,7 @@ impl<'a> FallibleMap<&'a [u8], crate::alloc::String> for FromUtf8<crate::alloc::
     }
 }
 
-/// A mapper that converts byte slices to UTF-8 [`String`].
+/// A mapper that converts byte slices to UTF-8 [`String`](crate::alloc::String).
 #[inline(always)]
 pub fn from_utf8<T>() -> FromUtf8<T> {
     FromUtf8::default()
@@ -410,7 +410,7 @@ impl<'a> FallibleMap<&'a [u8], crate::alloc::Cow<'a, str>>
     }
 }
 
-/// A mapper that converts byte slices to UTF-8 [`String`] with lossy conversion.
+/// A mapper that converts byte slices to UTF-8 [`String`](crate::alloc::String) with lossy conversion.
 #[cfg(feature = "alloc")]
 #[inline(always)]
 pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
@@ -591,7 +591,7 @@ impl_from_bytes!(ne usize, 8);
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let data = [0x01, 0x02, 0x03, 0x04];
 ///     let parser = regex::consume(4).try_map(map::from_le_bytes::<i32>());
 ///
@@ -613,7 +613,7 @@ pub fn from_le_bytes<T>() -> FromLeBytes<T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let data = [0x01, 0x02, 0x03, 0x04];
 ///     let parser = regex::consume(4).try_map(map::from_be_bytes::<i32>());
 ///
@@ -669,7 +669,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let mut ctx = CharsCtx::new("1,3,5,7,9");
 ///
 ///     let parser = neu::digit(10)
@@ -751,7 +751,7 @@ impl<T, K: Sized> WithDefaultHelper<T> for K {
 /// ```
 /// # use neure::{map::WithDefaultHelper, prelude::*};
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let mut ctx = CharsCtx::new("1,3,5,7,9");
 ///
 ///     let parser = regex!(['0' - '9']+)
@@ -807,7 +807,7 @@ impl<T> FallibleMap<T, T> for FixedSize {
 /// #     prelude::*,
 /// # };
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     fn parse<'a, P, O>(parser: P, bc: &mut BytesCtx<'a>) -> Result<O, neure::err::Error>
 ///     where
 ///         P: FallibleMap<&'a [u8], O>,

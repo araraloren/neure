@@ -5,7 +5,7 @@
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ws1 = regex!();
 ///     let ws2 = regex!(+);
 ///     let ws3 = regex!(*);
@@ -22,7 +22,7 @@
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ch1 = regex!(a?);
 ///     let ch2 = regex!('a'*);
 ///     let ch3 = regex!(a+);
@@ -39,7 +39,7 @@
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let wild1 = regex!(.+);
 ///     let wild2 = regex!(^*);
 ///
@@ -54,7 +54,7 @@
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let set1 = regex!([h e l o]);
 ///     let set2 = regex!([h e l o]+);
 ///
@@ -69,7 +69,7 @@
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let set1 = regex!([a - z]*);
 ///     let set2 = regex!([^ a - g]+);
 ///
@@ -84,7 +84,7 @@
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let lower = 'a'..='z';
 ///     let regex = regex!((lower, 'A' ..= 'W', ' ')+);
 ///
@@ -273,7 +273,7 @@ macro_rules! neu {
 /// # use neure::escape_strval;
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let mut ctx = BytesCtx::new(b"\"abc\t\"");
 ///     let pat = escape_strval!(b'\"', b'\\', [b'\\', b'\"', b'\t']);

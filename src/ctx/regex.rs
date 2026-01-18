@@ -70,8 +70,8 @@ where
     }
 
     #[cfg(feature = "alloc")]
-    pub fn span_storer(&self, capacity: usize) -> crate::span::SimpleStorer {
-        crate::span::SimpleStorer::new(capacity)
+    pub fn span_storer(&self, capacity: usize) -> crate::span::VecStorer {
+        crate::span::VecStorer::new(capacity)
     }
 
     pub fn with<F, R>(dat: &'a T, mut func: F) -> R
@@ -97,7 +97,7 @@ where
     /// # use neure::ctx::CtxGuard;
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     ///     pub struct Dat<'a> {
     ///         span: Span,
@@ -180,7 +180,7 @@ impl<'a> RegexCtx<'a, str> {
     /// ```
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     ///     pub struct Dat<'a> {
     ///         span: Span,

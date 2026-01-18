@@ -35,7 +35,7 @@ use super::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::empty();
 ///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
 ///
@@ -85,7 +85,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let fail = regex::fail();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///

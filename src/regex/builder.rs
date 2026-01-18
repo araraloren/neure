@@ -14,7 +14,7 @@ use crate::regex::Regex;
 /// ```
 /// # use neure::{prelude::*, regex::DynamicRegexBuilderHelper};
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let year = regex::string("rust")
 ///         .into_regex_builder(|_, s| Ok(neu::ascii_alphanumeric().times(s.len()..=s.len())));

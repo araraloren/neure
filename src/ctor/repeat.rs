@@ -36,7 +36,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let char = neu::word().count::<2>();
 ///     let num = char.skip_ws().repeat(1..);
 ///     let mut ctx = CharsCtx::new(r#"Hello, World!"#);
@@ -48,7 +48,7 @@ use crate::span::Span;
 ///
 /// # Ctor
 ///
-/// 1. Collects constructed values from each successful pattern match into a [`Vec`]
+/// 1. Collects constructed values from each successful pattern match into a [`Vec`](crate::alloc::Vec)
 /// 2. Continues matching until pattern failure or maximum count reached
 /// 3. Validates that the total match count falls within the specified range
 /// 4. Returns the collected values only if the count constraint is satisfied
@@ -62,7 +62,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let char = neu::always().once();
 ///     let num = char.skip_ws().repeat(1..);
 ///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);

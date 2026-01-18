@@ -32,7 +32,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::lit_slice(b"magic");
 ///     let mut ctx = BytesCtx::new(b"magic 0xff");
 ///
@@ -94,7 +94,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::lit_slice(&[0xff, 0xff]);
 ///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
 ///
@@ -129,7 +129,7 @@ pub fn lit_slice<T>(lit: &[T]) -> LitSlice<'_, T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::string("hello");
 ///     let mut ctx = CharsCtx::new("hello world");
 ///
@@ -189,7 +189,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///      let rust = regex::string("rust");
 ///      let mut ctx = CharsCtx::new("rust2023");
 ///

@@ -40,7 +40,7 @@ impl<T: PartialEq + MayDebug> Neu<T> for Equal<T> {
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let letter = equal('A');
 ///     let letter = letter.count::<3>();
 ///     let mut ctx = CharsCtx::new("AAAabcd");

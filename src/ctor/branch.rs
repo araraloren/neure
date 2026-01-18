@@ -34,7 +34,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = ctor::branch(
 ///         |ctx: &CharsCtx| Ok(ctx.len() - ctx.offset() >= 3),
 ///         neu::ascii_digit().count::<3>(),
@@ -60,7 +60,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let re1 = "google".sep_once(".", "com".or("is")).pat();
 ///     let re2 = "google"
 ///         .sep_once(".", "co".sep_once(".", "kr".or("jp")))

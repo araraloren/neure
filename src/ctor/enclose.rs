@@ -38,7 +38,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let digit = neu::digit(10).many0();
 ///     let parser = digit.enclose("(", ")");
 ///
@@ -64,7 +64,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let str_val = '"'.not().many1();
 ///     let str = str_val.enclose("\"", "\"");
 ///
@@ -79,7 +79,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let cond = neu::regex_cond(!('r'.then('#')));
 ///     let str_val = '#'.not().many1().set_cond(cond);
 ///     let str = str_val.enclose("r#", "#");

@@ -18,7 +18,7 @@ use crate::span::Span;
 /// safety. Designed for parsing lists, sequences, and repeated structures with explicit bounds.
 /// Unlike its dynamic counterpart [`Repeat`](crate::ctor::Repeat), it uses compile-time
 /// fixed bounds (`M` and `N`) and stores
-/// results in a stack-allocated array([Option<O>; N]) rather than a heap-allocated vector.
+/// results in a stack-allocated array(\[`Option<O>`; N\]) rather than a heap-allocated vector.
 ///
 /// # Regex
 ///
@@ -36,7 +36,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let char = neu::word().count::<2>();
 ///     let num = char.skip_ws().repeat(1..);
 ///     let mut ctx = CharsCtx::new(r#"Hello, World!"#);
@@ -62,7 +62,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let char = neu::always().once();
 ///     let num = char.skip_ws().repeat2::<1, 6>();
 ///     let mut ctx = CharsCtx::new(r#"你好，世界？"#);

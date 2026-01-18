@@ -36,7 +36,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let protocol = "http".longest("https");
 ///
 ///     assert_eq!(
@@ -66,7 +66,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let dec = regex!((neu::digit(10))+).try_map(map::from_str_radix::<i32>(10));
 ///     let hex = regex!((neu::digit(16))+).try_map(map::from_str_radix(16));
 ///     let num = dec.longest(hex);

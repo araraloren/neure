@@ -14,7 +14,7 @@ pub mod inner_rec_sync {
         Arc<Mutex<Option<Adapter<C, Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>>>>>;
 
     ///
-    /// This function will construct a [RecursiveCtor] for recursive parsing,
+    /// This function will construct a [RecursiveCtorSync] for recursive parsing,
     /// which accepts a closure as a parameter,
     /// and the parameter of the closure is the return value of the function.
     ///

@@ -238,7 +238,7 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
     /// ```
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     let text = r#"Dec. 19   What do people love about Rust?
     /// Dec. 16     Project goals update — November 2025
     /// Dec. 11     Announcing Rust 1.92.0
@@ -317,7 +317,7 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
     /// ```
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     let text = r#"Stable: 1.92.0
     /// Beta: 1.93.0 (22 January, 2026, 33 days left)
     /// Nightly: 1.94.0 (5 March, 2026, 75 days left)
@@ -368,7 +368,7 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
     /// ```
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     let text = r#"Dec. 19   What do people love about Rust?
     /// Dec. 16     Project goals update — November 2025
     /// Dec. 11     Announcing Rust 1.92.0

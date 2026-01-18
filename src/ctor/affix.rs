@@ -35,7 +35,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.suffix("://");
 ///     let domain = neu::alphabetic().many1();
@@ -59,7 +59,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp"));
 ///     let protocol = protocol.suffix("://");
 ///     let domain = neu::alphabetic().many1();
@@ -240,7 +240,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp")).suffix("://");
 ///     let domain = neu::alphabetic().many1();
 ///     let domain = domain.sep(".").at_least(2);
@@ -263,7 +263,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let protocol = "https".or("http".or("ftp")).suffix("://");
 ///     let domain = neu::alphabetic().many1();
 ///     let domain = domain.sep(".").at_least(2);

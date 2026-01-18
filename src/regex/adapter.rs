@@ -103,14 +103,14 @@ impl<I, C> Adapter<C, I> {
 }
 
 ///
-/// Return a type that wrap `Regex` with [`Box`].
+/// Return a type that wrap `Regex` with [`Box`](crate::alloc::Box).
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"who");
 ///     let regex = regex::Adapter::r#box(regex);
 ///
@@ -137,7 +137,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"@");
 ///     let regex = regex::Adapter::rc(regex);
 ///     let snd = regex.clone();
@@ -166,7 +166,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"@");
 ///     let regex = regex::Adapter::arc(regex);
 ///     let snd = regex.clone();
@@ -195,7 +195,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = move |ctx: &mut CharsCtx| ctx.try_mat(&"@");
 ///     let regex = regex::Adapter::cell(regex);
 ///     let snd = regex.clone();
@@ -216,14 +216,14 @@ where
 }
 
 ///
-/// Return a type that wrap `Regex` with [`std::sync::Mutex`].
+/// Return a type that wrap `Regex` with [`crate::std::Mutex`].
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = core::cell::RefCell::new("where");
 ///     let regex = regex::Adapter::mutex(regex);
 ///
@@ -256,7 +256,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = " are you from?".prefix("what");
 ///     let regex = regex::Adapter::refcell(regex);
 ///
@@ -287,7 +287,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&core::cell::RefCell::new("rust"));
 ///     let regex1 = regex::Adapter::dyn_arc(regex);
 ///     let regex2 = regex1.clone();
@@ -326,7 +326,7 @@ impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + Send + 'a>> {
 /// #
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
 ///     let regex = regex::Adapter::dyn_arc_sync(regex);
 ///     let (send, recv) = channel();
@@ -353,14 +353,14 @@ impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + Send + Sync + 'a>> {
 }
 
 ///
-/// Return a type that wrap `dyn Regex` with [`Box`].
+/// Return a type that wrap `dyn Regex` with [`Box`](crate::alloc::Box).
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&core::cell::RefCell::new("rust"));
 ///     let regex = regex::Adapter::dyn_box(regex);
 ///
@@ -377,7 +377,7 @@ impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + 'a>> {
 }
 
 ///
-/// Return a type that wrap `dyn Regex + Send` with [`Box`].
+/// Return a type that wrap `dyn Regex + Send` with [`Box`](crate::alloc::Box).
 ///
 #[cfg(feature = "alloc")]
 impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + 'a>> {
@@ -387,7 +387,7 @@ impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + 'a>> {
 }
 
 ///
-/// Return a type that wrap `dyn Regex + Send + Sync` with [`Box`].
+/// Return a type that wrap `dyn Regex + Send + Sync` with [`Box`](crate::alloc::Box).
 ///
 /// # Example
 /// ```
@@ -395,7 +395,7 @@ impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + 'a>> {
 /// #
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
 ///     let regex = regex::Adapter::dyn_box_sync(regex);
 ///     let (send, recv) = channel();
@@ -429,7 +429,7 @@ impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + Sync + 'a>> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&core::cell::RefCell::new("rust"));
 ///     let regex = regex::Adapter::rc(regex);
 ///

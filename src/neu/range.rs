@@ -223,7 +223,7 @@ impl<T> From<core::ops::RangeToInclusive<T>> for CRange<T> {
 /// ```
 /// use neure::prelude::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let letter = neu::range('a' ..= 'f');
 ///     let letter = letter.count::<3>();
 ///     let mut ctx = CharsCtx::new("adfwgh");

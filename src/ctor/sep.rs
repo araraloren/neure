@@ -47,7 +47,7 @@ use crate::debug_regex_reval;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let key = '='.not().many1();
 ///     let val = key;
 ///     let pair = key.sep_once("=", val);
@@ -73,7 +73,7 @@ use crate::debug_regex_reval;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ele = neu::digit(10).count::<2>();
 ///     let sep = ":";
 ///     let time = ele.sep_once(sep, ele).sep_once(sep, ele);
@@ -272,7 +272,7 @@ pub mod inner_sep_alloc {
     /// This combinator parses **lists of elements separated by delimiters**, like CSV data (`A,B,C`),
     /// function arguments (`func(a, b, c)`), or path segments (`/usr/local/bin`). It provides fine-grained
     /// control over separator requirements, trailing separator handling, and minimum element
-    /// counts. Unlike [`SepOnce`] (single split) or [`Repeat`](crate::ctor::Repeat) (no separators),
+    /// counts. Unlike [`SepOnce`](super::SepOnce) (single split) or [`Repeat`](crate::ctor::Repeat) (no separators),
     /// this handles arbitrary-length sequences with explicit delimiter semantics.
     ///
     /// # Regex
@@ -293,7 +293,7 @@ pub mod inner_sep_alloc {
     /// ```
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     let ws = neu::whitespace().many0();
     ///     let num = neu::digit(10).many1();
     ///     let ele = num.sep(",".suffix(ws));
@@ -320,7 +320,7 @@ pub mod inner_sep_alloc {
     /// ```
     /// # use neure::prelude::*;
     /// #
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
     ///     let ws = neu::whitespace().many0();
     ///     let ty = ('a'..='z').or('A'..='Z').once();
     ///     let ty = ty.then(neu::word().many0()).pat();
@@ -595,7 +595,7 @@ pub use inner_sep_alloc::*;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ws = neu::whitespace().many0();
 ///     let num = neu::digit(10).many1();
 ///     let ele = num.sep(",".suffix(ws));
@@ -622,7 +622,7 @@ pub use inner_sep_alloc::*;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ws = neu::whitespace().many0();
 ///     let ty = ('a'..='z').or('A'..='Z').once();
 ///     let ty = ty.then(neu::word().many0()).pat();
@@ -845,9 +845,9 @@ where
 /// Collects separator-delimited patterns into any [`FromIterator`] collection type.
 ///
 /// This combinator extends [`Separate`] with **generic collection support**, allowing parsed
-/// elements to be collected into any type implementing [`FromIterator`]—not just [`Vec<T>`]. This
+/// elements to be collected into any type implementing [`FromIterator`]—not just [`Vec<T>`](crate::alloc::Vec). This
 /// enables direct construction of specialized collections like
-/// [`HashSet`](std::collections::HashSet), [`BTreeSet`](std::collections::BTreeSet), [`String`],
+/// [`HashSet`](crate::std::HashSet), [`BTreeSet`](crate::std::BTreeSet), [`String`](crate::alloc::String),
 /// or custom aggregate types without intermediate allocations. It maintains the same core
 /// semantics for separator handling and minimum count enforcement, but provides ultimate
 /// flexibility in result representation.
@@ -867,7 +867,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let digit = neu::digit(10).many1();
 ///     let val = digit;
 ///     // using sep_collect is inconvenient for Regex
@@ -899,7 +899,7 @@ where
 /// # use std::collections::HashMap;
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let name = neu::word().many1();
 ///     let year = neu::digit(10).many1();
 ///     let year = year.try_map(map::from_str::<u32>());

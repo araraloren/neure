@@ -30,6 +30,10 @@ pub(crate) mod alloc {
 pub(crate) mod std {
     extern crate std;
 
+    #[allow(unused)]
+    pub use std::collections::BTreeSet;
+    #[allow(unused)]
+    pub use std::collections::HashSet;
     pub use std::sync::Mutex;
 }
 
@@ -70,9 +74,10 @@ pub mod prelude {
     pub use crate::regex::AsCtor;
     pub use crate::regex::Regex;
     pub use crate::regex::RegexIntoHelper;
-    #[cfg(feature = "alloc")]
-    pub use crate::span::SimpleStorer;
+    pub use crate::span::ArrayStorer;
     pub use crate::span::Span;
+    #[cfg(feature = "alloc")]
+    pub use crate::span::VecStorer;
 }
 
 #[cfg(test)]
@@ -134,7 +139,7 @@ mod test {
     #[cfg(feature = "alloc")]
     fn test_other() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
+        let mut storer = VecStorer::new(1);
 
         test_st!(ctx, storer, "abedf", 0, regex!(.), Span { beg: 0, len: 1 });
         test_st!(ctx, storer, "abedf", 0, regex!(.?), Span { beg: 0, len: 1 });
@@ -198,7 +203,7 @@ mod test {
     #[cfg(feature = "alloc")]
     fn test_range_negative() -> Result<(), crate::err::Error> {
         let mut ctx = RegexCtx::new("");
-        let mut storer = SimpleStorer::new(1);
+        let mut storer = VecStorer::new(1);
 
         test_st!(
             ctx,

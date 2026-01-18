@@ -42,7 +42,7 @@ use super::NeuCond;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.once();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
@@ -230,7 +230,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let hex = 'a'..'g';
 ///     let hex = hex.many1();
 ///     let mut ctx = CharsCtx::new("aabbccgg");

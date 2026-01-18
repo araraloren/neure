@@ -444,7 +444,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ty = neu::ascii_alphabetic().many1();
 ///     let id = neu::ascii_alphabetic().many1();
 ///     let var = ty.sep_once("", id);
@@ -471,7 +471,7 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> crate::ctor::Vector<T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum C {
 ///         Var,
@@ -515,7 +515,7 @@ pub fn pair_vector<T, V: Clone>(
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::array([b"rust".as_ref(), b"jawa", b"golang"]);
 ///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
 ///
@@ -533,7 +533,7 @@ pub fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let slice = [b"rust".as_ref(), b"jawa", b"golang"];
 ///     let parser = regex::slice(&slice);
 ///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
@@ -552,7 +552,7 @@ pub fn slice<T>(val: &[T]) -> Slice<'_, T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq)]
 ///     enum Lang {
 ///         Rust,
@@ -581,7 +581,7 @@ pub fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> 
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq)]
 ///     enum Lang {
 ///         Rust,

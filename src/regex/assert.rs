@@ -114,7 +114,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let langs = regex::array([b"rust".as_ref(), b"jawa", b"golang"]);
 ///     let mut ctx = BytesCtx::new(b"javascript is not awesome!");
 ///
@@ -134,7 +134,7 @@ pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let re = regex::not("]]]");
 ///     let mut ctx = CharsCtx::new("[123,456,789]");
 ///
@@ -154,7 +154,7 @@ pub fn not<T>(pat: T) -> crate::regex::Assert<T> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::peek(b"rust");
 ///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
 ///

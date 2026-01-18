@@ -35,7 +35,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let anchor = regex::start();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
@@ -135,7 +135,7 @@ pub fn start() -> AnchorStart {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let anchor = regex::end();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///

@@ -27,7 +27,7 @@ use super::Ctor;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let array = regex::array(["a", "b", "c"]);
 ///
 ///     // First match succeeds, returns immediately
@@ -55,7 +55,7 @@ use super::Ctor;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let array = regex::array(["a", "b", "c"]);
 ///
 ///     assert_eq!(CharsCtx::new("abc").ctor_span(&array)?, Span::new(0, 1));

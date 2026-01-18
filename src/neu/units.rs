@@ -89,7 +89,7 @@ use super::Neu;
 setup_unit_ty!(Alphabetic, "Alphabetic", is_alphabetic);
 
 ///
-/// Reference [`is_alphabetic`](std::primitive::char::is_alphabetic).
+/// Reference [`is_alphabetic`](core::primitive::char::is_alphabetic).
 ///
 /// # Example
 ///
@@ -97,7 +97,7 @@ setup_unit_ty!(Alphabetic, "Alphabetic", is_alphabetic);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let alpha = alphabetic();
 ///     let alpha = alpha.count::<1>();
 ///     let mut ctx = CharsCtx::new("a💝abcd");
@@ -114,7 +114,7 @@ pub const fn alphabetic() -> Alphabetic {
 setup_unit_ty!(Alphanumeric, "Alphanumeric", is_alphanumeric);
 
 ///
-/// Reference [`is_alphanumeric`](std::primitive::char::is_alphanumeric).
+/// Reference [`is_alphanumeric`](core::primitive::char::is_alphanumeric).
 ///
 /// # Example
 ///
@@ -122,7 +122,7 @@ setup_unit_ty!(Alphanumeric, "Alphanumeric", is_alphanumeric);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let alphanumeric = alphanumeric();
 ///     let alphanumeric = alphanumeric.count::<2>();
 ///     let mut ctx = CharsCtx::new("①7Kوf");
@@ -140,7 +140,7 @@ pub const fn alphanumeric() -> Alphanumeric {
 setup_unit_ty2!(Ascii, "Ascii", is_ascii);
 
 ///
-/// Reference [`is_ascii`](std::primitive::char::is_ascii) or [`is_ascii`](std::primitive::u8::is_ascii).
+/// Reference [`is_ascii`](core::primitive::char::is_ascii) or [`is_ascii`](core::primitive::u8::is_ascii).
 ///
 /// # Example
 ///
@@ -148,7 +148,7 @@ setup_unit_ty2!(Ascii, "Ascii", is_ascii);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii = ascii();
 ///     let ascii = ascii.count::<2>();
 ///     let mut ctx = CharsCtx::new("ab❤e");
@@ -165,7 +165,7 @@ pub const fn ascii<T>() -> Ascii<T> {
 setup_unit_ty2!(AsciiAlphabetic, "AsciiAlphabetic", is_ascii_alphabetic);
 
 ///
-/// Reference [`is_ascii_alphabetic`](std::primitive::char::is_ascii_alphabetic) or [`is_ascii_alphabetic`](std::primitive::u8::is_ascii_alphabetic).
+/// Reference [`is_ascii_alphabetic`](core::primitive::char::is_ascii_alphabetic) or [`is_ascii_alphabetic`](core::primitive::u8::is_ascii_alphabetic).
 ///
 /// # Example
 ///
@@ -173,7 +173,7 @@ setup_unit_ty2!(AsciiAlphabetic, "AsciiAlphabetic", is_ascii_alphabetic);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_alphabetic = ascii_alphabetic();
 ///     let ascii_alphabetic = ascii_alphabetic.count::<2>();
 ///     let mut ctx = CharsCtx::new("ab%e");
@@ -194,7 +194,7 @@ setup_unit_ty2!(
 );
 
 ///
-/// Reference [`is_ascii_alphanumeric`](std::primitive::char::is_ascii_alphanumeric) or [`is_ascii_alphanumeric`](std::primitive::u8::is_ascii_alphanumeric).
+/// Reference [`is_ascii_alphanumeric`](core::primitive::char::is_ascii_alphanumeric) or [`is_ascii_alphanumeric`](core::primitive::u8::is_ascii_alphanumeric).
 ///
 /// # Example
 ///
@@ -202,7 +202,7 @@ setup_unit_ty2!(
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_alphanumeric = ascii_alphanumeric();
 ///     let ascii_alphanumeric = ascii_alphanumeric.count::<2>();
 ///     let mut ctx = CharsCtx::new("8a%e");
@@ -219,7 +219,7 @@ pub const fn ascii_alphanumeric<T>() -> AsciiAlphanumeric<T> {
 setup_unit_ty2!(AsciiControl, "AsciiControl", is_ascii_control);
 
 ///
-/// Reference [`is_ascii_control`](std::primitive::char::is_ascii_control) or [`is_ascii_control`](std::primitive::u8::is_ascii_control).
+/// Reference [`is_ascii_control`](core::primitive::char::is_ascii_control) or [`is_ascii_control`](core::primitive::u8::is_ascii_control).
 ///
 /// # Example
 ///
@@ -227,7 +227,7 @@ setup_unit_ty2!(AsciiControl, "AsciiControl", is_ascii_control);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_control = ascii_control();
 ///     let ascii_control = ascii_control.count::<2>();
 ///     let mut ctx = CharsCtx::new("\r\n%e");
@@ -244,7 +244,7 @@ pub const fn ascii_control<T>() -> AsciiControl<T> {
 setup_unit_ty2!(AsciiDigit, "AsciiDigit", is_ascii_digit);
 
 ///
-/// Reference [`is_ascii_digit`](std::primitive::char::is_ascii_digit) or [`is_ascii_digit`](std::primitive::u8::is_ascii_digit).
+/// Reference [`is_ascii_digit`](core::primitive::char::is_ascii_digit) or [`is_ascii_digit`](core::primitive::u8::is_ascii_digit).
 ///
 /// # Example
 ///
@@ -252,7 +252,7 @@ setup_unit_ty2!(AsciiDigit, "AsciiDigit", is_ascii_digit);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_digit = ascii_digit();
 ///     let ascii_digit = ascii_digit.count::<2>();
 ///     let mut ctx = CharsCtx::new("90fe");
@@ -269,7 +269,7 @@ pub const fn ascii_digit<T>() -> AsciiDigit<T> {
 setup_unit_ty2!(AsciiGraphic, "AsciiGraphic", is_ascii_graphic);
 
 ///
-/// Reference [`is_ascii_graphic`](std::primitive::char::is_ascii_graphic) or [`is_ascii_graphic`](std::primitive::u8::is_ascii_graphic).
+/// Reference [`is_ascii_graphic`](core::primitive::char::is_ascii_graphic) or [`is_ascii_graphic`](core::primitive::u8::is_ascii_graphic).
 ///
 /// # Example
 ///
@@ -277,7 +277,7 @@ setup_unit_ty2!(AsciiGraphic, "AsciiGraphic", is_ascii_graphic);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_graphic = ascii_graphic();
 ///     let ascii_graphic = ascii_graphic.count::<2>();
 ///     let mut ctx = CharsCtx::new("a%\r\n");
@@ -294,7 +294,7 @@ pub const fn ascii_graphic<T>() -> AsciiGraphic<T> {
 setup_unit_ty2!(AsciiHexDigit, "AsciiHexDigit", is_ascii_hexdigit);
 
 ///
-/// Reference [`is_ascii_hexdigit`](std::primitive::char::is_ascii_hexdigit) or [`is_ascii_hexdigit`](std::primitive::u8::is_ascii_hexdigit).
+/// Reference [`is_ascii_hexdigit`](core::primitive::char::is_ascii_hexdigit) or [`is_ascii_hexdigit`](core::primitive::u8::is_ascii_hexdigit).
 ///
 /// # Example
 ///
@@ -302,7 +302,7 @@ setup_unit_ty2!(AsciiHexDigit, "AsciiHexDigit", is_ascii_hexdigit);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_hexdigit = ascii_hexdigit();
 ///     let ascii_hexdigit = ascii_hexdigit.count::<2>();
 ///     let mut ctx = CharsCtx::new("9fg0");
@@ -319,7 +319,7 @@ pub const fn ascii_hexdigit<T>() -> AsciiHexDigit<T> {
 setup_unit_ty2!(AsciiLowercase, "AsciiLowercase", is_ascii_lowercase);
 
 ///
-/// Reference [`is_ascii_lowercase`](std::primitive::char::is_ascii_lowercase) or [`is_ascii_lowercase`](std::primitive::u8::is_ascii_lowercase).
+/// Reference [`is_ascii_lowercase`](core::primitive::char::is_ascii_lowercase) or [`is_ascii_lowercase`](core::primitive::u8::is_ascii_lowercase).
 ///
 /// # Example
 ///
@@ -327,7 +327,7 @@ setup_unit_ty2!(AsciiLowercase, "AsciiLowercase", is_ascii_lowercase);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_lowercase = ascii_lowercase();
 ///     let ascii_lowercase = ascii_lowercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("efAE");
@@ -344,7 +344,7 @@ pub const fn ascii_lowercase<T>() -> AsciiLowercase<T> {
 setup_unit_ty2!(AsciiPunctuation, "AsciiPunctuation", is_ascii_punctuation);
 
 ///
-/// Reference [`is_ascii_punctuation`](std::primitive::char::is_ascii_punctuation) or [`is_ascii_punctuation`](std::primitive::u8::is_ascii_punctuation).
+/// Reference [`is_ascii_punctuation`](core::primitive::char::is_ascii_punctuation) or [`is_ascii_punctuation`](core::primitive::u8::is_ascii_punctuation).
 ///
 /// # Example
 ///
@@ -352,7 +352,7 @@ setup_unit_ty2!(AsciiPunctuation, "AsciiPunctuation", is_ascii_punctuation);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_punctuation = ascii_punctuation();
 ///     let ascii_punctuation = ascii_punctuation.count::<2>();
 ///     let mut ctx = CharsCtx::new("%%\nE");
@@ -369,7 +369,7 @@ pub const fn ascii_punctuation<T>() -> AsciiPunctuation<T> {
 setup_unit_ty2!(AsciiUppercase, "AsciiUppercase", is_ascii_uppercase);
 
 ///
-/// Reference [`is_ascii_uppercase`](std::primitive::char::is_ascii_uppercase) or [`is_ascii_uppercase`](std::primitive::u8::is_ascii_uppercase).
+/// Reference [`is_ascii_uppercase`](core::primitive::char::is_ascii_uppercase) or [`is_ascii_uppercase`](core::primitive::u8::is_ascii_uppercase).
 ///
 /// # Example
 ///
@@ -377,7 +377,7 @@ setup_unit_ty2!(AsciiUppercase, "AsciiUppercase", is_ascii_uppercase);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ascii_uppercase = ascii_uppercase();
 ///     let ascii_uppercase = ascii_uppercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("EFef");
@@ -394,7 +394,7 @@ pub const fn ascii_uppercase<T>() -> AsciiUppercase<T> {
 setup_unit_ty2!(AsciiWhiteSpace, "AsciiWhiteSpace", is_ascii_whitespace);
 
 ///
-/// Reference [`is_ascii_whitespace`](std::primitive::char::is_ascii_whitespace) or [`is_ascii_whitespace`](std::primitive::u8::is_ascii_whitespace).
+/// Reference [`is_ascii_whitespace`](core::primitive::char::is_ascii_whitespace) or [`is_ascii_whitespace`](core::primitive::u8::is_ascii_whitespace).
 ///
 /// # Example
 ///
@@ -402,7 +402,7 @@ setup_unit_ty2!(AsciiWhiteSpace, "AsciiWhiteSpace", is_ascii_whitespace);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let space = ascii_whitespace();
 ///     let space1 = space.count::<1>();
 ///     let space3 = space.count::<3>();
@@ -421,7 +421,7 @@ pub const fn ascii_whitespace<T>() -> AsciiWhiteSpace<T> {
 setup_unit_ty!(Control, "Control", is_control);
 
 ///
-/// Reference [`is_control`](std::primitive::char::is_control).
+/// Reference [`is_control`](core::primitive::char::is_control).
 ///
 /// # Example
 ///
@@ -429,7 +429,7 @@ setup_unit_ty!(Control, "Control", is_control);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let control = control();
 ///     let control = control.count::<2>();
 ///     let mut ctx = CharsCtx::new("ef");
@@ -468,7 +468,7 @@ impl Neu<char> for Digit {
 }
 
 ///
-/// Reference [`is_digit`](std::primitive::char::is_digit).
+/// Reference [`is_digit`](core::primitive::char::is_digit).
 ///
 /// # Example
 ///
@@ -476,7 +476,7 @@ impl Neu<char> for Digit {
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let digit = digit(10);
 ///     let digit = digit.count::<2>();
 ///     let mut ctx = CharsCtx::new("54aa");
@@ -493,7 +493,7 @@ pub const fn digit(radix: u32) -> Digit {
 setup_unit_ty!(Lowercase, "Lowercase", is_lowercase);
 
 ///
-/// Reference [`is_lowercase`](std::primitive::char::is_lowercase).
+/// Reference [`is_lowercase`](core::primitive::char::is_lowercase).
 ///
 /// # Example
 ///
@@ -501,7 +501,7 @@ setup_unit_ty!(Lowercase, "Lowercase", is_lowercase);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let lowercase = lowercase();
 ///     let lowercase = lowercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("aδΔA");
@@ -518,7 +518,7 @@ pub const fn lowercase() -> Lowercase {
 setup_unit_ty!(Numeric, "Numeric", is_numeric);
 
 ///
-/// Reference [`is_numeric`](std::primitive::char::is_numeric).
+/// Reference [`is_numeric`](core::primitive::char::is_numeric).
 ///
 /// # Example
 ///
@@ -526,7 +526,7 @@ setup_unit_ty!(Numeric, "Numeric", is_numeric);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let numeric = numeric();
 ///     let numeric = numeric.count::<2>();
 ///     let mut ctx = CharsCtx::new("①¾Kو");
@@ -543,7 +543,7 @@ pub const fn numeric() -> Numeric {
 setup_unit_ty!(Uppercase, "Uppercase", is_uppercase);
 
 ///
-/// Reference [`is_uppercase`](std::primitive::char::is_uppercase).
+/// Reference [`is_uppercase`](core::primitive::char::is_uppercase).
 ///
 /// # Example
 ///
@@ -551,7 +551,7 @@ setup_unit_ty!(Uppercase, "Uppercase", is_uppercase);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let uppercase = uppercase();
 ///     let uppercase = uppercase.count::<2>();
 ///     let mut ctx = CharsCtx::new("ΔAaΔ");
@@ -568,7 +568,7 @@ pub const fn uppercase() -> Uppercase {
 setup_unit_ty!(WhiteSpace, "WhiteSpace", is_whitespace);
 
 ///
-/// Reference [`is_whitespace`](std::primitive::char::is_whitespace).
+/// Reference [`is_whitespace`](core::primitive::char::is_whitespace).
 ///
 /// # Example
 ///
@@ -576,7 +576,7 @@ setup_unit_ty!(WhiteSpace, "WhiteSpace", is_whitespace);
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let space = whitespace();
 ///     let space1 = space.count::<1>();
 ///     let space3 = space.count::<3>();
@@ -625,7 +625,7 @@ impl Neu<char> for Wild {
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let wild = wild();
 ///     let wild = wild.count::<2>();
 ///     let mut ctx = CharsCtx::new("aa\r\n");
@@ -698,7 +698,7 @@ impl Neu<u8> for Word<u8> {
 /// use neure::prelude::*;
 /// use neu::*;
 ///
-/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let word = word();
 ///     let word = word.many1();
 ///     let mut ctx = CharsCtx::new("TheLolipop_1\r\n");

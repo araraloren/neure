@@ -46,7 +46,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::{ctor::DynamicCtorThenBuilderHelper, prelude::*};
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let len = regex::consume(2).try_map(map::from_le_bytes::<i16>());
 ///     let data = len.into_ctor_then_builder(|_, v| Ok(regex::consume(*v as usize)));
 ///     let ret = BytesCtx::new(b"\x1f\0Hello there, where are you from?").ctor(&data)?;
@@ -66,7 +66,7 @@ use crate::span::Span;
 /// ```
 /// # use neure::{ctor::DynamicCtorThenBuilderHelper, prelude::*};
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let num = u8::is_ascii_digit
 ///         .once()
 ///         .try_map(map::from_utf8::<String>())

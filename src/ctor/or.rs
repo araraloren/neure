@@ -35,7 +35,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let digits = neu::digit(16).many1();
 ///     let strs = ('a'..='z').or('A'..='Z');
 ///     let strs = strs.many1();
@@ -62,7 +62,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     macro_rules! digit {
 ///         ($p:expr, $r:literal) => {
 ///             $p.then(

@@ -33,7 +33,7 @@ use super::Ctor;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let keywords = regex::vector(["for", "while", "repeat"]);
 ///
 ///     assert_eq!(CharsCtx::new("while").try_mat(&keywords)?, Span::new(0, 5));
@@ -51,7 +51,7 @@ use super::Ctor;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let year = neu::digit(10).count::<4>();
 ///     let month = neu::digit(10).count::<2>();
 ///     let day = month;
@@ -172,7 +172,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, Copy)]
 ///     enum Keyword {
 ///         For,
@@ -202,7 +202,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, Copy, PartialEq)]
 ///     enum Keyword {
 ///         For,

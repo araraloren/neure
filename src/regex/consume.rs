@@ -36,7 +36,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let consume = regex::consume(8);
 ///     let mut ctx = CharsCtx::new("rust2023");
 ///
@@ -95,7 +95,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::consume(6);
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///
@@ -133,7 +133,7 @@ pub fn consume(len: usize) -> Consume {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::consume_all();
 ///     let mut ctx = BytesCtx::new(b"rust is so awesome!");
 ///
@@ -188,7 +188,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let parser = regex::consume_all();
 ///     let mut ctx = CharsCtx::new("aabbccgg");
 ///

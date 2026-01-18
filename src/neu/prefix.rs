@@ -154,7 +154,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let dec = neu::digit(10);
 ///     let hex = neu::digit(16);
 ///     let oct = neu::digit(8);
@@ -206,7 +206,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let replys = [
 ///         "Let fate decide!",
 ///         "Don't expect too much.",

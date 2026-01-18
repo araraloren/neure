@@ -4,7 +4,9 @@ mod span;
 use crate::span::Span;
 
 pub use self::byte::BytesIndices;
+pub use self::span::IteratorByOptionSpan;
 pub use self::span::IteratorBySpan;
+pub use self::span::OptionSpanIterator;
 pub use self::span::SpanIterator;
 
 pub trait IndexBySpan {

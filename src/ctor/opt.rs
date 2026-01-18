@@ -33,7 +33,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let num = regex!((neu::digit(16))+).opt();
 ///
 ///     assert_eq!(CharsCtx::new("f1").try_mat(&num)?, Span::new(0, 2));
@@ -55,7 +55,7 @@ use crate::regex::impl_not_for_regex;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let num = regex!((neu::digit(10))+).try_map(map::from_str()).opt();
 ///
 ///     assert_eq!(CharsCtx::new("42").ctor(&num)?, Some(42i32));

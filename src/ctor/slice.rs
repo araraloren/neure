@@ -40,7 +40,7 @@ use super::Ctor;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let array = ["a", "b", "c"];
 ///     let parser = regex::slice(&array);
 ///
@@ -71,7 +71,7 @@ use super::Ctor;
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let array = ["abc", "def", "ghi"];
 ///     let parser = regex::slice(&array);
 ///
@@ -184,7 +184,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum Kind {
 ///         Str,
@@ -228,7 +228,7 @@ where
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 ///     pub enum Kind {
 ///         A,

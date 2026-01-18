@@ -98,14 +98,14 @@ impl<C, I> Adapter<C, I> {
 }
 
 ///
-/// Return a type that wraps `Ctor` with [`Box`].
+/// Return a type that wraps `Ctor` with [`Box`](crate::alloc::Box).
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::{err::Error, prelude::*};
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let re = b'+'
 ///         .or(b'-')
@@ -136,7 +136,7 @@ impl<T, C> Adapter<C, BoxAdapter<C, T>> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let year = char::is_ascii_digit.count::<4>();
 ///     let num = char::is_ascii_digit.count::<2>();
@@ -170,7 +170,7 @@ impl<T, C> Adapter<C, alloc::Rc<T>> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let re = u8::is_ascii_hexdigit.then(u8::is_ascii_hexdigit);
 ///     let re = ctor::Adapter::arc(re);
@@ -196,7 +196,7 @@ impl<T, C> Adapter<C, alloc::Arc<T>> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let num = char::is_ascii_digit.many1();
 ///     let float = num.sep_once(".", num).pat();
@@ -216,14 +216,14 @@ impl<T, C> Adapter<C, core::cell::Cell<T>> {
 }
 
 ///
-/// Return a type that wrap `Ctor` with [`Mutex`](std::sync::Mutex).
+/// Return a type that wrap `Ctor` with [`Mutex`](crate::std::Mutex).
 ///
 /// # Example
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let cnt = char::is_ascii_digit.at_least::<3>();
 ///     let prog = cnt.sep_once("/".into_refcell_regex(), cnt);
@@ -259,7 +259,7 @@ impl<T, C> Adapter<C, crate::std::Mutex<T>> {
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let cjk = |ch: &char| ('\u{4e00}'..='\u{9fff}').contains(ch);
 ///     let scentence = cjk.many1();
@@ -279,12 +279,12 @@ impl<C, T> Adapter<C, core::cell::RefCell<T>> {
 }
 
 ///
-/// Return a type that wrap `dyn Ctor` with [`Box`].
+/// Return a type that wrap `dyn Ctor` with [`Box`](crate::alloc::Box).
 ///
 /// ```
 /// # use neure::{err::Error, prelude::*};
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let num = u8::is_ascii_digit
 ///         .once()
@@ -307,12 +307,12 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>> {
 }
 
 ///
-/// Return a type that wrap `dyn Ctor + Send` with [`Box`].
+/// Return a type that wrap `dyn Ctor + Send` with [`Box`](crate::alloc::Box).
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let (send, recv) = std::sync::mpsc::sync_channel(1);
 ///
@@ -344,7 +344,7 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + 'b>> 
 }
 
 ///
-/// Return a type that wrap `dyn Ctor + Send + Sync` with [`Box`].
+/// Return a type that wrap `dyn Ctor + Send + Sync` with [`Box`](crate::alloc::Box).
 ///
 #[cfg(feature = "alloc")]
 impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
@@ -361,7 +361,7 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + Sync 
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///
 ///     let name = char::is_ascii_alphabetic.many1();
 ///     let time = char::is_ascii_digit.count::<10>();
@@ -400,7 +400,7 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + 'b>> 
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let cnt = char::is_ascii_digit.at_least::<3>();
 ///     let prog = cnt.sep_once(String::from("/"), cnt);
 ///     let prog1 = ctor::Adapter::dyn_arc_sync(prog);
@@ -434,7 +434,7 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + Sync 
 /// ```
 /// # use neure::prelude::*;
 /// #
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let root = "/".opt();
 ///     let name = '/'.not().many1();
 ///     let path = name.sep("/").opt();
