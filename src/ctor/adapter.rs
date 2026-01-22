@@ -489,7 +489,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-pub mod inner_box_adapter {
+mod box_adapter {
 
     use crate::ctor::Ctor;
     use crate::err::Error;
@@ -553,4 +553,4 @@ pub mod inner_box_adapter {
 }
 
 #[cfg(feature = "alloc")]
-pub use inner_box_adapter::*;
+pub use box_adapter::*;

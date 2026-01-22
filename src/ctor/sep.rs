@@ -248,7 +248,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-pub mod inner_sep_alloc {
+mod alloc_sep2 {
 
     use crate::ctor::Ctor;
     use crate::ctor::Handler;
@@ -562,7 +562,7 @@ pub mod inner_sep_alloc {
 }
 
 #[cfg(feature = "alloc")]
-pub use inner_sep_alloc::*;
+pub use alloc_sep2::*;
 
 ///
 /// Matches a pattern repeated with separators, supporting trailing separators and minimum counts.

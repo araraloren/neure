@@ -73,7 +73,7 @@ impl Display for Span {
 }
 
 #[cfg(feature = "alloc")]
-pub mod inner_vec_storer {
+mod alloc_vec_storer {
 
     use crate::alloc::Vec;
     use crate::alloc::vec;
@@ -290,7 +290,7 @@ pub mod inner_vec_storer {
 }
 
 #[cfg(feature = "alloc")]
-pub use inner_vec_storer::*;
+pub use alloc_vec_storer::*;
 
 /// A storage container for managing multiple groups of spans.
 ///

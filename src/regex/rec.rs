@@ -1,5 +1,5 @@
 #[cfg(feature = "std")]
-pub mod inner_rec_sync {
+mod rec_sync {
 
     use crate::alloc::Arc;
     use crate::alloc::Box;
@@ -101,7 +101,7 @@ pub mod inner_rec_sync {
 }
 
 #[cfg(feature = "alloc")]
-pub mod inner_rec_unsync {
+mod rec_unsync {
     use crate::alloc::Box;
     use crate::alloc::Rc;
     use crate::ctor::Adapter;
@@ -215,7 +215,7 @@ pub mod inner_rec_unsync {
 }
 
 #[cfg(feature = "std")]
-pub use inner_rec_sync::*;
+pub use rec_sync::*;
 
 #[cfg(feature = "alloc")]
-pub use inner_rec_unsync::*;
+pub use rec_unsync::*;

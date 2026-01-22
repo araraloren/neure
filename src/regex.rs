@@ -119,7 +119,7 @@ macro_rules! impl_forward_regex {
 }
 
 #[cfg(feature = "alloc")]
-pub mod inner_regex_impls {
+mod alloc_regex_impls {
 
     use crate::alloc::Arc;
     use crate::alloc::Box;

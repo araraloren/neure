@@ -143,7 +143,7 @@ macro_rules! impl_forward_ctor {
 }
 
 #[cfg(feature = "alloc")]
-pub mod inner_ctor_impls {
+mod alloc_ctor_impls {
 
     use crate::alloc::Arc;
     use crate::alloc::Box;
