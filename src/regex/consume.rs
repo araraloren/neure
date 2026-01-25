@@ -103,7 +103,7 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn consume(len: usize) -> Consume {
+pub const fn consume(len: usize) -> Consume {
     Consume::new(len)
 }
 
@@ -196,6 +196,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn consume_all() -> ConsumeAll {
+pub const fn consume_all() -> ConsumeAll {
     ConsumeAll::new()
 }

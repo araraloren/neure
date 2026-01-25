@@ -94,6 +94,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn fail() -> FailRegex {
+pub const fn fail() -> FailRegex {
     FailRegex::new()
 }

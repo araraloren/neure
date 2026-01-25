@@ -150,19 +150,19 @@ impl<C, P, F> DynamicCtorThenBuilder<C, P, F> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn func(&self) -> &F {
+    pub const fn func(&self) -> &F {
         &self.func
     }
 
-    pub fn func_mut(&mut self) -> &mut F {
+    pub const fn func_mut(&mut self) -> &mut F {
         &mut self.func
     }
 

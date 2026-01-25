@@ -162,27 +162,27 @@ impl<C, P, F, E> Branch<C, P, F, E> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn test(&self) -> &F {
+    pub const fn test(&self) -> &F {
         &self.test
     }
 
-    pub fn test_mut(&mut self) -> &mut F {
+    pub const fn test_mut(&mut self) -> &mut F {
         &mut self.test
     }
 
-    pub fn other(&self) -> &E {
+    pub const fn other(&self) -> &E {
         &self.other
     }
 
-    pub fn other_mut(&mut self) -> &mut E {
+    pub const fn other_mut(&mut self) -> &mut E {
         &mut self.other
     }
 
@@ -258,7 +258,7 @@ where
     }
 }
 
-pub fn branch<'a, C, P, F, E>(test: F, pat: P, other: E) -> Branch<C, P, F, E>
+pub const fn branch<'a, C, P, F, E>(test: F, pat: P, other: E) -> Branch<C, P, F, E>
 where
     C: Match<'a>,
     E: Regex<C>,

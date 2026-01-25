@@ -163,11 +163,11 @@ impl<const M: usize, const N: usize, C, U, I> Between<M, N, C, U, I> {
         }
     }
 
-    pub fn unit(&self) -> &U {
+    pub const fn unit(&self) -> &U {
         &self.unit
     }
 
-    pub fn unit_mut(&mut self) -> &mut U {
+    pub const fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 
@@ -350,19 +350,19 @@ impl<C, U, I> Times<C, U, I> {
         }
     }
 
-    pub fn unit(&self) -> &U {
+    pub const fn unit(&self) -> &U {
         &self.unit
     }
 
-    pub fn range(&self) -> &CRange<usize> {
+    pub const fn range(&self) -> &CRange<usize> {
         &self.range
     }
 
-    pub fn unit_mut(&mut self) -> &mut U {
+    pub const fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 
-    pub fn range_mut(&mut self) -> &mut CRange<usize> {
+    pub const fn range_mut(&mut self) -> &mut CRange<usize> {
         &mut self.range
     }
 

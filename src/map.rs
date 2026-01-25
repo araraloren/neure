@@ -41,7 +41,7 @@ where
 }
 
 /// Adapts infallible functions to the [`FallibleMap`] trait system.
-pub fn mapper<F>(func: F) -> FuncMapper<F> {
+pub const fn mapper<F>(func: F) -> FuncMapper<F> {
     FuncMapper::new(func)
 }
 
@@ -61,7 +61,7 @@ impl<I1, I2> FallibleMap<(I1, I2), I1> for Select0 {
 }
 
 /// Selects the first element (index 0) from a tuple.
-pub fn select0() -> Select0 {
+pub const fn select0() -> Select0 {
     Select0::new()
 }
 
@@ -81,7 +81,7 @@ impl<I1, I2> FallibleMap<(I1, I2), I2> for Select1 {
 }
 
 /// Selects the second element (index 1) from a tuple.
-pub fn select1() -> Select1 {
+pub const fn select1() -> Select1 {
     Select1::new()
 }
 
@@ -108,7 +108,7 @@ where
 }
 
 /// Validates that both elements of a tuple are equal.
-pub fn select_eq() -> SelectEq {
+pub const fn select_eq() -> SelectEq {
     SelectEq::new()
 }
 
@@ -135,7 +135,7 @@ where
 }
 
 /// Validates that both elements of a tuple are not equal.
-pub fn select_neq() -> SelectNeq {
+pub const fn select_neq() -> SelectNeq {
     SelectNeq::new()
 }
 
@@ -177,7 +177,7 @@ where
 /// [`FromStr`] is a zero-cost adapter that safely parses strings into strongly-typed
 /// values. It wraps the standard library's [`FromStr`](core::str::FromStr) trait implementation to provide
 /// a consistent interface for transformation pipelines and parser combinators.
-pub fn from_str<T>() -> FromStr<T> {
+pub const fn from_str<T>() -> FromStr<T> {
     FromStr::new()
 }
 
@@ -212,7 +212,7 @@ where
 }
 
 /// A zero-cost adapter that converts type using the [`into`](core::convert::Into::into) method.
-pub fn into<T>() -> IntoMapper<T> {
+pub const fn into<T>() -> IntoMapper<T> {
     IntoMapper::new()
 }
 
@@ -247,7 +247,7 @@ where
 }
 
 /// A zero-cost adapter that converts type using the [`try_into`](core::convert::TryInto::try_into) method.
-pub fn try_into<T>() -> TryIntoMapper<T> {
+pub const fn try_into<T>() -> TryIntoMapper<T> {
     TryIntoMapper::new()
 }
 
@@ -315,7 +315,7 @@ where
         }
     }
 
-    pub fn radix(&self) -> u32 {
+    pub const fn radix(&self) -> u32 {
         self.radix
     }
 }
@@ -336,7 +336,7 @@ where
 /// This trait is implemented for all standard integer types and provides a consistent
 /// interface for parsing integers from strings with a specified radix (base).
 #[inline(always)]
-pub fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
+pub const fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
     FromStrRadix::new(radix)
 }
 
@@ -376,8 +376,8 @@ impl<'a> FallibleMap<&'a [u8], crate::alloc::String> for FromUtf8<crate::alloc::
 
 /// A mapper that converts byte slices to UTF-8 [`String`](crate::alloc::String).
 #[inline(always)]
-pub fn from_utf8<T>() -> FromUtf8<T> {
-    FromUtf8::default()
+pub const fn from_utf8<T>() -> FromUtf8<T> {
+    FromUtf8::new()
 }
 
 #[derive(Debug, Copy)]
@@ -413,8 +413,8 @@ impl<'a> FallibleMap<&'a [u8], crate::alloc::Cow<'a, str>>
 /// A mapper that converts byte slices to UTF-8 [`String`](crate::alloc::String) with lossy conversion.
 #[cfg(feature = "alloc")]
 #[inline(always)]
-pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
-    FromUtf8Lossy::default()
+pub const fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
+    FromUtf8Lossy::new()
 }
 
 #[derive(Debug, Copy)]
@@ -601,8 +601,8 @@ impl_from_bytes!(ne usize, 8);
 /// # }
 /// ```
 #[inline(always)]
-pub fn from_le_bytes<T>() -> FromLeBytes<T> {
-    FromLeBytes::default()
+pub const fn from_le_bytes<T>() -> FromLeBytes<T> {
+    FromLeBytes::new()
 }
 
 ///
@@ -623,16 +623,16 @@ pub fn from_le_bytes<T>() -> FromLeBytes<T> {
 /// # }
 /// ```
 #[inline(always)]
-pub fn from_be_bytes<T>() -> FromBeBytes<T> {
-    FromBeBytes::default()
+pub const fn from_be_bytes<T>() -> FromBeBytes<T> {
+    FromBeBytes::new()
 }
 
 ///
 /// Map an integer value from its memory representation as a byte array in native endianness.
 ///
 #[inline(always)]
-pub fn from_ne_bytes<T>() -> FromNeBytes<T> {
-    FromNeBytes::default()
+pub const fn from_ne_bytes<T>() -> FromNeBytes<T> {
+    FromNeBytes::new()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -684,7 +684,7 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn bounded<T: PartialOrd>(min: T, max: T) -> Bounded<T> {
+pub const fn bounded<T: PartialOrd>(min: T, max: T) -> Bounded<T> {
     Bounded::new(min, max)
 }
 
@@ -765,7 +765,7 @@ impl<T, K: Sized> WithDefaultHelper<T> for K {
 /// # }
 /// ```
 #[inline(always)]
-pub fn with_default<T, F, M>(func: F, mapper: M) -> WithDefault<T, F, M>
+pub const fn with_default<T, F, M>(func: F, mapper: M) -> WithDefault<T, F, M>
 where
     F: Fn() -> T,
 {
@@ -824,6 +824,6 @@ impl<T> FallibleMap<T, T> for FixedSize {
 ///     Ok(())
 /// # }
 /// ```
-pub fn fixed_size(size: usize) -> FixedSize {
+pub const fn fixed_size(size: usize) -> FixedSize {
     FixedSize::new(size)
 }

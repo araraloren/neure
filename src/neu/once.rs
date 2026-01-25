@@ -125,11 +125,11 @@ where
         }
     }
 
-    pub fn unit(&self) -> &U {
+    pub const fn unit(&self) -> &U {
         &self.unit
     }
 
-    pub fn unit_mut(&mut self) -> &mut U {
+    pub const fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 
@@ -313,11 +313,11 @@ where
         }
     }
 
-    pub fn unit(&self) -> &U {
+    pub const fn unit(&self) -> &U {
         &self.unit
     }
 
-    pub fn unit_mut(&mut self) -> &mut U {
+    pub const fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 

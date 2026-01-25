@@ -39,15 +39,15 @@ impl<T> Assert<T> {
         Self { pat, value }
     }
 
-    pub fn pat(&self) -> &T {
+    pub const fn pat(&self) -> &T {
         &self.pat
     }
 
-    pub fn value(&self) -> bool {
+    pub const fn value(&self) -> bool {
         self.value
     }
 
-    pub fn pat_mut(&mut self) -> &mut T {
+    pub const fn pat_mut(&mut self) -> &mut T {
         &mut self.pat
     }
 
@@ -122,7 +122,7 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
+pub const fn assert<T>(pat: T, value: bool) -> Assert<T> {
     Assert::new(pat, value)
 }
 
@@ -142,7 +142,7 @@ pub fn assert<T>(pat: T, value: bool) -> Assert<T> {
 ///     Ok(())
 /// # }
 /// ```
-pub fn not<T>(pat: T) -> crate::regex::Assert<T> {
+pub const fn not<T>(pat: T) -> crate::regex::Assert<T> {
     crate::regex::Assert::new(pat, false)
 }
 
@@ -162,6 +162,6 @@ pub fn not<T>(pat: T) -> crate::regex::Assert<T> {
 /// #   Ok(())
 /// # }
 /// ```
-pub fn peek<T>(pat: T) -> crate::regex::Assert<T> {
+pub const fn peek<T>(pat: T) -> crate::regex::Assert<T> {
     crate::regex::Assert::new(pat, true)
 }

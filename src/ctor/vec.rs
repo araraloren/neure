@@ -99,7 +99,7 @@ impl<T> Vector<T> {
         Self { inner, longest }
     }
 
-    pub fn longest(&self) -> bool {
+    pub const fn longest(&self) -> bool {
         self.longest
     }
 
@@ -269,7 +269,7 @@ impl<T, V> PairVector<T, V> {
         Self { inner, longest }
     }
 
-    pub fn longest(&self) -> bool {
+    pub const fn longest(&self) -> bool {
         self.longest
     }
 

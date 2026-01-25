@@ -40,11 +40,11 @@ where
         Self { dat, offset: 0 }
     }
 
-    pub fn dat(&self) -> &'a T {
+    pub const fn dat(&self) -> &'a T {
         self.dat
     }
 
-    pub fn offset(&self) -> usize {
+    pub const fn offset(&self) -> usize {
         self.offset
     }
 

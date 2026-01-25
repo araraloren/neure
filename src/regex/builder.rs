@@ -1,9 +1,9 @@
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Adapter;
 use crate::regex::Regex;
+use crate::span::Span;
 
 ///
 /// [`into_regex_builder`] can dynamically construct a new regex based on the [`Span`]
@@ -34,7 +34,7 @@ use crate::regex::Regex;
 ///     Ok(())
 /// # }
 /// ```
-pub fn into_regex_builder<'a, C, P, T, F>(pat: P, func: F) -> Adapter<C, impl Regex<C>>
+pub const fn into_regex_builder<'a, C, P, T, F>(pat: P, func: F) -> Adapter<C, impl Regex<C>>
 where
     P: Regex<C>,
     T: Regex<C>,

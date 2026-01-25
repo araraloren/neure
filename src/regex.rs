@@ -49,12 +49,10 @@ use crate::ctor::Slice;
 use crate::ctx::Context;
 use crate::ctx::Match;
 use crate::err::Error;
-use crate::neu::Condition;
 use crate::neu::EmptyCond;
 use crate::neu::Many0;
 use crate::neu::Many1;
 use crate::neu::Neu;
-use crate::neu::NeuIntoRegexOps;
 use crate::neu::Once;
 use crate::neu::Opt;
 use crate::span::Span;
@@ -269,12 +267,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn once<'a, C, U>(unit: U) -> Once<C, U, C::Item, EmptyCond>
+pub const fn once<'a, C, U>(unit: U) -> Once<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.once()
+    Once::new(unit, EmptyCond)
 }
 
 ///
@@ -301,12 +299,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn opt<'a, C, U>(unit: U) -> Opt<C, U, C::Item, EmptyCond>
+pub const fn opt<'a, C, U>(unit: U) -> Opt<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.opt()
+    Opt::new(unit, EmptyCond)
 }
 
 ///
@@ -331,12 +329,12 @@ where
 /// # }
 /// ```
 ///
-pub fn many0<'a, C, U>(unit: U) -> Many0<C, U, C::Item, EmptyCond>
+pub const fn many0<'a, C, U>(unit: U) -> Many0<C, U, C::Item, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.many0()
+    Many0::new(unit, EmptyCond)
 }
 
 ///
@@ -360,12 +358,12 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn many1<'a, C, N>(re: N) -> Many1<C, N, C::Item, EmptyCond>
+pub const fn many1<'a, C, N>(unit: N) -> Many1<C, N, C::Item, EmptyCond>
 where
     N: Neu<C::Item>,
     C: Context<'a>,
 {
-    re.many1()
+    Many1::new(unit, EmptyCond)
 }
 
 ///
@@ -387,14 +385,14 @@ where
 /// }
 /// ```
 ///
-pub fn count<'a, const M: usize, const N: usize, C, U>(
+pub const fn count<'a, const M: usize, const N: usize, C, U>(
     unit: U,
 ) -> crate::neu::Between<M, N, C, U, EmptyCond>
 where
     C: Context<'a>,
     U: Neu<C::Item>,
 {
-    unit.between::<M, N>()
+    crate::neu::Between::new(unit, EmptyCond)
 }
 
 ///
@@ -426,16 +424,16 @@ where
 /// }
 /// ```
 ///
-pub fn count_if<'a, const M: usize, const N: usize, C, U, F>(
+pub const fn count_if<'a, const M: usize, const N: usize, C, U, F>(
     unit: U,
-    test: F,
+    cond: F,
 ) -> crate::neu::Between<M, N, C, U, F>
 where
     C: Context<'a> + 'a,
     U: Neu<C::Item>,
     F: crate::neu::NeuCond<'a, C>,
 {
-    unit.between::<M, N>().set_cond(test)
+    crate::neu::Between::new(unit, cond)
 }
 
 /// Matches the **first successful expression** from a dynamic sequence of alternatives.

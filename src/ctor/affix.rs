@@ -150,19 +150,19 @@ impl<C, P, T> Suffix<C, P, T> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn suffix(&self) -> &T {
+    pub const fn suffix(&self) -> &T {
         &self.suffix
     }
 
-    pub fn suffix_mut(&mut self) -> &mut T {
+    pub const fn suffix_mut(&mut self) -> &mut T {
         &mut self.suffix
     }
 
@@ -353,19 +353,19 @@ impl<C, P, T> Prefix<C, P, T> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn prefix(&self) -> &T {
+    pub const fn prefix(&self) -> &T {
         &self.prefix
     }
 
-    pub fn prefix_mut(&mut self) -> &mut T {
+    pub const fn prefix_mut(&mut self) -> &mut T {
         &mut self.prefix
     }
 

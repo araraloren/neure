@@ -162,19 +162,19 @@ impl<C, L, R> Then<C, L, R> {
         }
     }
 
-    pub fn left(&self) -> &L {
+    pub const fn left(&self) -> &L {
         &self.left
     }
 
-    pub fn left_mut(&mut self) -> &mut L {
+    pub const fn left_mut(&mut self) -> &mut L {
         &mut self.left
     }
 
-    pub fn right(&self) -> &R {
+    pub const fn right(&self) -> &R {
         &self.right
     }
 
-    pub fn right_mut(&mut self) -> &mut R {
+    pub const fn right_mut(&mut self) -> &mut R {
         &mut self.right
     }
 
@@ -376,27 +376,27 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
         }
     }
 
-    pub fn test(&self) -> &I {
+    pub const fn test(&self) -> &I {
         &self.test
     }
 
-    pub fn test_mut(&mut self) -> &mut I {
+    pub const fn test_mut(&mut self) -> &mut I {
         &mut self.test
     }
 
-    pub fn left(&self) -> &L {
+    pub const fn left(&self) -> &L {
         &self.left
     }
 
-    pub fn left_mut(&mut self) -> &mut L {
+    pub const fn left_mut(&mut self) -> &mut L {
         &mut self.left
     }
 
-    pub fn right(&self) -> &R {
+    pub const fn right(&self) -> &R {
         &self.right
     }
 
-    pub fn right_mut(&mut self) -> &mut R {
+    pub const fn right_mut(&mut self) -> &mut R {
         &mut self.right
     }
 

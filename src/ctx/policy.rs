@@ -45,11 +45,11 @@ impl<I, R> PolicyCtx<I, R> {
         }
     }
 
-    pub fn inner(&self) -> &I {
+    pub const fn inner(&self) -> &I {
         &self.inner
     }
 
-    pub fn inner_mut(&mut self) -> &mut I {
+    pub const fn inner_mut(&mut self) -> &mut I {
         &mut self.inner
     }
 

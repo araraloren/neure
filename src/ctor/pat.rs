@@ -112,11 +112,11 @@ impl<C, P> Pattern<C, P> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 

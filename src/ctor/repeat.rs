@@ -148,19 +148,19 @@ impl<C, P> Repeat<C, P> {
         start.max(val)
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn range(&self) -> &CRange<usize> {
+    pub const fn range(&self) -> &CRange<usize> {
         &self.range
     }
 
-    pub fn capacity(&self) -> usize {
+    pub const fn capacity(&self) -> usize {
         self.capacity
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 

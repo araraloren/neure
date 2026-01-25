@@ -95,7 +95,7 @@ impl<const N: usize, T> Array<N, T> {
         Self { inner, longest }
     }
 
-    pub fn longest(&self) -> bool {
+    pub const fn longest(&self) -> bool {
         self.longest
     }
 
@@ -220,7 +220,7 @@ impl<const N: usize, K, V> PairArray<N, K, V> {
         Self { inner, longest }
     }
 
-    pub fn longest(&self) -> bool {
+    pub const fn longest(&self) -> bool {
         self.longest
     }
 

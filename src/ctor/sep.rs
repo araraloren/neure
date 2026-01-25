@@ -150,27 +150,27 @@ impl<C, L, S, R> SepOnce<C, L, S, R> {
         }
     }
 
-    pub fn left(&self) -> &L {
+    pub const fn left(&self) -> &L {
         &self.left
     }
 
-    pub fn left_mut(&mut self) -> &mut L {
+    pub const fn left_mut(&mut self) -> &mut L {
         &mut self.left
     }
 
-    pub fn sep(&self) -> &S {
+    pub const fn sep(&self) -> &S {
         &self.sep
     }
 
-    pub fn sep_mut(&mut self) -> &mut S {
+    pub const fn sep_mut(&mut self) -> &mut S {
         &mut self.sep
     }
 
-    pub fn right(&self) -> &R {
+    pub const fn right(&self) -> &R {
         &self.right
     }
 
-    pub fn right_mut(&mut self) -> &mut R {
+    pub const fn right_mut(&mut self) -> &mut R {
         &mut self.right
     }
 
@@ -412,31 +412,31 @@ mod alloc_sep {
             }
         }
 
-        pub fn pat(&self) -> &P {
+        pub const fn pat(&self) -> &P {
             &self.pat
         }
 
-        pub fn pat_mut(&mut self) -> &mut P {
+        pub const fn pat_mut(&mut self) -> &mut P {
             &mut self.pat
         }
 
-        pub fn sep(&self) -> &S {
+        pub const fn sep(&self) -> &S {
             &self.sep
         }
 
-        pub fn sep_mut(&mut self) -> &mut S {
+        pub const fn sep_mut(&mut self) -> &mut S {
             &mut self.sep
         }
 
-        pub fn skip(&self) -> bool {
+        pub const fn skip(&self) -> bool {
             self.skip
         }
 
-        pub fn min(&self) -> usize {
+        pub const fn min(&self) -> usize {
             self.min
         }
 
-        pub fn capacity(&self) -> usize {
+        pub const fn capacity(&self) -> usize {
             self.capacity
         }
 
@@ -710,23 +710,23 @@ impl<C, P, S, const M: usize, const N: usize> Separate2<C, P, S, M, N> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn sep(&self) -> &S {
+    pub const fn sep(&self) -> &S {
         &self.sep
     }
 
-    pub fn sep_mut(&mut self) -> &mut S {
+    pub const fn sep_mut(&mut self) -> &mut S {
         &mut self.sep
     }
 
-    pub fn skip(&self) -> bool {
+    pub const fn skip(&self) -> bool {
         self.skip
     }
 
@@ -999,27 +999,27 @@ impl<C, P, S, O, V> SepCollect<C, P, S, O, V> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn sep(&self) -> &S {
+    pub const fn sep(&self) -> &S {
         &self.sep
     }
 
-    pub fn sep_mut(&mut self) -> &mut S {
+    pub const fn sep_mut(&mut self) -> &mut S {
         &mut self.sep
     }
 
-    pub fn skip(&self) -> bool {
+    pub const fn skip(&self) -> bool {
         self.skip
     }
 
-    pub fn min(&self) -> usize {
+    pub const fn min(&self) -> usize {
         self.min
     }
 

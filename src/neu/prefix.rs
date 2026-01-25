@@ -83,19 +83,19 @@ where
         }
     }
 
-    pub fn unit(&self) -> &U {
+    pub const fn unit(&self) -> &U {
         &self.unit
     }
 
-    pub fn prefix(&self) -> &P {
+    pub const fn prefix(&self) -> &P {
         &self.prefix
     }
 
-    pub fn unit_mut(&mut self) -> &mut U {
+    pub const fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 
-    pub fn prefix_mut(&mut self) -> &mut P {
+    pub const fn prefix_mut(&mut self) -> &mut P {
         &mut self.prefix
     }
 
@@ -188,7 +188,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn prefix<T, P, U>(prefix: P, unit: U) -> Prefix<U, P, T>
+pub const fn prefix<T, P, U>(prefix: P, unit: U) -> Prefix<U, P, T>
 where
     U: Neu<T>,
     P: Neu<T>,
@@ -251,7 +251,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn prefix_cnt<T, P, U>(prefix: P, n: usize, unit: U) -> Prefix<U, P, T>
+pub const fn prefix_cnt<T, P, U>(prefix: P, n: usize, unit: U) -> Prefix<U, P, T>
 where
     U: Neu<T>,
     P: Neu<T>,
@@ -333,19 +333,19 @@ where
         }
     }
 
-    pub fn unit(&self) -> &U {
+    pub const fn unit(&self) -> &U {
         &self.unit
     }
 
-    pub fn prefix(&self) -> &P {
+    pub const fn prefix(&self) -> &P {
         &self.prefix
     }
 
-    pub fn unit_mut(&mut self) -> &mut U {
+    pub const fn unit_mut(&mut self) -> &mut U {
         &mut self.unit
     }
 
-    pub fn prefix_mut(&mut self) -> &mut P {
+    pub const fn prefix_mut(&mut self) -> &mut P {
         &mut self.prefix
     }
 
@@ -394,7 +394,7 @@ where
     }
 }
 
-pub fn prefix_sync<T, P, U>(prefix: P, unit: U) -> PrefixSync<U, P, T>
+pub const fn prefix_sync<T, P, U>(prefix: P, unit: U) -> PrefixSync<U, P, T>
 where
     U: Neu<T>,
     P: Neu<T>,
@@ -402,7 +402,7 @@ where
     prefix_sync_cnt(prefix, 1, unit)
 }
 
-pub fn prefix_sync_cnt<T, P, U>(prefix: P, count: usize, unit: U) -> PrefixSync<U, P, T>
+pub const fn prefix_sync_cnt<T, P, U>(prefix: P, count: usize, unit: U) -> PrefixSync<U, P, T>
 where
     U: Neu<T>,
     P: Neu<T>,

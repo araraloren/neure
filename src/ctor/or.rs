@@ -169,19 +169,19 @@ impl<C, L, R> Or<C, L, R> {
         }
     }
 
-    pub fn left(&self) -> &L {
+    pub const fn left(&self) -> &L {
         &self.left
     }
 
-    pub fn left_mut(&mut self) -> &mut L {
+    pub const fn left_mut(&mut self) -> &mut L {
         &mut self.left
     }
 
-    pub fn right(&self) -> &R {
+    pub const fn right(&self) -> &R {
         &self.right
     }
 
-    pub fn right_mut(&mut self) -> &mut R {
+    pub const fn right_mut(&mut self) -> &mut R {
         &mut self.right
     }
 

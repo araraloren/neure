@@ -112,7 +112,7 @@ impl<'a, T> Slice<'a, T> {
         Self { inner, longest }
     }
 
-    pub fn longest(&self) -> bool {
+    pub const fn longest(&self) -> bool {
         self.longest
     }
 
@@ -287,7 +287,7 @@ impl<'a, K, V> PairSlice<'a, K, V> {
         Self { inner, longest }
     }
 
-    pub fn longest(&self) -> bool {
+    pub const fn longest(&self) -> bool {
         self.longest
     }
 

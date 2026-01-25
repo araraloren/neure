@@ -102,7 +102,7 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn lit_slice<T>(lit: &[T]) -> LitSlice<'_, T> {
+pub const fn lit_slice<T>(lit: &[T]) -> LitSlice<'_, T> {
     LitSlice::new(lit)
 }
 
@@ -197,6 +197,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn string(lit: &str) -> LitString<'_> {
+pub const fn string(lit: &str) -> LitString<'_> {
     LitString::new(lit)
 }

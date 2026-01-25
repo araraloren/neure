@@ -94,6 +94,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-pub fn empty() -> EmptyRegex {
+pub const fn empty() -> EmptyRegex {
     EmptyRegex::new()
 }

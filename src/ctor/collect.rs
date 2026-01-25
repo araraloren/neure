@@ -126,15 +126,15 @@ impl<C, P, O, V> Collect<C, P, O, V> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn min(&self) -> usize {
+    pub const fn min(&self) -> usize {
         self.min
     }
 

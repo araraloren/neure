@@ -107,7 +107,7 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn start() -> AnchorStart {
+pub const fn start() -> AnchorStart {
     AnchorStart::new()
 }
 
@@ -208,6 +208,6 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn end() -> AnchorEnd {
+pub const fn end() -> AnchorEnd {
     AnchorEnd::new()
 }

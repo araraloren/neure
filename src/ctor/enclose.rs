@@ -159,27 +159,27 @@ impl<C, P, L, R> Enclose<C, P, L, R> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn open(&self) -> &L {
+    pub const fn open(&self) -> &L {
         &self.open
     }
 
-    pub fn open_mut(&mut self) -> &mut L {
+    pub const fn open_mut(&mut self) -> &mut L {
         &mut self.open
     }
 
-    pub fn close(&self) -> &R {
+    pub const fn close(&self) -> &R {
         &self.close
     }
 
-    pub fn close_mut(&mut self) -> &mut R {
+    pub const fn close_mut(&mut self) -> &mut R {
         &mut self.close
     }
 

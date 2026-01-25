@@ -175,19 +175,19 @@ impl<C, P, F, O> Map<C, P, F, O> {
         }
     }
 
-    pub fn pat(&self) -> &P {
+    pub const fn pat(&self) -> &P {
         &self.pat
     }
 
-    pub fn mapper(&self) -> &F {
+    pub const fn mapper(&self) -> &F {
         &self.mapper
     }
 
-    pub fn pat_mut(&mut self) -> &mut P {
+    pub const fn pat_mut(&mut self) -> &mut P {
         &mut self.pat
     }
 
-    pub fn mapper_mut(&mut self) -> &mut F {
+    pub const fn mapper_mut(&mut self) -> &mut F {
         &mut self.mapper
     }
 

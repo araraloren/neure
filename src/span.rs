@@ -28,17 +28,17 @@ impl Span {
     }
 
     /// Returns the starting position of the span.
-    pub fn beg(&self) -> usize {
+    pub const fn beg(&self) -> usize {
         self.beg
     }
 
     /// Returns the length of the span.
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.len
     }
 
     /// Returns true if the span has zero length.
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.len == 0
     }
 
@@ -123,11 +123,11 @@ mod alloc_vec_storer {
         }
 
         /// Returns the number of span groups in the storer.
-        pub fn len(&self) -> usize {
+        pub const fn len(&self) -> usize {
             self.spans.len()
         }
 
-        pub fn is_empty(&self) -> bool {
+        pub const fn is_empty(&self) -> bool {
             self.len() == 0
         }
 
@@ -326,11 +326,11 @@ impl<const M: usize, const N: usize> ArrayStorer<M, N> {
     }
 
     /// Returns the number of span groups in the storer.
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.spans.len()
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
 

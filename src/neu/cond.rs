@@ -151,6 +151,6 @@ where
 ///     Ok(())
 /// # }
 /// ```
-pub fn regex_cond<'a, C, T>(regex: T) -> RegexCond<'a, C, T> {
+pub const fn regex_cond<'a, C, T>(regex: T) -> RegexCond<'a, C, T> {
     RegexCond::new(regex)
 }
