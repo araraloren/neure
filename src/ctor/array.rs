@@ -1,13 +1,19 @@
 use core::ops::Deref;
 use core::ops::DerefMut;
 
+use crate::ctor;
 use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::err::Error;
+use crate::regex;
 use crate::regex::Regex;
 use crate::span::Span;
 
 use super::Ctor;
+use super::r2r;
+use super::r2r_kv;
+use super::sel;
+use super::sel_kv;
 
 ///
 /// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`](crate::ctx::Context).
@@ -71,7 +77,10 @@ use super::Ctor;
 /// This combinator attempts patterns in array order. For optimal performance,
 /// place more frequently occurring patterns earlier in the array.
 #[derive(Debug, Clone, Copy)]
-pub struct Array<const N: usize, T>([T; N]);
+pub struct Array<const N: usize, T> {
+    inner: [T; N],
+    longest: bool,
+}
 
 impl<const N: usize, T> core::ops::Not for Array<N, T> {
     type Output = crate::regex::Assert<Self>;
@@ -82,8 +91,22 @@ impl<const N: usize, T> core::ops::Not for Array<N, T> {
 }
 
 impl<const N: usize, T> Array<N, T> {
-    pub fn new(val: [T; N]) -> Self {
-        Self(val)
+    pub const fn new(inner: [T; N], longest: bool) -> Self {
+        Self { inner, longest }
+    }
+
+    pub fn longest(&self) -> bool {
+        self.longest
+    }
+
+    pub fn set_longest(&mut self, longest: bool) -> &mut Self {
+        self.longest = longest;
+        self
+    }
+
+    pub fn with_longest(mut self, longest: bool) -> Self {
+        self.set_longest(longest);
+        self
     }
 }
 
@@ -91,13 +114,13 @@ impl<const N: usize, T> Deref for Array<N, T> {
     type Target = [T; N];
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.inner
     }
 }
 
 impl<const N: usize, T> DerefMut for Array<N, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.inner
     }
 }
 
@@ -110,17 +133,19 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
         let offset = ctx.offset();
-        let mut ret = Err(Error::Array);
 
         crate::debug_ctor_beg!("Array", offset);
-        for regex in self.0.iter() {
-            if let Ok(val) = regex.construct(ctx, func).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(val);
-                break;
-            }
-        }
+
+        let ret = if self.longest {
+            let handler = ctor::handler_ltm(Error::Array, sel, r2r);
+
+            (handler)(&self.inner, ctx, func)
+        } else {
+            let handler = ctor::handler(Error::Array, sel, r2r);
+
+            (handler)(&self.inner, ctx, func)
+        };
+
         crate::debug_ctor_reval!("Array", offset, ctx.offset(), ret.is_ok());
         ret
     }
@@ -133,18 +158,18 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::Array);
+        crate::debug_regex_beg!("Array", ctx.offset());
 
-        crate::debug_regex_beg!("Array", offset);
-        for regex in self.0.iter() {
-            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(span);
-                break;
-            }
-        }
+        let ret = if self.longest {
+            let handler = regex::handler_ltm(Error::Array, sel);
+
+            handler(&self.inner, ctx)
+        } else {
+            let handler = regex::handler(Error::Array, sel);
+
+            handler(&self.inner, ctx)
+        };
+
         crate::debug_regex_reval!("Array", ret)
     }
 }
@@ -177,7 +202,10 @@ where
 /// # }
 /// ```
 #[derive(Debug, Clone, Copy)]
-pub struct PairArray<const N: usize, K, V>([(K, V); N]);
+pub struct PairArray<const N: usize, K, V> {
+    inner: [(K, V); N],
+    longest: bool,
+}
 
 impl<const N: usize, K, V> core::ops::Not for PairArray<N, K, V> {
     type Output = crate::regex::Assert<Self>;
@@ -188,8 +216,22 @@ impl<const N: usize, K, V> core::ops::Not for PairArray<N, K, V> {
 }
 
 impl<const N: usize, K, V> PairArray<N, K, V> {
-    pub fn new(val: [(K, V); N]) -> Self {
-        Self(val)
+    pub const fn new(inner: [(K, V); N], longest: bool) -> Self {
+        Self { inner, longest }
+    }
+
+    pub fn longest(&self) -> bool {
+        self.longest
+    }
+
+    pub fn set_longest(&mut self, longest: bool) -> &mut Self {
+        self.longest = longest;
+        self
+    }
+
+    pub fn with_longest(mut self, longest: bool) -> Self {
+        self.set_longest(longest);
+        self
     }
 }
 
@@ -197,13 +239,13 @@ impl<const N: usize, K, V> Deref for PairArray<N, K, V> {
     type Target = [(K, V); N];
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.inner
     }
 }
 
 impl<const N: usize, K, V> DerefMut for PairArray<N, K, V> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.inner
     }
 }
 
@@ -217,17 +259,19 @@ where
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
         let offset = ctx.offset();
-        let mut ret = Err(Error::PairArray);
 
         crate::debug_ctor_beg!("PairArray", offset);
-        for (regex, value) in self.0.iter() {
-            if let Ok(out) = regex.construct(ctx, func).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok((out, value.clone()));
-                break;
-            }
-        }
+
+        let ret = if self.longest {
+            let handler = ctor::handler_ltm(Error::PairArray, sel_kv, r2r_kv);
+
+            handler(&self.inner, ctx, func)
+        } else {
+            let handler = ctor::handler(Error::PairArray, sel_kv, r2r_kv);
+
+            handler(&self.inner, ctx, func)
+        };
+
         crate::debug_ctor_reval!("PairArray", offset, ctx.offset(), ret.is_ok());
         ret
     }
@@ -240,18 +284,18 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::PairArray);
+        crate::debug_regex_beg!("PairArray", ctx.offset());
 
-        crate::debug_regex_beg!("PairArray", offset);
-        for (regex, _) in self.0.iter() {
-            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(span);
-                break;
-            }
-        }
+        let ret = if self.longest {
+            let handler = regex::handler_ltm(Error::PairArray, sel_kv);
+
+            handler(&self.inner, ctx)
+        } else {
+            let handler = regex::handler(Error::PairArray, sel_kv);
+
+            handler(&self.inner, ctx)
+        };
+
         crate::debug_regex_reval!("PairArray", ret)
     }
 }

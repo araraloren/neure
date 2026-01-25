@@ -2,6 +2,7 @@ use core::ops::Deref;
 use core::ops::DerefMut;
 
 use crate::alloc::Vec;
+use crate::ctor;
 use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::debug_ctor_beg;
@@ -9,11 +10,16 @@ use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
+use crate::regex;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
 use crate::span::Span;
 
 use super::Ctor;
+use super::r2r;
+use super::r2r_kv;
+use super::sel;
+use super::sel_kv;
 
 ///
 /// Matches the **first successful expression** from a dynamic sequence of alternatives.
@@ -81,13 +87,30 @@ use super::Ctor;
 /// # }
 /// ```
 #[derive(Debug, Clone)]
-pub struct Vector<T>(Vec<T>);
+pub struct Vector<T> {
+    inner: Vec<T>,
+    longest: bool,
+}
 
 impl_not_for_regex!(Vector<T>);
 
 impl<T> Vector<T> {
-    pub fn new(val: Vec<T>) -> Self {
-        Self(val)
+    pub const fn new(inner: Vec<T>, longest: bool) -> Self {
+        Self { inner, longest }
+    }
+
+    pub fn longest(&self) -> bool {
+        self.longest
+    }
+
+    pub fn set_longest(&mut self, longest: bool) -> &mut Self {
+        self.longest = longest;
+        self
+    }
+
+    pub fn with_longest(mut self, longest: bool) -> Self {
+        self.set_longest(longest);
+        self
     }
 }
 
@@ -95,13 +118,13 @@ impl<T> Deref for Vector<T> {
     type Target = Vec<T>;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.inner
     }
 }
 
 impl<T> DerefMut for Vector<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.inner
     }
 }
 
@@ -113,20 +136,21 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::Vector);
+        let beg = ctx.offset();
 
-        debug_ctor_beg!("Vector", offset);
-        for regex in self.0.iter() {
-            if let Ok(span) = regex.construct(ctx, func).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(span);
-                break;
-            }
-        }
+        debug_ctor_beg!("Vector", beg);
 
-        debug_ctor_reval!("Vector", offset, ctx.offset(), ret.is_ok());
+        let ret = if self.longest {
+            let handler = ctor::handler_ltm(Error::Vector, sel, r2r);
+
+            handler(&self.inner, ctx, func)
+        } else {
+            let handler = ctor::handler(Error::Vector, sel, r2r);
+
+            handler(&self.inner, ctx, func)
+        };
+
+        debug_ctor_reval!("Vector", beg, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -138,18 +162,17 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::Vector);
+        debug_regex_beg!("Vector", ctx.offset());
 
-        debug_regex_beg!("Vector", offset);
-        for regex in self.0.iter() {
-            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(span);
-                break;
-            }
-        }
+        let ret = if self.longest {
+            let handler = regex::handler_ltm(Error::Vector, sel);
+
+            handler(&self.inner, ctx)
+        } else {
+            let handler = regex::handler(Error::Vector, sel);
+
+            handler(&self.inner, ctx)
+        };
         debug_regex_reval!("Vector", ret)
     }
 }
@@ -234,13 +257,30 @@ where
 /// - `V` must implement [`Clone`] for Ctor mode (to return owned values)
 /// - All expressions must produce values of the same type in [`Ctor`] mode
 #[derive(Debug, Clone)]
-pub struct PairVector<T, V>(Vec<(T, V)>);
+pub struct PairVector<T, V> {
+    inner: Vec<(T, V)>,
+    longest: bool,
+}
 
 impl_not_for_regex!(PairVector<T, V>);
 
 impl<T, V> PairVector<T, V> {
-    pub fn new(val: Vec<(T, V)>) -> Self {
-        Self(val)
+    pub const fn new(inner: Vec<(T, V)>, longest: bool) -> Self {
+        Self { inner, longest }
+    }
+
+    pub fn longest(&self) -> bool {
+        self.longest
+    }
+
+    pub fn set_longest(&mut self, longest: bool) -> &mut Self {
+        self.longest = longest;
+        self
+    }
+
+    pub fn with_longest(mut self, longest: bool) -> Self {
+        self.set_longest(longest);
+        self
     }
 }
 
@@ -248,13 +288,13 @@ impl<T, V> Deref for PairVector<T, V> {
     type Target = Vec<(T, V)>;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.inner
     }
 }
 
 impl<T, V> DerefMut for PairVector<T, V> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.inner
     }
 }
 
@@ -267,20 +307,21 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::PairVector);
+        let beg = ctx.offset();
 
-        debug_ctor_beg!("PairVector", offset);
-        for (regex, value) in self.0.iter() {
-            if let Ok(span) = regex.construct(ctx, func).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok((span, value.clone()));
-                break;
-            }
-        }
+        debug_ctor_beg!("PairVector", beg);
 
-        debug_ctor_reval!("PairVector", offset, ctx.offset(), ret.is_ok());
+        let ret = if self.longest {
+            let handler = ctor::handler_ltm(Error::PairVector, sel_kv, r2r_kv);
+
+            handler(&self.inner, ctx, func)
+        } else {
+            let handler = ctor::handler(Error::PairVector, sel_kv, r2r_kv);
+
+            handler(&self.inner, ctx, func)
+        };
+
+        debug_ctor_reval!("PairVector", beg, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -292,18 +333,17 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::PairVector);
+        debug_regex_beg!("PairVector", ctx.offset());
 
-        debug_regex_beg!("PairVector", offset);
-        for (regex, _) in self.0.iter() {
-            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(span);
-                break;
-            }
-        }
+        let ret = if self.longest {
+            let handler = regex::handler_ltm(Error::PairVector, sel_kv);
+
+            handler(&self.inner, ctx)
+        } else {
+            let handler = regex::handler(Error::PairVector, sel_kv);
+
+            handler(&self.inner, ctx)
+        };
         debug_regex_reval!("PairVector", ret)
     }
 }

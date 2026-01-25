@@ -1,5 +1,6 @@
 use core::ops::Deref;
 
+use crate::ctor;
 use crate::ctor::Handler;
 use crate::ctx::Match;
 use crate::debug_ctor_beg;
@@ -7,10 +8,15 @@ use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
+use crate::regex;
 use crate::regex::Regex;
 use crate::span::Span;
 
 use super::Ctor;
+use super::r2r;
+use super::r2r_kv;
+use super::sel;
+use super::sel_kv;
 
 ///
 /// Attempts patterns in sequence, returning the first successful match from a **compile-time fixed array**.
@@ -88,7 +94,10 @@ use super::Ctor;
 /// - **Avoid Overlap**: Minimize overlapping patterns to reduce attempts
 /// - **Precompute**: Create `Slice` instances at startup, not in hot paths
 #[derive(Debug, Clone, Copy)]
-pub struct Slice<'a, T>(&'a [T]);
+pub struct Slice<'a, T> {
+    inner: &'a [T],
+    longest: bool,
+}
 
 impl<T> core::ops::Not for Slice<'_, T> {
     type Output = crate::regex::Assert<Self>;
@@ -99,8 +108,22 @@ impl<T> core::ops::Not for Slice<'_, T> {
 }
 
 impl<'a, T> Slice<'a, T> {
-    pub fn new(val: &'a [T]) -> Self {
-        Self(val)
+    pub const fn new(inner: &'a [T], longest: bool) -> Self {
+        Self { inner, longest }
+    }
+
+    pub fn longest(&self) -> bool {
+        self.longest
+    }
+
+    pub fn set_longest(&mut self, longest: bool) -> &mut Self {
+        self.longest = longest;
+        self
+    }
+
+    pub fn with_longest(mut self, longest: bool) -> Self {
+        self.set_longest(longest);
+        self
     }
 }
 
@@ -108,7 +131,7 @@ impl<T> Deref for Slice<'_, T> {
     type Target = [T];
 
     fn deref(&self) -> &Self::Target {
-        self.0
+        self.inner
     }
 }
 
@@ -120,19 +143,21 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::Slice);
+        let beg = ctx.offset();
 
-        debug_ctor_beg!("Slice", offset);
-        for regex in self.0.iter() {
-            if let Ok(res) = regex.construct(ctx, func).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(res);
-                break;
-            }
-        }
-        debug_ctor_reval!("Slice", offset, ctx.offset(), ret.is_ok());
+        debug_ctor_beg!("Slice", beg);
+
+        let ret = if self.longest {
+            let handler = ctor::handler_ltm(Error::Slice, sel, r2r);
+
+            handler(self.inner, ctx, func)
+        } else {
+            let handler = ctor::handler(Error::Slice, sel, r2r);
+
+            handler(self.inner, ctx, func)
+        };
+
+        debug_ctor_reval!("Slice", beg, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -144,18 +169,18 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::Slice);
+        debug_regex_beg!("Slice", ctx.offset());
 
-        debug_regex_beg!("Slice", offset);
-        for regex in self.0.iter() {
-            if let Ok(res) = ctx.try_mat(regex).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(res);
-                break;
-            }
-        }
+        let ret = if self.longest {
+            let handler = regex::handler_ltm(Error::Slice, sel);
+
+            handler(self.inner, ctx)
+        } else {
+            let handler = regex::handler(Error::Slice, sel);
+
+            handler(self.inner, ctx)
+        };
+
         debug_regex_reval!("Slice", ret)
     }
 }
@@ -244,7 +269,10 @@ where
 /// # }
 /// ```
 #[derive(Debug, Clone, Copy)]
-pub struct PairSlice<'a, K, V>(&'a [(K, V)]);
+pub struct PairSlice<'a, K, V> {
+    inner: &'a [(K, V)],
+    longest: bool,
+}
 
 impl<K, V> core::ops::Not for PairSlice<'_, K, V> {
     type Output = crate::regex::Assert<Self>;
@@ -255,8 +283,22 @@ impl<K, V> core::ops::Not for PairSlice<'_, K, V> {
 }
 
 impl<'a, K, V> PairSlice<'a, K, V> {
-    pub fn new(val: &'a [(K, V)]) -> Self {
-        Self(val)
+    pub const fn new(inner: &'a [(K, V)], longest: bool) -> Self {
+        Self { inner, longest }
+    }
+
+    pub fn longest(&self) -> bool {
+        self.longest
+    }
+
+    pub fn set_longest(&mut self, longest: bool) -> &mut Self {
+        self.longest = longest;
+        self
+    }
+
+    pub fn with_longest(mut self, longest: bool) -> Self {
+        self.set_longest(longest);
+        self
     }
 }
 
@@ -264,7 +306,7 @@ impl<K, V> Deref for PairSlice<'_, K, V> {
     type Target = [(K, V)];
 
     fn deref(&self) -> &Self::Target {
-        self.0
+        self.inner
     }
 }
 
@@ -277,19 +319,21 @@ where
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<(O, V), Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::PairSlice);
+        let bwg = ctx.offset();
 
-        debug_ctor_beg!("PairSlice", offset);
-        for (regex, value) in self.0.iter() {
-            if let Ok(res) = regex.construct(ctx, func).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok((res, value.clone()));
-                break;
-            }
-        }
-        debug_ctor_reval!("PairSlice", offset, ctx.offset(), ret.is_ok());
+        debug_ctor_beg!("PairSlice", bwg);
+
+        let ret = if self.longest {
+            let handler = ctor::handler_ltm(Error::PairSlice, sel_kv, r2r_kv);
+
+            handler(self.inner, ctx, func)
+        } else {
+            let handler = ctor::handler(Error::PairSlice, sel_kv, r2r_kv);
+
+            handler(self.inner, ctx, func)
+        };
+
+        debug_ctor_reval!("PairSlice", bwg, ctx.offset(), ret.is_ok());
         ret
     }
 }
@@ -301,17 +345,18 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let offset = ctx.offset();
-        let mut ret = Err(Error::PairSlice);
+        debug_regex_beg!("PairSlice", ctx.offset());
 
-        debug_regex_beg!("PairSlice", offset);
-        for (regex, _) in self.0.iter() {
-            if let Ok(res) = ctx.try_mat(regex).inspect_err(|_| {
-                ctx.set_offset(offset);
-            }) {
-                ret = Ok(res);
-            }
-        }
+        let ret = if self.longest {
+            let handler = regex::handler_ltm(Error::PairSlice, sel_kv);
+
+            handler(self.inner, ctx)
+        } else {
+            let handler = regex::handler(Error::PairSlice, sel_kv);
+
+            handler(self.inner, ctx)
+        };
+
         debug_regex_reval!("PairSlice", ret)
     }
 }

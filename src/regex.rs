@@ -47,6 +47,7 @@ use crate::ctor::PairArray;
 use crate::ctor::PairSlice;
 use crate::ctor::Slice;
 use crate::ctx::Context;
+use crate::ctx::Match;
 use crate::err::Error;
 use crate::neu::Condition;
 use crate::neu::EmptyCond;
@@ -461,7 +462,33 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 pub fn vector<T>(val: impl IntoIterator<Item = T>) -> crate::ctor::Vector<T> {
-    crate::ctor::Vector::new(val.into_iter().collect())
+    crate::ctor::Vector::new(val.into_iter().collect(), false)
+}
+
+/// Matches the **first successful expression** from a dynamic sequence of alternatives
+/// in longest token match mode.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     let ty = neu::ascii_alphabetic().many1();
+///     let id = regex::empty();
+///     let var = ty.sep_once(" ", id);
+///     let ptr = ty.sep_once(" *", id);
+///     let r#ref = ty.sep_once(" &", id);
+///     let vec = regex::vector_ltm([var, ptr, r#ref]);
+///
+///     assert_eq!(CharsCtx::new("int &").try_mat(&vec)?, Span::new(0, 5));
+///     assert_eq!(CharsCtx::new("int *").try_mat(&vec)?, Span::new(0, 5));
+/// #   Ok(())
+/// # }
+/// ```
+#[cfg(feature = "alloc")]
+pub fn vector_ltm<T>(val: impl IntoIterator<Item = T>) -> crate::ctor::Vector<T> {
+    crate::ctor::Vector::new(val.into_iter().collect(), true)
 }
 
 /// Matches the first successful expression from a dynamic sequence while carrying associated data.
@@ -506,7 +533,53 @@ pub fn vector<T>(val: impl IntoIterator<Item = T>) -> crate::ctor::Vector<T> {
 pub fn pair_vector<T, V: Clone>(
     val: impl IntoIterator<Item = (T, V)>,
 ) -> crate::ctor::PairVector<T, V> {
-    crate::ctor::PairVector::new(val.into_iter().collect())
+    crate::ctor::PairVector::new(val.into_iter().collect(), false)
+}
+
+/// Matches the first successful expression from a dynamic sequence while carrying associated data
+/// in longest token match mode.
+///
+/// # Example
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+///     pub enum C {
+///         Var,
+///         Ptr,
+///         Ref,
+///     }
+///
+///     let ty = neu::ascii_alphabetic().many1();
+///     let id = regex::empty();
+///     let var = ty.sep_once("", id);
+///     let ptr = ty.sep_once("*", id);
+///     let r#ref = ty.sep_once("&", id);
+///     let vec = regex::pair_vector_ltm([(var, C::Var), (ptr, C::Ptr), (r#ref, C::Ref)]);
+///     let sp = neu::whitespace().many0();
+///
+///     assert_eq!(
+///         CharsCtx::new("int ").skip_before(sp).ctor(&vec)?,
+///         (("int", ""), C::Var)
+///     );
+///     assert_eq!(
+///         CharsCtx::new("int *").skip_before(sp).ctor(&vec)?,
+///         (("int", ""), C::Ptr)
+///     );
+///     assert_eq!(
+///         CharsCtx::new("int &").skip_before(sp).ctor(&vec)?,
+///         (("int", ""), C::Ref)
+///     );
+/// #   Ok(())
+/// # }
+/// ```
+#[cfg(feature = "alloc")]
+pub fn pair_vector_ltm<T, V: Clone>(
+    val: impl IntoIterator<Item = (T, V)>,
+) -> crate::ctor::PairVector<T, V> {
+    crate::ctor::PairVector::new(val.into_iter().collect(), true)
 }
 
 /// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`].
@@ -523,8 +596,27 @@ pub fn pair_vector<T, V: Clone>(
 /// #   Ok(())
 /// # }
 /// ```
-pub fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
-    Array::new(val)
+pub const fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
+    Array::new(val, false)
+}
+
+/// Iterate over the array and match the [`regex`](crate::regex::Regex) against the [`Context`]
+/// in longest token match mode.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     let parser = regex::array_ltm([b"go".as_ref(), b"golang"]);
+///     let mut ctx = BytesCtx::new(b"golang is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 6));
+/// #   Ok(())
+/// # }
+/// ```
+pub const fn array_ltm<const N: usize, T>(val: [T; N]) -> Array<N, T> {
+    Array::new(val, true)
 }
 
 /// Attempts patterns in sequence, returning the first successful match from a **compile-time fixed array**.
@@ -542,8 +634,28 @@ pub fn array<const N: usize, T>(val: [T; N]) -> Array<N, T> {
 /// #   Ok(())
 /// # }
 /// ```
-pub fn slice<T>(val: &[T]) -> Slice<'_, T> {
-    Slice::new(val)
+pub const fn slice<T>(val: &[T]) -> Slice<'_, T> {
+    Slice::new(val, false)
+}
+
+/// Attempts patterns in sequence, returning the first successful match from a **compile-time fixed array**
+/// in longest token match mode.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     let slice = [b"g".as_ref(), b"go", b"golang"];
+///     let parser = regex::slice_ltm(&slice);
+///     let mut ctx = BytesCtx::new(b"go is so awesome!");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 2));
+/// #   Ok(())
+/// # }
+/// ```
+pub const fn slice_ltm<T>(val: &[T]) -> Slice<'_, T> {
+    Slice::new(val, true)
 }
 
 /// Iterate over the array and match the regex against the [`Context`].
@@ -571,8 +683,35 @@ pub fn slice<T>(val: &[T]) -> Slice<'_, T> {
 /// #   Ok(())
 /// # }
 /// ```
-pub fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> {
-    PairArray::new(val)
+pub const fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> {
+    PairArray::new(val, false)
+}
+
+/// Iterate over the array and match the regex against the [`Context`] in longest token match mode.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     #[derive(Debug, Clone, PartialEq)]
+///     enum Protocol {
+///         Http,
+///         Https,
+///     }
+///
+///     let parser = regex::pair_array_ltm([
+///         (b"http".as_ref(), Protocol::Http),
+///         (b"https", Protocol::Https),
+///     ]);
+///     let mut ctx = BytesCtx::new(b"https://docs.example.dev");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 5));
+/// #   Ok(())
+/// # }
+/// ```
+pub const fn pair_array_ltm<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> {
+    PairArray::new(val, true)
 }
 
 /// Maps patterns to associated values, returning the first successful match with its paired value.
@@ -589,20 +728,104 @@ pub fn pair_array<const N: usize, K, V>(val: [(K, V); N]) -> PairArray<N, K, V> 
 ///         Golang,
 ///     }
 ///
-///     let slice = [
+///     let array = [
 ///         (b"rust".as_ref(), Lang::Rust),
 ///         (b"jawa", Lang::Java),
 ///         (b"golang", Lang::Golang),
 ///     ];
-///     let parser = regex::pair_slice(&slice);
+///     let parser = regex::pair_slice(&array);
 ///     let mut ctx = BytesCtx::new(b"jawa is so awesome!");
 ///
 ///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 4));
 /// #   Ok(())
 /// # }
 /// ```
-pub fn pair_slice<K, V>(val: &[(K, V)]) -> PairSlice<'_, K, V> {
-    PairSlice::new(val)
+pub const fn pair_slice<K, V>(val: &[(K, V)]) -> PairSlice<'_, K, V> {
+    PairSlice::new(val, false)
+}
+
+/// Maps patterns to associated values, returning the first successful match with its paired value
+/// in longest token match mode.
+///
+/// # Example
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     #[derive(Debug, Clone, PartialEq)]
+///     enum Protocol {
+///         Http,
+///         Https,
+///     }
+///
+///     let array = [
+///         (b"http".as_ref(), Protocol::Http),
+///         (b"https", Protocol::Https),
+///     ];
+///     let parser = regex::pair_slice_ltm(&array);
+///     let mut ctx = BytesCtx::new(b"https://docs.example.dev");
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 5));
+/// #   Ok(())
+/// # }
+/// ```
+pub const fn pair_slice_ltm<K, V>(val: &[(K, V)]) -> PairSlice<'_, K, V> {
+    PairSlice::new(val, true)
+}
+
+pub(crate) fn handler<'a, C, P, T, A>(
+    err: Error,
+    t2p: A,
+) -> impl Fn(&[T], &mut C) -> Result<Span, Error>
+where
+    P: Regex<C>,
+    C: Match<'a>,
+    A: Fn(&T) -> &P,
+{
+    move |slice: &[T], ctx: &mut C| {
+        let beg = ctx.offset();
+        let mut ret = Err(err);
+
+        for item in slice.iter() {
+            let regex = t2p(item);
+
+            if let Ok(span) = ctx.try_mat(regex).inspect_err(|_| {
+                ctx.set_offset(beg);
+            }) {
+                ret = Ok(span);
+                break;
+            }
+        }
+        ret
+    }
+}
+
+pub(crate) fn handler_ltm<'a, C, P, T, A>(
+    err: Error,
+    t2p: A,
+) -> impl Fn(&[T], &mut C) -> Result<Span, Error>
+where
+    P: Regex<C>,
+    C: Match<'a>,
+    A: Fn(&T) -> &P,
+{
+    move |slice: &[T], ctx: &mut C| {
+        let beg = ctx.offset();
+        let mut longest = None;
+
+        for item in slice.iter() {
+            // reset offset for every regex
+            ctx.set_offset(beg);
+
+            // match regex
+            if let Ok(span) = ctx.try_mat(t2p(item))
+                && longest.map(|v: Span| v.len() < span.len()).unwrap_or(true)
+            {
+                longest = Some(span);
+            }
+        }
+        longest.ok_or(err)
+    }
 }
 
 pub trait AsCtor<C>

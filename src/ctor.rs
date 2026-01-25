@@ -818,3 +818,82 @@ where
         Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 }
+
+pub(crate) fn handler<'a, C, T, P, O, H, A, B, R>(
+    err: Error,
+    t2p: A,
+    r2r: B,
+) -> impl Fn(&[T], &mut C, &mut H) -> Result<R, Error>
+where
+    P: Ctor<'a, C, O, H>,
+    C: Match<'a>,
+    H: Handler<C>,
+    A: Fn(&T) -> &P,
+    B: Fn(O, &T) -> R,
+{
+    move |slice: &[T], c: &mut C, h: &mut H| {
+        let offset = c.offset();
+        let mut ret = Err(err);
+
+        for item in slice.iter() {
+            let regex = t2p(item);
+
+            if let Ok(val) = regex.construct(c, h).inspect_err(|_| {
+                c.set_offset(offset);
+            }) {
+                ret = Ok(r2r(val, item));
+                break;
+            }
+        }
+        ret
+    }
+}
+
+pub(crate) fn handler_ltm<'a, C, T, P, O, H, A, B, R>(
+    err: Error,
+    t2p: A,
+    r2r: B,
+) -> impl Fn(&[T], &mut C, &mut H) -> Result<R, Error>
+where
+    P: Ctor<'a, C, O, H>,
+    C: Match<'a>,
+    H: Handler<C>,
+    A: Fn(&T) -> &P,
+    B: Fn(O, &T) -> R,
+{
+    move |slice: &[T], ctx: &mut C, h: &mut H| {
+        let beg = ctx.offset();
+        let mut ret = None;
+        let mut end = beg;
+
+        for item in slice.iter() {
+            // reset offset for every regex
+            ctx.set_offset(beg);
+
+            // construct value
+            if let Ok(val) = t2p(item).construct(ctx, h)
+                && ctx.offset() > end
+            {
+                end = ctx.offset();
+                ret = Some((val, item));
+            }
+        }
+        ret.map(|v| r2r(v.0, v.1)).ok_or(err)
+    }
+}
+
+pub(crate) fn sel<T>(val: &T) -> &T {
+    val
+}
+
+pub(crate) fn sel_kv<K, V>(val: &(K, V)) -> &K {
+    &val.0
+}
+
+pub(crate) fn r2r<O, T>(out: O, _: &T) -> O {
+    out
+}
+
+pub(crate) fn r2r_kv<O, K, V: Clone>(out: O, val: &(K, V)) -> (O, V) {
+    (out, val.1.clone())
+}
