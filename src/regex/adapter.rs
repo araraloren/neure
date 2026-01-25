@@ -72,7 +72,7 @@ impl<I, C> From<I> for Adapter<C, I> {
 }
 
 impl<I, C> Adapter<C, I> {
-    pub fn new(inner: I) -> Self {
+    pub const fn new(inner: I) -> Self {
         Self {
             inner,
             marker: PhantomData,
@@ -493,7 +493,7 @@ impl<'a, C, T: ?Sized> Clone for RefAdapter<'a, C, T> {
 }
 
 impl<'a, C, T: ?Sized> RefAdapter<'a, C, T> {
-    pub fn new(inner: &'a T) -> Self {
+    pub const fn new(inner: &'a T) -> Self {
         Self {
             inner,
             marker: PhantomData,

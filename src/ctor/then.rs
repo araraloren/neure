@@ -7,7 +7,6 @@ use crate::ctor::Handler;
 use crate::ctor::Map;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_ctor_stage;
@@ -20,6 +19,7 @@ use crate::map::Select1;
 use crate::map::SelectEq;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Sequentially composes two expressions, requiring **both** to match in order.
@@ -154,7 +154,7 @@ where
 }
 
 impl<C, L, R> Then<C, L, R> {
-    pub fn new(pat: L, then: R) -> Self {
+    pub const fn new(pat: L, then: R) -> Self {
         Self {
             left: pat,
             right: then,
@@ -367,7 +367,7 @@ where
 }
 
 impl<C, L, I, R> IfThen<C, L, I, R> {
-    pub fn new(left: L, test: I, right: R) -> Self {
+    pub const fn new(left: L, test: I, right: R) -> Self {
         Self {
             test,
             left,

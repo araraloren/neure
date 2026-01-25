@@ -5,11 +5,11 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::map::FallibleMap;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Transforms the output type of a pattern through a mapping function.
@@ -167,7 +167,7 @@ where
 }
 
 impl<C, P, F, O> Map<C, P, F, O> {
-    pub fn new(pat: P, func: F) -> Self {
+    pub const fn new(pat: P, func: F) -> Self {
         Self {
             pat,
             mapper: func,

@@ -5,7 +5,6 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_regex_beg;
@@ -13,6 +12,7 @@ use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Makes a pattern optional, returning `None` (for [`Ctor`]) or an empty span (for [`Regex`]) when the pattern fails.
@@ -123,7 +123,7 @@ where
 }
 
 impl<C, P> OptionPat<C, P> {
-    pub fn new(pat: P) -> Self {
+    pub const fn new(pat: P) -> Self {
         Self {
             pat,
             marker: PhantomData,

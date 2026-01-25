@@ -67,7 +67,7 @@ impl<C, I> From<I> for Adapter<C, I> {
 }
 
 impl<C, I> Adapter<C, I> {
-    pub fn new(inner: I) -> Self {
+    pub const fn new(inner: I) -> Self {
         Self {
             inner,
             marker: PhantomData,

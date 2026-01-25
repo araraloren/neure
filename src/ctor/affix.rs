@@ -6,7 +6,6 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_ctor_stage;
@@ -16,6 +15,7 @@ use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Matches a pattern followed by a mandatory suffix, returning only the main pattern's value during construction.
@@ -142,7 +142,7 @@ where
 }
 
 impl<C, P, T> Suffix<C, P, T> {
-    pub fn new(pat: P, suffix: T) -> Self {
+    pub const fn new(pat: P, suffix: T) -> Self {
         Self {
             pat,
             suffix,
@@ -345,7 +345,7 @@ where
 }
 
 impl<C, P, T> Prefix<C, P, T> {
-    pub fn new(pat: P, prefix: T) -> Self {
+    pub const fn new(pat: P, prefix: T) -> Self {
         Self {
             pat,
             prefix,

@@ -141,7 +141,7 @@ where
 }
 
 impl<C, L, S, R> SepOnce<C, L, S, R> {
-    pub fn new(left: L, sep: S, right: R) -> Self {
+    pub const fn new(left: L, sep: S, right: R) -> Self {
         Self {
             left,
             sep,
@@ -401,7 +401,7 @@ mod alloc_sep {
     }
 
     impl<C, P, S> Separate<C, P, S> {
-        pub fn new(pat: P, sep: S) -> Self {
+        pub const fn new(pat: P, sep: S) -> Self {
             Self {
                 pat,
                 sep,
@@ -701,7 +701,7 @@ where
 }
 
 impl<C, P, S, const M: usize, const N: usize> Separate2<C, P, S, M, N> {
-    pub fn new(pat: P, sep: S) -> Self {
+    pub const fn new(pat: P, sep: S) -> Self {
         Self {
             pat,
             sep,
@@ -989,7 +989,7 @@ where
 }
 
 impl<C, P, S, O, V> SepCollect<C, P, S, O, V> {
-    pub fn new(pat: P, sep: S) -> Self {
+    pub const fn new(pat: P, sep: S) -> Self {
         Self {
             pat,
             sep,

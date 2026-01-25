@@ -73,7 +73,7 @@ where
     U: Neu<T>,
     P: Neu<T>,
 {
-    pub fn new(prefix: P, count: usize, unit: U) -> Self {
+    pub const fn new(prefix: P, count: usize, unit: U) -> Self {
         Self {
             prefix,
             unit,
@@ -323,7 +323,7 @@ where
     U: Neu<T>,
     P: Neu<T>,
 {
-    pub fn new(prefix: P, count: usize, unit: U) -> Self {
+    pub const fn new(prefix: P, count: usize, unit: U) -> Self {
         Self {
             prefix,
             unit,

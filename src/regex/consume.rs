@@ -3,13 +3,13 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Consumes a fixed number of elements without content validation.
@@ -50,7 +50,7 @@ pub struct Consume(usize);
 impl_not_for_regex!(Consume);
 
 impl Consume {
-    pub fn new(size: usize) -> Self {
+    pub const fn new(size: usize) -> Self {
         Self(size)
     }
 }
@@ -147,7 +147,7 @@ pub struct ConsumeAll;
 impl_not_for_regex!(ConsumeAll);
 
 impl ConsumeAll {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }

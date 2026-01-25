@@ -74,7 +74,7 @@ impl<U, T> Not<U, T>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U) -> Self {
+    pub const fn new(unit: U) -> Self {
         Self {
             unit,
             marker: PhantomData,

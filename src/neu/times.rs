@@ -155,7 +155,7 @@ where
 }
 
 impl<const M: usize, const N: usize, C, U, I> Between<M, N, C, U, I> {
-    pub fn new(unit: U, cond: I) -> Self {
+    pub const fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
             cond,
@@ -341,7 +341,7 @@ where
 }
 
 impl<C, U, I> Times<C, U, I> {
-    pub fn new(unit: U, range: CRange<usize>, cond: I) -> Self {
+    pub const fn new(unit: U, range: CRange<usize>, cond: I) -> Self {
         Self {
             unit,
             range,

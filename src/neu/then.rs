@@ -6,11 +6,11 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::neu::calc_length;
 use crate::regex::Regex;
+use crate::span::Span;
 
 use super::Condition;
 use super::Neu;
@@ -118,7 +118,7 @@ where
     L: Neu<T>,
     R: Neu<T>,
 {
-    pub fn new(left: L, right: R, cond: I) -> Self {
+    pub const fn new(left: L, right: R, cond: I) -> Self {
         Self {
             left,
             cond,

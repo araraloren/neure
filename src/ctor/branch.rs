@@ -153,7 +153,7 @@ where
 }
 
 impl<C, P, F, E> Branch<C, P, F, E> {
-    pub fn new(test: F, pat: P, other: E) -> Self {
+    pub const fn new(test: F, pat: P, other: E) -> Self {
         Self {
             pat,
             test,

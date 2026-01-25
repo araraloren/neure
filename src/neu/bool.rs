@@ -36,7 +36,7 @@ impl<T> Clone for Always<T> {
 impl<T> Copy for Always<T> {}
 
 impl<T> Always<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
@@ -96,7 +96,7 @@ impl<T> Clone for Never<T> {
 impl<T> Copy for Never<T> {}
 
 impl<T> Never<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }

@@ -3,11 +3,11 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Matches an exact literal slice of elements with zero-copy efficiency.
@@ -48,7 +48,7 @@ pub struct LitSlice<'a, T> {
 impl_not_for_regex!(LitSlice<'a, T>);
 
 impl<'a, T> LitSlice<'a, T> {
-    pub fn new(val: &'a [T]) -> Self {
+    pub const fn new(val: &'a [T]) -> Self {
         Self { val }
     }
 }
@@ -145,7 +145,7 @@ pub struct LitString<'a> {
 impl_not_for_regex!(LitString<'a>);
 
 impl<'a> LitString<'a> {
-    pub fn new(val: &'a str) -> Self {
+    pub const fn new(val: &'a str) -> Self {
         Self { val }
     }
 }

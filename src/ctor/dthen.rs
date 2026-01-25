@@ -142,7 +142,7 @@ where
 }
 
 impl<C, P, F> DynamicCtorThenBuilder<C, P, F> {
-    pub fn new(pat: P, func: F) -> Self {
+    pub const fn new(pat: P, func: F) -> Self {
         Self {
             pat,
             func,

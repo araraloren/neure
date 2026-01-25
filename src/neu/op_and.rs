@@ -98,7 +98,7 @@ where
     L: Neu<T>,
     R: Neu<T>,
 {
-    pub fn new(left: L, right: R) -> Self {
+    pub const fn new(left: L, right: R) -> Self {
         Self {
             left,
             right,

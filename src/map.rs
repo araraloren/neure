@@ -26,7 +26,7 @@ pub struct FuncMapper<F> {
 }
 
 impl<F> FuncMapper<F> {
-    pub fn new(func: F) -> Self {
+    pub const fn new(func: F) -> Self {
         Self { func }
     }
 }
@@ -49,7 +49,7 @@ pub fn mapper<F>(func: F) -> FuncMapper<F> {
 pub struct Select0;
 
 impl Select0 {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -69,7 +69,7 @@ pub fn select0() -> Select0 {
 pub struct Select1;
 
 impl Select1 {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -89,7 +89,7 @@ pub fn select1() -> Select1 {
 pub struct SelectEq;
 
 impl SelectEq {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -116,7 +116,7 @@ pub fn select_eq() -> SelectEq {
 pub struct SelectNeq;
 
 impl SelectNeq {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -155,7 +155,7 @@ impl<T> Default for FromStr<T> {
 }
 
 impl<T> FromStr<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
@@ -191,7 +191,7 @@ impl<T> Clone for IntoMapper<T> {
 }
 
 impl<T> IntoMapper<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
@@ -226,7 +226,7 @@ impl<T> Clone for TryIntoMapper<T> {
 }
 
 impl<T> TryIntoMapper<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
@@ -308,7 +308,7 @@ impl<T> FromStrRadix<T>
 where
     T: TryFromStrRadix,
 {
-    pub fn new(radix: u32) -> Self {
+    pub const fn new(radix: u32) -> Self {
         Self {
             radix,
             marker: PhantomData,
@@ -344,7 +344,7 @@ pub fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
 pub struct FromUtf8<T>(PhantomData<T>);
 
 impl<T> FromUtf8<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
@@ -384,7 +384,7 @@ pub fn from_utf8<T>() -> FromUtf8<T> {
 pub struct FromUtf8Lossy<T>(PhantomData<T>);
 
 impl<T> FromUtf8Lossy<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
@@ -421,7 +421,7 @@ pub fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
 pub struct FromLeBytes<T>(PhantomData<T>);
 
 impl<T> FromLeBytes<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 
@@ -446,7 +446,7 @@ impl<T> Default for FromLeBytes<T> {
 pub struct FromBeBytes<T>(PhantomData<T>);
 
 impl<T> FromBeBytes<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 
@@ -471,7 +471,7 @@ impl<T> Default for FromBeBytes<T> {
 pub struct FromNeBytes<T>(PhantomData<T>);
 
 impl<T> FromNeBytes<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(PhantomData)
     }
 
@@ -642,7 +642,7 @@ pub struct Bounded<T> {
 }
 
 impl<T> Bounded<T> {
-    pub fn new(min: T, max: T) -> Self {
+    pub const fn new(min: T, max: T) -> Self {
         Self { min, max }
     }
 }
@@ -699,7 +699,7 @@ impl<T, F, M> WithDefault<T, F, M>
 where
     F: Fn() -> T,
 {
-    pub fn new(func: F, mapper: M) -> Self {
+    pub const fn new(func: F, mapper: M) -> Self {
         Self {
             func,
             mapper,
@@ -776,7 +776,7 @@ where
 pub struct FixedSize(pub usize);
 
 impl FixedSize {
-    pub fn new(size: usize) -> Self {
+    pub const fn new(size: usize) -> Self {
         Self(size)
     }
 }

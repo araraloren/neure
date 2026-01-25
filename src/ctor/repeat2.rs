@@ -123,7 +123,7 @@ where
 }
 
 impl<C, P, const M: usize, const N: usize> Repeat2<C, P, M, N> {
-    pub fn new(pat: P) -> Self {
+    pub const fn new(pat: P) -> Self {
         Self {
             pat,
             marker: PhantomData,

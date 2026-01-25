@@ -5,7 +5,6 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_ctor_stage;
@@ -15,6 +14,7 @@ use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Provides alternation between two patterns, trying the second only if the first fails.
@@ -161,7 +161,7 @@ where
 }
 
 impl<C, L, R> Or<C, L, R> {
-    pub fn new(pat1: L, pat2: R) -> Self {
+    pub const fn new(pat1: L, pat2: R) -> Self {
         Self {
             left: pat1,
             right: pat2,

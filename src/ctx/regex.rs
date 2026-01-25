@@ -36,7 +36,7 @@ impl<'a, T> RegexCtx<'a, T>
 where
     T: ?Sized,
 {
-    pub fn new(dat: &'a T) -> Self {
+    pub const fn new(dat: &'a T) -> Self {
         Self { dat, offset: 0 }
     }
 

@@ -16,7 +16,7 @@ impl<T: PartialEq + MayDebug> core::ops::Not for Equal<T> {
 }
 
 impl<T> Equal<T> {
-    pub fn new(val: T) -> Self {
+    pub const fn new(val: T) -> Self {
         Self { val }
     }
 }

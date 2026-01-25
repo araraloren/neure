@@ -6,7 +6,6 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::CtxGuard;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::debug_ctor_beg;
 use crate::debug_ctor_reval;
 use crate::debug_ctor_stage;
@@ -16,6 +15,7 @@ use crate::debug_regex_stage;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 //
 /// Wraps a pattern between opening and closing delimiters, forming a boundary-enclosed structure.
@@ -150,7 +150,7 @@ where
 }
 
 impl<C, P, L, R> Enclose<C, P, L, R> {
-    pub fn new(pat: P, open: L, close: R) -> Self {
+    pub const fn new(pat: P, open: L, close: R) -> Self {
         Self {
             pat,
             open,

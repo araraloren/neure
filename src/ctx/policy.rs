@@ -34,7 +34,7 @@ where
 }
 
 impl<I, R> PolicyCtx<I, R> {
-    pub fn new(inner: I, regex: R) -> Self {
+    pub const fn new(inner: I, regex: R) -> Self {
         Self { inner, regex }
     }
 

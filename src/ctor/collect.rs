@@ -118,7 +118,7 @@ where
 }
 
 impl<C, P, O, V> Collect<C, P, O, V> {
-    pub fn new(pat: P) -> Self {
+    pub const fn new(pat: P) -> Self {
         Self {
             pat,
             min: 1,

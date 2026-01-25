@@ -2,10 +2,10 @@ use crate::ctor::Ctor;
 
 use crate::ctor::Handler;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Conditional zero-width assertion combinator that validates pattern match outcomes.
@@ -35,7 +35,7 @@ pub struct Assert<T> {
 }
 
 impl<T> Assert<T> {
-    pub fn new(pat: T, value: bool) -> Self {
+    pub const fn new(pat: T, value: bool) -> Self {
         Self { pat, value }
     }
 

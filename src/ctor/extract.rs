@@ -27,7 +27,7 @@ impl<T> Clone for Extract<T> {
 }
 
 impl<T> Extract<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             marker: PhantomData,
         }

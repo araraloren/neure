@@ -23,7 +23,7 @@ pub struct Span {
 
 impl Span {
     /// Creates a new span with the specified beginning position and length.
-    pub fn new(beg: usize, len: usize) -> Self {
+    pub const fn new(beg: usize, len: usize) -> Self {
         Self { beg, len }
     }
 
@@ -109,7 +109,7 @@ mod alloc_vec_storer {
         }
 
         /// Creates a new span storer initialized with the provided span groups.
-        pub fn new_with(spans: Vec<Vec<Span>>) -> Self {
+        pub const fn new_with(spans: Vec<Vec<Span>>) -> Self {
             Self { spans }
         }
 
@@ -314,14 +314,14 @@ impl<const M: usize, const N: usize> Default for ArrayStorer<M, N> {
 impl<const M: usize, const N: usize> ArrayStorer<M, N> {
     /// Creates a new span storer with the specified number of groups.
     /// The storer will be initialized with `capacity` empty groups, ready to store spans.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             spans: [[const { None }; N]; M],
         }
     }
 
     /// Creates a new span storer initialized with the provided span groups.
-    pub fn new_with(spans: [[Option<Span>; N]; M]) -> Self {
+    pub const fn new_with(spans: [[Option<Span>; N]; M]) -> Self {
         Self { spans }
     }
 

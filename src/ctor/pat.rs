@@ -105,7 +105,7 @@ where
 }
 
 impl<C, P> Pattern<C, P> {
-    pub fn new(pat: P) -> Self {
+    pub const fn new(pat: P) -> Self {
         Self {
             pat,
             marker: PhantomData,

@@ -3,13 +3,13 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::debug_regex_beg;
 use crate::debug_regex_reval;
 use crate::err::Error;
 use crate::regex::Regex;
 use crate::regex::impl_not_for_regex;
+use crate::span::Span;
 
 ///
 /// Matches the absolute start of input (position zero).
@@ -49,7 +49,7 @@ pub struct AnchorStart;
 impl_not_for_regex!(AnchorStart);
 
 impl AnchorStart {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
@@ -150,7 +150,7 @@ pub struct AnchorEnd;
 impl_not_for_regex!(AnchorEnd);
 
 impl AnchorEnd {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }

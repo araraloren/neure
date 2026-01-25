@@ -5,9 +5,9 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::err::Error;
 use crate::regex::Regex;
+use crate::span::Span;
 
 use super::impl_not_for_regex;
 
@@ -49,7 +49,7 @@ pub struct EmptyRegex;
 impl_not_for_regex!(EmptyRegex);
 
 impl EmptyRegex {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self
     }
 }

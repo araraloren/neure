@@ -6,12 +6,12 @@ use crate::ctor::Ctor;
 use crate::ctor::Handler;
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::neu::EmptyCond;
 use crate::neu::calc_length;
 use crate::regex::Regex;
+use crate::span::Span;
 
 use super::Condition;
 use super::Neu;
@@ -127,7 +127,7 @@ impl<C, U, T, I> Opt<C, U, T, I>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U, cond: I) -> Self {
+    pub const fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
             cond,
@@ -317,7 +317,7 @@ impl<C, U, T, I> Many0<C, U, T, I>
 where
     U: Neu<T>,
 {
-    pub fn new(unit: U, cond: I) -> Self {
+    pub const fn new(unit: U, cond: I) -> Self {
         Self {
             unit,
             cond,

@@ -144,7 +144,7 @@ where
 }
 
 impl<C, L, R> LongestTokenMatch<C, L, R> {
-    pub fn new(pat1: L, pat2: R) -> Self {
+    pub const fn new(pat1: L, pat2: R) -> Self {
         Self {
             left: pat1,
             right: pat2,

@@ -103,7 +103,7 @@ where
 }
 
 impl<C, T> RegexCond<'_, C, T> {
-    pub fn new(regex: T) -> Self {
+    pub const fn new(regex: T) -> Self {
         Self {
             regex,
             marker: PhantomData,
