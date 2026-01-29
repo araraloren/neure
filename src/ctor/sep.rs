@@ -598,7 +598,7 @@ pub use alloc_sep::*;
 /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let ws = neu::whitespace().many0();
 ///     let num = neu::digit(10).many1();
-///     let ele = num.sep(",".suffix(ws));
+///     let ele = num.sep2::<_, 0, 8>(",".suffix(ws));
 ///     let arr = ele.enclose("{", "}");
 ///     let mut ctx = CharsCtx::new("{11, 42, 8, 99}");
 ///
@@ -626,11 +626,14 @@ pub use alloc_sep::*;
 ///     let ws = neu::whitespace().many0();
 ///     let ty = ('a'..='z').or('A'..='Z').once();
 ///     let ty = ty.then(neu::word().many0()).pat();
-///     let ele = ty.sep(",".suffix(ws));
+///     let ele = ty.sep2::<_, 1, 4>(",".suffix(ws));
 ///     let arr = ele.enclose("<", ">");
 ///     let mut ctx = CharsCtx::new("<Ctx, T, O1, O2>");
 ///
-///     assert_eq!(ctx.ctor(&arr)?, vec!["Ctx", "T", "O1", "O2"]);
+///     assert_eq!(
+///         ctx.ctor(&arr)?,
+///         [Some("Ctx"), Some("T"), Some("O1"), Some("O2"),]
+///     );
 ///
 /// #   Ok(())
 /// # }

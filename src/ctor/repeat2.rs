@@ -38,7 +38,7 @@ use crate::span::Span;
 /// #
 /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
 ///     let char = neu::word().count::<2>();
-///     let num = char.skip_ws().repeat(1..);
+///     let num = char.skip_ws().repeat2::<1, 32>();
 ///     let mut ctx = CharsCtx::new(r#"Hello, World!"#);
 ///
 ///     assert_eq!(ctx.try_mat(&num)?, Span::new(0, 4));
