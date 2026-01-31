@@ -1,6 +1,6 @@
 [package]
 name = "neure"
-version = "0.8.0"
+version = "0.8.1"
 authors = [
     "araraloren <blackcatoverwall@gmail.com>",
 ]
@@ -69,7 +69,7 @@ path = "./examples/json.rs"
 required-features = ["alloc"]
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["std", "log"]
 cargo-args = [
     "-Zunstable-options",
     "-Zrustdoc-scrape-examples",
