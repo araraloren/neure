@@ -103,7 +103,6 @@ use crate::span::Span;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Then<C, L, R> {
     left: L,
     right: R,
@@ -151,6 +150,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, L, R> Copy for Then<C, L, R>
+where
+    L: Copy,
+    R: Copy,
+{
 }
 
 impl<C, L, R> Then<C, L, R> {
@@ -309,7 +315,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct IfThen<C, L, I, R> {
     left: L,
     test: I,
@@ -364,6 +369,14 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, L, I, R> Copy for IfThen<C, L, I, R>
+where
+    L: Copy,
+    R: Copy,
+    I: Copy,
+{
 }
 
 impl<C, L, I, R> IfThen<C, L, I, R> {

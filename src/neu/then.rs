@@ -42,7 +42,6 @@ use super::NeuCond;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct NeureThen<C, L, R, T, I>
 where
     L: Neu<T>,
@@ -111,6 +110,14 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, L, R, T, I> Copy for NeureThen<C, L, R, T, I>
+where
+    I: Copy,
+    L: Neu<T> + Copy,
+    R: Neu<T> + Copy,
+{
 }
 
 impl<C, L, R, T, I> NeureThen<C, L, R, T, I>

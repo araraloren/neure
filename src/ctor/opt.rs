@@ -81,7 +81,6 @@ use crate::span::Span;
 /// The optional pattern adds minimal overhead. When the inner pattern fails, the context guard
 /// efficiently restores the position without additional allocations. The zero-cost abstraction
 /// principles of Rust ensure this combinator has performance comparable to manual optional handling.
-#[derive(Copy)]
 pub struct OptionPat<C, P> {
     pat: P,
     marker: PhantomData<C>,
@@ -121,6 +120,8 @@ where
         }
     }
 }
+
+impl<C, P> Copy for OptionPat<C, P> where P: Copy {}
 
 impl<C, P> OptionPat<C, P> {
     pub const fn new(pat: P) -> Self {

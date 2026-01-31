@@ -112,7 +112,6 @@ use super::NeuCond;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Between<const M: usize, const N: usize, C, U, I = EmptyCond> {
     unit: U,
     cond: I,
@@ -152,6 +151,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<const M: usize, const N: usize, C, U, I> Copy for Between<M, N, C, U, I>
+where
+    I: Copy,
+    U: Copy,
+{
 }
 
 impl<const M: usize, const N: usize, C, U, I> Between<M, N, C, U, I> {
@@ -301,7 +307,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Times<C, U, I = EmptyCond> {
     unit: U,
     cond: I,
@@ -338,6 +343,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, U, I> Copy for Times<C, U, I>
+where
+    U: Copy,
+    I: Copy,
+{
 }
 
 impl<C, U, I> Times<C, U, I> {

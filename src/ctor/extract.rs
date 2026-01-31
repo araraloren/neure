@@ -5,7 +5,7 @@ use crate::ctx::Context;
 use crate::err::Error;
 use crate::span::Span;
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct Extract<T> {
     marker: PhantomData<T>,
 }
@@ -20,11 +20,11 @@ impl<T> Default for Extract<T> {
 
 impl<T> Clone for Extract<T> {
     fn clone(&self) -> Self {
-        Self {
-            marker: self.marker,
-        }
+        *self
     }
 }
+
+impl<T> Copy for Extract<T> {}
 
 impl<T> Extract<T> {
     pub const fn new() -> Self {

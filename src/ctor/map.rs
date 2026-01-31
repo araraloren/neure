@@ -116,7 +116,6 @@ use crate::span::Span;
 /// for failed matches. For optimal performance, ensure your mapping function is lightweight
 /// or consider moving heavy transformations outside the parsing phase.
 ///
-#[derive(Copy)]
 pub struct Map<C, P, F, O> {
     pat: P,
     mapper: F,
@@ -164,6 +163,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, P, F, O> Copy for Map<C, P, F, O>
+where
+    P: Copy,
+    F: Copy,
+{
 }
 
 impl<C, P, F, O> Map<C, P, F, O> {

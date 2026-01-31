@@ -29,7 +29,6 @@ use crate::MayDebug;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct And<L, R, T>
 where
     L: Neu<T>,
@@ -91,6 +90,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<L, R, T> Copy for And<L, R, T>
+where
+    L: Neu<T> + Copy,
+    R: Neu<T> + Copy,
+{
 }
 
 impl<L, R, T> And<L, R, T>

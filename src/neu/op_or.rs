@@ -28,7 +28,6 @@ use super::Neu;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Or<L, R, T>
 where
     L: Neu<T>,
@@ -90,6 +89,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<L, R, T> Copy for Or<L, R, T>
+where
+    L: Neu<T> + Copy,
+    R: Neu<T> + Copy,
+{
 }
 
 impl<L, R, T> Or<L, R, T>

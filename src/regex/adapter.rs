@@ -28,7 +28,6 @@ use crate::alloc;
 /// # Ctor
 ///
 /// Uses identical matching logic as regex mode, then constructs a value from the result.
-#[derive(Copy)]
 pub struct Adapter<C, I> {
     inner: I,
     marker: PhantomData<C>,
@@ -61,6 +60,8 @@ impl<I: Clone, C> Clone for Adapter<C, I> {
         }
     }
 }
+
+impl<I: Copy, C> Copy for Adapter<C, I> {}
 
 impl<I, C> From<I> for Adapter<C, I> {
     fn from(value: I) -> Self {
@@ -477,7 +478,7 @@ where
 }
 
 /// [`RefAdapter`] implement [`Ctor`] for reference of [`Regex`]
-#[derive(Debug, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RefAdapter<'a, C, T: ?Sized> {
     inner: &'a T,
     marker: PhantomData<C>,
@@ -485,12 +486,11 @@ pub struct RefAdapter<'a, C, T: ?Sized> {
 
 impl<'a, C, T: ?Sized> Clone for RefAdapter<'a, C, T> {
     fn clone(&self) -> Self {
-        Self {
-            inner: self.inner,
-            marker: self.marker,
-        }
+        *self
     }
 }
+
+impl<'a, C, T: ?Sized> Copy for RefAdapter<'a, C, T> {}
 
 impl<'a, C, T: ?Sized> RefAdapter<'a, C, T> {
     pub const fn new(inner: &'a T) -> Self {

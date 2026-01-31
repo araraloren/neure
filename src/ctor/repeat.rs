@@ -75,7 +75,6 @@ use crate::span::Span;
 /// Optimization tips:
 /// - Set capacity close to expected match count
 /// - Use tight ranges to limit unnecessary matching attempts
-#[derive(Copy)]
 pub struct Repeat<C, P> {
     pat: P,
     range: CRange<usize>,
@@ -125,6 +124,8 @@ where
         }
     }
 }
+
+impl<C, P> Copy for Repeat<C, P> where P: Copy {}
 
 impl<C, P> Repeat<C, P> {
     pub fn new(pat: P, range: impl Into<CRange<usize>>) -> Self {

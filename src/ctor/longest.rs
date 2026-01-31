@@ -93,7 +93,6 @@ use crate::span::Span;
 /// Both patterns are always fully attempted, so the performance cost is the sum of both
 /// pattern evaluations. For optimal performance, place the more frequently occurring pattern
 /// or the faster-to-evaluate pattern first (as the `left` parameter).
-#[derive(Copy)]
 pub struct LongestTokenMatch<C, L, R> {
     left: L,
     right: R,
@@ -141,6 +140,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, L, R> Copy for LongestTokenMatch<C, L, R>
+where
+    L: Copy,
+    R: Copy,
+{
 }
 
 impl<C, L, R> LongestTokenMatch<C, L, R> {

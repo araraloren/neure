@@ -91,7 +91,6 @@ use crate::span::Span;
 /// - Place cheaper patterns first when possible
 /// - Ensure the main pattern fails quickly on invalid inputs
 /// - Avoid expensive operations in the suffix pattern
-#[derive(Copy)]
 pub struct Suffix<C, P, T> {
     pat: P,
     suffix: T,
@@ -139,6 +138,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, P, T> Copy for Suffix<C, P, T>
+where
+    P: Copy,
+    T: Copy,
+{
 }
 
 impl<C, P, T> Suffix<C, P, T> {
@@ -294,7 +300,6 @@ where
 /// - Place cheaper patterns first (the prefix is evaluated before the main pattern)
 /// - Ensure the prefix pattern fails quickly on invalid inputs
 /// - Avoid expensive operations in the prefix pattern since it's evaluated unconditionally
-#[derive(Copy)]
 pub struct Prefix<C, P, T> {
     pat: P,
     prefix: T,
@@ -342,6 +347,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, P, T> Copy for Prefix<C, P, T>
+where
+    P: Copy,
+    T: Copy,
+{
 }
 
 impl<C, P, T> Prefix<C, P, T> {

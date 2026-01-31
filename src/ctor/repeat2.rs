@@ -75,7 +75,6 @@ use crate::span::Span;
 /// Optimization tips:
 /// - Set capacity close to expected match count
 /// - Use tight ranges to limit unnecessary matching attempts
-#[derive(Copy)]
 pub struct Repeat2<C, P, const M: usize, const N: usize> {
     pat: P,
     marker: PhantomData<C>,
@@ -121,6 +120,8 @@ where
         }
     }
 }
+
+impl<C, P, const M: usize, const N: usize> Copy for Repeat2<C, P, M, N> where P: Copy {}
 
 impl<C, P, const M: usize, const N: usize> Repeat2<C, P, M, N> {
     pub const fn new(pat: P) -> Self {

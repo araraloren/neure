@@ -1,9 +1,17 @@
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct BytesIndices<'a, T> {
     offset: usize,
 
     bytes: &'a [T],
 }
+
+impl<'a, T> Clone for BytesIndices<'a, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, T> Copy for BytesIndices<'a, T> {}
 
 impl<'a, T> BytesIndices<'a, T> {
     pub const fn new(bytes: &'a [T]) -> Self {

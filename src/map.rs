@@ -139,14 +139,16 @@ pub const fn select_neq() -> SelectNeq {
     SelectNeq::new()
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromStr<T>(PhantomData<T>);
 
 impl<T> Clone for FromStr<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for FromStr<T> {}
 
 impl<T> Default for FromStr<T> {
     fn default() -> Self {
@@ -181,14 +183,16 @@ pub const fn from_str<T>() -> FromStr<T> {
     FromStr::new()
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct IntoMapper<T>(PhantomData<T>);
 
 impl<T> Clone for IntoMapper<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for IntoMapper<T> {}
 
 impl<T> IntoMapper<T> {
     pub const fn new() -> Self {
@@ -216,14 +220,16 @@ pub const fn into<T>() -> IntoMapper<T> {
     IntoMapper::new()
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct TryIntoMapper<T>(PhantomData<T>);
 
 impl<T> Clone for TryIntoMapper<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for TryIntoMapper<T> {}
 
 impl<T> TryIntoMapper<T> {
     pub const fn new() -> Self {
@@ -280,7 +286,7 @@ impl_from_str_radix!(u32);
 impl_from_str_radix!(u64);
 impl_from_str_radix!(usize);
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromStrRadix<T> {
     radix: u32,
     marker: PhantomData<T>,
@@ -288,12 +294,11 @@ pub struct FromStrRadix<T> {
 
 impl<T> Clone for FromStrRadix<T> {
     fn clone(&self) -> Self {
-        Self {
-            radix: self.radix,
-            marker: self.marker,
-        }
+        *self
     }
 }
+
+impl<T> Copy for FromStrRadix<T> {}
 
 impl<T> Default for FromStrRadix<T> {
     fn default() -> Self {
@@ -340,7 +345,7 @@ pub const fn from_str_radix<T: TryFromStrRadix>(radix: u32) -> FromStrRadix<T> {
     FromStrRadix::new(radix)
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromUtf8<T>(PhantomData<T>);
 
 impl<T> FromUtf8<T> {
@@ -351,9 +356,11 @@ impl<T> FromUtf8<T> {
 
 impl<T> Clone for FromUtf8<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for FromUtf8<T> {}
 
 impl<T> Default for FromUtf8<T> {
     fn default() -> Self {
@@ -380,7 +387,7 @@ pub const fn from_utf8<T>() -> FromUtf8<T> {
     FromUtf8::new()
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromUtf8Lossy<T>(PhantomData<T>);
 
 impl<T> FromUtf8Lossy<T> {
@@ -391,9 +398,11 @@ impl<T> FromUtf8Lossy<T> {
 
 impl<T> Clone for FromUtf8Lossy<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for FromUtf8Lossy<T> {}
 
 impl<T> Default for FromUtf8Lossy<T> {
     fn default() -> Self {
@@ -417,7 +426,7 @@ pub const fn from_utf8_lossy<T>() -> FromUtf8Lossy<T> {
     FromUtf8Lossy::new()
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromLeBytes<T>(PhantomData<T>);
 
 impl<T> FromLeBytes<T> {
@@ -432,9 +441,11 @@ impl<T> FromLeBytes<T> {
 
 impl<T> Clone for FromLeBytes<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for FromLeBytes<T> {}
 
 impl<T> Default for FromLeBytes<T> {
     fn default() -> Self {
@@ -442,7 +453,7 @@ impl<T> Default for FromLeBytes<T> {
     }
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromBeBytes<T>(PhantomData<T>);
 
 impl<T> FromBeBytes<T> {
@@ -457,9 +468,11 @@ impl<T> FromBeBytes<T> {
 
 impl<T> Clone for FromBeBytes<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
+
+impl<T> Copy for FromBeBytes<T> {}
 
 impl<T> Default for FromBeBytes<T> {
     fn default() -> Self {
@@ -467,7 +480,7 @@ impl<T> Default for FromBeBytes<T> {
     }
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug)]
 pub struct FromNeBytes<T>(PhantomData<T>);
 
 impl<T> FromNeBytes<T> {
@@ -480,9 +493,11 @@ impl<T> FromNeBytes<T> {
     }
 }
 
+impl<T> Copy for FromNeBytes<T> {}
+
 impl<T> Clone for FromNeBytes<T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
 
@@ -688,11 +703,32 @@ pub const fn bounded<T: PartialOrd>(min: T, max: T) -> Bounded<T> {
     Bounded::new(min, max)
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct WithDefault<I, O, F, M> {
     func: F,
     mapper: M,
     marker: PhantomData<(I, O)>,
+}
+
+impl<I, O, F, M> Clone for WithDefault<I, O, F, M>
+where
+    F: Clone,
+    M: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            func: self.func.clone(),
+            mapper: self.mapper.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<I, O, F, M> Copy for WithDefault<I, O, F, M>
+where
+    F: Copy,
+    M: Copy,
+{
 }
 
 impl<I, O, F, M> WithDefault<I, O, F, M>

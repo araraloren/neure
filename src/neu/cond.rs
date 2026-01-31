@@ -73,7 +73,7 @@ where
     }
 }
 
-#[derive(Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RegexCond<'a, C, T> {
     regex: T,
     marker: PhantomData<(&'a (), C)>,
@@ -101,6 +101,8 @@ where
         }
     }
 }
+
+impl<C, T> Copy for RegexCond<'_, C, T> where T: Copy {}
 
 impl<C, T> RegexCond<'_, C, T> {
     pub const fn new(regex: T) -> Self {

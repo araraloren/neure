@@ -70,7 +70,6 @@ use crate::span::Span;
 /// This combinator is greedy - it will continue matching until the pattern fails.
 /// It does not backtrack between matches. If minimum requirements aren't met,
 /// the context position is reset to the starting point.
-#[derive(Copy)]
 pub struct Collect<C, P, O, V> {
     pat: P,
     min: usize,
@@ -116,6 +115,8 @@ where
         }
     }
 }
+
+impl<C, P, O, V> Copy for Collect<C, P, O, V> where P: Copy {}
 
 impl<C, P, O, V> Collect<C, P, O, V> {
     pub const fn new(pat: P) -> Self {

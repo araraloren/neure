@@ -23,7 +23,6 @@ use crate::alloc;
 /// # Ctor
 ///
 /// Delegates all operations to the inner value (fully functional).
-#[derive(Copy)]
 pub struct Adapter<C, I> {
     inner: I,
     marker: PhantomData<C>,
@@ -56,6 +55,8 @@ impl<I: Clone, C> Clone for Adapter<C, I> {
         }
     }
 }
+
+impl<I: Copy, C> Copy for Adapter<C, I> {}
 
 impl<C, I> From<I> for Adapter<C, I> {
     fn from(value: I) -> Self {
@@ -599,10 +600,16 @@ where
 }
 
 /// [`DynRefAdapter`] implement [`Ctor`] for dynamic reference of [`Ctor`]
-#[derive(Clone, Copy)]
 pub struct DynRefAdapter<'a, 'b, C, O, H> {
     inner: &'b dyn Ctor<'a, C, O, H>,
 }
+impl<'a, 'b, C, O, H> Clone for DynRefAdapter<'a, 'b, C, O, H> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, 'b, C, O, H> Copy for DynRefAdapter<'a, 'b, C, O, H> {}
 
 impl<'a, 'b, C, O, H> DynRefAdapter<'a, 'b, C, O, H> {
     pub const fn new<T: Ctor<'a, C, O, H>>(inner: &'b T) -> Self {

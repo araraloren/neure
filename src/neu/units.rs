@@ -30,7 +30,6 @@ macro_rules! setup_unit_ty {
 
 macro_rules! setup_unit_ty2 {
     ($name:ident, $debug:literal, $func:ident) => {
-        #[derive(Copy)]
         pub struct $name<T>(core::marker::PhantomData<T>);
 
         impl<T> core::ops::Not for $name<T>
@@ -58,9 +57,11 @@ macro_rules! setup_unit_ty2 {
 
         impl<T> Clone for $name<T> {
             fn clone(&self) -> Self {
-                Self(self.0)
+                *self
             }
         }
+
+        impl<T> Copy for $name<T> {}
 
         impl<T> $name<T> {
             pub const fn new() -> Self {
@@ -639,7 +640,7 @@ pub const fn wild() -> Wild {
     Wild
 }
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug)]
 pub struct Word<T>(core::marker::PhantomData<T>);
 
 impl<T> core::ops::Not for Word<T>
@@ -652,6 +653,20 @@ where
         crate::neu::not(self)
     }
 }
+
+impl<T> Clone for Word<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<T> Default for Word<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<T> Copy for Word<T> {}
 
 impl<T> Word<T> {
     pub const fn new() -> Self {

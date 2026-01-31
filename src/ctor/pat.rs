@@ -63,7 +63,6 @@ use crate::span::Span;
 /// - Use simple handlers for high-frequency patterns
 /// - Avoid expensive string allocations in handlers when possible
 /// - Consider caching handler logic for repeated pattern usage
-#[derive(Copy)]
 pub struct Pattern<C, P> {
     pat: P,
     marker: PhantomData<C>,
@@ -103,6 +102,8 @@ where
         }
     }
 }
+
+impl<C, P> Copy for Pattern<C, P> where P: Copy {}
 
 impl<C, P> Pattern<C, P> {
     pub const fn new(pat: P) -> Self {

@@ -110,7 +110,6 @@ use crate::span::Span;
 /// - Place more frequently occurring patterns first
 /// - Place cheaper-to-evaluate patterns first
 /// - Avoid expensive patterns on the right side when possible
-#[derive(Copy)]
 pub struct Or<C, L, R> {
     left: L,
     right: R,
@@ -158,6 +157,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, L, R> Copy for Or<C, L, R>
+where
+    L: Copy,
+    R: Copy,
+{
 }
 
 impl<C, L, R> Or<C, L, R> {

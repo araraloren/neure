@@ -91,7 +91,6 @@ use crate::span::Span;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct DynamicCtorThenBuilder<C, P, F> {
     pat: P,
     func: F,
@@ -139,6 +138,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, P, F> Copy for DynamicCtorThenBuilder<C, P, F>
+where
+    P: Copy,
+    F: Copy,
+{
 }
 
 impl<C, P, F> DynamicCtorThenBuilder<C, P, F> {

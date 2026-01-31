@@ -28,7 +28,6 @@ use super::Neu;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Not<U, T>
 where
     U: Neu<T>,
@@ -69,6 +68,8 @@ where
         }
     }
 }
+
+impl<U, T> Copy for Not<U, T> where U: Neu<T> + Copy {}
 
 impl<U, T> Not<U, T>
 where

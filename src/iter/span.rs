@@ -2,7 +2,7 @@ use super::IndexBySpan;
 
 use crate::span::Span;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
     cur: usize,
 
@@ -10,6 +10,14 @@ pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
 
     spans: &'b [Span],
 }
+
+impl<'a, 'b, T: ?Sized> Clone for IteratorBySpan<'a, 'b, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, 'b, T: ?Sized> Copy for IteratorBySpan<'a, 'b, T> {}
 
 impl<'a, 'b, T: ?Sized> IteratorBySpan<'a, 'b, T> {
     pub const fn new(str: &'a T, spans: &'b [Span]) -> Self {

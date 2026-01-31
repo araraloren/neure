@@ -61,7 +61,6 @@ use super::NeuCond;
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Opt<C, U, T, I = EmptyCond>
 where
     U: Neu<T>,
@@ -121,6 +120,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, U, T, I> Copy for Opt<C, U, T, I>
+where
+    I: Copy,
+    U: Neu<T> + Copy,
+{
 }
 
 impl<C, U, T, I> Opt<C, U, T, I>
@@ -251,7 +257,6 @@ where
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Many0<C, U, T, I = EmptyCond>
 where
     U: Neu<T>,
@@ -311,6 +316,13 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, U, T, I> Copy for Many0<C, U, T, I>
+where
+    I: Copy,
+    U: Neu<T> + Copy,
+{
 }
 
 impl<C, U, T, I> Many0<C, U, T, I>

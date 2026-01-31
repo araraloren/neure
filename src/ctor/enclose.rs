@@ -92,7 +92,6 @@ use crate::span::Span;
 ///     Ok(())
 /// # }
 /// ```
-#[derive(Copy)]
 pub struct Enclose<C, P, L, R> {
     pat: P,
     open: L,
@@ -147,6 +146,14 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, P, L, R> Copy for Enclose<C, P, L, R>
+where
+    P: Copy,
+    L: Copy,
+    R: Copy,
+{
 }
 
 impl<C, P, L, R> Enclose<C, P, L, R> {

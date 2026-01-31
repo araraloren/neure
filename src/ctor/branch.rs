@@ -95,7 +95,6 @@ use crate::span::Span;
 /// The test function is evaluated exactly once per branch attempt. Both patterns are only
 /// compiled and stored, not executed, until needed. This makes branch selection very efficient,
 /// especially when the test function is simple.
-#[derive(Copy)]
 pub struct Branch<C, P, F, E> {
     pat: P,
     test: F,
@@ -150,6 +149,14 @@ where
             marker: self.marker,
         }
     }
+}
+
+impl<C, P, F, E> Copy for Branch<C, P, F, E>
+where
+    P: Copy,
+    F: Copy,
+    E: Copy,
+{
 }
 
 impl<C, P, F, E> Branch<C, P, F, E> {
