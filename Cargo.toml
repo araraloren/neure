@@ -27,12 +27,15 @@ criterion = "0.8"
 [dependencies]
 charize = "0.0.3"
 tracing = { version = "0.1", optional = true, default-features = false }
+log = { version = "0.4", optional = true, default-features = false }
 
 [features]
 default = ["std"]
-log = ["tracing"]
-std = ["tracing/std", "alloc"]
+log = ["dep:log"]
+tracing = ["dep:tracing"]
+std = ["log?/kv_std", "tracing?/std", "alloc"]
 alloc = []
+test = ["std", "tracing"]
 
 [[bench]]
 name = "nom_cap"

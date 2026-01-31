@@ -1,4 +1,4 @@
-#[cfg(not(feature = "log"))]
+#[cfg(not(any(feature = "tracing", feature = "log")))]
 mod macro_for_log {
     #[doc(hidden)]
     #[macro_export]
@@ -92,7 +92,7 @@ mod macro_for_log {
     pub(crate) use trace_retval;
 }
 
-#[cfg(feature = "log")]
+#[cfg(any(feature = "tracing", feature = "log"))]
 mod macro_for_log {
     macro_rules! trace_retval {
         ($name:literal, $in:ident, $ret:expr) => {{ $crate::trace_retval!($name, "Neu", $in, $ret) }};
@@ -183,9 +183,18 @@ mod macro_for_log {
     pub(crate) use debug_regex_beg;
     pub(crate) use debug_regex_reval;
     pub(crate) use debug_regex_stage;
+    #[cfg(feature = "log")]
+    pub(crate) use log::debug as neure_debug;
+    #[cfg(feature = "log")]
+    pub(crate) use log::trace as neure_trace;
     pub(crate) use trace_retval;
+    #[cfg(feature = "tracing")]
     pub(crate) use tracing::debug as neure_debug;
+    #[cfg(feature = "tracing")]
     pub(crate) use tracing::trace as neure_trace;
 }
+
+#[cfg(all(feature = "log", feature = "tracing"))]
+compile_error!("❌ Features 'log' and 'tracing' are mutually exclusive");
 
 pub(crate) use macro_for_log::*;

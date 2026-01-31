@@ -37,16 +37,16 @@ pub(crate) mod std {
     pub use std::sync::Mutex;
 }
 
-#[cfg(feature = "log")]
+#[cfg(any(feature = "log", feature = "tracing"))]
 pub trait MayDebug: core::fmt::Debug {}
 
-#[cfg(feature = "log")]
+#[cfg(any(feature = "log", feature = "tracing"))]
 impl<T> MayDebug for T where T: core::fmt::Debug {}
 
-#[cfg(not(feature = "log"))]
+#[cfg(not(any(feature = "log", feature = "tracing")))]
 pub trait MayDebug {}
 
-#[cfg(not(feature = "log"))]
+#[cfg(not(any(feature = "log", feature = "tracing")))]
 impl<T> MayDebug for T {}
 
 pub use charize::charize;
