@@ -90,11 +90,11 @@ use crate::span::Span;
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
-///     let year = neu::digit(10).many1();
+///     let answer = neu::digit(10).many1();
 ///     let desc = neu::word().many1();
 ///     let desc = desc.sep(neu::whitespace().many0()).prefix(" ");
 ///
-///     let parser = year.then(desc);
+///     let parser = answer.then(desc);
 ///     let (answer, desc) = CharsCtx::new("42 is the answer").ctor(&parser)?;
 ///
 ///     assert_eq!(answer, "42");
