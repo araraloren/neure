@@ -34,7 +34,7 @@ impl<T> Extract<T> {
     }
 }
 
-pub fn extract<T>() -> Extract<T> {
+pub const fn extract<T>() -> Extract<T> {
     Extract::new()
 }
 
