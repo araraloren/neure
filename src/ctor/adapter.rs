@@ -97,6 +97,116 @@ impl<C, I> Adapter<C, I> {
     }
 }
 
+#[derive(Debug)]
+pub struct CtorOnlyFunAdapter<C, F, O, H> {
+    inner: F,
+    marker: core::marker::PhantomData<(C, O, H)>,
+}
+
+impl<C, F, O, H> Clone for CtorOnlyFunAdapter<C, F, O, H>
+where
+    F: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
+impl<C, F, O, H> Copy for CtorOnlyFunAdapter<C, F, O, H> where F: Copy {}
+
+impl<C, F: Default, O, H> Default for CtorOnlyFunAdapter<C, F, O, H> {
+    fn default() -> Self {
+        Self {
+            inner: Default::default(),
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<C, F, O, H> CtorOnlyFunAdapter<C, F, O, H>
+where
+    F: Fn(&mut C, &mut H) -> Result<O, Error>,
+{
+    pub const fn new(inner: F) -> Self {
+        Self {
+            inner,
+            marker: core::marker::PhantomData,
+        }
+    }
+}
+
+impl<C, O, F, H> Regex<C> for CtorOnlyFunAdapter<C, F, O, H>
+where
+    F: Fn(&mut C, &mut H) -> Result<O, Error>,
+{
+    fn try_parse(&self, _: &mut C) -> Result<Span, Error> {
+        unimplemented!("FunAdapter not support Regex trait")
+    }
+}
+
+impl<'a, C, O, F, H> Ctor<'a, C, O, H> for CtorOnlyFunAdapter<C, F, O, H>
+where
+    F: Fn(&mut C, &mut H) -> Result<O, Error>,
+{
+    #[inline(always)]
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        (self.inner)(ctx, handler)
+    }
+}
+
+///
+/// Return a type that wraps `Func` implemented `Ctor`.
+///
+/// # Example
+///
+/// ```
+/// # use neure::{err::Error, prelude::*};
+/// # use neure::ctor::{Ctor, Extract, Handler};
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///
+///     pub fn find_numberic<'a, H>(ctx: &mut CharsCtx<'a>, handler: &mut H) -> Result<H::Out, Error>
+///     where
+///         H: Handler<CharsCtx<'a>>,
+///     {
+///         let mut len = 0;
+///
+///         if let Some(pos) = ctx.orig()?.find(|ch: char| {
+///             let ret = ch.is_numeric();
+///
+///             if ret {
+///                 len = ch.len_utf8();
+///             }
+///             ret
+///         }) {
+///             let span = Span::new(ctx.offset() + pos, len);
+///
+///             ctx.set_offset(span.beg() + span.len());
+///             handler.invoke(ctx, &span).map_err(Into::into)
+///         } else {
+///             Err(Error::Uid(1))
+///         }
+///     }
+///     let parser = ctor::Adapter::func(find_numberic);
+///     let parser = parser.then(parser);
+///
+///     assert_eq!(CharsCtx::new("fo1ba5").ctor(&parser)?, ("1", "5"));
+///     assert_eq!(CharsCtx::new("foobar").ctor(&parser), Err(Error::Uid(1)));
+///     Ok(())
+/// # }
+/// ```
+impl<C, O, H, F> Adapter<C, CtorOnlyFunAdapter<C, F, O, H>>
+where
+    F: Fn(&mut C, &mut H) -> Result<O, Error>,
+{
+    pub fn func(func: F) -> Self {
+        Self::new(CtorOnlyFunAdapter::new(func))
+    }
+}
+
 ///
 /// Return a type that wraps `Ctor` with [`Box`](crate::alloc::Box).
 ///

@@ -84,6 +84,7 @@ pub trait Ctor<'a, C, O, H>: Regex<C> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>;
 }
 
+// Can't impl for F(&mut C, &mut H), cause F can't impl Regex<C>, put it in Adapter::func
 impl<'a, C, O, H, F> Ctor<'a, C, O, H> for F
 where
     C: Match<'a>,
