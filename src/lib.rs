@@ -75,6 +75,7 @@ pub mod prelude {
     pub use crate::regex::Regex;
     pub use crate::regex::RegexIntoHelper;
     pub use crate::regex::RegexRefAsCtor;
+    pub use crate::regex::RegexRefAsDynRegex;
     pub use crate::span::ArrayStorer;
     pub use crate::span::Span;
     #[cfg(feature = "alloc")]

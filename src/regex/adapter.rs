@@ -523,6 +523,43 @@ where
     }
 }
 
+/// [`DynRefAdapter`] implement [`Ctor`] for dynamic reference of [`Regex`]
+pub struct DynRefAdapter<'a, C> {
+    inner: &'a dyn Regex<C>,
+}
+
+impl<'a, C> Clone for DynRefAdapter<'a, C> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, C> Copy for DynRefAdapter<'a, C> {}
+
+impl<'a, C> DynRefAdapter<'a, C> {
+    pub const fn new<T: Regex<C>>(inner: &'a T) -> Self {
+        Self { inner }
+    }
+}
+
+impl<'a, C> Regex<C> for DynRefAdapter<'a, C> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        self.inner.try_parse(ctx)
+    }
+}
+
+impl<'c, 'a, C, O, H> Ctor<'c, C, O, H> for DynRefAdapter<'a, C>
+where
+    C: Match<'c>,
+    H: Handler<C, Out = O>,
+{
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        let ret = ctx.try_mat(self)?;
+
+        handler.invoke(ctx, &ret).map_err(Into::into)
+    }
+}
+
 #[cfg(feature = "alloc")]
 mod box_adapter {
 

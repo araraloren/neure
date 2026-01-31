@@ -14,6 +14,7 @@ use core::cell::Cell;
 use core::cell::RefCell;
 
 pub use self::adapter::Adapter;
+pub use self::adapter::DynRefAdapter;
 pub use self::adapter::RefAdapter;
 pub use self::anchor::AnchorEnd;
 pub use self::anchor::AnchorStart;
@@ -837,6 +838,22 @@ where
 {
     fn as_ctor(&self) -> RefAdapter<'_, C, Self> {
         RefAdapter::new(self)
+    }
+}
+
+pub trait RegexRefAsDynRegex<C>
+where
+    Self: Regex<C>,
+{
+    fn as_dyn_regex(&self) -> DynRefAdapter<'_, C>;
+}
+
+impl<C, T> RegexRefAsDynRegex<C> for T
+where
+    Self: Regex<C>,
+{
+    fn as_dyn_regex(&self) -> DynRefAdapter<'_, C> {
+        DynRefAdapter::new(self)
     }
 }
 
