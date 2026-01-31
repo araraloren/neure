@@ -55,6 +55,7 @@ pub mod prelude {
     pub use crate::ctor;
     pub use crate::ctor::CtorIntoHelper;
     pub use crate::ctor::CtorOps;
+    pub use crate::ctor::CtorRefAsDynCtor;
     pub use crate::ctx::Assert;
     pub use crate::ctx::BytesCtx;
     pub use crate::ctx::CharsCtx;
@@ -71,9 +72,9 @@ pub mod prelude {
     pub use crate::neu::NeuIntoRegexOps;
     pub use crate::neu::NeuOp;
     pub use crate::regex;
-    pub use crate::regex::AsCtor;
     pub use crate::regex::Regex;
     pub use crate::regex::RegexIntoHelper;
+    pub use crate::regex::RegexRefAsCtor;
     pub use crate::span::ArrayStorer;
     pub use crate::span::Span;
     #[cfg(feature = "alloc")]

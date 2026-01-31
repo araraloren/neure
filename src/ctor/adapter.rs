@@ -488,6 +488,30 @@ where
     }
 }
 
+/// [`RefAdapter`] implement [`Ctor`] for dynamic reference of [`Ctor`]
+#[derive(Clone, Copy)]
+pub struct DynRefAdapter<'a, 'b, C, O, H> {
+    inner: &'b dyn Ctor<'a, C, O, H>,
+}
+
+impl<'a, 'b, C, O, H> DynRefAdapter<'a, 'b, C, O, H> {
+    pub const fn new<T: Ctor<'a, C, O, H>>(inner: &'b T) -> Self {
+        Self { inner }
+    }
+}
+
+impl<'a, 'b, C, O, H> Regex<C> for DynRefAdapter<'a, 'b, C, O, H> {
+    fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
+        Regex::try_parse(self.inner, ctx)
+    }
+}
+
+impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for DynRefAdapter<'a, 'b, C, O, H> {
+    fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
+        Ctor::construct(self.inner, ctx, handler)
+    }
+}
+
 #[cfg(feature = "alloc")]
 mod box_adapter {
 

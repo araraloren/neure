@@ -25,6 +25,7 @@ use core::cell::Cell;
 use core::cell::RefCell;
 
 pub use self::adapter::Adapter;
+pub use self::adapter::DynRefAdapter;
 pub use self::affix::Prefix;
 pub use self::affix::Suffix;
 pub use self::array::Array;
@@ -72,8 +73,8 @@ use crate::map::mapper;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::EmptyCond;
 use crate::neu::Many0;
-use crate::regex::AsCtor;
 use crate::regex::Regex;
+use crate::regex::RegexRefAsCtor;
 use crate::span::Span;
 
 #[cfg(feature = "alloc")]
@@ -155,8 +156,8 @@ mod alloc_ctor_impls {
     use crate::ctx::Context;
     use crate::ctx::Match;
     use crate::err::Error;
-    use crate::regex::AsCtor;
     use crate::regex::Regex;
+    use crate::regex::RegexRefAsCtor;
 
     macro_rules! impl_as_ctor {
         ($self:ident, $regex:expr, $type:ty) => {
@@ -816,6 +817,22 @@ where
         C: Context<'a, Item = u8>,
     {
         Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
+    }
+}
+
+pub trait CtorRefAsDynCtor<'a, C, O, H>
+where
+    Self: Ctor<'a, C, O, H>,
+{
+    fn as_dyn_ctor(&self) -> DynRefAdapter<'a, '_, C, O, H>;
+}
+
+impl<'a, C, O, H, T> CtorRefAsDynCtor<'a, C, O, H> for T
+where
+    Self: Ctor<'a, C, O, H>,
+{
+    fn as_dyn_ctor(&self) -> DynRefAdapter<'a, '_, C, O, H> {
+        DynRefAdapter::new(self)
     }
 }
 

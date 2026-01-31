@@ -826,14 +826,14 @@ where
     }
 }
 
-pub trait AsCtor<C>
+pub trait RegexRefAsCtor<C>
 where
     Self: Regex<C>,
 {
     fn as_ctor(&self) -> RefAdapter<'_, C, Self>;
 }
 
-impl<T: ?Sized, C> AsCtor<C> for T
+impl<T: ?Sized, C> RegexRefAsCtor<C> for T
 where
     Self: Regex<C>,
 {
