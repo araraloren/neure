@@ -34,10 +34,9 @@ pub use self::empty::empty;
 pub use self::fail::FailRegex;
 pub use self::fail::fail;
 pub use self::into::RegexIntoHelper;
-pub use self::literal::LitSlice;
-pub use self::literal::LitString;
-pub use self::literal::lit_slice;
-pub use self::literal::string;
+pub use self::literal::Literal;
+pub use self::literal::LiteralTy;
+pub use self::literal::literal;
 
 #[cfg(feature = "alloc")]
 pub use self::rec::*;
@@ -129,17 +128,16 @@ mod alloc_regex_impls {
     use crate::ctx::Context;
     use crate::err::Error;
     use crate::regex::Regex;
-    use crate::regex::lit_slice;
-    use crate::regex::string;
+    use crate::regex::literal;
     use crate::span::Span;
 
-    impl_orig_regex!(self_, &string(self_), String, str);
+    impl_orig_regex!(self_, &literal(self_.as_str()), String, str);
 
-    impl_orig_regex!(self_, &string(self_), &String, str);
+    impl_orig_regex!(self_, &literal(self_.as_str()), &String, str);
 
-    impl_orig_regex!(self_, &lit_slice(self_.as_slice()), Vec<u8>, [u8]);
+    impl_orig_regex!(self_, &literal(self_.as_slice()), Vec<u8>, [u8]);
 
-    impl_orig_regex!(self_, &lit_slice(self_.as_slice()), &Vec<u8>, [u8]);
+    impl_orig_regex!(self_, &literal(self_.as_slice()), &Vec<u8>, [u8]);
 
     impl_forward_regex!(self_, self_.as_ref(), Arc<P>);
 
@@ -198,9 +196,9 @@ mod alloc_regex_impls {
     impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
 }
 
-impl_orig_regex!(self_, &string(self_), &str, str);
+impl_orig_regex!(self_, &literal(*self_), &str, str);
 
-impl_orig_regex!(self_, &lit_slice(self_), &[u8], [u8]);
+impl_orig_regex!(self_, &literal(*self_), &[u8], [u8]);
 
 impl<'a, const N: usize, C> Regex<C> for &[u8; N]
 where
@@ -208,7 +206,7 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let pattern = crate::regex::lit_slice(self.as_slice());
+        let pattern = crate::regex::literal(self.as_slice());
         pattern.try_parse(ctx)
     }
 }
@@ -219,7 +217,7 @@ where
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
-        let pattern = crate::regex::lit_slice(self.as_slice());
+        let pattern = crate::regex::literal(self.as_slice());
         pattern.try_parse(ctx)
     }
 }

@@ -40,9 +40,9 @@ impl JsonParser {
             let str = ctor::Adapter::dyn_box(str_val.enclose(b"\"", b"\""));
             let str = str.map(JsonZero::Str);
 
-            let bool_t = regex::lit_slice(b"true").map(|_| JsonZero::Bool(true));
-            let bool_f = regex::lit_slice(b"false").map(|_| JsonZero::Bool(false));
-            let empty = regex::lit_slice(b"empty").map(|_| JsonZero::Null);
+            let bool_t = regex::literal(b"true").map(|_| JsonZero::Bool(true));
+            let bool_f = regex::literal(b"false").map(|_| JsonZero::Bool(false));
+            let empty = regex::literal(b"empty").map(|_| JsonZero::Null);
 
             let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
             let ele = ctor::Adapter::rc(ele.suffix(ws).prefix(ws));

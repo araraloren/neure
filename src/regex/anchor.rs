@@ -96,7 +96,7 @@ where
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
 ///     let pos = regex::start();
-///     let rust = regex::string("rust");
+///     let rust = regex::literal("rust");
 ///     let year = neu::digit(10).count::<4>();
 ///     let mut ctx = CharsCtx::new("rust2023");
 ///
@@ -196,7 +196,7 @@ where
 /// #
 /// # fn main() -> color_eyre::Result<()> {
 /// #     color_eyre::install()?;
-///     let rust = regex::string("rust");
+///     let rust = regex::literal("rust");
 ///     let year = neu::digit(10).count::<4>();
 ///     let end = regex::end();
 ///     let mut ctx = CharsCtx::new("rust2023");

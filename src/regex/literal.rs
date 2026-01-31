@@ -6,13 +6,12 @@ use crate::ctx::Match;
 use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::regex::Regex;
-use crate::regex::impl_not_for_regex;
 use crate::span::Span;
 
 ///
-/// Matches an exact literal slice of elements with zero-copy efficiency.
+/// Matches an exact literal with zero-copy efficiency.
 ///
-/// [`LitSlice`] provides exact byte/element-wise matching of a predefined sequence, succeeding only when
+/// [`Literal`] provides exact byte/element-wise matching of a predefined sequence, succeeding only when
 /// the input contains the precise sequence at the current position. It functions as a low-level building block
 /// for matching fixed patterns in binary data, text tokens, or structured element sequences with minimal overhead.
 ///
@@ -28,132 +27,65 @@ use crate::span::Span;
 ///
 /// Uses identical matching logic as regex mode, then constructs a value from the result.
 ///
-/// # Example
+/// # Example1
+///
 /// ```
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
-///     let parser = regex::lit_slice(b"magic");
+///     let parser = regex::literal(b"magic");
 ///     let mut ctx = BytesCtx::new(b"magic 0xff");
 ///
 ///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 5));
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct LitSlice<'a, T> {
-    val: &'a [T],
-}
-
-impl_not_for_regex!(LitSlice<'a, T>);
-
-impl<'a, T> LitSlice<'a, T> {
-    pub const fn new(val: &'a [T]) -> Self {
-        Self { val }
-    }
-}
-
-impl<'a, C, O, T, H> Ctor<'a, C, O, H> for LitSlice<'_, T>
-where
-    T: PartialOrd + 'a,
-    C: Match<'a, Orig<'a> = &'a [T]>,
-    H: Handler<C, Out = O>,
-{
-    #[inline(always)]
-    fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
-        let ret = ctx.try_mat(self)?;
-
-        func.invoke(ctx, &ret).map_err(Into::into)
-    }
-}
-
-impl<'a, C, T> Regex<C> for LitSlice<'_, T>
-where
-    T: PartialOrd + 'a,
-    C: Context<'a, Orig<'a> = &'a [T]>,
-{
-    #[inline(always)]
-    fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ret = Err(Error::LitSlice);
-        let slice_len = self.val.len();
-        let remaining_len = ctx.len() - ctx.offset();
-
-        crate::debug_regex_beg!("LitSlice", ctx.offset());
-        if remaining_len >= slice_len && ctx.orig()?.starts_with(self.val) {
-            ret = Ok(new_span_inc(ctx, slice_len));
-        }
-        crate::debug_regex_reval!("LitSlice", ret)
-    }
-}
-
 ///
-/// Matches an exact literal slice of elements with zero-copy efficiency.
-///
-/// # Example
+/// # Example2
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
-///     let parser = regex::lit_slice(&[0xff, 0xff]);
-///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
-///
-///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 2));
-/// #   Ok(())
-/// # }
-/// ```
-pub const fn lit_slice<T>(lit: &[T]) -> LitSlice<'_, T> {
-    LitSlice::new(lit)
-}
-
-///
-/// Matches an exact literal string with Unicode-aware correctness.
-///
-/// [`LitString`] provides zero-copy exact matching of a predefined string literal, succeeding only when
-/// the input contains the precise sequence of characters at the current position. It respects UTF-8
-/// boundaries and performs efficient byte-wise comparison while maintaining Unicode correctness.
-///
-/// # Regex
-///
-/// - **Success**: When remaining input starts with exact string in `val`
-///   - Returns span covering the entire matched string
-///   - Consumes exactly `val.len()` **bytes** (not character count!)
-///   - Requires match to start at valid UTF-8 boundary
-/// - **Failure**: When any condition fails returns [`Error::LitString`]
-///
-/// # Ctor
-///
-/// Uses identical matching logic as regex mode, then constructs a value from the result.
-///
-/// # Example
-/// ```
-/// # use neure::prelude::*;
-/// #
-/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
-///     let parser = regex::string("hello");
+///     let parser = regex::literal("hello");
 ///     let mut ctx = CharsCtx::new("hello world");
 ///
 ///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 5));
 /// #   Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct LitString<'a> {
-    val: &'a str,
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Literal<'a, T: ?Sized> {
+    literal: &'a T,
 }
 
-impl_not_for_regex!(LitString<'a>);
-
-impl<'a> LitString<'a> {
-    pub const fn new(val: &'a str) -> Self {
-        Self { val }
+impl<'a, T: ?Sized> Clone for Literal<'a, T> {
+    fn clone(&self) -> Self {
+        *self
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, H> for LitString<'_>
+impl<'a, T: ?Sized> Copy for Literal<'a, T> {}
+
+impl<'a, T: ?Sized> core::ops::Not for Literal<'a, T> {
+    type Output = crate::regex::Assert<Self>;
+
+    fn not(self) -> Self::Output {
+        crate::regex::not(self)
+    }
+}
+
+impl<'a, T: ?Sized> Literal<'a, T> {
+    pub const fn new(literal: &'a T) -> Self {
+        Self { literal }
+    }
+}
+
+impl<'a, C, O, T, H> Ctor<'a, C, O, H> for Literal<'_, T>
 where
-    C: Match<'a, Orig<'a> = &'a str>,
+    T: ?Sized + LiteralTy + 'a,
     H: Handler<C, Out = O>,
+    C: Match<'a, Orig<'a> = <T as LiteralTy>::Orig<'a>>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, func: &mut H) -> Result<O, Error> {
@@ -163,40 +95,116 @@ where
     }
 }
 
-impl<'a, C> Regex<C> for LitString<'_>
+impl<'a, C, T> Regex<C> for Literal<'_, T>
 where
-    C: Context<'a, Orig<'a> = &'a str>,
+    T: ?Sized + LiteralTy + 'a,
+    C: Context<'a, Orig<'a> = <T as LiteralTy>::Orig<'a>>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
-        let mut ret = Err(Error::LitString);
-        let literal_len = self.val.len();
+        let mut ret = Err(Error::Literal);
+        let slice_len = self.literal.length();
         let remaining_len = ctx.len() - ctx.offset();
 
-        crate::debug_regex_beg!("LitString", ctx.offset());
-        if remaining_len >= literal_len && ctx.orig()?.starts_with(self.val) {
-            ret = Ok(new_span_inc(ctx, literal_len));
+        crate::debug_regex_beg!("Literal", ctx.offset());
+        if remaining_len >= slice_len && self.literal.prefix_of(&ctx.orig()?) {
+            ret = Ok(new_span_inc(ctx, slice_len));
         }
-        crate::debug_regex_reval!("LitString", self.val, ret)
+        crate::debug_regex_reval!("Literal", ret)
+    }
+}
+
+pub trait LiteralTy {
+    type Orig<'a>;
+
+    fn length(&self) -> usize;
+
+    fn prefix_of<'a>(&self, other: &Self::Orig<'a>) -> bool;
+}
+
+impl LiteralTy for str {
+    type Orig<'a> = &'a str;
+
+    fn length(&self) -> usize {
+        str::len(self)
+    }
+
+    fn prefix_of<'a>(&self, other: &Self::Orig<'a>) -> bool {
+        str::starts_with(other, self)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl LiteralTy for crate::alloc::String {
+    type Orig<'a> = &'a str;
+
+    fn length(&self) -> usize {
+        str::len(self)
+    }
+
+    fn prefix_of<'a>(&self, other: &Self::Orig<'a>) -> bool {
+        str::starts_with(other, self.as_str())
+    }
+}
+
+impl LiteralTy for [u8] {
+    type Orig<'a> = &'a [u8];
+
+    fn length(&self) -> usize {
+        <[u8]>::len(self)
+    }
+
+    fn prefix_of<'a>(&self, other: &Self::Orig<'a>) -> bool {
+        <[u8]>::starts_with(other, self)
+    }
+}
+
+impl<const N: usize> LiteralTy for [u8; N] {
+    type Orig<'a> = &'a [u8];
+
+    fn length(&self) -> usize {
+        <[u8]>::len(self)
+    }
+
+    fn prefix_of<'a>(&self, other: &Self::Orig<'a>) -> bool {
+        <[u8]>::starts_with(other, self)
     }
 }
 
 ///
-/// Matches an exact literal string with Unicode-aware correctness.
+/// Matches an exact literal with zero-copy efficiency.
 ///
 /// # Example
+///
+/// Matches an exact literal string with Unicode-aware correctness.
 ///
 /// ```
 /// # use neure::prelude::*;
 /// #
 /// # fn main() -> Result<(), Box<dyn core::error::Error>> {
-///      let rust = regex::string("rust");
+///      let rust = regex::literal("rust");
 ///      let mut ctx = CharsCtx::new("rust2023");
 ///
 ///      assert_eq!(ctx.try_mat(&rust)?, Span::new(0, 4));
 /// #   Ok(())
 /// # }
 /// ```
-pub const fn string(lit: &str) -> LitString<'_> {
-    LitString::new(lit)
+///
+/// # Example
+///
+/// Matches an exact literal slice of elements with zero-copy efficiency.
+///
+/// ```
+/// # use neure::prelude::*;
+/// #
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+///     let parser = regex::literal(&[0xff, 0xff]);
+///     let mut ctx = BytesCtx::new(&[0xff, 0xff, 0x12]);
+///
+///     assert_eq!(ctx.try_mat(&parser)?, Span::new(0, 2));
+/// #   Ok(())
+/// # }
+/// ```
+pub const fn literal<T: LiteralTy + ?Sized>(lit: &T) -> Literal<'_, T> {
+    Literal::new(lit)
 }

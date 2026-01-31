@@ -330,8 +330,7 @@ impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + Send + 'a>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
 ///     let regex = regex::Adapter::dyn_arc_sync(regex);
 ///     let (send, recv) = channel();
-///
-///     std::thread::spawn(move || {
+///     let handler = std::thread::spawn(move || {
 ///         if let Ok(regex) = recv.recv() {
 ///             assert_eq!(
 ///                 CharsCtx::new("where are you from?").ctor(&regex).unwrap(),
@@ -341,6 +340,7 @@ impl<'a, C> Adapter<C, alloc::Arc<dyn Regex<C> + Send + 'a>> {
 ///     });
 ///
 ///     send.send(regex)?;
+///     let _ = handler.join();
 ///
 /// #    Ok(())
 /// # }
@@ -399,8 +399,7 @@ impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + 'a>> {
 ///     let regex = |ctx: &mut CharsCtx| ctx.try_mat(&"where");
 ///     let regex = regex::Adapter::dyn_box_sync(regex);
 ///     let (send, recv) = channel();
-///
-///     std::thread::spawn(move || {
+///     let handler = std::thread::spawn(move || {
 ///         if let Ok(regex) = recv.recv() {
 ///             assert_eq!(
 ///                 CharsCtx::new("where are you from?").ctor(&regex).unwrap(),
@@ -410,6 +409,7 @@ impl<'a, C> Adapter<C, alloc::Box<dyn Regex<C> + Send + 'a>> {
 ///     });
 ///
 ///     send.send(regex)?;
+///     let _ = handler.join();
 ///
 /// #    Ok(())
 /// # }

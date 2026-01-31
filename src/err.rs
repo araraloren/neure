@@ -13,9 +13,7 @@ pub enum Error {
 
     Slice,
 
-    LitSlice,
-
-    LitString,
+    Literal,
 
     AnchorEnd,
 
@@ -90,8 +88,7 @@ impl Display for Error {
             Error::AssertTrue => write!(f, "AssertTrue: internal pattern match failed"),
             Error::Consume => write!(f, "Consume: remaining data length is insufficient"),
             Error::Slice => write!(f, "Slice: all slices failed to match"),
-            Error::LitSlice => write!(f, "LitSlice: slice failed to match"),
-            Error::LitString => write!(f, "LitString: string failed to match"),
+            Error::Literal => write!(f, "Literal: slice failed to match"),
             Error::AnchorEnd => write!(f, "AnchorEnd: offset is not at the end"),
             Error::AnchorStart => write!(f, "AnchorStart: offset is not at the beginning"),
             Error::Mutex => write!(f, "Mutex: mutex lock operation failed"),

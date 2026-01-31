@@ -7,8 +7,8 @@ fn longest() {
 
 fn ltm_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let name = regex::string("localhost");
-    let ip = regex::string("8080");
+    let name = regex::literal("localhost");
+    let ip = regex::literal("8080");
     let port = name.sep_once(":", ip);
     let or = name.or(port);
     let longest = name.longest(port);

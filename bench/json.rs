@@ -88,9 +88,9 @@ mod neure_json {
                         .enclose(b"\"", b"\""),
                 );
 
-                let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(Json::Bool(true)));
-                let bool_f = regex::lit_slice(b"false").try_map(|_| Ok(Json::Bool(false)));
-                let empty = regex::lit_slice(b"empty").try_map(|_| Ok(Json::Null));
+                let bool_t = regex::literal(b"true").try_map(|_| Ok(Json::Bool(true)));
+                let bool_f = regex::literal(b"false").try_map(|_| Ok(Json::Bool(false)));
+                let empty = regex::literal(b"empty").try_map(|_| Ok(Json::Null));
 
                 let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
                 let ele = ctor::Adapter::rc(ele.suffix(ws).prefix(ws));
@@ -148,9 +148,9 @@ mod neure_json_zero {
                 let str = ctor::Adapter::dyn_box(str_val.enclose(b"\"", b"\""));
                 let str = str.try_map(|v| Ok(JsonZero::Str(v)));
 
-                let bool_t = regex::lit_slice(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
-                let bool_f = regex::lit_slice(b"false").try_map(|_| Ok(JsonZero::Bool(false)));
-                let empty = regex::lit_slice(b"empty").try_map(|_| Ok(JsonZero::Null));
+                let bool_t = regex::literal(b"true").try_map(|_| Ok(JsonZero::Bool(true)));
+                let bool_f = regex::literal(b"false").try_map(|_| Ok(JsonZero::Bool(false)));
+                let empty = regex::literal(b"empty").try_map(|_| Ok(JsonZero::Null));
 
                 let ele = num.or(str.or(bool_t.or(bool_f.or(empty.or(ctor.clone())))));
                 let ele = ctor::Adapter::rc(ele.suffix(ws).prefix(ws));

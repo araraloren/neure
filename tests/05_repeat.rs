@@ -8,7 +8,7 @@ fn repeat() {
 #[cfg(feature = "alloc")]
 fn repeat_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let name = regex::string("foo");
+    let name = regex::literal("foo");
     let names = name.repeat(2..=5);
 
     assert!(CharsCtx::new("foo").ctor_span(&names).is_err(),);
@@ -27,7 +27,7 @@ fn repeat_impl() -> color_eyre::Result<()> {
 #[cfg(not(feature = "alloc"))]
 fn repeat_impl() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    let name = regex::string("foo");
+    let name = regex::literal("foo");
     let names = name.repeat2::<2, 5>();
 
     assert!(CharsCtx::new("foo").ctor_span(&names).is_err(),);
