@@ -10,7 +10,6 @@ use crate::ctx::Match;
 use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::iter::IndexBySpan;
-use crate::neu::NeuIntoRegexOps;
 
 #[derive(Debug)]
 pub struct RegexCtx<'a, T>
@@ -156,16 +155,18 @@ where
     /// #   Ok(())
     /// # }
     /// ```
-    pub fn skip_before<R>(self, regex: R) -> PolicyCtx<Self, R> {
+    pub const fn skip_before<R>(self, regex: R) -> PolicyCtx<Self, R> {
         PolicyCtx { inner: self, regex }
     }
 }
 
 impl<'a> RegexCtx<'a, [u8]> {
-    pub fn skip_ascii_whitespace(
+    pub const fn skip_ascii_whitespace(
         self,
     ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::AsciiWhiteSpace<u8>, u8>> {
-        self.skip_before(crate::neu::ascii_whitespace().many0())
+        use crate::neu;
+
+        self.skip_before(neu::Many0::new(neu::ascii_whitespace(), neu::EmptyCond))
     }
 }
 
@@ -277,18 +278,22 @@ impl<'a> RegexCtx<'a, str> {
     /// #   Ok(())
     /// # }
     /// ```
-    pub fn skip_ascii_whitespace(
+    pub const fn skip_ascii_whitespace(
         self,
     ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::AsciiWhiteSpace<char>, char>> {
-        self.skip_before(crate::neu::ascii_whitespace().many0())
+        use crate::neu;
+
+        self.skip_before(neu::Many0::new(neu::ascii_whitespace(), neu::EmptyCond))
     }
 }
 
 impl<'a> RegexCtx<'a, str> {
-    pub fn skip_whitespace(
+    pub const fn skip_whitespace(
         self,
     ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::WhiteSpace, char>> {
-        self.skip_before(crate::neu::whitespace().many0())
+        use crate::neu;
+
+        self.skip_before(neu::Many0::new(neu::whitespace(), neu::EmptyCond))
     }
 }
 

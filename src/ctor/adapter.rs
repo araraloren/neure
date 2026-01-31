@@ -598,7 +598,7 @@ where
     }
 }
 
-/// [`RefAdapter`] implement [`Ctor`] for dynamic reference of [`Ctor`]
+/// [`DynRefAdapter`] implement [`Ctor`] for dynamic reference of [`Ctor`]
 #[derive(Clone, Copy)]
 pub struct DynRefAdapter<'a, 'b, C, O, H> {
     inner: &'b dyn Ctor<'a, C, O, H>,

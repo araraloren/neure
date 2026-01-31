@@ -689,15 +689,16 @@ pub const fn bounded<T: PartialOrd>(min: T, max: T) -> Bounded<T> {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct WithDefault<T, F, M> {
+pub struct WithDefault<I, O, F, M> {
     func: F,
     mapper: M,
-    marker: PhantomData<T>,
+    marker: PhantomData<(I, O)>,
 }
 
-impl<T, F, M> WithDefault<T, F, M>
+impl<I, O, F, M> WithDefault<I, O, F, M>
 where
-    F: Fn() -> T,
+    F: Fn() -> O,
+    M: FallibleMap<I, O>,
 {
     pub const fn new(func: F, mapper: M) -> Self {
         Self {
@@ -708,16 +709,16 @@ where
     }
 }
 
-impl<T, F, M> FallibleMap<T, T> for WithDefault<T, F, M>
+impl<I, O, F, M> FallibleMap<I, O> for WithDefault<I, O, F, M>
 where
-    F: Fn() -> T,
-    M: FallibleMap<T, T>,
+    F: Fn() -> O,
+    M: FallibleMap<I, O>,
 {
     fn out_size(&self) -> usize {
         self.mapper.out_size()
     }
 
-    fn try_map(&self, val: T) -> Result<T, Error> {
+    fn try_map(&self, val: I) -> Result<O, Error> {
         if let Ok(val) = self.mapper.try_map(val) {
             Ok(val)
         } else {
@@ -726,16 +727,19 @@ where
     }
 }
 
-pub trait WithDefaultHelper<T>: Sized {
-    fn with_default<F>(self, func: F) -> WithDefault<T, F, Self>
+pub trait WithDefaultHelper<I, O>: Sized {
+    fn with_default<F>(self, func: F) -> WithDefault<I, O, F, Self>
     where
-        F: Fn() -> T;
+        F: Fn() -> O;
 }
 
-impl<T, K: Sized> WithDefaultHelper<T> for K {
-    fn with_default<F>(self, func: F) -> WithDefault<T, F, Self>
+impl<I, O, T: Sized> WithDefaultHelper<I, O> for T
+where
+    Self: FallibleMap<I, O>,
+{
+    fn with_default<F>(self, func: F) -> WithDefault<I, O, F, Self>
     where
-        F: Fn() -> T,
+        F: Fn() -> O,
     {
         with_default(func, self)
     }
@@ -765,9 +769,10 @@ impl<T, K: Sized> WithDefaultHelper<T> for K {
 /// # }
 /// ```
 #[inline(always)]
-pub const fn with_default<T, F, M>(func: F, mapper: M) -> WithDefault<T, F, M>
+pub const fn with_default<I, O, F, M>(func: F, mapper: M) -> WithDefault<I, O, F, M>
 where
-    F: Fn() -> T,
+    F: Fn() -> O,
+    M: FallibleMap<I, O>,
 {
     WithDefault::new(func, mapper)
 }

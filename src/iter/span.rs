@@ -12,7 +12,7 @@ pub struct IteratorBySpan<'a, 'b, T: ?Sized> {
 }
 
 impl<'a, 'b, T: ?Sized> IteratorBySpan<'a, 'b, T> {
-    pub fn new(str: &'a T, spans: &'b [Span]) -> Self {
+    pub const fn new(str: &'a T, spans: &'b [Span]) -> Self {
         Self {
             value: str,
             spans,
@@ -51,7 +51,7 @@ pub struct SpanIterator<'a> {
 }
 
 impl<'a> SpanIterator<'a> {
-    pub fn new(spans: &'a [Span]) -> Self {
+    pub const fn new(spans: &'a [Span]) -> Self {
         Self { offset: 0, spans }
     }
 }
@@ -81,7 +81,7 @@ pub struct IteratorByOptionSpan<'a, 'b, T: ?Sized> {
 }
 
 impl<'a, 'b, T: ?Sized> IteratorByOptionSpan<'a, 'b, T> {
-    pub fn new(str: &'a T, spans: &'b [Option<Span>]) -> Self {
+    pub const fn new(str: &'a T, spans: &'b [Option<Span>]) -> Self {
         Self {
             value: str,
             spans,
@@ -123,7 +123,7 @@ pub struct OptionSpanIterator<'a> {
 }
 
 impl<'a> OptionSpanIterator<'a> {
-    pub fn new(spans: &'a [Option<Span>]) -> Self {
+    pub const fn new(spans: &'a [Option<Span>]) -> Self {
         Self { offset: 0, spans }
     }
 }

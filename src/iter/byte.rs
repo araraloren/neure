@@ -6,7 +6,7 @@ pub struct BytesIndices<'a, T> {
 }
 
 impl<'a, T> BytesIndices<'a, T> {
-    pub fn new(bytes: &'a [T]) -> Self {
+    pub const fn new(bytes: &'a [T]) -> Self {
         Self { offset: 0, bytes }
     }
 }
