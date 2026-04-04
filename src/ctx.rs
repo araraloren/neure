@@ -20,54 +20,93 @@ pub use self::regex::RegexCtx;
 pub type BytesCtx<'a> = RegexCtx<'a, [u8]>;
 pub type CharsCtx<'a> = RegexCtx<'a, str>;
 
+/// A trait representing a context that can be matched against during parsing or pattern matching.
+///
+/// The `Context` trait abstracts over different types of input data (e.g., byte slices, strings)
+/// and provides a uniform interface for:
+/// - Querying the current position (offset) within the input
+/// - Advancing or rewinding the position
+/// - Peeking at data without consuming it
+/// - Extracting original data slices at specific positions
 pub trait Context<'a> {
+    /// The type of the original data slice at a given position.
     type Orig<'b>;
 
+    /// The type of individual elements in this context.
     type Item: MayDebug;
 
+    /// An iterator type that yields `(offset, Item)` pairs.
     type Iter<'b>: Iterator<Item = (usize, Self::Item)>
     where
         Self: 'b;
 
+    /// Returns the total length of the underlying data in bytes.
     fn len(&self) -> usize;
 
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Returns the current offset (position) within the context.
     fn offset(&self) -> usize;
 
+    /// Sets the offset to a specific position.
     fn set_offset(&mut self, offset: usize) -> &mut Self;
 
+    /// Increments the offset by a specified amount.
     fn inc(&mut self, offset: usize) -> &mut Self;
 
+    /// Decrements the offset by a specified amount.
     fn dec(&mut self, offset: usize) -> &mut Self;
 
+    /// Peeks at the data starting from the current offset without consuming it.
     fn peek(&self) -> Result<Self::Iter<'a>, Error> {
         self.peek_at(self.offset())
     }
 
+    /// Peeks at the data starting from a specific offset without consuming it.
     fn peek_at(&self, offset: usize) -> Result<Self::Iter<'a>, Error>;
 
+    /// Returns a slice of the original data starting from the current offset.
     fn orig(&self) -> Result<Self::Orig<'a>, Error> {
         self.orig_at(self.offset())
     }
 
+    /// Returns a slice of the original data starting from a specific offset.
     fn orig_at(&self, offset: usize) -> Result<Self::Orig<'a>, Error> {
         self.orig_sub(offset, self.len() - offset)
     }
 
+    /// Returns a subslice of the original data with specified offset and length.
     fn orig_sub(&self, offset: usize, len: usize) -> Result<Self::Orig<'a>, Error>;
 
+    /// Creates a new context instance at a specific offset.
     fn clone_at(&self, offset: usize) -> Result<Self, Error>
     where
         Self: Sized;
 }
 
+/// A trait for types that can perform pattern matching operations on a parsing context.
+///
+/// The `Match` trait provides methods for attempting to match patterns (regular expressions)
+/// against a context. It extends the [`Context`] trait, requiring implementations to also
+/// be contexts. This trait is implemented by context types that support matching operations.
 pub trait Match<'a>: Context<'a>
 where
     Self: Sized,
 {
+    /// Checks if a pattern can be matched at the current position in the context.
+    /// It doesn't provide detailed error information; use [`try_mat`](Match::try_mat) for error details.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert!(CharsCtx::with("98", |mut ctx| ctx.is_mat(&neu::digit(10).many1())));
+    /// #   Ok(())
+    /// # }
+    /// ```
     fn is_mat<Pat>(&mut self, pat: &Pat) -> bool
     where
         Pat: Regex<Self> + ?Sized,
@@ -75,15 +114,53 @@ where
         self.try_mat(pat).is_ok()
     }
 
+    /// Attempts to match a pattern at the current position in the context.
+    ///
+    /// This is the core matching method that attempts to match the provided pattern
+    /// against the context starting at the current offset.
+    /// On success, it returns a [`Span`] describing the matched range and advances the context offset
+    /// to the end of the match.
+    /// On failure, it returns an [`Error`] and the offset is unchanged.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert_eq!(
+    ///         CharsCtx::with("98", |mut ctx| ctx.try_mat(&neu::digit(10).many1()))?,
+    ///         Span::new(0, 2)
+    ///     );
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     fn try_mat<Pat>(&mut self, pat: &Pat) -> Result<Span, Error>
     where
         Pat: Regex<Self> + ?Sized;
 }
 
+/// A trait for types that support matching with policy constraints.
+///
+/// The `PolicyMatch` trait extends matching capabilities by allowing constraints
+/// (policies) to be applied before and/or after the main pattern match. This is
+/// useful for patterns that must be surrounded by specific context or for
+/// implementing lookahead/lookbehind assertions.
+///
+/// Unlike [`Match`] which only matches a single pattern, `PolicyMatch` allows
+/// specifying additional patterns that must match before (lookbehind) and/or
+/// after (lookahead) the main pattern. All three patterns must succeed for the
+/// overall match to succeed.
 pub trait PolicyMatch<'a>
 where
     Self: Sized,
 {
+    /// Attempts to match a pattern that must be preceded by a specific pattern.
+    ///
+    /// This method matches the main pattern only if it is immediately preceded
+    /// by the `before` pattern. The `before` pattern is matched but not included
+    /// in the returned span. This is similar to a positive lookbehind assertion
+    /// in traditional regex engines.
     fn try_mat_before<P, B>(&mut self, pat: &P, before: &B) -> Result<Span, Error>
     where
         P: Regex<Self> + ?Sized,
@@ -92,6 +169,12 @@ where
         self.try_mat_policy(pat, before, &|_: &mut Self| Ok(Span::default()))
     }
 
+    /// Attempts to match a pattern that must be followed by a specific pattern.
+    ///
+    /// This method matches the main pattern only if it is immediately followed
+    /// by the `after` pattern. The `after` pattern is matched but not included
+    /// in the returned span. This is similar to a positive lookahead assertion
+    /// in traditional regex engines.
     fn try_mat_after<P, A>(&mut self, pat: &P, after: &A) -> Result<Span, Error>
     where
         P: Regex<Self> + ?Sized,
@@ -100,6 +183,32 @@ where
         self.try_mat_policy(pat, &|_: &mut Self| Ok(Span::default()), after)
     }
 
+    /// Attempts to match a pattern with both before and after policy constraints.
+    ///
+    /// This is the most general policy matching method. It matches the main pattern
+    /// only if it is both preceded by the `before` pattern and followed by the
+    /// `after` pattern. This is equivalent to a combination of lookbehind and
+    /// lookahead assertions.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::{ctx::PolicyMatch, prelude::*};
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert_eq!(
+    ///         CharsCtx::with("Give me 98 cents.", |mut ctx| {
+    ///             let before = "Give me".skip_ascii_ws();
+    ///             let after = "cents".skip_ascii_ws_leading();
+    ///
+    ///             ctx.try_mat_policy(&neu::digit(10).many1(), &before, &after)
+    ///         })?,
+    ///         Span::new(8, 2)
+    ///     );
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     fn try_mat_policy<P, B, A>(&mut self, pat: &P, before: &B, after: &A) -> Result<Span, Error>
     where
         P: Regex<Self> + ?Sized,
@@ -107,6 +216,19 @@ where
         A: Regex<Self> + ?Sized;
 }
 
+/// A trait for performing zero-width assertions on a parsing context.
+///
+/// The `Assert` trait provides methods to check if a pattern can be matched
+/// at the current position in the context without advancing the offset or
+/// consuming any input. This is useful for lookahead/lookbehind assertions,
+/// validation checks, and conditional parsing logic.
+///
+/// Unlike the [`Match`] trait which consumes input and advances the offset,
+/// `Assert` performs zero-width checks that leave the context position unchanged
+/// regardless of success or failure.
+///
+/// This trait is automatically implemented for all types that implement [`Match<'a>`],
+/// allowing any matching context to also support assertions.
 pub trait Assert<'a>
 where
     Self: Sized,
@@ -121,6 +243,20 @@ where
     }
 
     /// Precise assertion preserving error details without altering context position.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let mut ctx = CharsCtx::new("42");
+    ///
+    ///     assert!(ctx.try_assert(&"42")?);
+    ///     assert_eq!(ctx.offset(), 0);
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     fn try_assert<Pat>(&mut self, pat: &Pat) -> Result<bool, Error>
     where
         Pat: Regex<Self> + ?Sized;
@@ -142,10 +278,21 @@ where
     }
 }
 
+/// Extension trait for matching contexts that adds value construction methods.
+///
+/// The `MatchExt` trait provides a rich set of methods for constructing values
+/// from pattern matches. These methods build on the basic [`Match::try_mat`]
+/// functionality to enable extracting, transforming, and building typed data
+/// from parsed input.
 pub trait MatchExt<'a>
 where
     Self: Context<'a> + Sized,
 {
+    /// Constructs a value using a constructor pattern and a custom handler.
+    ///
+    /// This is the most general construction method, allowing full control
+    /// over both the matching logic (via the constructor) and the value
+    /// extraction/transformation (via the handler).
     fn ctor_handler<H, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
         P: Ctor<'a, Self, O, H>,
@@ -154,6 +301,11 @@ where
         pat.construct(self, &mut handler)
     }
 
+    /// Constructs a value using a constructor pattern and a closure handler.
+    ///
+    /// This is a convenience method that allows using a closure instead of
+    /// implementing the [`Handler`] trait. The closure receives the context
+    /// and matched span and returns a [`Result`].
     fn ctor_with<H, P, O, R>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
         P: Ctor<'a, Self, O, H>,
@@ -162,6 +314,12 @@ where
         self.ctor_handler(pat, handler)
     }
 
+    /// Constructs a value using a constructor pattern, returning the matched span.
+    ///
+    /// This method uses the [`Extract<Span>`] handler, which simply returns
+    /// the matched span without any processing. This is useful when you need
+    /// the span information for further processing or when the constructor
+    /// itself handles all the transformation logic.
     fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
         P: Ctor<'a, Self, O, Extract<Span>>,
@@ -169,6 +327,27 @@ where
         self.ctor_handler(pat, extract())
     }
 
+    /// Constructs a value by extracting the matched substring.
+    ///
+    /// This is the most commonly used construction method. It matches the
+    /// pattern and extracts the corresponding substring from the original input.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert_eq!(
+    ///         RegexCtx::with("2026", |mut ctx| {
+    ///             ctx.ctor(&neu::digit(10).many1().try_map(map::from_str::<i32>()))
+    ///         })?,
+    ///         2026,
+    ///         "rust in 2026!"
+    ///     );
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
         P: Ctor<'a, Self, O, Extract<Self::Orig<'a>>>,
@@ -177,11 +356,20 @@ where
         self.ctor_handler(pat, extract())
     }
 
+    /// Matches a pattern and processes the result with a handler.
+    ///
+    /// This method combines matching and processing into a single operation.
+    /// It's similar to [`ctor_handler`](MatchExt::ctor_handler) but works with regular patterns
+    /// ([`Regex`]) rather than constructors ([`Ctor`]).
     fn map_handler<H, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
         H: Handler<Self, Out = O>;
 
+    /// Matches a pattern and processes the result with a closure.
+    ///
+    /// This is a convenience version of [`map_handler`](MatchExt::map_handler) that accepts a closure
+    /// instead of requiring a full [`Handler`] implementation.
     fn map_with<H, P, O>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
         P: Regex<Self>,
@@ -190,6 +378,15 @@ where
         self.map_handler(pat, handler)
     }
 
+    /// Matches a pattern, extracts the span, and maps it using a mapper.
+    ///
+    /// This method performs a three-step operation:
+    /// 1. Matches the pattern
+    /// 2. Extracts the matched span
+    /// 3. Applies a mapper function to transform the span
+    ///
+    /// This is useful when you need to perform additional transformation
+    /// on the span itself (e.g., converting to a different representation).
     fn map_span<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
     where
         P: Regex<Self>,
@@ -198,6 +395,32 @@ where
         mapper.try_map(self.map_handler(pat, extract::<Span>())?)
     }
 
+    /// Matches a pattern, extracts the matched substring, and maps it.
+    ///
+    /// This method performs a three-step operation:
+    /// 1. Matches the pattern
+    /// 2. Extracts the matched substring from the original input
+    /// 3. Applies a mapper function to transform the substring
+    ///
+    /// This is the most common pattern for parsing: match text, extract it,
+    /// and then parse/transform it into the desired type.
+    ///
+    /// # Example
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert_eq!(
+    ///         RegexCtx::with("2026", |mut ctx| {
+    ///             ctx.map(&neu::digit(10).many1(), map::from_str::<i32>())
+    ///         })?,
+    ///         2026,
+    ///         "rust in 2026!"
+    ///     );
+    /// #
+    /// #    Ok(())
+    /// # }
+    /// ```
     fn map<P, O, M>(&mut self, pat: &P, mapper: M) -> Result<O, Error>
     where
         P: Regex<Self>,
@@ -224,6 +447,16 @@ where
     }
 }
 
+/// A trait for multiple pattern matching operations on a parsing context.
+///
+/// The `MatchMulti` trait extends the basic matching functionality provided by [`Match`]
+/// with methods for finding multiple occurrences of patterns, including searching,
+/// iterative matching, and contiguous sequence matching. This trait provides the
+/// foundation for parsing operations that need to locate and extract multiple
+/// values from input data.
+///
+/// This trait is automatically implemented for all types that implement [`Match<'a>`],
+/// making these multi-match methods available on all matching contexts.
 pub trait MatchMulti<'a>: Sized + Match<'a> {
     ///
     /// Searches for the first occurrence of a pattern in the input.
@@ -278,6 +511,7 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
         self.find_with(pat, func, extract())
     }
 
+    /// Searches for the first occurrence of a pattern with custom processing logic.
     fn find_with<O, F, H>(&mut self, pat: impl Regex<Self>, mut func: F, mut map: H) -> Option<O>
     where
         H: Handler<Self, Out = O>,
@@ -409,6 +643,7 @@ pub trait MatchMulti<'a>: Sized + Match<'a> {
         self.find_all_with(pat, func, extract())
     }
 
+    /// Returns an iterator over all occurrences of a pattern with custom processing logic.
     fn find_all_with<O, F, H>(
         &mut self,
         pat: impl Regex<Self>,

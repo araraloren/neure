@@ -2,11 +2,12 @@ use core::marker::PhantomData;
 
 use crate::ctx::Context;
 use crate::ctx::Match;
-use crate::span::Span;
-use crate::ctx::new_span_inc;
 use crate::err::Error;
 use crate::regex::Regex;
+use crate::span::Span;
 
+/// A guard that temporarily holds a mutable reference to a [`Context`] and automatically
+/// rolls back its internal offset on error.
 #[derive(Debug)]
 pub struct CtxGuard<'a, 'b, C>
 where
@@ -36,18 +37,17 @@ where
         }
     }
 
+    /// Returns the offset at which this guard was created (the backtrack point).
     pub fn beg(&self) -> usize {
         self.offset
     }
 
+    /// Returns the current offset of the underlying context (may have advanced).
     pub fn end(&self) -> usize {
         self.ctx.offset()
     }
 
-    // pub(crate) fn remaining_len(&self) -> usize {
-    //     self.ctx.len() - self.beg()
-    // }
-
+    /// Returns the total length of the context (equivalent to `ctx.len()`).
     pub fn len(&self) -> usize {
         self.ctx.len()
     }
@@ -60,24 +60,31 @@ where
         self.ctx
     }
 
-    // Return `Span { beg: self.beg(), len }` and incrment the offset of `C`
+    /// Advances the context by `len` bytes and returns the corresponding [`Span`].
     pub fn inc(&mut self, len: usize) -> Span {
-        new_span_inc(self.ctx, len)
+        let span = Span::new(self.beg(), len);
+
+        self.ctx.inc(len);
+        span
     }
 
+    /// Peeks at the current position without consuming input.
     pub fn peek(&self) -> Result<<C as Context<'b>>::Iter<'b>, Error> {
         self.ctx.peek()
     }
 
+    /// Peeks at a specific offset without consuming input.
     pub fn peek_at(&self, offset: usize) -> Result<<C as Context<'b>>::Iter<'b>, Error> {
         self.ctx.peek_at(offset)
     }
 
+    /// Manually triggers a rollback: resets the context's offset to the guard's initial position.
     pub fn reset(&mut self) -> &mut Self {
         self.ctx.set_offset(self.offset);
         self
     }
 
+    /// Processes a [`Result`]: if it is an `Err`, marks the guard for rollback.
     pub fn process_ret<R>(&mut self, ret: Result<R, Error>) -> Result<R, Error> {
         if ret.is_err() {
             self.reset = true;
@@ -90,6 +97,9 @@ impl<'a, C> CtxGuard<'_, 'a, C>
 where
     C: Match<'a>,
 {
+    /// Attempts to match the given regex pattern against the context.
+    ///
+    /// On failure, automatically sets the `reset` flag so the context is rolled back on drop.
     pub fn try_mat<P: Regex<C> + ?Sized>(&mut self, pattern: &P) -> Result<Span, Error> {
         self.ctx.try_mat(pattern).inspect_err(|_| {
             self.reset = true;
@@ -101,6 +111,8 @@ impl<'b, C> Drop for CtxGuard<'_, 'b, C>
 where
     C: Context<'b>,
 {
+    /// On drop, if an error occurred (`reset == true`), restores the context's offset
+    /// to the value recorded at guard creation—enabling transparent backtracking.
     fn drop(&mut self) {
         if self.reset {
             self.ctx.set_offset(self.offset);

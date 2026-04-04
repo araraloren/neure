@@ -73,6 +73,8 @@ use crate::map::mapper;
 use crate::neu::AsciiWhiteSpace;
 use crate::neu::EmptyCond;
 use crate::neu::Many0;
+use crate::neu::Neu;
+use crate::neu::WhiteSpace;
 use crate::regex::Regex;
 use crate::regex::RegexRefAsCtor;
 use crate::span::Span;
@@ -80,6 +82,13 @@ use crate::span::Span;
 #[cfg(feature = "alloc")]
 use crate::neu::CRange;
 
+/// A trait for constructing values from pattern matches.
+///
+/// The `Ctor` trait enables the construction of typed values (`O`) from pattern
+/// matches by combining a matching operation with a [`Handler`] that processes
+/// the matched span. This provides a flexible way to extract, transform, and
+/// construct values from parsed input. `Ctor` implementations can produce any type of value,
+/// making it the foundation for building parsers that produce structured data.
 pub trait Ctor<'a, C, O, H>: Regex<C> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>;
 }
@@ -96,6 +105,18 @@ where
     }
 }
 
+/// A trait for processing matched spans into values.
+///
+/// The `Handler` trait defines how to convert a matched span (with its context)
+/// into a specific output type. This is the core abstraction for value extraction
+/// and transformation in the construction system.
+///
+/// Multiple implementations are provided for common types:
+/// - [`Extract<&str>`] extracts string slices
+/// - [`Extract<&[u8]>`] extracts byte slices
+/// - [`Extract<String>`] allocates new strings (with `alloc` feature)
+/// - [`Extract<Span>`] returns the span itself
+/// - [`Extract<()>`] discards the match (useful for validation)
 pub trait Handler<C> {
     type Out;
     type Error: Into<Error>;
@@ -318,14 +339,28 @@ where
     fn prefix<T>(self, prefix: T) -> Prefix<C, Self, T>;
 
     #[allow(clippy::type_complexity)]
-    fn skip_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item>>
+    fn skip_ws(self) -> Suffix<C, Self, Many0<C, WhiteSpace, C::Item>>
     where
-        C: Context<'a, Item = char>;
+        C: Context<'a>,
+        WhiteSpace: Neu<C::Item>;
 
     #[allow(clippy::type_complexity)]
-    fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item>>
+    fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<C::Item>, C::Item>>
     where
-        C: Context<'a, Item = u8>;
+        C: Context<'a>,
+        AsciiWhiteSpace<C::Item>: Neu<C::Item>;
+
+    #[allow(clippy::type_complexity)]
+    fn skip_ws_leading(self) -> Prefix<C, Self, Many0<C, WhiteSpace, C::Item>>
+    where
+        C: Context<'a>,
+        WhiteSpace: Neu<C::Item>;
+
+    #[allow(clippy::type_complexity)]
+    fn skip_ascii_ws_leading(self) -> Prefix<C, Self, Many0<C, AsciiWhiteSpace<C::Item>, C::Item>>
+    where
+        C: Context<'a>,
+        AsciiWhiteSpace<C::Item>: Neu<C::Item>;
 }
 
 impl<'a, C, T: Regex<C>> CtorOps<'a, C> for T
@@ -805,19 +840,56 @@ where
     ///     Ok(())
     /// # }
     /// ```
-    fn skip_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<char>, C::Item>>
+    fn skip_ws(self) -> Suffix<C, Self, Many0<C, WhiteSpace, C::Item>>
     where
-        C: Context<'a, Item = char>,
+        C: Context<'a>,
+        WhiteSpace: Neu<C::Item>,
+    {
+        Suffix::new(self, Many0::new(WhiteSpace::new(), EmptyCond))
+    }
+
+    /// A shortcut for matching trailing ascii whitespaces.
+    fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<C::Item>, C::Item>>
+    where
+        C: Context<'a>,
+        AsciiWhiteSpace<C::Item>: Neu<C::Item>,
     {
         Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 
-    /// A shortcut for matching trailing ascii whitespaces.
-    fn skip_ascii_ws(self) -> Suffix<C, Self, Many0<C, AsciiWhiteSpace<u8>, C::Item>>
+    /// A shortcut for matching leading whitespaces.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> color_eyre::Result<()> {
+    /// #     color_eyre::install()?;
+    ///     let str = "      file://";
+    ///     let val = "file://".skip_ws_leading();
+    ///
+    ///     assert_eq!(CharsCtx::new(str).ctor(&val)?, "file://");
+    ///     assert_eq!(CharsCtx::new(str).try_mat(&val)?, Span::new(0, 13));
+    ///
+    ///     Ok(())
+    /// # }
+    /// ```
+    fn skip_ws_leading(self) -> Prefix<C, Self, Many0<C, WhiteSpace, C::Item>>
     where
-        C: Context<'a, Item = u8>,
+        C: Context<'a>,
+        WhiteSpace: Neu<C::Item>,
     {
-        Suffix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
+        Prefix::new(self, Many0::new(WhiteSpace::new(), EmptyCond))
+    }
+
+    /// A shortcut for matching leading ascii whitespaces.
+    fn skip_ascii_ws_leading(self) -> Prefix<C, Self, Many0<C, AsciiWhiteSpace<C::Item>, C::Item>>
+    where
+        C: Context<'a>,
+        AsciiWhiteSpace<C::Item>: Neu<C::Item>,
+    {
+        Prefix::new(self, Many0::new(AsciiWhiteSpace::new(), EmptyCond))
     }
 }
 

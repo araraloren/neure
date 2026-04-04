@@ -11,6 +11,11 @@ use crate::err::Error;
 use crate::iter::BytesIndices;
 use crate::iter::IndexBySpan;
 
+/// A context implementation that holds a reference to data and tracks an offset.
+///
+/// [`RegexCtx`] is a lightweight, zero-cost wrapper around a reference to data (typically
+/// a byte slice or string) with an associated offset. It is the primary concrete
+/// implementation of the [`Context`] trait used for pattern matching and parsing.
 #[derive(Debug)]
 pub struct RegexCtx<'a, T>
 where
@@ -35,44 +40,75 @@ impl<'a, T> RegexCtx<'a, T>
 where
     T: ?Sized,
 {
+    /// Creates a new [`RegexCtx`] with the given data and offset set to 0.
     pub const fn new(dat: &'a T) -> Self {
         Self { dat, offset: 0 }
     }
 
+    /// Returns a reference to the underlying data.
     pub const fn dat(&self) -> &'a T {
         self.dat
     }
 
+    /// Returns the current offset.
     pub const fn offset(&self) -> usize {
         self.offset
     }
 
+    /// Replaces the underlying data with a new reference, keeping the offset unchanged.
     pub fn with_dat(mut self, dat: &'a T) -> Self {
         self.dat = dat;
         self
     }
 
+    /// Sets a new offset value, returning a new context with the same data.
     pub fn with_offset(mut self, offset: usize) -> Self {
         self.offset = offset;
         self
     }
 
+    /// Resets the context with new data and sets offset to 0.
     pub fn reset_with(&mut self, dat: &'a T) -> &mut Self {
         self.dat = dat;
         self.offset = 0;
         self
     }
 
+    /// Resets the offset to 0 without changing the data.
     pub fn reset(&mut self) -> &mut Self {
         self.offset = 0;
         self
     }
 
+    /// Creates a span storer with the specified capacity (requires `alloc` feature).
     #[cfg(feature = "alloc")]
     pub fn span_storer(&self, capacity: usize) -> crate::span::VecStorer {
         crate::span::VecStorer::new(capacity)
     }
 
+    /// Creates a temporary context and passes it to a closure.
+    ///
+    /// This is a convenience method that creates a new `RegexCtx` with offset 0
+    /// and immediately passes it to the provided closure. It's useful for
+    /// creating scoped parsing operations without explicitly managing the context.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use neure::prelude::*;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let year = RegexCtx::with("rust2026", |mut ctx| {
+    ///         let parser = neu::digit(10).many1().prefix("rust");
+    ///         let parser = parser.try_map(map::from_str::<i32>());
+    ///
+    ///         ctx.ctor(&parser)
+    ///     })?;
+    ///
+    ///     assert_eq!(year, 2026, "rust in 2026!");
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn with<F, R>(dat: &'a T, mut func: F) -> R
     where
         F: FnMut(Self) -> R,
@@ -88,7 +124,7 @@ where
     T: ?Sized,
 {
     ///
-    /// Setting a policy will invoked before any match occurs.
+    /// Wraps the context with a policy regex that will be matched before any pattern.
     ///
     /// # Example
     ///
@@ -161,6 +197,7 @@ where
 }
 
 impl<'a> RegexCtx<'a, [u8]> {
+    /// Creates a policy context that skips ASCII whitespace before pattern matching.
     pub const fn skip_ascii_whitespace(
         self,
     ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::AsciiWhiteSpace<u8>, u8>> {
@@ -172,7 +209,7 @@ impl<'a> RegexCtx<'a, [u8]> {
 
 impl<'a> RegexCtx<'a, str> {
     ///
-    /// Match the given `regex` before any match.
+    /// Creates a policy context that skips ASCII whitespace before pattern matching.
     ///
     /// # Example
     ///
@@ -288,6 +325,7 @@ impl<'a> RegexCtx<'a, str> {
 }
 
 impl<'a> RegexCtx<'a, str> {
+    /// Creates a policy context that skips Unicode whitespace before pattern matching.
     pub const fn skip_whitespace(
         self,
     ) -> PolicyCtx<Self, crate::neu::Many0<Self, crate::neu::WhiteSpace, char>> {
