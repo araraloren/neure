@@ -340,10 +340,7 @@ impl<'a> Context<'a> for RegexCtx<'a, [u8]> {
 
     type Item = u8;
 
-    type Iter<'b>
-        = BytesIndices<'b, u8>
-    where
-        Self: 'b;
+    type Iter<'b> = BytesIndices<'b, u8>;
 
     fn len(&self) -> usize {
         self.dat.len()
@@ -391,10 +388,7 @@ impl<'a> Context<'a> for RegexCtx<'a, str> {
 
     type Item = char;
 
-    type Iter<'b>
-        = CharIndices<'b>
-    where
-        Self: 'b;
+    type Iter<'b> = CharIndices<'b>;
 
     fn len(&self) -> usize {
         self.dat.len()

@@ -70,11 +70,11 @@ mod rec_sync {
             I: Ctor<'c, C, O, H> + Send + Sync + 'b,
             F: FnMut(Self::Ctor<'c, 'b, C, O, H>) -> I;
 
-        fn build<O, I, H, F>(func: F) -> Self::Ctor<'c, 'static, C, O, H>
+        fn build<'b, O, I, H, F>(func: F) -> Self::Ctor<'c, 'b, C, O, H>
         where
             H: Handler<C>,
-            I: Ctor<'c, C, O, H> + Send + Sync + 'static,
-            F: FnMut(Self::Ctor<'c, 'static, C, O, H>) -> I,
+            I: Ctor<'c, C, O, H> + Send + Sync + 'b,
+            F: FnMut(Self::Ctor<'c, 'b, C, O, H>) -> I,
         {
             Self::build_with(func)
         }

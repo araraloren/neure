@@ -187,7 +187,7 @@ impl<'a, const M: usize, const N: usize, C, U, I> Condition<'a, C> for Between<M
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
 {
     type Out<F> = Between<M, N, C, U, F>;
 
@@ -203,7 +203,7 @@ impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<'a, C, O, H> for Be
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     H: Handler<C, Out = O>,
 {
     #[inline(always)]
@@ -218,7 +218,7 @@ impl<'a, const M: usize, const N: usize, U, C, I> Regex<C> for Between<M, N, C, 
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {
@@ -393,7 +393,7 @@ impl<'a, C, U, I> Condition<'a, C> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
 {
     type Out<F> = Times<C, U, F>;
 
@@ -409,7 +409,7 @@ impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     H: Handler<C, Out = O>,
 {
     #[inline(always)]
@@ -424,7 +424,7 @@ impl<'a, U, C, I> Regex<C> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
 {
     #[inline(always)]
     fn try_parse(&self, ctx: &mut C) -> Result<Span, crate::err::Error> {

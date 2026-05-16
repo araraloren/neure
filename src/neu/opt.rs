@@ -172,7 +172,7 @@ where
 
 impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Opt<C, U, C::Item, I>
 where
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Match<'a>,
@@ -188,7 +188,7 @@ where
 
 impl<'a, U, C, I> Regex<C> for Opt<C, U, C::Item, I>
 where
-    C: Context<'a> + 'a,
+    C: Context<'a>,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
@@ -368,7 +368,7 @@ where
 
 impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Many0<C, U, C::Item, I>
 where
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
     C: Match<'a>,
@@ -384,7 +384,7 @@ where
 
 impl<'a, U, C, I> Regex<C> for Many0<C, U, C::Item, I>
 where
-    C: Context<'a> + 'a,
+    C: Context<'a>,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {

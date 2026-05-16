@@ -148,7 +148,7 @@ where
 impl<'a, C, U, I> Condition<'a, C> for Once<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
 {
     type Out<F> = Once<C, U, C::Item, F>;
 
@@ -164,7 +164,7 @@ impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Once<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     H: Handler<C, Out = O>,
 {
     #[inline(always)]
@@ -177,7 +177,7 @@ where
 
 impl<'a, U, C, I> Regex<C> for Once<C, U, C::Item, I>
 where
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {
@@ -342,7 +342,7 @@ where
 impl<'a, C, U, I> Condition<'a, C> for Many1<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
 {
     type Out<F> = Many1<C, U, C::Item, F>;
 
@@ -358,7 +358,7 @@ impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Many1<C, U, C::Item, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     H: Handler<C, Out = O>,
 {
     #[inline(always)]
@@ -371,7 +371,7 @@ where
 
 impl<'a, U, C, I> Regex<C> for Many1<C, U, C::Item, I>
 where
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
 {

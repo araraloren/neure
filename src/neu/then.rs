@@ -165,7 +165,7 @@ impl<'a, C, L, R, I> Condition<'a, C> for NeureThen<C, L, R, C::Item, I>
 where
     L: Neu<C::Item>,
     R: Neu<C::Item>,
-    C: Context<'a> + 'a,
+    C: Context<'a>,
 {
     type Out<F> = NeureThen<C, L, R, C::Item, F>;
 
@@ -182,7 +182,7 @@ where
     L: Neu<C::Item>,
     R: Neu<C::Item>,
     I: NeuCond<'a, C>,
-    C: Match<'a> + 'a,
+    C: Match<'a>,
     H: Handler<C, Out = O>,
 {
     #[inline(always)]
@@ -195,7 +195,7 @@ where
 
 impl<'a, L, R, C, I> Regex<C> for NeureThen<C, L, R, C::Item, I>
 where
-    C: Context<'a> + 'a,
+    C: Context<'a>,
     L: Neu<C::Item>,
     R: Neu<C::Item>,
     I: NeuCond<'a, C>,

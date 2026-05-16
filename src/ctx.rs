@@ -36,9 +36,7 @@ pub trait Context<'a> {
     type Item: MayDebug;
 
     /// An iterator type that yields `(offset, Item)` pairs.
-    type Iter<'b>: Iterator<Item = (usize, Self::Item)>
-    where
-        Self: 'b;
+    type Iter<'b>: Iterator<Item = (usize, Self::Item)>;
 
     /// Returns the total length of the underlying data in bytes.
     fn len(&self) -> usize;

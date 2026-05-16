@@ -89,17 +89,14 @@ impl<I, R> PolicyCtx<I, R> {
 
 impl<'a, I, R> Context<'a> for PolicyCtx<I, R>
 where
-    R: Clone + 'a,
+    R: Clone,
     I: Context<'a>,
 {
     type Orig<'b> = <I as Context<'a>>::Orig<'b>;
 
     type Item = <I as Context<'a>>::Item;
 
-    type Iter<'b>
-        = <I as Context<'a>>::Iter<'b>
-    where
-        Self: 'b;
+    type Iter<'b> = <I as Context<'a>>::Iter<'b>;
 
     fn len(&self) -> usize {
         Context::len(&self.inner)

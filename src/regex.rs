@@ -428,7 +428,7 @@ pub const fn count_if<'a, const M: usize, const N: usize, C, U, F>(
     cond: F,
 ) -> crate::neu::Between<M, N, C, U, F>
 where
-    C: Context<'a> + 'a,
+    C: Context<'a>,
     U: Neu<C::Item>,
     F: crate::neu::NeuCond<'a, C>,
 {
