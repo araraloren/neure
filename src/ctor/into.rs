@@ -34,19 +34,19 @@ where
     fn into_mutex(self) -> Adapter<C, crate::std::Mutex<Self>>;
 
     #[cfg(feature = "alloc")]
-    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>>
+    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, alloc::Box<dyn Ctor<C, O, H> + 'b>>
     where
-        Self: Ctor<'a, C, O, H> + 'b;
+        Self: Ctor<C, O, H> + 'b;
 
     #[cfg(feature = "alloc")]
-    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>>
+    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Arc<dyn Ctor<C, O, H> + 'b>>
     where
-        Self: Ctor<'a, C, O, H> + 'b;
+        Self: Ctor<C, O, H> + 'b;
 
     #[cfg(feature = "alloc")]
-    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
+    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Rc<dyn Ctor<C, O, H> + 'b>>
     where
-        Self: Ctor<'a, C, O, H> + 'b;
+        Self: Ctor<C, O, H> + 'b;
 }
 
 impl<C, T> CtorIntoHelper<C> for T
@@ -153,25 +153,25 @@ where
     /// # }
     /// ```
     #[cfg(feature = "alloc")]
-    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>>
+    fn into_dyn<'a, 'b, O, H>(self) -> Adapter<C, alloc::Box<dyn Ctor<C, O, H> + 'b>>
     where
-        Self: Ctor<'a, C, O, H> + 'b,
+        Self: Ctor<C, O, H> + 'b,
     {
         Adapter::dyn_box(self)
     }
 
     #[cfg(feature = "alloc")]
-    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>>
+    fn into_dyn_arc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Arc<dyn Ctor<C, O, H> + 'b>>
     where
-        Self: Ctor<'a, C, O, H> + 'b,
+        Self: Ctor<C, O, H> + 'b,
     {
         Adapter::dyn_arc(self)
     }
 
     #[cfg(feature = "alloc")]
-    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + 'b>>
+    fn into_dyn_rc<'a, 'b, O, H>(self) -> Adapter<C, alloc::Rc<dyn Ctor<C, O, H> + 'b>>
     where
-        Self: Ctor<'a, C, O, H> + 'b,
+        Self: Ctor<C, O, H> + 'b,
     {
         Adapter::dyn_rc(self)
     }

@@ -135,9 +135,9 @@ impl<T> Deref for Slice<'_, T> {
     }
 }
 
-impl<'a, C, T, O, H> Ctor<'a, C, O, H> for Slice<'_, T>
+impl<'a, C, T, O, H> Ctor<C, O, H> for Slice<'_, T>
 where
-    T: Ctor<'a, C, O, H>,
+    T: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
@@ -245,7 +245,7 @@ where
 /// The cloned associated value `V` provides semantic meaning without consuming the original mapping.
 /// This enables patterns to carry metadata like:
 /// - Token types in lexers
-/// - Precedence levels in parsers  
+/// - Precedence levels in parsers
 /// - Handler functions in routers
 /// - State transitions in state machines
 ///
@@ -310,10 +310,10 @@ impl<K, V> Deref for PairSlice<'_, K, V> {
     }
 }
 
-impl<'a, C, K, O, V, H> Ctor<'a, C, (O, V), H> for PairSlice<'_, K, V>
+impl<'a, C, K, O, V, H> Ctor<C, (O, V), H> for PairSlice<'_, K, V>
 where
     V: Clone,
-    K: Ctor<'a, C, O, H>,
+    K: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

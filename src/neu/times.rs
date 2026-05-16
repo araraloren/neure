@@ -199,7 +199,7 @@ where
     }
 }
 
-impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<'a, C, O, H> for Between<M, N, C, U, I>
+impl<'a, const M: usize, const N: usize, U, C, O, I, H> Ctor<C, O, H> for Between<M, N, C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,
@@ -405,7 +405,7 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Times<C, U, I>
+impl<'a, U, C, O, I, H> Ctor<C, O, H> for Times<C, U, I>
 where
     U: Neu<C::Item>,
     I: NeuCond<'a, C>,

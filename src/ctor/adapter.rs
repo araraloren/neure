@@ -148,7 +148,7 @@ where
     }
 }
 
-impl<'a, C, O, F, H> Ctor<'a, C, O, H> for CtorOnlyFunAdapter<C, F, O, H>
+impl<C, O, F, H> Ctor<C, O, H> for CtorOnlyFunAdapter<C, F, O, H>
 where
     F: Fn(&mut C, &mut H) -> Result<O, Error>,
 {
@@ -411,8 +411,8 @@ impl<C, T> Adapter<C, core::cell::RefCell<T>> {
 /// # }
 /// ```
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>> {
-    pub fn dyn_box(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<C, O, H> + 'b>> {
+    pub fn dyn_box(ctor: impl Ctor<C, O, H> + 'b) -> Self {
         Self::new(alloc::Box::new(ctor))
     }
 }
@@ -448,8 +448,8 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + 'b>> {
 /// # }
 /// ```
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + 'b>> {
-    pub fn dyn_box_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<C, O, H> + Send + 'b>> {
+    pub fn dyn_box_send(ctor: impl Ctor<C, O, H> + Send + 'b) -> Self {
         Self::new(alloc::Box::new(ctor))
     }
 }
@@ -458,8 +458,8 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + 'b>> 
 /// Return a type that wrap `dyn Ctor + Send + Sync` with [`Box`](crate::alloc::Box).
 ///
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
-    pub fn dyn_box_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<C, O, H> + Send + Sync + 'b>> {
+    pub fn dyn_box_sync(ctor: impl Ctor<C, O, H> + Send + Sync + 'b) -> Self {
         Self::new(alloc::Box::new(ctor))
     }
 }
@@ -488,8 +488,8 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Box<dyn Ctor<'a, C, O, H> + Send + Sync 
 /// # }
 /// ```
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>> {
-    pub fn dyn_arc(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<C, O, H> + 'b>> {
+    pub fn dyn_arc(ctor: impl Ctor<C, O, H> + 'b) -> Self {
         Self::new(alloc::Arc::new(ctor))
     }
 }
@@ -498,8 +498,8 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + 'b>> {
 /// Return a type that wrap `dyn Ctor + Send` with [`alloc::Arc`].
 ///
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
-    pub fn dyn_arc_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<C, O, H> + Send + 'b>> {
+    pub fn dyn_arc_send(ctor: impl Ctor<C, O, H> + Send + 'b) -> Self {
         Self::new(alloc::Arc::new(ctor))
     }
 }
@@ -533,8 +533,8 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + 'b>> 
 /// # }
 /// ```
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>> {
-    pub fn dyn_arc_sync(ctor: impl Ctor<'a, C, O, H> + Send + Sync + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<C, O, H> + Send + Sync + 'b>> {
+    pub fn dyn_arc_sync(ctor: impl Ctor<C, O, H> + Send + Sync + 'b) -> Self {
         Self::new(alloc::Arc::new(ctor))
     }
 }
@@ -566,15 +566,15 @@ impl<'a, 'b, C, O, H> Adapter<C, alloc::Arc<dyn Ctor<'a, C, O, H> + Send + Sync 
 /// # }
 /// ```
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + 'b>> {
-    pub fn dyn_rc(ctor: impl Ctor<'a, C, O, H> + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Rc<dyn Ctor<C, O, H> + 'b>> {
+    pub fn dyn_rc(ctor: impl Ctor<C, O, H> + 'b) -> Self {
         Self::new(alloc::Rc::new(ctor))
     }
 }
 
 #[cfg(feature = "alloc")]
-impl<'a, 'b, C, O, H> Adapter<C, alloc::Rc<dyn Ctor<'a, C, O, H> + Send + 'b>> {
-    pub fn dyn_rc_send(ctor: impl Ctor<'a, C, O, H> + Send + 'b) -> Self {
+impl<'b, C, O, H> Adapter<C, alloc::Rc<dyn Ctor<C, O, H> + Send + 'b>> {
+    pub fn dyn_rc_send(ctor: impl Ctor<C, O, H> + Send + 'b) -> Self {
         Self::new(alloc::Rc::new(ctor))
     }
 }
@@ -589,9 +589,9 @@ where
     }
 }
 
-impl<'a, C, O, H, I> Ctor<'a, C, O, H> for Adapter<C, I>
+impl<C, O, H, I> Ctor<C, O, H> for Adapter<C, I>
 where
-    I: Ctor<'a, C, O, H>,
+    I: Ctor<C, O, H>,
 {
     #[inline(always)]
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
@@ -600,30 +600,30 @@ where
 }
 
 /// [`DynRefAdapter`] implement [`Ctor`] for dynamic reference of [`Ctor`]
-pub struct DynRefAdapter<'a, 'b, C, O, H> {
-    inner: &'b dyn Ctor<'a, C, O, H>,
+pub struct DynRefAdapter<'b, C, O, H> {
+    inner: &'b dyn Ctor<C, O, H>,
 }
-impl<'a, 'b, C, O, H> Clone for DynRefAdapter<'a, 'b, C, O, H> {
+impl<'b, C, O, H> Clone for DynRefAdapter<'b, C, O, H> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<'a, 'b, C, O, H> Copy for DynRefAdapter<'a, 'b, C, O, H> {}
+impl<'b, C, O, H> Copy for DynRefAdapter<'b, C, O, H> {}
 
-impl<'a, 'b, C, O, H> DynRefAdapter<'a, 'b, C, O, H> {
-    pub const fn new<T: Ctor<'a, C, O, H>>(inner: &'b T) -> Self {
+impl<'b, C, O, H> DynRefAdapter<'b, C, O, H> {
+    pub const fn new<T: Ctor<C, O, H>>(inner: &'b T) -> Self {
         Self { inner }
     }
 }
 
-impl<'a, 'b, C, O, H> Regex<C> for DynRefAdapter<'a, 'b, C, O, H> {
+impl<'b, C, O, H> Regex<C> for DynRefAdapter<'b, C, O, H> {
     fn try_parse(&self, ctx: &mut C) -> Result<Span, Error> {
         Regex::try_parse(self.inner, ctx)
     }
 }
 
-impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for DynRefAdapter<'a, 'b, C, O, H> {
+impl<'b, C, O, H> Ctor<C, O, H> for DynRefAdapter<'b, C, O, H> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(self.inner, ctx, handler)
     }
@@ -682,9 +682,9 @@ mod box_adapter {
         }
     }
 
-    impl<'a, C, O, I, H> Ctor<'a, C, O, H> for BoxAdapter<C, I>
+    impl<C, O, I, H> Ctor<C, O, H> for BoxAdapter<C, I>
     where
-        I: Ctor<'a, C, O, H>,
+        I: Ctor<C, O, H>,
     {
         #[inline(always)]
         fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {

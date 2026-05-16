@@ -209,10 +209,10 @@ impl<C, L, S, R> SepOnce<C, L, S, R> {
     }
 }
 
-impl<'a, C, L, S, R, O1, O2, H> Ctor<'a, C, (O1, O2), H> for SepOnce<C, L, S, R>
+impl<'a, C, L, S, R, O1, O2, H> Ctor< C, (O1, O2), H> for SepOnce<C, L, S, R>
 where
-    L: Ctor<'a, C, O1, H>,
-    R: Ctor<'a, C, O2, H>,
+    L: Ctor< C, O1, H>,
+    R: Ctor< C, O2, H>,
     S: Regex<C>,
     C: Match<'a>,
     H: Handler<C>,
@@ -494,9 +494,9 @@ mod alloc_sep {
         }
     }
 
-    impl<'a, C, S, P, O, H> Ctor<'a, C, crate::alloc::Vec<O>, H> for Separate<C, P, S>
+    impl<'a, C, S, P, O, H> Ctor< C, crate::alloc::Vec<O>, H> for Separate<C, P, S>
     where
-        P: Ctor<'a, C, O, H>,
+        P: Ctor< C, O, H>,
         S: Regex<C>,
         C: Match<'a>,
         H: Handler<C>,
@@ -773,10 +773,10 @@ impl<C, P, S, const M: usize, const N: usize> Separate2<C, P, S, M, N> {
     }
 }
 
-impl<'a, C, S, P, O, H, const M: usize, const N: usize> Ctor<'a, C, [Option<O>; N], H>
+impl<'a, C, S, P, O, H, const M: usize, const N: usize> Ctor< C, [Option<O>; N], H>
     for Separate2<C, P, S, M, N>
 where
-    P: Ctor<'a, C, O, H>,
+    P: Ctor< C, O, H>,
     S: Regex<C>,
     C: Match<'a>,
     H: Handler<C>,
@@ -1082,10 +1082,10 @@ impl<C, P, S, O, V> SepCollect<C, P, S, O, V> {
     }
 }
 
-impl<'a, C, S, P, O, V, H> Ctor<'a, C, V, H> for SepCollect<C, P, S, O, V>
+impl<'a, C, S, P, O, V, H> Ctor< C, V, H> for SepCollect<C, P, S, O, V>
 where
     V: FromIterator<O>,
-    P: Ctor<'a, C, O, H>,
+    P: Ctor< C, O, H>,
     S: Regex<C>,
     C: Match<'a>,
     H: Handler<C>,

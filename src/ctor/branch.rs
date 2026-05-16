@@ -209,10 +209,10 @@ impl<C, P, F, E> Branch<C, P, F, E> {
     }
 }
 
-impl<'a, C, P, F, E, O, H> Ctor<'a, C, O, H> for Branch<C, P, F, E>
+impl<'a, C, P, F, E, O, H> Ctor<C, O, H> for Branch<C, P, F, E>
 where
-    P: Ctor<'a, C, O, H>,
-    E: Ctor<'a, C, O, H>,
+    P: Ctor<C, O, H>,
+    E: Ctor<C, O, H>,
     C: Match<'a>,
     F: Fn(&C) -> Result<bool, Error>,
     H: Handler<C>,

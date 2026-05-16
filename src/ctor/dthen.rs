@@ -205,11 +205,11 @@ where
     }
 }
 
-impl<'a, C, P, F, T, O1, O2, H> Ctor<'a, C, (O1, O2), H> for DynamicCtorThenBuilder<C, P, F>
+impl<'a, C, P, F, T, O1, O2, H> Ctor<C, (O1, O2), H> for DynamicCtorThenBuilder<C, P, F>
 where
     C: Match<'a>,
-    P: Ctor<'a, C, O1, H>,
-    T: Ctor<'a, C, O2, H>,
+    P: Ctor<C, O1, H>,
+    T: Ctor<C, O2, H>,
     F: Fn(&mut C, &O1) -> Result<T, Error>,
     H: Handler<C>,
 {

@@ -204,9 +204,9 @@ impl<C, P> Repeat<C, P> {
     }
 }
 
-impl<'a, C, P, O, H> Ctor<'a, C, crate::alloc::Vec<O>, H> for Repeat<C, P>
+impl<'a, C, P, O, H> Ctor< C, crate::alloc::Vec<O>, H> for Repeat<C, P>
 where
-    P: Ctor<'a, C, O, H>,
+    P: Ctor< C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

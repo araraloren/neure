@@ -69,7 +69,7 @@ impl<T> Assert<T> {
 
 impl_not_for_regex!(Assert<T>);
 
-impl<'a, C, O, T, H> Ctor<'a, C, O, H> for Assert<T>
+impl<'a, C, O, T, H> Ctor< C, O, H> for Assert<T>
 where
     T: Regex<C>,
     C: Match<'a>,

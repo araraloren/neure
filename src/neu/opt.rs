@@ -170,7 +170,7 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Opt<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<C, O, H> for Opt<C, U, C::Item, I>
 where
     C: Match<'a>,
     U: Neu<C::Item>,
@@ -366,7 +366,7 @@ where
     }
 }
 
-impl<'a, U, C, O, I, H> Ctor<'a, C, O, H> for Many0<C, U, C::Item, I>
+impl<'a, U, C, O, I, H> Ctor<C, O, H> for Many0<C, U, C::Item, I>
 where
     C: Match<'a>,
     U: Neu<C::Item>,

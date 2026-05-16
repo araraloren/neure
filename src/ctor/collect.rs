@@ -155,10 +155,10 @@ impl<C, P, O, V> Collect<C, P, O, V> {
     }
 }
 
-impl<'a, C, P, O, V, H> Ctor<'a, C, V, H> for Collect<C, P, O, V>
+impl<'a, C, P, O, V, H> Ctor< C, V, H> for Collect<C, P, O, V>
 where
     V: FromIterator<O>,
-    P: Ctor<'a, C, O, H>,
+    P: Ctor< C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

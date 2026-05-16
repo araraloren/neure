@@ -55,7 +55,7 @@ impl Consume {
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, H> for Consume
+impl<'a, C, O, H> Ctor<C, O, H> for Consume
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,
@@ -152,7 +152,7 @@ impl ConsumeAll {
     }
 }
 
-impl<'a, C, O, H> Ctor<'a, C, O, H> for ConsumeAll
+impl<'a, C, O, H> Ctor<C, O, H> for ConsumeAll
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,

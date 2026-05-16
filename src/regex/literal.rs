@@ -81,7 +81,7 @@ impl<'a, T: ?Sized> Literal<'a, T> {
     }
 }
 
-impl<'a, C, O, T, H> Ctor<'a, C, O, H> for Literal<'_, T>
+impl<'a, C, O, T, H> Ctor<C, O, H> for Literal<'_, T>
 where
     T: ?Sized + LiteralTy + 'a,
     H: Handler<C, Out = O>,

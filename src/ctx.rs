@@ -293,7 +293,7 @@ where
     /// extraction/transformation (via the handler).
     fn ctor_handler<H, P, O>(&mut self, pat: &P, mut handler: H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, O, H>,
+        P: Ctor<Self, O, H>,
         H: Handler<Self>,
     {
         pat.construct(self, &mut handler)
@@ -306,7 +306,7 @@ where
     /// and matched span and returns a [`Result`].
     fn ctor_with<H, P, O, R>(&mut self, pat: &P, handler: H) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, O, H>,
+        P: Ctor<Self, O, H>,
         H: FnMut(&Self, &Span) -> Result<R, Error>,
     {
         self.ctor_handler(pat, handler)
@@ -320,7 +320,7 @@ where
     /// itself handles all the transformation logic.
     fn ctor_span<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, O, Extract<Span>>,
+        P: Ctor<Self, O, Extract<Span>>,
     {
         self.ctor_handler(pat, extract())
     }
@@ -348,7 +348,7 @@ where
     /// ```
     fn ctor<P, O>(&mut self, pat: &P) -> Result<O, Error>
     where
-        P: Ctor<'a, Self, O, Extract<Self::Orig<'a>>>,
+        P: Ctor<Self, O, Extract<Self::Orig<'a>>>,
         Extract<Self::Orig<'a>>: Handler<Self>,
     {
         self.ctor_handler(pat, extract())

@@ -128,9 +128,9 @@ impl<T> DerefMut for Vector<T> {
     }
 }
 
-impl<'a, C, T, O, H> Ctor<'a, C, O, H> for Vector<T>
+impl<'a, C, T, O, H> Ctor<C, O, H> for Vector<T>
 where
-    T: Ctor<'a, C, O, H>,
+    T: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
@@ -298,10 +298,10 @@ impl<T, V> DerefMut for PairVector<T, V> {
     }
 }
 
-impl<'a, C, T, O, V, H> Ctor<'a, C, (O, V), H> for PairVector<T, V>
+impl<'a, C, T, O, V, H> Ctor<C, (O, V), H> for PairVector<T, V>
 where
     V: Clone,
-    T: Ctor<'a, C, O, H>,
+    T: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

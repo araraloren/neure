@@ -185,10 +185,10 @@ impl<C, L, R> LongestTokenMatch<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, O, H> Ctor<'a, C, O, H> for LongestTokenMatch<C, L, R>
+impl<'a, C, L, R, O, H> Ctor< C, O, H> for LongestTokenMatch<C, L, R>
 where
-    L: Ctor<'a, C, O, H>,
-    R: Ctor<'a, C, O, H>,
+    L: Ctor< C, O, H>,
+    R: Ctor< C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

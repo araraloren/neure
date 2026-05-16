@@ -150,10 +150,10 @@ impl<C, P, const M: usize, const N: usize> Repeat2<C, P, M, N> {
     }
 }
 
-impl<'a, C, P, const M: usize, const N: usize, O, H> Ctor<'a, C, [Option<O>; N], H>
+impl<'a, C, P, const M: usize, const N: usize, O, H> Ctor<C, [Option<O>; N], H>
     for Repeat2<C, P, M, N>
 where
-    P: Ctor<'a, C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

@@ -170,11 +170,11 @@ mod alloc_regex_impls {
 
     impl_dyn_regex!(Box<dyn Regex<C> + Send + Sync + 'b>);
 
-    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
+    impl_dyn_ctor!(Box<dyn Ctor<C, O, H> + 'b>);
 
-    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
+    impl_dyn_ctor!(Box<dyn Ctor<C, O, H> + Send + 'b>);
 
-    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+    impl_dyn_ctor!(Box<dyn Ctor<C, O, H> + Send + Sync + 'b>);
 
     impl_dyn_regex!(Arc<dyn Regex<C> + 'b>);
 
@@ -182,19 +182,19 @@ mod alloc_regex_impls {
 
     impl_dyn_regex!(Arc<dyn Regex<C> + Send + Sync + 'b>);
 
-    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
+    impl_dyn_ctor!(Arc<dyn Ctor<C, O, H> + 'b>);
 
-    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+    impl_dyn_ctor!(Arc<dyn Ctor<C, O, H> + Send + 'b>);
 
-    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+    impl_dyn_ctor!(Arc<dyn Ctor<C, O, H> + Send + Sync + 'b>);
 
     impl_dyn_regex!(Rc<dyn Regex<C> + 'b>);
 
     impl_dyn_regex!(Rc<dyn Regex<C> + Send + 'b>);
 
-    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
+    impl_dyn_ctor!(Rc<dyn Ctor<C, O, H> + 'b>);
 
-    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+    impl_dyn_ctor!(Rc<dyn Ctor<C, O, H> + Send + 'b>);
 }
 
 impl_orig_regex!(self_, &literal(*self_), &str, str);

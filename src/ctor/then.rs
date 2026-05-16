@@ -207,10 +207,10 @@ impl<C, L, R> Then<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, O1, O2, H> Ctor<'a, C, (O1, O2), H> for Then<C, L, R>
+impl<'a, C, L, R, O1, O2, H> Ctor<C, (O1, O2), H> for Then<C, L, R>
 where
-    L: Ctor<'a, C, O1, H>,
-    R: Ctor<'a, C, O2, H>,
+    L: Ctor<C, O1, H>,
+    R: Ctor<C, O2, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
@@ -441,10 +441,10 @@ impl<C, L, I, R> IfThen<C, L, I, R> {
     }
 }
 
-impl<'a, C, L, I, R, O1, O2, H> Ctor<'a, C, (O1, Option<O2>), H> for IfThen<C, L, I, R>
+impl<'a, C, L, I, R, O1, O2, H> Ctor<C, (O1, Option<O2>), H> for IfThen<C, L, I, R>
 where
-    L: Ctor<'a, C, O1, H>,
-    R: Ctor<'a, C, O2, H>,
+    L: Ctor<C, O1, H>,
+    R: Ctor<C, O2, H>,
     I: Regex<C>,
     C: Match<'a>,
     H: Handler<C>,

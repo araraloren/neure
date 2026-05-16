@@ -206,11 +206,11 @@ impl<C, P, L, R> Enclose<C, P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P, O, H> Ctor<'a, C, O, H> for Enclose<C, P, L, R>
+impl<'a, C, L, R, P, O, H> Ctor< C, O, H> for Enclose<C, P, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    P: Ctor<'a, C, O, H>,
+    P: Ctor< C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

@@ -463,7 +463,7 @@ where
     }
 }
 
-impl<'a, C, O, H, I> Ctor<'a, C, O, H> for Adapter<C, I>
+impl<'a, C, O, H, I> Ctor<C, O, H> for Adapter<C, I>
 where
     I: Regex<C>,
     C: Match<'a>,
@@ -510,7 +510,7 @@ where
     }
 }
 
-impl<'c, 'a, C, O, T, H> Ctor<'c, C, O, H> for RefAdapter<'a, C, T>
+impl<'c, 'a, C, O, T, H> Ctor<C, O, H> for RefAdapter<'a, C, T>
 where
     C: Match<'c>,
     T: Regex<C> + ?Sized,
@@ -548,7 +548,7 @@ impl<'a, C> Regex<C> for DynRefAdapter<'a, C> {
     }
 }
 
-impl<'c, 'a, C, O, H> Ctor<'c, C, O, H> for DynRefAdapter<'a, C>
+impl<'c, 'a, C, O, H> Ctor<C, O, H> for DynRefAdapter<'a, C>
 where
     C: Match<'c>,
     H: Handler<C, Out = O>,
@@ -618,7 +618,7 @@ mod box_adapter {
         }
     }
 
-    impl<'a, C, O, T, H> Ctor<'a, C, O, H> for BoxAdapter<C, T>
+    impl<'a, C, O, T, H> Ctor<C, O, H> for BoxAdapter<C, T>
     where
         T: Regex<C>,
         C: Match<'a>,

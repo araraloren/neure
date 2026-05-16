@@ -89,12 +89,12 @@ use crate::neu::CRange;
 /// the matched span. This provides a flexible way to extract, transform, and
 /// construct values from parsed input. `Ctor` implementations can produce any type of value,
 /// making it the foundation for building parsers that produce structured data.
-pub trait Ctor<'a, C, O, H>: Regex<C> {
+pub trait Ctor<C, O, H>: Regex<C> {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error>;
 }
 
 // Can't impl for F(&mut C, &mut H), cause F can't impl Regex<C>, put it in Adapter::func
-impl<'a, C, O, H, F> Ctor<'a, C, O, H> for F
+impl<'a, C, O, H, F> Ctor<C, O, H> for F
 where
     C: Match<'a>,
     H: Handler<C, Out = O>,
@@ -138,7 +138,7 @@ where
 
 macro_rules! impl_orig_ctor {
     ($type:ty, $orig:ty) => {
-        impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type
+        impl<'a, 'b, C, O, H> Ctor<C, O, H> for $type
         where
             C: Context<'a, Orig<'a> = &'a $orig> + Match<'a>,
             H: Handler<C, Out = O>,
@@ -152,9 +152,9 @@ macro_rules! impl_orig_ctor {
 
 macro_rules! impl_forward_ctor {
     ($self:ident, $regex:expr, $type:ty) => {
-        impl<'a, 'b, C, O, I, H> Ctor<'a, C, O, H> for $type
+        impl<'a, 'b, C, O, I, H> Ctor<C, O, H> for $type
         where
-            I: Ctor<'a, C, O, H>,
+            I: Ctor<C, O, H>,
         {
             fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
                 let $self = self;
@@ -183,7 +183,7 @@ mod alloc_ctor_impls {
 
     macro_rules! impl_as_ctor {
         ($self:ident, $regex:expr, $type:ty) => {
-            impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type
+            impl<'a, 'b, C, O, H> Ctor<C, O, H> for $type
             where
                 C: Match<'a>,
                 H: Handler<C, Out = O>,
@@ -221,7 +221,7 @@ mod alloc_ctor_impls {
 
     macro_rules! impl_dyn_ctor {
         ( $type:ty) => {
-            impl<'a, 'b, C, O, H> Ctor<'a, C, O, H> for $type {
+            impl<'a, 'b, C, O, H> Ctor<C, O, H> for $type {
                 fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
                     Ctor::construct(self.as_ref(), ctx, handler)
                 }
@@ -229,28 +229,28 @@ mod alloc_ctor_impls {
         };
     }
 
-    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + 'b>);
+    impl_dyn_ctor!(Box<dyn Ctor<C, O, H> + 'b>);
 
-    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + 'b>);
+    impl_dyn_ctor!(Box<dyn Ctor<C, O, H> + Send + 'b>);
 
-    impl_dyn_ctor!(Box<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+    impl_dyn_ctor!(Box<dyn Ctor<C, O, H> + Send + Sync + 'b>);
 
-    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + 'b>);
+    impl_dyn_ctor!(Arc<dyn Ctor<C, O, H> + 'b>);
 
-    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+    impl_dyn_ctor!(Arc<dyn Ctor<C, O, H> + Send + 'b>);
 
-    impl_dyn_ctor!(Arc<dyn Ctor<'a, C, O, H> + Send + Sync + 'b>);
+    impl_dyn_ctor!(Arc<dyn Ctor<C, O, H> + Send + Sync + 'b>);
 
-    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + 'b>);
+    impl_dyn_ctor!(Rc<dyn Ctor<C, O, H> + 'b>);
 
-    impl_dyn_ctor!(Rc<dyn Ctor<'a, C, O, H> + Send + 'b>);
+    impl_dyn_ctor!(Rc<dyn Ctor<C, O, H> + Send + 'b>);
 }
 
 impl_orig_ctor!(&'_ str, str);
 
 impl_orig_ctor!(&'_ [u8], [u8]);
 
-impl<'a, const N: usize, C, O, H> Ctor<'a, C, O, H> for &[u8; N]
+impl<'a, const N: usize, C, O, H> Ctor<C, O, H> for &[u8; N]
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<C, Out = O>,
@@ -260,7 +260,7 @@ where
     }
 }
 
-impl<'a, const N: usize, C, O, H> Ctor<'a, C, O, H> for [u8; N]
+impl<'a, const N: usize, C, O, H> Ctor<C, O, H> for [u8; N]
 where
     C: Context<'a, Orig<'a> = &'a [u8]> + Match<'a>,
     H: Handler<C, Out = O>,
@@ -281,9 +281,9 @@ impl_forward_ctor!(
     crate::std::Mutex<I>
 );
 
-impl<'a, C, O, I, H> Ctor<'a, C, O, H> for Cell<I>
+impl<C, O, I, H> Ctor<C, O, H> for Cell<I>
 where
-    I: Ctor<'a, C, O, H> + Copy,
+    I: Ctor<C, O, H> + Copy,
 {
     fn construct(&self, ctx: &mut C, handler: &mut H) -> Result<O, Error> {
         Ctor::construct(&self.get(), ctx, handler)
@@ -893,18 +893,18 @@ where
     }
 }
 
-pub trait CtorRefAsDynCtor<'a, C, O, H>
+pub trait CtorRefAsDynCtor<C, O, H>
 where
-    Self: Ctor<'a, C, O, H>,
+    Self: Ctor<C, O, H>,
 {
-    fn as_dyn_ctor(&self) -> DynRefAdapter<'a, '_, C, O, H>;
+    fn as_dyn_ctor(&self) -> DynRefAdapter<'_, C, O, H>;
 }
 
-impl<'a, C, O, H, T> CtorRefAsDynCtor<'a, C, O, H> for T
+impl<C, O, H, T> CtorRefAsDynCtor<C, O, H> for T
 where
-    Self: Ctor<'a, C, O, H>,
+    Self: Ctor<C, O, H>,
 {
-    fn as_dyn_ctor(&self) -> DynRefAdapter<'a, '_, C, O, H> {
+    fn as_dyn_ctor(&self) -> DynRefAdapter<'_, C, O, H> {
         DynRefAdapter::new(self)
     }
 }
@@ -915,7 +915,7 @@ pub(crate) fn handler<'a, C, T, P, O, H, A, B, R>(
     r2r: B,
 ) -> impl Fn(&[T], &mut C, &mut H) -> Result<R, Error>
 where
-    P: Ctor<'a, C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
     A: Fn(&T) -> &P,
@@ -945,7 +945,7 @@ pub(crate) fn handler_ltm<'a, C, T, P, O, H, A, B, R>(
     r2r: B,
 ) -> impl Fn(&[T], &mut C, &mut H) -> Result<R, Error>
 where
-    P: Ctor<'a, C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
     A: Fn(&T) -> &P,
