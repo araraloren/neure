@@ -81,9 +81,9 @@ impl<'a, T: ?Sized> Literal<'a, T> {
     }
 }
 
-impl<'a, C, O, T, H> Ctor<C, O, H> for Literal<'_, T>
+impl<'a, 'b, C, O, T, H> Ctor<C, O, H> for Literal<'b, T>
 where
-    T: ?Sized + LiteralTy,
+    T: ?Sized + LiteralTy + 'b,
     H: Handler<C, Out = O>,
     C: Match<'a, Orig<'a> = <T as LiteralTy>::Orig<'a>>,
 {
@@ -95,9 +95,9 @@ where
     }
 }
 
-impl<'a, C, T> Regex<C> for Literal<'_, T>
+impl<'a, 'b, C, T> Regex<C> for Literal<'b, T>
 where
-    T: ?Sized + LiteralTy,
+    T: ?Sized + LiteralTy + 'b,
     C: Context<'a, Orig<'a> = <T as LiteralTy>::Orig<'a>>,
 {
     #[inline(always)]
