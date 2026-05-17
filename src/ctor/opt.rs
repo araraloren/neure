@@ -145,9 +145,9 @@ impl<C, P> OptionPat<C, P> {
     }
 }
 
-impl<'a, C, O, P, H> Ctor< C, Option<O>, H> for OptionPat<C, P>
+impl<'a, C, O, P, H> Ctor<C, Option<O>, H> for OptionPat<C, P>
 where
-    P: Ctor< C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

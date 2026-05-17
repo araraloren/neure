@@ -202,10 +202,10 @@ impl<C, L, R> Or<C, L, R> {
     }
 }
 
-impl<'a, C, L, R, O, H> Ctor< C, O, H> for Or<C, L, R>
+impl<'a, C, L, R, O, H> Ctor<C, O, H> for Or<C, L, R>
 where
-    L: Ctor< C, O, H>,
-    R: Ctor< C, O, H>,
+    L: Ctor<C, O, H>,
+    R: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

@@ -219,9 +219,9 @@ impl<C, P, F, O> Map<C, P, F, O> {
     }
 }
 
-impl<'a, C, O, V, P, F, H> Ctor< C, V, H> for Map<C, P, F, O>
+impl<'a, C, O, V, P, F, H> Ctor<C, V, H> for Map<C, P, F, O>
 where
-    P: Ctor< C, O, H>,
+    P: Ctor<C, O, H>,
     F: FallibleMap<O, V>,
     C: Match<'a>,
     H: Handler<C>,

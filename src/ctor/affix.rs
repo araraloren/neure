@@ -183,10 +183,10 @@ impl<C, P, T> Suffix<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, O, H> Ctor< C, O, H> for Suffix<C, P, T>
+impl<'a, C, P, T, O, H> Ctor<C, O, H> for Suffix<C, P, T>
 where
     T: Regex<C>,
-    P: Ctor< C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
@@ -392,10 +392,10 @@ impl<C, P, T> Prefix<C, P, T> {
     }
 }
 
-impl<'a, C, P, T, O, H> Ctor< C, O, H> for Prefix<C, P, T>
+impl<'a, C, P, T, O, H> Ctor<C, O, H> for Prefix<C, P, T>
 where
     T: Regex<C>,
-    P: Ctor< C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {

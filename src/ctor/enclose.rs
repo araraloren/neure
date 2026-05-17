@@ -27,7 +27,7 @@ use crate::span::Span;
 ///
 /// Matches all three components sequentially and returns a **single merged span** covering:
 /// 1. The opening delimiter match
-/// 2. The inner pattern match  
+/// 2. The inner pattern match
 /// 3. The closing delimiter match
 ///
 /// The returned span represents the complete enclosed structure from start of opening delimiter
@@ -206,11 +206,11 @@ impl<C, P, L, R> Enclose<C, P, L, R> {
     }
 }
 
-impl<'a, C, L, R, P, O, H> Ctor< C, O, H> for Enclose<C, P, L, R>
+impl<'a, C, L, R, P, O, H> Ctor<C, O, H> for Enclose<C, P, L, R>
 where
     L: Regex<C>,
     R: Regex<C>,
-    P: Ctor< C, O, H>,
+    P: Ctor<C, O, H>,
     C: Match<'a>,
     H: Handler<C>,
 {
