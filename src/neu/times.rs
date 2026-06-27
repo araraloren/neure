@@ -383,8 +383,8 @@ impl<C, U, I> Times<C, U, I> {
         self
     }
 
-    pub fn set_range(&mut self, range: CRange<usize>) -> &mut Self {
-        self.range = range;
+    pub fn set_range(&mut self, range: impl Into<CRange<usize>>) -> &mut Self {
+        self.range = range.into();
         self
     }
 }
@@ -439,6 +439,7 @@ where
             move |val| max.map(|max| val < max).unwrap_or(true)
         }
 
+        // only check end bound
         let cond = bound_checker(match self.range.end_bound() {
             core::ops::Bound::Included(max) => Some(*max),
             core::ops::Bound::Excluded(max) => Some(max.saturating_sub(1)),

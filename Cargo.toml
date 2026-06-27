@@ -1,7 +1,9 @@
 [package]
 name = "neure"
-version = "0.10.0"
-authors = ["araraloren <blackcatoverwall@gmail.com>"]
+version = "0.10.1"
+authors = [
+    "araraloren <blackcatoverwall@gmail.com>",
+]
 edition = "2024"
 license = "MPL-2.0"
 description = "A fast little combinational parsing library"
@@ -16,12 +18,15 @@ codegen-units = 1
 [dev-dependencies]
 regex = "1.0"
 nom = "8.0"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+] }
 color-eyre = "0.6"
 criterion = "0.8"
 
 [dependencies]
 charize = "0.0.3"
+rustversion = "1.0"
 tracing = { version = "0.1", optional = true, default-features = false }
 log = { version = "0.4", optional = true, default-features = false }
 
@@ -66,5 +71,12 @@ required-features = ["alloc"]
 
 [package.metadata.docs.rs]
 features = ["std", "log"]
-cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
-rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
+cargo-args = [
+    "-Zunstable-options",
+    "-Zrustdoc-scrape-examples",
+]
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+    "--generate-link-to-definition",
+]
